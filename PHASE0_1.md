@@ -63,6 +63,8 @@ Observed against `https://injiverify.collab.mosip.net/v1/verify` on 2026-10-20:
 - The flow is guest wallet → Farmer → Farmer ID Card → eSignet authorization code with PKCE → Mimoto/Certify credential download. The authorization page identifies the shared client as `Land Registry Client`, confirming a configuration-label mismatch worth reporting.
 - This proves real Inji Web issuance and download for JSON-LD. It does not prove wallet storage or OpenID4VP presentation; those remain separate checkpoints.
 - A redacted success screenshot is saved at `spikes/fixtures/inji-web-farmer-success.png`. No test identifier, OTP, authorization code, or credential is stored in the repository.
+- A live JSON-LD request created by Inji Verify reached Inji Web's `/user/authorize` route. Inji Web recognized it as a credential-sharing request but required `Continue With Google`; guest presentation was unavailable and the earlier guest download was not retained as a wallet credential.
+- The official Inji Web source at commit `a9f4f829d3070be34ae11649327ea1561e123a2b` confirms OpenID4VP presentation is limited to JSON-LD and that SD-JWT presentation is still pending. Its presentation APIs operate on a persistent wallet id and stored credentials.
 
 ## Consequences for implementation
 
@@ -109,5 +111,6 @@ node spikes/collab-contract-spike.mjs
 - [x] Complete `FarmerCredential_VCDM2.0` issuance and download in Inji Web using the official public Collab test identity.
 - [ ] The selected Inji wallet consumes the Verify request and submits a VP.
 - [ ] Verify returns a result for both `dc+sd-jwt` and `ldp_vc`.
+- [x] Inji Web presentation capability isolated: JSON-LD requires a logged-in persistent wallet; guest presentation is unavailable; SD-JWT presentation is not implemented upstream.
 - [x] Verify request cancellation lifecycle confirmed through submission, status, and result-error APIs.
 - [x] Sanitized contract fixtures are saved and covered by an automated secret-safety test.

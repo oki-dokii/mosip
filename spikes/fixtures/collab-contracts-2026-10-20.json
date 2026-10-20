@@ -61,6 +61,13 @@
       "pkce": true,
       "downloadSucceeded": true,
       "authorizationClientLabel": "Land Registry Client"
+    },
+    "observedPresentation": {
+      "requestRoute": "/user/authorize",
+      "jsonLdRequestRecognized": true,
+      "guestPresentationAvailable": false,
+      "persistentWalletLoginRequired": true,
+      "sdJwtPresentationSupported": false
     }
   },
   "verify": {

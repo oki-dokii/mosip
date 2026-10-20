@@ -45,7 +45,7 @@ Version 0.1 · started 2026-10-17
 | ID | Question | Why it matters | Owner | How to resolve | Status |
 |---|---|---|---|---|---|
 | P-001 | Which Inji Certify issuance flow can be driven headlessly: authorization code via eSignet, or pre-authorized code? | Decides the Certify issuer driver and the Reference Wallet token step | Role A | Live Collab spike | Partly resolved by D-018: pre-authorized offer/token/nonce work; credential call returns 401 |
-| P-002 | Can Inji Web present credentials through OpenID4VP, or only download/hold? | Decides whether "Inji Web (assisted)" can cover presentation or only issuance | Role A | Spike: try a presentation from Inji Web to Verify; capture traffic | Open |
+| P-002 | Can Inji Web present credentials through OpenID4VP, or only download/hold? | Decides whether "Inji Web (assisted)" can cover presentation or only issuance | Role A | Spike: try a presentation from Inji Web to Verify; capture traffic | Resolved by D-021: JSON-LD only, with a logged-in persistent wallet |
 | P-003 | What exact `vp_token` and submission shape does the current Inji Verify accept? | Reference Wallet must send an acceptable VP | Role A/D | Capture a working Inji wallet submission against the discovered v2/DCQL request | Partly resolved by D-018: request and response URI known; submission body remains open |
 | P-004 | Which credential formats and proof types does the target Verify and Certify version support end to end? | Fills the compatibility table behind FR-14 | Role A | Test each advertised format with a real wallet and verifier | Partly resolved by D-018: advertised capabilities captured; end-to-end results open |
 | P-005 | Will the playground run against local Inji services or the Collab sandbox for the demo? | Affects base URLs, CORS/ngrok needs and flakiness | Team | Phase 0 decision | Resolved by D-016: Collab first, local fallback/mocks |
@@ -53,6 +53,16 @@ Version 0.1 · started 2026-10-17
 ---
 
 ## Log
+
+### D-021 · Use mobile or Reference Wallet for the Phase 1 presentation leg
+- **Date:** 2026-10-20   **Status:** Accepted
+- **Context:** The deployed Inji Web route recognized a real Verify JSON-LD authorization request, then required Google login. The guest-issued credential was downloaded rather than retained, and guest presentation was unavailable. Upstream also marks SD-JWT presentation as pending.
+- **Decision:** Count Inji Web as the proven JSON-LD issuer/download client. Use a logged-in persistent Inji Web wallet only when a dedicated test account is available; otherwise use Inji Wallet mobile or the clearly labeled Reference Wallet for presentation.
+- **Alternatives considered:** Use a personal Google account for the test (mixes personal state into a reproducible spike); claim guest download proves presentation (it does not); wait for SD-JWT support in Inji Web (does not meet the current delivery window).
+- **Why this one:** It matches the deployed behavior and upstream capability boundary while preserving a path to complete both required formats.
+- **Trade-off accepted:** The first complete presentation may not be all-Inji Web, and an all-Inji SD-JWT run requires the mobile wallet.
+- **Revisit if:** A dedicated Inji Web test account is provided or upstream enables guest and SD-JWT presentation.
+- **Affects:** P-002, P-003, P-004, D-002, D-016, `PHASE0_1.md`, wallet driver selection.
 
 ### D-020 · Use the official Collab test identity for assisted Inji Web issuance
 - **Date:** 2026-10-20   **Status:** Accepted

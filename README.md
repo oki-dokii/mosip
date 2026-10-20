@@ -28,8 +28,8 @@ node spikes/collab-contract-spike.mjs
 node --test spikes/collab-contracts.test.mjs
 ```
 
-## Open questions that need a Day-1 spike
-P-002 Inji Web presentation support and the remaining format/result combinations are still open. Certify pre-authorized issuance, Collab-first targeting, and Verify's current v2/DCQL request contract have been confirmed. Details are in `PHASE0_1.md` and `decisions.md`.
+## Remaining Phase 1 questions
+Inji Web's boundary is now confirmed: JSON-LD presentation requires a logged-in persistent wallet, guest mode only completed issuance/download, and SD-JWT presentation is pending upstream. The remaining work is a successful VP submission/result for both formats and a working automated Certify credential endpoint. Details are in `PHASE0_1.md` and `decisions.md`.
 
 ## Sources used for the Inji API facts
 - Inji Verify OpenID4VP endpoints and draft: https://deepwiki.com/mosip/inji-verify/5-openid4vp-implementation
