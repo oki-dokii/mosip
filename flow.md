@@ -2,7 +2,7 @@
 
 How code travels between files and functions: **entry points, order of execution, and who calls whom.**
 
-> **Status: SPIKES IMPLEMENTED; APPLICATION PLANNED.** The Phase 1 spike entry points below exist. The application names remain the intended design from `BACKEND.md` and `TRD.md`. When code is written or changed, update the matching section **in the same change** and flip its status (`planned` → `implemented`) or correct the name.
+> **Status: SPIKES AND M1 WALKING SKELETON IMPLEMENTED; LIVE APPLICATION IN PROGRESS.** The current web/BFF flow uses sanitized fixture-backed exchanges and an in-memory store. The deeper driver, database, Tap, replay, and reporting paths remain planned.
 
 Legend: `file → function()` means "this function in that file". `A ⇒ B` means A calls B. Status: 🟦 planned · 🟩 implemented · 🟥 changed from plan (explain in decisions.md).
 
@@ -33,8 +33,8 @@ Legend: `file → function()` means "this function in that file". `A ⇒ B` mean
 
 | Entry | File | What starts it | Status |
 |---|---|---|---|
-| BFF process | `apps/bff/src/server.ts` | `node dist/server.js` (Docker `CMD`) | 🟦 |
-| Web app | `apps/web/src/main.tsx` | Vite dev server / built static files | 🟦 |
+| BFF process | `apps/bff/src/server.ts` | `pnpm --filter @playground/bff dev` or `node dist/server.js` | 🟩 |
+| Web app | `apps/web/src/main.tsx` | `pnpm --filter @playground/web dev` / built static files | 🟩 |
 | Mock issuer | `apps/mock-issuer/src/server.ts` | Compose profile `mocks` | 🟦 |
 | Mock verifier | `apps/mock-verifier/src/server.ts` | Compose profile `mocks` | 🟦 |
 | DB migrations and seeds | `apps/bff/prisma/migrations`, `apps/bff/prisma/seed.ts` | `prisma migrate deploy` on container start | 🟦 |
@@ -42,71 +42,52 @@ Legend: `file → function()` means "this function in that file". `A ⇒ B` mean
 
 ---
 
-## 2. Startup order (BFF)
+## 2. Startup order (BFF walking skeleton) 🟩
 
-1. `server.ts → main()`
-2. ⇒ `config/env.ts → loadEnv()` (Zod validation; process exits on bad config)
-3. ⇒ `db/client.ts → connect()`
-4. ⇒ `app.ts → buildApp()`
-   - registers middleware: request id, pino logger, CORS, JSON body parser, rate limiter
-   - mounts routes: `health`, `meta`, `runs`, `matrix`, `scenarios`, `tools`
-   - mounts Tap: `tap/proxy.ts → mountTap(app)`
-   - adds the error handler (`lib/errors.ts → problemJson()`)
-5. ⇒ `ws/gateway.ts → attachGateway(httpServer)` (Socket.IO, namespace `/runs`)
-6. ⇒ `httpServer.listen(PORT)`
+1. `server.ts` ⇒ `app.ts → buildApp(() => io)`
+2. ⇒ `http.createServer(app)`
+3. ⇒ attach Socket.IO namespace `/runs`; clients join room `run:{runId}`
+4. ⇒ `httpServer.listen(PORT)` (default `4000`)
 
-Shutdown: SIGTERM ⇒ stop accepting runs ⇒ wait for running runs (timeout) ⇒ close sockets ⇒ close DB.
+Environment validation, database startup, structured logging, rate limiting, and graceful shutdown remain planned.
 
 ---
 
 ## 3. Main flow: "Run flow" button to final report
 
-### 3.1 Frontend side
-1. `pages/Playground.tsx → onRunClick()`
+### 3.1 Frontend side 🟩
+1. `App.tsx → startRun()`
 2. ⇒ `lib/api.ts → createRun(config)` → `POST /api/v1/runs`
-3. ⇒ `lib/socket.ts → joinRun(runId)` (room `run:{runId}`)
-4. `hooks/useRunStream.ts` receives `step:started`, `step:finished`, `exchange:recorded`, `action:required`, `run:finished` and updates `RunTimeline`, `ActionPanel`, `Inspector`, `ResultCard`.
-5. Opening an inspector row ⇒ `lib/api.ts → getExchanges(runId, stepId)` → `GET /runs/:id/exchanges`.
+3. ⇒ connect Socket.IO namespace `/runs` and emit `join(runId)`; start a 500 ms polling fallback
+4. Socket events or polling ⇒ `App.tsx → refresh(runId)` ⇒ fetch run, steps, and exchanges
+5. ⇒ update `RunTimeline` and `Inspector`; selecting a step selects its recorded exchange
 
-### 3.2 BFF side: order of execution
+### 3.2 BFF side: implemented walking-skeleton order 🟩
 
 ```
-routes/runs.routes.ts → POST /runs
-  ⇒ controllers/runs.controller.ts → createRun()
-     ⇒ shared schema.parse(body)                       (packages/shared)
-     ⇒ services/runService.ts → create(config)
-          ⇒ checks combination (drivers/registry.ts → isSupported())
-          ⇒ db: INSERT runs (status = pending)
-          ⇒ services/versionService.ts → snapshotVersions(runId)   (service_versions)
-          ⇒ orchestrator/runOrchestrator.ts → start(runId)         (not awaited; returns 202)
-
-orchestrator/runOrchestrator.ts → start(runId)
-  ⇒ lib/runContext.ts → buildContext(run)       (urls via Tap, per-run keys, emitters)
-  ⇒ drivers/registry.ts → resolve(ctx)          (issuer, wallet, verifier drivers)
-  ⇒ for each step in orchestrator/steps.ts → STEPS:
-       1 INIT              ⇒ ws emit run:created; set status = running
-       2 ISSUE_OFFER       ⇒ issuerDriver.createOffer(ctx)
-       3 ISSUE_TOKEN       ⇒ walletDriver.acceptOffer(ctx, offer)       (token part)
-       4 ISSUE_CREDENTIAL  ⇒ walletDriver.acceptOffer(ctx, offer)       (credential part)
-       5 STORE             ⇒ db: INSERT credentials (role = issued)
-       6 PRESENT_REQUEST   ⇒ verifierDriver.createRequest(ctx)
-                             ⇒ ws emit action:required (scan_qr) when user action is needed
-       7 PRESENT_SUBMIT    ⇒ tamper/index.ts → applyTamper(kind, cred)  (only if tamper set)
-                             ⇒ walletDriver.present(ctx, request, cred)
-       8 PRESENT_STATUS    ⇒ verifierDriver.pollStatus(ctx, requestId)  (loop until submitted/expired)
-       9 PRESENT_RESULT    ⇒ verifierDriver.getResult(ctx, txnId)
-                             ⇒ db: INSERT verification_results
-      10 EVALUATE          ⇒ orchestrator/outcome.ts → evaluate(expected, actual)
-      11 REPORT            ⇒ services/reportService.ts → build(runId)
-  ⇒ db: UPDATE runs (status, actual_outcome, finished_at)
-  ⇒ ws emit run:finished
+app.ts → POST /api/v1/runs
+  ⇒ packages/shared → runConfigSchema.safeParse(body)
+  ⇒ store.ts → runStore.create(run plus createSteps(runId))
+  ⇒ return 202 { runId }
+  ⇒ orchestrator.ts → runDemo(runId, io)
+       ⇒ mark run running; emit run:created
+       ⇒ for each fixture-backed step:
+            INIT → ISSUE_OFFER → ISSUE_TOKEN → ISSUE_CREDENTIAL → STORE
+            → PRESENT_REQUEST → PRESENT_SUBMIT → PRESENT_RESULT → REPORT
+            ⇒ emit step:started
+            ⇒ create sanitized exchange where the step has a protocol boundary
+            ⇒ store exchange; emit exchange:recorded
+            ⇒ mark succeeded; emit step:finished
+       ⇒ mark run passed with actualOutcome valid; emit run:finished
 ```
 
-Every step wrapper (`orchestrator/steps.ts → runStep()`) does the same four things: write `run_steps` row ⇒ emit `step:started` ⇒ call the driver ⇒ write result ⇒ emit `step:finished`. On exception it records an error code and the orchestrator marks the run `errored`.
+`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read the same in-memory record. Database writes, real drivers, presentation polling, negative outcomes, and durable reports remain planned.
 
-### 3.3 Where HTTP traffic is recorded
+### 3.3 Where exchange data is recorded
 
-Any driver or browser call to a service goes through the Tap:
+The walking skeleton constructs protocol-shaped exchanges in `orchestrator.ts`, passes request and response objects through `redaction.ts → redact()`, and only then writes them to `store.ts`. This proves the UI and safe-storage boundary. Live adapters will record their real request/response boundaries through the same redaction contract, following D-017.
+
+The previously designed transparent Tap remains optional and planned. Its proposed path is:
 
 ```
 client request → /tap/:runId/:service/*
@@ -213,6 +194,20 @@ routes → controllers → services → orchestrator → drivers → wallet / ta
 | `ws/gateway.ts` | Socket.IO rooms and emit helpers |
 | `db/client.ts` | Prisma client |
 
+Current M1 files:
+
+| File | Owns |
+|---|---|
+| `apps/web/src/App.tsx` | Run configuration, Socket.IO/polling refresh, screen composition |
+| `apps/web/src/components/*` | Role selectors, timeline, and exchange inspector |
+| `apps/web/src/lib/api.ts` | Typed browser calls to the BFF |
+| `apps/bff/src/server.ts` | HTTP and Socket.IO process wiring |
+| `apps/bff/src/app.ts` | Implemented REST routes and run creation |
+| `apps/bff/src/orchestrator.ts` | Fixture-backed nine-step run and events |
+| `apps/bff/src/redaction.ts` | Recursive write-time masking |
+| `apps/bff/src/store.ts` | In-memory run records |
+| `packages/shared/src/index.ts` | Shared Zod configuration schema and API types |
+
 ---
 
 ## 8. How to keep this file true
@@ -231,3 +226,4 @@ When you change code:
 | 2026-10-20 | Added completed Collab contract spike entry point; adapter recording replaces mandatory proxy routing | implementation |
 | 2026-10-20 | Added token/JWKS diagnostics, Verify cancellation lifecycle, and sanitized contract fixture test | implementation |
 | 2026-10-20 | Added the headless authorization-code Reference Wallet flow for JSON-LD and SD-JWT issuance, holder proof, DCQL direct post, and Verify results | implementation |
+| 2026-10-21 | Added the M1 web/BFF walking skeleton, shared schemas, in-memory orchestration, live events, inspector, and write-time redaction | implementation |

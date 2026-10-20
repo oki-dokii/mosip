@@ -15,17 +15,27 @@ Read in this order:
 | 7 | [decisions.md](decisions.md) | Why each choice was made, and what was given up. Also the pending questions. |
 | 8 | [flow.md](flow.md) | How code moves between files and functions (entry points, order of execution, call chains) |
 | 9 | [PHASE0_1.md](PHASE0_1.md) | What Phase 0 decided and what the live Collab contract spikes found |
+| 10 | [PHASE2.md](PHASE2.md) | What the application walking skeleton implements and what comes next |
 
 Working rules for people and AI assistants are in `CLAUDE.md`: quiz before changes, log every meaningful decision, keep `flow.md` true.
 
 ## Status of this documentation
-Phase 0 and Phase 1 are complete as of 2026-10-20. The live Reference Wallet spike issued and verified both JSON-LD and SD-JWT credentials on MOSIP Collab. `flow.md` describes the planned application plus completed spike entry points.
+Phase 0 and Phase 1 are complete as of 2026-10-20. The live Reference Wallet spike issued and verified both JSON-LD and SD-JWT credentials on MOSIP Collab. Phase 2 has a working fixture-backed web and BFF walking skeleton with live run updates, exchange inspection, and write-time secret redaction. Live adapters and Postgres persistence are the next slice.
+
+Run the application locally with:
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Then open `http://localhost:5173`. See [PHASE2.md](PHASE2.md) for the implemented boundary and remaining work.
 
 Run the live synthetic contract probe and its offline fixture checks with:
 
 ```bash
-node spikes/collab-contract-spike.mjs
-npm test
+pnpm spike:contracts
+pnpm test
 ```
 
 The end-to-end spike needs the official public Certify Postman environment supplied through `OFFICIAL_POSTMAN_ENV_PATH`; see `PHASE0_1.md` for both commands. It generates holder keys in memory and prints only a sanitized result. Inji Web's boundary is also confirmed: guest mode completes issuance/download, JSON-LD presentation requires a logged-in persistent wallet, and SD-JWT presentation is pending upstream.

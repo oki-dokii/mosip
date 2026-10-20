@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-023 · Build M1 with a fixture-backed in-memory runner
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** The first application slice must prove the browser, BFF, run lifecycle, real-time events, inspector, and redaction boundary before database and live-adapter integration increase the debugging surface.
+- **Decision:** Implement the M1 walking skeleton with shared Zod contracts, an in-memory run store, and sanitized protocol-shaped exchanges derived from the successful Phase 1 paths. Label the UI and documentation as fixture-backed.
+- **Alternatives considered:** Start with Postgres and all live drivers together (slower feedback and harder fault isolation); render a static UI without an API (does not prove the application boundary); call Collab directly from the browser (exposes protocol state and couples the UI to deployments).
+- **Why this one:** It creates a usable vertical slice with the same run, step, exchange, and event shapes that persistence and live adapters can retain.
+- **Trade-off accepted:** Runs disappear on restart, selectors currently drive simulated paths, and the application itself does not yet repeat the live Phase 1 flow.
+- **Revisit if:** The store or exchange contracts cannot support Postgres or a real adapter without breaking the web API.
+- **Affects:** `apps/web`, `apps/bff`, `packages/shared`, `PHASE2.md`, FR-01, FR-10, FR-40..44.
+
 ### D-022 · Use authorization code for the Collab Reference Wallet baseline
 - **Date:** 2026-10-20   **Status:** Accepted
 - **Context:** The mock issuer's pre-authorized token is rejected by its credential endpoint, while the official Collab eSignet client can obtain correctly configured authorization-code tokens. The deployed Verify v2 endpoint also uses DCQL response shapes newer than the checked-out documentation.
