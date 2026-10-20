@@ -21,6 +21,13 @@ Working rules for people and AI assistants are in `CLAUDE.md`: quiz before chang
 ## Status of this documentation
 Phase 0 complete and Phase 1 in progress as of 2026-10-20. `flow.md` describes the planned application plus completed spike entry points.
 
+Run the live synthetic contract probe and its offline fixture checks with:
+
+```bash
+node spikes/collab-contract-spike.mjs
+node --test spikes/collab-contracts.test.mjs
+```
+
 ## Open questions that need a Day-1 spike
 P-002 Inji Web presentation support and the remaining format/result combinations are still open. Certify pre-authorized issuance, Collab-first targeting, and Verify's current v2/DCQL request contract have been confirmed. Details are in `PHASE0_1.md` and `decisions.md`.
 

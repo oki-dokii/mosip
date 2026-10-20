@@ -37,7 +37,8 @@ Observed against `https://injicertify-mock.collab.mosip.net` on 2026-10-20:
 - `POST /v1/certify/oauth/token` exchanges the code successfully.
 - The live token response does not include `c_nonce`; the advertised `POST /v1/certify/nonce` endpoint supplies it separately.
 - The current credential request schema uses `credential_configuration_id` and `proofs.jwt[]`.
-- A complete repeatable attempt reached the credential endpoint, which rejected the access token it had just issued with HTTP 401. No token or credential is written or printed. This is now a concrete integration gap to isolate against a pinned release or report upstream.
+- A complete repeatable attempt reached the credential endpoint, which rejected the access token it had just issued with HTTP 401. No token or credential is written or printed.
+- The rejected token has blank issuer and audience claims, and contains neither `c_nonce` nor `client_id`. Its signing key is also absent from the eSignet authorization server's advertised JWKS. The current Certify source validates those properties in production and supplies them in its newer pre-authorized implementation, so the evidence points to a Collab deployment/configuration mismatch rather than the generated wallet proof.
 
 ### Inji Verify on Collab
 
@@ -49,7 +50,8 @@ Observed against `https://injiverify.collab.mosip.net/v1/verify` on 2026-10-20:
 - A synthetic SD-JWT request returned 201 with a transaction id, request id, expiry, and request URI.
 - Fetching the request URI returned a signed `application/oauth-authz-req+jwt` request object.
 - The response URI in that object is `/v2/vp-submission/direct-post`.
-- `GET /vp-request/{requestId}/status` is a long-polling endpoint. A short client timeout while the request is active is expected, not an immediate service failure.
+- A synthetic wallet cancellation submitted to that URI returned 200. Status then returned `VP_SUBMITTED`, and the result endpoint returned the expected 404 payload with `access_denied`. This confirms the create → signed request → submit → status → result-error lifecycle without presenting a credential.
+- `GET /vp-request/{requestId}/status` long-polls while a request is active and returns immediately after submission.
 
 ### Inji Web and Mimoto on Collab
 
@@ -77,6 +79,12 @@ node spikes/collab-contract-spike.mjs
 
 The script creates only short-lived synthetic offers and requests. It prints a sanitized capability summary and never prints or writes access tokens, pre-authorized codes, credentials, or private keys.
 
+The pinned sanitized fixture is `spikes/fixtures/collab-contracts-2026-10-20.json`. Validate it with:
+
+```bash
+node --test spikes/collab-contracts.test.mjs
+```
+
 Optional endpoint overrides:
 
 ```bash
@@ -98,4 +106,5 @@ node spikes/collab-contract-spike.mjs
 - [ ] Complete Farmer issuance in Inji Web. Browser flow reaches eSignet; a Collab test UIN/VID and OTP are required.
 - [ ] The selected Inji wallet consumes the Verify request and submits a VP.
 - [ ] Verify returns a result for both `dc+sd-jwt` and `ldp_vc`.
-- [ ] Sanitized contract fixtures are saved for automated tests.
+- [x] Verify request cancellation lifecycle confirmed through submission, status, and result-error APIs.
+- [x] Sanitized contract fixtures are saved and covered by an automated secret-safety test.

@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-019 · Treat Collab pre-authorized credential rejection as an environment blocker
+- **Date:** 2026-10-20   **Status:** Accepted
+- **Context:** Collab's pre-authorized endpoint returns an access token that its own credential endpoint rejects with HTTP 401.
+- **Decision:** Record the failure as a sanitized contract fixture, keep the adapter standards-compliant, and do not weaken token or proof validation to work around Collab. Continue the independently testable Verify lifecycle while a configured Certify deployment or Collab fix is obtained.
+- **Alternatives considered:** Forge missing token claims or bypass validation (would not test the deployed service and requires signing authority); classify the generated proof as faulty (the request is rejected before its proof can be evaluated); stop all Phase 1 work (unnecessary because Verify and Mimoto contracts remain testable).
+- **Why this one:** The returned token has blank issuer/audience, omits nonce/client ID, and uses a key absent from the authorization server JWKS. Those facts conflict with current Certify's production validation contract.
+- **Trade-off accepted:** A successful real credential and VP remain outside the automated Collab spike until the environment is fixed or test identity access is supplied.
+- **Revisit if:** Collab deploys the current pre-authorized implementation, publishes the correct signing key/configuration, or a team-controlled Certify instance is available.
+- **Affects:** P-001, P-003, P-004, `PHASE0_1.md`, `spikes/collab-contract-spike.mjs`, `spikes/fixtures/*`.
+
 ### D-018 · Discover and pin deployed protocol contracts
 - **Date:** 2026-10-20   **Status:** Accepted
 - **Context:** The repository planned against legacy Certify discovery and Inji Verify presentation-definition endpoints, while the Collab deployment has moved.

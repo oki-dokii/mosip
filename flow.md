@@ -16,7 +16,12 @@ Legend: `file → function()` means "this function in that file". `A ⇒ B` mean
 ⇒ discover live Certify metadata and Verify OpenAPI
 ⇒ execute a synthetic Certify pre-authorized issuance
 ⇒ create and retrieve a synthetic Verify v2/DCQL request
+⇒ submit a synthetic wallet cancellation and read status/result error
 ⇒ print a sanitized capability summary
+
+`node --test spikes/collab-contracts.test.mjs`
+⇒ load `spikes/fixtures/collab-contracts-2026-10-20.json`
+⇒ assert the pinned adapter contract and reject secret-bearing fields/JWT values
 
 | Entry | File | What starts it | Status |
 |---|---|---|---|
@@ -216,3 +221,4 @@ When you change code:
 |---|---|---|
 | 2026-10-17 | Initial planned flow | design phase |
 | 2026-10-20 | Added completed Collab contract spike entry point; adapter recording replaces mandatory proxy routing | implementation |
+| 2026-10-20 | Added token/JWKS diagnostics, Verify cancellation lifecycle, and sanitized contract fixture test | implementation |

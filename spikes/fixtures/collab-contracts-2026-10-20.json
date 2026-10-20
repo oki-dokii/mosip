@@ -1,0 +1,67 @@
+{
+  "capturedAt": "2026-10-20",
+  "environment": "MOSIP Collab",
+  "containsSecrets": false,
+  "certify": {
+    "issuerMetadataPath": "/.well-known/openid-credential-issuer",
+    "configurationId": "MockVerifiableCredential_SD_JWT",
+    "format": "dc+sd-jwt",
+    "offerPath": "/v1/certify/pre-authorized-data",
+    "offerDataPathTemplate": "/v1/certify/credential-offer-data/{offerId}",
+    "tokenPath": "/v1/certify/oauth/token",
+    "noncePath": "/v1/certify/nonce",
+    "credentialPath": "/v1/certify/issuance/credential",
+    "credentialRequestFields": [
+      "credential_configuration_id",
+      "proofs.jwt"
+    ],
+    "observed": {
+      "metadataStatus": 200,
+      "offerStatus": 200,
+      "tokenStatus": 200,
+      "tokenResponseIncludesNonce": false,
+      "accessTokenIssuerConfigured": false,
+      "accessTokenAudienceConfigured": false,
+      "accessTokenNonceClaimIncluded": false,
+      "accessTokenClientIdClaimIncluded": false,
+      "accessTokenSigningKeyAdvertisedByAuthorizationServer": false,
+      "credentialStatus": 401,
+      "credentialFailure": "fresh_pre_authorized_token_rejected"
+    }
+  },
+  "mimoto": {
+    "openApiPath": "/v1/mimoto/v3/api-docs",
+    "issuerCatalogPath": "/v1/mimoto/issuers",
+    "issuerConfigurationPathTemplate": "/v1/mimoto/issuers/{issuerId}/configuration",
+    "issuerCount": 9,
+    "mockCertifyOnboarded": false,
+    "candidate": {
+      "issuerId": "Farmer",
+      "grantTypes": [
+        "authorization_code"
+      ],
+      "credentialConfigurations": [
+        "FarmerCredential_VCDM2.0",
+        "FarmerCredential"
+      ]
+    }
+  },
+  "verify": {
+    "openApiPath": "/v1/verify/v3/api-docs",
+    "createRequestPath": "/v1/verify/v2/vp-request",
+    "queryLanguage": "DCQL",
+    "requestFormat": "dc+sd-jwt",
+    "responseMode": "direct_post",
+    "submissionPath": "/v1/verify/v2/vp-submission/direct-post",
+    "statusPathTemplate": "/v1/verify/vp-request/{requestId}/status",
+    "resultPathTemplate": "/v1/verify/v2/vp-results/{transactionId}",
+    "observedCancellationLifecycle": {
+      "createStatus": 201,
+      "requestObjectStatus": 200,
+      "submissionStatus": 200,
+      "status": "VP_SUBMITTED",
+      "resultStatus": 404,
+      "resultErrorCode": "access_denied"
+    }
+  }
+}

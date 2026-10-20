@@ -41,6 +41,14 @@ function base64url(value) {
   return Buffer.from(JSON.stringify(value)).toString("base64url");
 }
 
+function decodeJwtSegment(token, index) {
+  try {
+    return JSON.parse(Buffer.from(token.split(".")[index], "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
+}
+
 function createProofJwt(audience, nonce) {
   const { privateKey, publicKey } = generateKeyPairSync("ed25519");
   const jwk = publicKey.export({ format: "jwk" });
@@ -91,6 +99,17 @@ async function runCertifySpike() {
   });
   if (!token.body.access_token) throw new Error("Token response did not contain an access token");
 
+  const accessTokenHeader = decodeJwtSegment(token.body.access_token, 0);
+  const accessTokenClaims = decodeJwtSegment(token.body.access_token, 1);
+  const authorizationServer = metadata.body.authorization_servers?.[0];
+  const authorizationMetadata = authorizationServer
+    ? await request(`${authorizationServer}/.well-known/openid-configuration`)
+    : null;
+  const authorizationJwks = authorizationMetadata?.body.jwks_uri
+    ? await request(authorizationMetadata.body.jwks_uri)
+    : null;
+  const advertisedKeyIds = authorizationJwks?.body.keys?.map((key) => key.kid).filter(Boolean) ?? [];
+
   const nonce = await request(metadata.body.nonce_endpoint, { method: "POST" });
   const proofJwt = createProofJwt(metadata.body.credential_issuer, nonce.body.c_nonce);
   const credential = await request(metadata.body.credential_endpoint, {
@@ -113,6 +132,17 @@ async function runCertifySpike() {
     offerStatus: offer.status,
     tokenStatus: token.status,
     tokenResponseIncludesNonce: Boolean(token.body.c_nonce),
+    accessTokenDiagnostics: {
+      issuerConfigured: Boolean(accessTokenClaims?.iss),
+      audienceConfigured: Array.isArray(accessTokenClaims?.aud)
+        ? accessTokenClaims.aud.length > 0
+        : Boolean(accessTokenClaims?.aud),
+      nonceClaimIncluded: Boolean(accessTokenClaims?.c_nonce),
+      clientIdClaimIncluded: Boolean(accessTokenClaims?.client_id),
+      signingKeyAdvertisedByAuthorizationServer: Boolean(
+        accessTokenHeader?.kid && advertisedKeyIds.includes(accessTokenHeader.kid),
+      ),
+    },
     nonceStatus: nonce.status,
     credentialStatus: credential.status,
     credentialReturned: Boolean(credential.body?.credential || credential.body?.credentials),
@@ -147,6 +177,28 @@ async function runVerifySpike() {
   const requestObject = await request(created.body.requestUri, {
     headers: { accept: "application/oauth-authz-req+jwt" },
   });
+  const requestClaims = decodeJwtSegment(requestObject.body, 1);
+  if (!requestClaims?.state || !requestClaims?.response_uri) {
+    throw new Error("Verify request object did not contain state and response_uri");
+  }
+
+  const cancellation = new URLSearchParams({
+    state: requestClaims.state,
+    error: "access_denied",
+    error_description: "synthetic playground contract probe",
+  });
+  const submission = await request(requestClaims.response_uri, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: cancellation,
+  });
+  const status = await request(`${VERIFY}/vp-request/${encodeURIComponent(created.body.requestId)}/status`);
+  const result = await request(`${VERIFY}/v2/vp-results/${encodeURIComponent(created.body.transactionId)}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ includeClaims: false, skipStatusChecks: true }),
+    allowStatuses: [404],
+  });
 
   return {
     openapiStatus: openapi.status,
@@ -155,7 +207,11 @@ async function runVerifySpike() {
     requestIdPrefix: String(created.body.requestId).split("_")[0],
     requestObjectStatus: requestObject.status,
     requestObjectIsJwt: typeof requestObject.body === "string" && requestObject.body.split(".").length === 3,
-    statusEndpointUsesLongPolling: true,
+    stateMatchesRequestId: requestClaims.state === created.body.requestId,
+    cancellationSubmissionStatus: submission.status,
+    statusAfterCancellation: status.body.status,
+    cancellationResultStatus: result.status,
+    cancellationResultErrorCode: result.body?.errorCode,
   };
 }
 
