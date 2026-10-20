@@ -14,7 +14,7 @@ Legend: `file → function()` means "this function in that file". `A ⇒ B` mean
 
 `node spikes/collab-contract-spike.mjs`
 ⇒ discover live Certify metadata and Verify OpenAPI
-⇒ execute a synthetic Certify pre-authorized issuance
+⇒ execute synthetic Certify pre-authorized issuance attempts for SD-JWT and JSON-LD
 ⇒ create and retrieve a synthetic Verify v2/DCQL request
 ⇒ submit a synthetic wallet cancellation and read status/result error
 ⇒ print a sanitized capability summary

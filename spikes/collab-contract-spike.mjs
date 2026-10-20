@@ -67,9 +67,8 @@ function offerIdFrom(uri) {
   return value.split("/").at(-1);
 }
 
-async function runCertifySpike() {
+async function runCertifySpike(configurationId) {
   const metadata = await request(`${CERTIFY}/.well-known/openid-credential-issuer`);
-  const configurationId = "MockVerifiableCredential_SD_JWT";
   const configuration = metadata.body.credential_configurations_supported?.[configurationId];
   if (!configuration) throw new Error(`${configurationId} is not advertised by Certify`);
 
@@ -241,7 +240,10 @@ async function runMimotoSpike() {
 
 const result = {
   ranAt: new Date().toISOString(),
-  certify: await runCertifySpike(),
+  certify: {
+    sdJwt: await runCertifySpike("MockVerifiableCredential_SD_JWT"),
+    jsonLd: await runCertifySpike("MockVerifiableCredential_VCDM2.0"),
+  },
   mimoto: await runMimotoSpike(),
   verify: await runVerifySpike(),
 };

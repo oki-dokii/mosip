@@ -4,8 +4,16 @@
   "containsSecrets": false,
   "certify": {
     "issuerMetadataPath": "/.well-known/openid-credential-issuer",
-    "configurationId": "MockVerifiableCredential_SD_JWT",
-    "format": "dc+sd-jwt",
+    "credentialConfigurations": {
+      "sdJwt": {
+        "id": "MockVerifiableCredential_SD_JWT",
+        "format": "dc+sd-jwt"
+      },
+      "jsonLd": {
+        "id": "MockVerifiableCredential_VCDM2.0",
+        "format": "ldp_vc"
+      }
+    },
     "offerPath": "/v1/certify/pre-authorized-data",
     "offerDataPathTemplate": "/v1/certify/credential-offer-data/{offerId}",
     "tokenPath": "/v1/certify/oauth/token",
@@ -25,7 +33,8 @@
       "accessTokenNonceClaimIncluded": false,
       "accessTokenClientIdClaimIncluded": false,
       "accessTokenSigningKeyAdvertisedByAuthorizationServer": false,
-      "credentialStatus": 401,
+      "sdJwtCredentialStatus": 401,
+      "jsonLdCredentialStatus": 401,
       "credentialFailure": "fresh_pre_authorized_token_rejected"
     }
   },

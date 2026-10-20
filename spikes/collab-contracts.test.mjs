@@ -7,8 +7,10 @@ const fixture = JSON.parse(await readFile(fixtureUrl, "utf8"));
 
 test("fixture pins the deployed Phase 1 contracts", () => {
   assert.equal(fixture.containsSecrets, false);
-  assert.equal(fixture.certify.format, "dc+sd-jwt");
-  assert.equal(fixture.certify.observed.credentialStatus, 401);
+  assert.equal(fixture.certify.credentialConfigurations.sdJwt.format, "dc+sd-jwt");
+  assert.equal(fixture.certify.credentialConfigurations.jsonLd.format, "ldp_vc");
+  assert.equal(fixture.certify.observed.sdJwtCredentialStatus, 401);
+  assert.equal(fixture.certify.observed.jsonLdCredentialStatus, 401);
   assert.equal(fixture.verify.queryLanguage, "DCQL");
   assert.equal(fixture.verify.observedCancellationLifecycle.status, "VP_SUBMITTED");
   assert.deepEqual(fixture.mimoto.candidate.grantTypes, ["authorization_code"]);

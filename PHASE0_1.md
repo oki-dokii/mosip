@@ -37,7 +37,7 @@ Observed against `https://injicertify-mock.collab.mosip.net` on 2026-10-20:
 - `POST /v1/certify/oauth/token` exchanges the code successfully.
 - The live token response does not include `c_nonce`; the advertised `POST /v1/certify/nonce` endpoint supplies it separately.
 - The current credential request schema uses `credential_configuration_id` and `proofs.jwt[]`.
-- A complete repeatable attempt reached the credential endpoint, which rejected the access token it had just issued with HTTP 401. No token or credential is written or printed.
+- Complete repeatable attempts for both `dc+sd-jwt` (`MockVerifiableCredential_SD_JWT`) and JSON-LD (`MockVerifiableCredential_VCDM2.0`) reached the credential endpoint, which rejected each access token it had just issued with HTTP 401. No token or credential is written or printed.
 - The rejected token has blank issuer and audience claims, and contains neither `c_nonce` nor `client_id`. Its signing key is also absent from the eSignet authorization server's advertised JWKS. The current Certify source validates those properties in production and supplies them in its newer pre-authorized implementation, so the evidence points to a Collab deployment/configuration mismatch rather than the generated wallet proof.
 
 ### Inji Verify on Collab
@@ -98,7 +98,7 @@ node spikes/collab-contract-spike.mjs
 
 - [x] Live Certify metadata discovered.
 - [x] Synthetic pre-authorized offer created and token endpoint confirmed.
-- [ ] Credential request accepted. The repeatable script currently records `fresh_pre_authorized_token_rejected` with HTTP 401 on Collab.
+- [ ] Credential request accepted. The repeatable script currently records `fresh_pre_authorized_token_rejected` with HTTP 401 for both required formats on Collab.
 - [x] Live Verify OpenAPI discovered.
 - [x] Synthetic v2/DCQL VP request created and signed request object fetched.
 - [x] Live Mimoto OpenAPI and issuer catalog discovered.
