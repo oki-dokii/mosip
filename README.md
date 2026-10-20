@@ -19,17 +19,16 @@ Read in this order:
 Working rules for people and AI assistants are in `CLAUDE.md`: quiz before changes, log every meaningful decision, keep `flow.md` true.
 
 ## Status of this documentation
-Phase 0 complete and Phase 1 in progress as of 2026-10-20. `flow.md` describes the planned application plus completed spike entry points.
+Phase 0 and Phase 1 are complete as of 2026-10-20. The live Reference Wallet spike issued and verified both JSON-LD and SD-JWT credentials on MOSIP Collab. `flow.md` describes the planned application plus completed spike entry points.
 
 Run the live synthetic contract probe and its offline fixture checks with:
 
 ```bash
 node spikes/collab-contract-spike.mjs
-node --test spikes/collab-contracts.test.mjs
+npm test
 ```
 
-## Remaining Phase 1 questions
-Inji Web's boundary is now confirmed: JSON-LD presentation requires a logged-in persistent wallet, guest mode only completed issuance/download, and SD-JWT presentation is pending upstream. The remaining work is a successful VP submission/result for both formats and a working automated Certify credential endpoint. Details are in `PHASE0_1.md` and `decisions.md`.
+The end-to-end spike needs the official public Certify Postman environment supplied through `OFFICIAL_POSTMAN_ENV_PATH`; see `PHASE0_1.md` for both commands. It generates holder keys in memory and prints only a sanitized result. Inji Web's boundary is also confirmed: guest mode completes issuance/download, JSON-LD presentation requires a logged-in persistent wallet, and SD-JWT presentation is pending upstream.
 
 ## Sources used for the Inji API facts
 - Inji Verify OpenID4VP endpoints and draft: https://deepwiki.com/mosip/inji-verify/5-openid4vp-implementation

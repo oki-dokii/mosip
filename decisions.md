@@ -44,15 +44,25 @@ Version 0.1 · started 2026-10-17
 
 | ID | Question | Why it matters | Owner | How to resolve | Status |
 |---|---|---|---|---|---|
-| P-001 | Which Inji Certify issuance flow can be driven headlessly: authorization code via eSignet, or pre-authorized code? | Decides the Certify issuer driver and the Reference Wallet token step | Role A | Live Collab spike | Partly resolved by D-018: pre-authorized offer/token/nonce work; credential call returns 401 |
+| P-001 | Which Inji Certify issuance flow can be driven headlessly: authorization code via eSignet, or pre-authorized code? | Decides the Certify issuer driver and the Reference Wallet token step | Role A | Live Collab spike | Resolved by D-022: authorization code with PKCE works for both formats; deployed pre-authorized issuance remains broken |
 | P-002 | Can Inji Web present credentials through OpenID4VP, or only download/hold? | Decides whether "Inji Web (assisted)" can cover presentation or only issuance | Role A | Spike: try a presentation from Inji Web to Verify; capture traffic | Resolved by D-021: JSON-LD only, with a logged-in persistent wallet |
-| P-003 | What exact `vp_token` and submission shape does the current Inji Verify accept? | Reference Wallet must send an acceptable VP | Role A/D | Capture a working Inji wallet submission against the discovered v2/DCQL request | Partly resolved by D-018: request and response URI known; submission body remains open |
-| P-004 | Which credential formats and proof types does the target Verify and Certify version support end to end? | Fills the compatibility table behind FR-14 | Role A | Test each advertised format with a real wallet and verifier | Partly resolved by D-018: advertised capabilities captured; end-to-end results open |
+| P-003 | What exact `vp_token` and submission shape does the current Inji Verify accept? | Reference Wallet must send an acceptable VP | Role A/D | Capture a working wallet submission against the discovered v2/DCQL request | Resolved by D-022: DCQL id-to-array map with no `presentation_submission` |
+| P-004 | Which credential formats and proof types does the target Verify and Certify version support end to end? | Fills the compatibility table behind FR-14 | Role A | Test each advertised format with a real wallet and verifier | Resolved by D-022: JSON-LD/Ed25519Signature2020 and SD-JWT/key-binding JWT pass end to end |
 | P-005 | Will the playground run against local Inji services or the Collab sandbox for the demo? | Affects base URLs, CORS/ngrok needs and flakiness | Team | Phase 0 decision | Resolved by D-016: Collab first, local fallback/mocks |
 
 ---
 
 ## Log
+
+### D-022 · Use authorization code for the Collab Reference Wallet baseline
+- **Date:** 2026-10-20   **Status:** Accepted
+- **Context:** The mock issuer's pre-authorized token is rejected by its credential endpoint, while the official Collab eSignet client can obtain correctly configured authorization-code tokens. The deployed Verify v2 endpoint also uses DCQL response shapes newer than the checked-out documentation.
+- **Decision:** Use authorization code with PKCE and the issuer nonce endpoint for the Phase 1 Reference Wallet baseline. Present JSON-LD with an Ed25519 linked-data holder proof expressed as `did:key`, and present SD-JWT with an EdDSA key-binding JWT. For DCQL direct post, map each credential-query id to an array and omit `presentation_submission`.
+- **Alternatives considered:** Treat the broken pre-authorized path as a blocker; bypass holder proof; use the guest Inji Web download as if it were persistent wallet storage.
+- **Why this one:** It proves real, holder-bound issuance and verification for both mandatory formats against the deployed services without hiding the separate Collab defect or overstating Inji Web support.
+- **Trade-off accepted:** The automation uses a Reference Wallet and the official public Collab client configuration. It does not prove an all-Inji SD-JWT presentation because current Inji Web does not implement it.
+- **Revisit if:** Collab fixes pre-authorized issuance, Verify accepts `did:jwk` presentation proofs, or Inji Web adds SD-JWT presentation.
+- **Affects:** `spikes/collab-reference-wallet.mjs`, Phase 1 fixtures, `PHASE0_1.md`, future issuer/wallet/verifier adapters.
 
 ### D-021 · Use mobile or Reference Wallet for the Phase 1 presentation leg
 - **Date:** 2026-10-20   **Status:** Accepted

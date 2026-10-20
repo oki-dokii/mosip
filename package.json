@@ -1,0 +1,20 @@
+{
+  "name": "inji-interoperability-playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test spikes/*.test.mjs",
+    "spike:contracts": "node spikes/collab-contract-spike.mjs",
+    "spike:wallet": "node spikes/collab-reference-wallet.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@digitalbazaar/ed25519-signature-2020": "5.4.0",
+    "@digitalbazaar/ed25519-verification-key-2020": "4.2.0",
+    "jose": "6.2.13",
+    "jsonld": "9.0.0",
+    "jsonld-signatures": "11.6.0"
+  }
+}

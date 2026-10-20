@@ -2,7 +2,7 @@
 
 How code travels between files and functions: **entry points, order of execution, and who calls whom.**
 
-> **Status: PLANNED.** No code exists yet. Every name below is the intended design from `BACKEND.md` and `TRD.md`. When code is written or changed, update the matching section **in the same change** and flip its status (`planned` → `implemented`) or correct the name. A name here that does not exist in the code is a bug in this document.
+> **Status: SPIKES IMPLEMENTED; APPLICATION PLANNED.** The Phase 1 spike entry points below exist. The application names remain the intended design from `BACKEND.md` and `TRD.md`. When code is written or changed, update the matching section **in the same change** and flip its status (`planned` → `implemented`) or correct the name.
 
 Legend: `file → function()` means "this function in that file". `A ⇒ B` means A calls B. Status: 🟦 planned · 🟩 implemented · 🟥 changed from plan (explain in decisions.md).
 
@@ -20,8 +20,16 @@ Legend: `file → function()` means "this function in that file". `A ⇒ B` mean
 ⇒ print a sanitized capability summary
 
 `node --test spikes/collab-contracts.test.mjs`
-⇒ load `spikes/fixtures/collab-contracts-2026-10-20.json`
-⇒ assert the pinned adapter contract and reject secret-bearing fields/JWT values
+⇒ load the contract, JSON-LD, and SD-JWT fixtures in `spikes/fixtures`
+⇒ assert the pinned adapter contracts, both successful verification results, and reject secret-bearing fields/JWT values
+
+`node spikes/collab-reference-wallet.mjs`
+⇒ read the official public Collab client configuration from `OFFICIAL_POSTMAN_ENV_PATH`
+⇒ complete eSignet authorization code with PKCE and obtain the issuer nonce
+⇒ issue JSON-LD by default, or SD-JWT through environment-selected configuration
+⇒ build an Ed25519 presentation proof or SD-JWT key-binding JWT
+⇒ submit the DCQL response and fetch the Verify v2 result
+⇒ print only a sanitized status summary
 
 | Entry | File | What starts it | Status |
 |---|---|---|---|
@@ -222,3 +230,4 @@ When you change code:
 | 2026-10-17 | Initial planned flow | design phase |
 | 2026-10-20 | Added completed Collab contract spike entry point; adapter recording replaces mandatory proxy routing | implementation |
 | 2026-10-20 | Added token/JWKS diagnostics, Verify cancellation lifecycle, and sanitized contract fixture test | implementation |
+| 2026-10-20 | Added the headless authorization-code Reference Wallet flow for JSON-LD and SD-JWT issuance, holder proof, DCQL direct post, and Verify results | implementation |

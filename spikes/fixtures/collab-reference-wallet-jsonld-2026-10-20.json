@@ -1,0 +1,33 @@
+{
+  "csrfStatus": 200,
+  "oauthDetailsStatus": 200,
+  "tokenStatus": 200,
+  "tokenIncludesNonce": true,
+  "tokenClaimNonceMatchesResponse": true,
+  "tokenIssuerConfigured": true,
+  "tokenAudienceConfigured": true,
+  "nonceEndpointStatus": 200,
+  "nonceEndpointMatchesTokenNonce": false,
+  "credentialStatus": 200,
+  "nonceRefreshRequired": false,
+  "credentialReturned": true,
+  "verification": {
+    "createStatus": 201,
+    "requestObjectStatus": 200,
+    "holderKeyMatchesCredential": true,
+    "holderProofType": "Ed25519Signature2020",
+    "holderProofChallengeMatches": true,
+    "holderProofDomainMatches": true,
+    "submissionStatus": 200,
+    "resultStatus": 200,
+    "allChecksSuccessful": true,
+    "credentialChecksSuccessful": true,
+    "credentialProofValid": true,
+    "holderProofValid": true,
+    "resultKeys": [
+      "transactionId",
+      "allChecksSuccessful",
+      "credentialResults"
+    ]
+  }
+}

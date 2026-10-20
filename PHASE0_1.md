@@ -1,7 +1,7 @@
 # Phase 0 and Phase 1: baseline and contract spikes
 
 **Started:** 2026-10-20  
-**Status:** In progress
+**Status:** Complete
 
 ## Problem statement in plain language
 
@@ -66,6 +66,16 @@ Observed against `https://injiverify.collab.mosip.net/v1/verify` on 2026-10-20:
 - A live JSON-LD request created by Inji Verify reached Inji Web's `/user/authorize` route. Inji Web recognized it as a credential-sharing request but required `Continue With Google`; guest presentation was unavailable and the earlier guest download was not retained as a wallet credential.
 - The official Inji Web source at commit `a9f4f829d3070be34ae11649327ea1561e123a2b` confirms OpenID4VP presentation is limited to JSON-LD and that SD-JWT presentation is still pending. Its presentation APIs operate on a persistent wallet id and stored credentials.
 
+### Reference Wallet end-to-end proof on Collab
+
+- The headless Reference Wallet uses the official public `wallet-demo` Collab client, authorization code with PKCE, the documented synthetic identity, and fresh in-memory Ed25519 holder keys. The official Postman environment supplies the public test client configuration at runtime; no client key, identity value, OTP, access token, credential, or holder key is committed.
+- Authorization-code issuance succeeds for `FarmerCredential_VCDM2.0` at the Farmer issuer and `MockVerifiableCredential_SD_JWT` at the mock issuer. This provides a working path while the mock issuer's separate pre-authorized token path remains misconfigured.
+- The token response nonce is not the nonce accepted by either credential endpoint. Calling the issuer's advertised `/v1/certify/nonce` endpoint produces the accepted nonce.
+- The Reference Wallet creates an `Ed25519Signature2020` JSON-LD presentation with the Verify request's nonce and client id as challenge and domain. It uses the holder's equivalent `did:key` verification method because the deployed Verify service rejects a presentation proof expressed as `did:jwk`.
+- For SD-JWT, the wallet adds an EdDSA key-binding JWT containing the request audience, nonce, and `sd_hash`.
+- The deployed v2/DCQL direct-post response is a JSON object from credential-query id to an array of tokens. It rejects `presentation_submission` for DCQL, despite the checked-out Verify documentation describing that field for presentation-definition flows.
+- Both formats returned HTTP 200 from issuance, direct post, and `/v2/vp-results`. Verify reported `allChecksSuccessful: true`, a valid credential proof, a valid holder proof, and a holder key matching the issued credential.
+
 ## Consequences for implementation
 
 1. Discover service capabilities from live metadata/OpenAPI and save a versioned snapshot; do not assume paths from old examples.
@@ -84,10 +94,25 @@ node spikes/collab-contract-spike.mjs
 
 The script creates only short-lived synthetic offers and requests. It prints a sanitized capability summary and never prints or writes access tokens, pre-authorized codes, credentials, or private keys.
 
-The pinned sanitized fixture is `spikes/fixtures/collab-contracts-2026-10-20.json`. Validate it with:
+The pinned sanitized fixtures are `spikes/fixtures/collab-contracts-2026-10-20.json`, `spikes/fixtures/collab-reference-wallet-jsonld-2026-10-20.json`, and `spikes/fixtures/collab-reference-wallet-sdjwt-2026-10-20.json`. Validate them with:
 
 ```bash
 node --test spikes/collab-contracts.test.mjs
+```
+
+Run the end-to-end Reference Wallet with the official Certify Postman environment clone kept outside this repository:
+
+```bash
+OFFICIAL_POSTMAN_ENV_PATH=/path/to/inji-certify-with-mock-identity.postman_environment.json \
+MOCK_OTP=<official-public-mock-otp> \
+node spikes/collab-reference-wallet.mjs
+
+CERTIFY_BASE_URL=https://injicertify-mock.collab.mosip.net \
+CREDENTIAL_CONFIGURATION_ID=MockVerifiableCredential_SD_JWT \
+CREDENTIAL_FORMAT=dc+sd-jwt \
+OFFICIAL_POSTMAN_ENV_PATH=/path/to/inji-certify-with-mock-identity.postman_environment.json \
+MOCK_OTP=<official-public-mock-otp> \
+node spikes/collab-reference-wallet.mjs
 ```
 
 Optional endpoint overrides:
@@ -103,14 +128,14 @@ node spikes/collab-contract-spike.mjs
 
 - [x] Live Certify metadata discovered.
 - [x] Synthetic pre-authorized offer created and token endpoint confirmed.
-- [ ] Credential request accepted. The repeatable script currently records `fresh_pre_authorized_token_rejected` with HTTP 401 for both required formats on Collab.
+- [x] Credential request accepted for both required formats through authorization code with PKCE. The mock issuer's separate pre-authorized path remains a recorded Collab defect.
 - [x] Live Verify OpenAPI discovered.
 - [x] Synthetic v2/DCQL VP request created and signed request object fetched.
 - [x] Live Mimoto OpenAPI and issuer catalog discovered.
 - [x] A real Inji Web issuer candidate selected (`Farmer`, JSON-LD, authorization code).
 - [x] Complete `FarmerCredential_VCDM2.0` issuance and download in Inji Web using the official public Collab test identity.
-- [ ] The selected Inji wallet consumes the Verify request and submits a VP.
-- [ ] Verify returns a result for both `dc+sd-jwt` and `ldp_vc`.
+- [x] The Reference Wallet consumes the signed Verify request and submits holder-bound presentations. Inji Web's persistent-login boundary is separately pinned below.
+- [x] Verify returns a successful result for both `dc+sd-jwt` and `ldp_vc`.
 - [x] Inji Web presentation capability isolated: JSON-LD requires a logged-in persistent wallet; guest presentation is unavailable; SD-JWT presentation is not implemented upstream.
 - [x] Verify request cancellation lifecycle confirmed through submission, status, and result-error APIs.
 - [x] Sanitized contract fixtures are saved and covered by an automated secret-safety test.
