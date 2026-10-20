@@ -14,6 +14,8 @@ test("fixture pins the deployed Phase 1 contracts", () => {
   assert.equal(fixture.verify.queryLanguage, "DCQL");
   assert.equal(fixture.verify.observedCancellationLifecycle.status, "VP_SUBMITTED");
   assert.deepEqual(fixture.mimoto.candidate.grantTypes, ["authorization_code"]);
+  assert.equal(fixture.mimoto.observedIssuance.credentialConfiguration, "FarmerCredential_VCDM2.0");
+  assert.equal(fixture.mimoto.observedIssuance.downloadSucceeded, true);
 });
 
 test("fixture contains no secret-bearing fields or JWT-like values", () => {

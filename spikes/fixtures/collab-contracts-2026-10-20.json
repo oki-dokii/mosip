@@ -53,6 +53,14 @@
         "FarmerCredential_VCDM2.0",
         "FarmerCredential"
       ]
+    },
+    "observedIssuance": {
+      "wallet": "Inji Web guest mode",
+      "credentialConfiguration": "FarmerCredential_VCDM2.0",
+      "grantType": "authorization_code",
+      "pkce": true,
+      "downloadSucceeded": true,
+      "authorizationClientLabel": "Land Registry Client"
     }
   },
   "verify": {

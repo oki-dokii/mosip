@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-020 · Use the official Collab test identity for assisted Inji Web issuance
+- **Date:** 2026-10-20   **Status:** Accepted
+- **Context:** Every issuer exposed to Inji Web uses the authorization-code grant, so a real wallet issuance test requires an eSignet login.
+- **Decision:** Use the public test identity and mock OTP documented in Certify's official Docker quickstart to test the Farmer JSON-LD flow in guest mode. Save only a redacted success screenshot and sanitized contract facts.
+- **Alternatives considered:** Ask for a private test identity (unnecessary); treat catalog discovery as issuance success (does not prove the flow); wait for the broken pre-authorized Collab endpoint (tests a different integration path).
+- **Why this one:** It is the upstream-supported test path and completed a real `FarmerCredential_VCDM2.0` download without user or production data.
+- **Trade-off accepted:** The assisted browser step is not yet automated, and a downloaded credential does not establish OpenID4VP presentation support.
+- **Revisit if:** A dedicated automated Collab identity or stable pre-authorized deployment becomes available.
+- **Affects:** P-001, P-002, P-004, `PHASE0_1.md`, `spikes/fixtures/*`.
+
 ### D-019 · Treat Collab pre-authorized credential rejection as an environment blocker
 - **Date:** 2026-10-20   **Status:** Accepted
 - **Context:** Collab's pre-authorized endpoint returns access tokens for both advertised `dc+sd-jwt` and `ldp_vc` configurations that its own credential endpoint rejects with HTTP 401.

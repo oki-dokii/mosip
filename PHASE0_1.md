@@ -59,7 +59,10 @@ Observed against `https://injiverify.collab.mosip.net/v1/verify` on 2026-10-20:
 - The current Mimoto OpenAPI exposes `/issuers`, `/issuers/{issuer-id}`, and `/issuers/{issuer-id}/configuration`; the older `/credentialTypes` route returns 404.
 - The public issuer catalog contained nine issuers during the spike but did not contain the `injicertify-mock` service used by the automated pre-authorized spike.
 - `Farmer` is available and advertises two JSON-LD credential configurations through an authorization-code flow. It is the current first candidate for the real Inji Web issuance test.
-- A browser spike confirmed the guest wallet lists Farmer, shows both advertised credential choices, and generates a PKCE authorization request to eSignet. Completing issuance now requires a Collab test UIN/VID and OTP. The authorization page identifies the shared client as `Land Registry Client`, which should be checked as a possible configuration-label mismatch.
+- A browser run using the public test identity and mock OTP documented in Certify's official quickstart completed `FarmerCredential_VCDM2.0` issuance. Inji Web reported success and downloaded the rendered Farmer ID Card.
+- The flow is guest wallet → Farmer → Farmer ID Card → eSignet authorization code with PKCE → Mimoto/Certify credential download. The authorization page identifies the shared client as `Land Registry Client`, confirming a configuration-label mismatch worth reporting.
+- This proves real Inji Web issuance and download for JSON-LD. It does not prove wallet storage or OpenID4VP presentation; those remain separate checkpoints.
+- A redacted success screenshot is saved at `spikes/fixtures/inji-web-farmer-success.png`. No test identifier, OTP, authorization code, or credential is stored in the repository.
 
 ## Consequences for implementation
 
@@ -103,7 +106,7 @@ node spikes/collab-contract-spike.mjs
 - [x] Synthetic v2/DCQL VP request created and signed request object fetched.
 - [x] Live Mimoto OpenAPI and issuer catalog discovered.
 - [x] A real Inji Web issuer candidate selected (`Farmer`, JSON-LD, authorization code).
-- [ ] Complete Farmer issuance in Inji Web. Browser flow reaches eSignet; a Collab test UIN/VID and OTP are required.
+- [x] Complete `FarmerCredential_VCDM2.0` issuance and download in Inji Web using the official public Collab test identity.
 - [ ] The selected Inji wallet consumes the Verify request and submits a VP.
 - [ ] Verify returns a result for both `dc+sd-jwt` and `ldp_vc`.
 - [x] Verify request cancellation lifecycle confirmed through submission, status, and result-error APIs.
