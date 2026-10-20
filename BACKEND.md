@@ -127,11 +127,11 @@ apps/bff/
 | `POST /tools/decode` | Decode a pasted JWT, SD-JWT or JSON-LD credential. |
 | `POST /tools/qr-probe` | Measure payload size against QR limits. |
 
-### 2.5 Tap routes (internal, used as base URLs by clients)
+### 2.5 Optional Tap routes
 
 | Route | Meaning |
 |---|---|
-| `ANY /tap/:runId/:service/*` | Forward to the real service, record the exchange against `runId`. |
+| `ANY /tap/:runId/:service/*` | Optional forwarding for a client/flow whose signed values remain unchanged; record the exchange against `runId`. |
 
 `:service ∈ certify | mimoto | verify | esignet | mockIssuer | mockVerifier`. Clients that can send headers may use `/tap/:service/*` with `X-Playground-Run-Id`.
 
@@ -170,7 +170,7 @@ Bodies are not pushed over the socket; the UI fetches `GET /runs/:id/exchanges` 
 ## 4. Orchestrator behaviour
 
 1. `runService.create` validates the body, checks the combination is supported, inserts `runs` (status `pending`) and snapshots `service_versions`.
-2. `runOrchestrator.start(runId)` resolves three drivers via `drivers/registry.ts` and builds a `RunContext` (ids, base URLs through the Tap, per-run keys, emitters).
+2. `runOrchestrator.start(runId)` resolves three version-aware drivers via `drivers/registry.ts` and builds a `RunContext` (ids, discovered capabilities, original service URLs, per-run keys, recorder and emitters).
 3. Steps run in order (`steps.ts`). Each step: insert/update `run_steps`, emit `step:started`, call the driver, store results, emit `step:finished`.
 4. After `PRESENT_RESULT`, `outcome.ts` compares `expected_outcome` with the verifier's outcome and sets `actual_outcome`, `status` (`passed` / `failed`).
 5. `reportService` builds the report; `run:finished` is emitted.
@@ -204,16 +204,16 @@ interface VerifierDriver { createRequest(ctx): Promise<VpRequest>;
                            getResult(ctx, txnId): Promise<VerifyResult>; }
 ```
 
-Mapping to Inji Verify (confirm shapes against its OpenAPI during Spike M0):
+Mapping to the current Inji Verify Collab contract discovered on 2026-10-20:
 
 | Driver call | Inji Verify endpoint |
 |---|---|
-| `createRequest` | `POST {verify}/vp-request` (client id, presentation definition) |
-| `present` (by wallet) | `POST {verify}/vp-submission/direct-post` |
+| `createRequest` | `POST {verify}/v2/vp-request` (client id and DCQL query) |
+| `present` (by wallet) | `POST {verify}/v2/vp-submission/direct-post` |
 | `pollStatus` | `GET {verify}/vp-request/{requestId}/status` (ACTIVE, VP_SUBMITTED, EXPIRED) |
 | `getResult` | `GET {verify}/vp-result/{transactionId}` |
 
-Mapping to Certify and Mimoto: see the open decision P-001; endpoints will be filled in after the spike. Known today: Certify credential endpoint `/v1/certify/issuance/credential`; Mimoto issuer lists under `/residentmobileapp/issuers`.
+Current Collab Certify mapping: root `/.well-known/openid-credential-issuer`, `/v1/certify/pre-authorized-data`, `/v1/certify/credential-offer-data/{id}`, `/v1/certify/oauth/token`, `/v1/certify/nonce`, and `/v1/certify/issuance/credential`. Current Mimoto discovery uses `/v1/mimoto/issuers` and `/v1/mimoto/issuers/{issuer-id}/configuration`; the older `/credentialTypes` route is absent. Version-specific adapters must use discovered contracts rather than assuming these paths for every deployment.
 
 ---
 

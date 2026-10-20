@@ -79,7 +79,7 @@ The playground sits **in front of** existing Inji services. It does not replace 
 - No mobile device is required for any P0 or P1 requirement.
 
 ### 2.4 Constraints
-- Inji Certify implements OpenID4VCI draft 13; Inji Verify implements OpenID4VP draft 21. The playground must speak those drafts, not newer ones.
+- Protocol versions and API generations differ by deployed release. The playground discovers and records capabilities, selects a version-specific adapter, and reports the exact contract tested. The 2026-10-20 Collab baseline exposes Certify's current OpenID4VCI metadata and Inji Verify's v2/DCQL OpenID4VP API.
 - Local Inji Web gives CORS errors against a remote Mimoto, so calls go through a proxy.
 - Test data only. No real personal data is stored.
 
@@ -208,9 +208,9 @@ The playground sits **in front of** existing Inji services. It does not replace 
 ### 5.1 Interfaces to Inji services (as understood today)
 | Service | Interface used | Notes |
 |---|---|---|
-| Inji Verify service | `POST /vp-request`, `GET /vp-request/{requestId}/status`, `POST /vp-submission/direct-post`, `GET /vp-result/{transactionId}` | Status values include ACTIVE, VP_SUBMITTED, EXPIRED. OpenID4VP draft 21. Base path commonly `/v1/verify`. |
-| Inji Certify | OpenID4VCI draft 13 endpoints, e.g. `/v1/certify/issuance/credential`, plus issuer metadata and token endpoints | **⚠ OPEN P-001:** which offer/grant flows are available. |
-| Mimoto | `GET /residentmobileapp/issuers`, `/issuers/{id}`, `/issuers/{id}/credentialTypes` (default local port 8099) | Backend for Inji Web and Inji Wallet. |
+| Inji Verify service | Current Collab: `POST /v2/vp-request`, `GET /v2/vp-request/{requestId}`, `POST /v2/vp-submission/direct-post`, status and result endpoints | Current requests use DCQL and signed request objects. A legacy adapter may retain presentation-definition support for older releases. |
+| Inji Certify | Root issuer metadata plus pre-authorized data, offer retrieval, token, nonce and credential endpoints | Pre-authorized offer/token flow confirmed on Collab; final credential request currently returns HTTP 401 and remains under investigation. |
+| Mimoto | Current Collab: `GET /v1/mimoto/issuers`, `/issuers/{id}`, `/issuers/{id}/configuration` | Backend for Inji Web and Inji Wallet. The old `/credentialTypes` route is absent from the deployed contract. |
 | Inji Web | Browser UI that uses Mimoto | Local run needs Node 18 and a proxy to avoid CORS. |
 
 ### 5.2 Playground APIs
@@ -230,8 +230,8 @@ Defined in DATABASE.md. Summary: runs, run steps, exchanges, credentials, verifi
 
 | # | Criterion | Covers |
 |---|---|---|
-| A1 | With all Inji roles selected and format SD-JWT VC, a user completes issue → present → verify and sees a Valid result. | FR-10..FR-34 |
-| A2 | The same with W3C VC JSON-LD. | FR-12, FR-34 |
+| A1 | With Inji Certify, a real Inji wallet (Web or mobile), Inji Verify and JSON-LD selected, a user completes issue → present → verify and sees a Valid result. | FR-10..FR-34 |
+| A2 | A second all-Inji run completes with SD-JWT using an Inji wallet version that supports SD-JWT presentation. A Reference Wallet result is reported separately and cannot satisfy this criterion. | FR-12, FR-34 |
 | A3 | The inspector shows the offer, token exchange, credential response, `presentation_definition`, `vp_token` and result JSON for the run. | FR-40..FR-42 |
 | A4 | A report exists for the run with all required fields and can be downloaded as Markdown and JSON. | FR-50, FR-51 |
 | A5 | No secret appears in the UI or database in clear text. | FR-43, NFR-05 |

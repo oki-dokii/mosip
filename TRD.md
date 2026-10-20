@@ -27,7 +27,7 @@
 ```
 
 Core ideas:
-1. **The Tap sees everything.** Every service base URL the playground hands to a client points at `/tap/<service>/…`. The Tap forwards the call and records it. This works the same whether the caller is the Reference Wallet, the BFF itself, or Inji Web in a browser.
+1. **Adapters record authoritative boundaries.** Issuer, wallet and verifier adapters record the exact requests and responses they exchange. Proxy capture is added only for flows proven to tolerate it without changing signed issuer, audience, DID, request URI or redirect values.
 2. **Drivers hide differences.** The orchestrator runs a fixed list of steps; each role has interchangeable drivers (Certify vs mock issuer, Reference Wallet vs Inji Web–assisted, Verify vs mock verifier).
 3. **The recorded exchanges are the single source of truth.** The inspector, sequence diagram, report and history are all derived from stored exchanges and steps.
 
@@ -49,7 +49,7 @@ Reasons and trade-offs for each are logged in `decisions.md`.
 | BFF | Node 20 + Express 4 | |
 | Validation | Zod, schemas shared via `packages/shared` | |
 | Live events | Socket.IO (rooms per run) | |
-| HTTP proxy | `http-proxy-middleware` | Tap forwarding |
+| HTTP proxy | `http-proxy-middleware` | Optional capture for compatible browser flows; not the primary recorder |
 | HTTP client | `undici` (built into Node) | Used by drivers; also routed through the Tap |
 | Crypto/JWT | `jose` | JWS/JWT signing and verification |
 | SD-JWT | `@sd-jwt/sd-jwt-vc` (and `@sd-jwt/core`) | Disclosures, key-binding |
@@ -90,15 +90,15 @@ interface VerifierDriver { createRequest(ctx): Promise<VpRequest>; status(ctx, i
 | Issuer | `mockIssuer` | Calls the mock external issuer container |
 | Wallet | `referenceWallet` | Headless client: fetches metadata, exchanges code for token, builds proof of possession, requests credential; builds `vp_token` and posts it to the verifier |
 | Wallet | `injiWebAssisted` | The user acts in Inji Web; the driver waits for Tap-observed calls and advances the run. ⚠ P-002 for presentation. |
-| Verifier | `injiVerify` | `POST /vp-request`, poll `/vp-request/{id}/status`, `GET /vp-result/{txnId}` |
+| Verifier | `injiVerify` | Version-aware adapter; current Collab uses `POST /v2/vp-request` with DCQL, signed request retrieval, v2 submission, status and result endpoints |
 | Verifier | `mockVerifier` | Mock external OpenID4VP verifier |
 
-### 3.3 Tap (`apps/bff/src/tap`)
-- Route: `ANY /tap/:service/*` where `:service ∈ {certify, mimoto, verify, mockIssuer, mockVerifier, esignet}`.
-- Reads the run id from the `X-Playground-Run-Id` header or from a per-run path prefix (`/tap/:runId/:service/*`) for clients that cannot add headers (Inji Web).
-- Recorder stores method, URL, redacted headers, bodies (size-capped), status, timing and the actor pair.
-- Redaction removes or hashes `Authorization`, `access_token`, `pre-authorized_code`, `refresh_token`, `c_nonce` where needed, private JWK fields.
-- Emits `exchange:recorded` through the WebSocket gateway.
+### 3.3 Recorder and optional Tap (`apps/bff/src/recorder`, `apps/bff/src/tap`)
+- Drivers call the recorder around external exchanges, preserving the original protocol URL and payload.
+- The recorder stores method, URL, redacted headers, size-capped bodies, status, timing, provenance and actor pair.
+- Redaction removes or hashes `Authorization`, `access_token`, `pre-authorized_code`, `refresh_token`, `c_nonce` where needed, and private JWK fields before persistence.
+- An optional Tap route may observe compatible browser flows after a contract test proves that proxying requires no signed-value rewriting.
+- Recording emits `exchange:recorded` through the WebSocket gateway.
 
 ### 3.4 Reference Wallet (`apps/bff/src/wallet`)
 - OpenID4VCI draft 13 client: issuer metadata → token request → proof JWT (`openid4vci-proof+jwt`) → credential request → store.
@@ -134,7 +134,7 @@ Described in UIUX.md. Key modules: `pages/Playground`, `components/RoleSelector`
 
 | Variable | Purpose |
 |---|---|
-| `CERTIFY_BASE_URL`, `MIMOTO_BASE_URL`, `VERIFY_BASE_URL`, `ESIGNET_BASE_URL` | Real service URLs (local or Collab) |
+| `CERTIFY_BASE_URL`, `MIMOTO_BASE_URL`, `VERIFY_BASE_URL`, `ESIGNET_BASE_URL` | Real service URLs (local or Collab); adapters discover capabilities from metadata/OpenAPI |
 | `MOCK_ISSUER_BASE_URL`, `MOCK_VERIFIER_BASE_URL` | Mock services |
 | `PUBLIC_BASE_URL` | Public URL used in QR codes and callbacks (ngrok or reverse proxy when needed) |
 | `DATABASE_URL` | Postgres connection |

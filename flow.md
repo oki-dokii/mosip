@@ -10,6 +10,14 @@ Legend: `file → function()` means "this function in that file". `A ⇒ B` mean
 
 ## 1. Entry points
 
+### Contract spike 🟩
+
+`node spikes/collab-contract-spike.mjs`
+⇒ discover live Certify metadata and Verify OpenAPI
+⇒ execute a synthetic Certify pre-authorized issuance
+⇒ create and retrieve a synthetic Verify v2/DCQL request
+⇒ print a sanitized capability summary
+
 | Entry | File | What starts it | Status |
 |---|---|---|---|
 | BFF process | `apps/bff/src/server.ts` | `node dist/server.js` (Docker `CMD`) | 🟦 |
@@ -207,3 +215,4 @@ When you change code:
 | Date | Change | By |
 |---|---|---|
 | 2026-10-17 | Initial planned flow | design phase |
+| 2026-10-20 | Added completed Collab contract spike entry point; adapter recording replaces mandatory proxy routing | implementation |

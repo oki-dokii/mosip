@@ -44,15 +44,45 @@ Version 0.1 · started 2026-10-17
 
 | ID | Question | Why it matters | Owner | How to resolve | Status |
 |---|---|---|---|---|---|
-| P-001 | Which Inji Certify issuance flow can be driven headlessly: authorization code via eSignet, or pre-authorized code? Public docs we read disagree on pre-authorized support. | Decides the Certify issuer driver and the Reference Wallet token step | Role A | Spike (Day 1): read Certify's issuer metadata and run a real issuance in the target environment; record requests as fixtures | Open |
+| P-001 | Which Inji Certify issuance flow can be driven headlessly: authorization code via eSignet, or pre-authorized code? | Decides the Certify issuer driver and the Reference Wallet token step | Role A | Live Collab spike | Partly resolved by D-018: pre-authorized offer/token/nonce work; credential call returns 401 |
 | P-002 | Can Inji Web present credentials through OpenID4VP, or only download/hold? | Decides whether "Inji Web (assisted)" can cover presentation or only issuance | Role A | Spike: try a presentation from Inji Web to Verify; capture traffic | Open |
-| P-003 | What exact `vp_token` and submission shape does Inji Verify accept (draft 21, `direct_post`)? | Reference Wallet must send an acceptable VP | Role A/D | Capture traffic from a working client (Inji Wallet or Verify UI flow); compare against Verify's OpenAPI | Open |
-| P-004 | Which credential formats and proof types does the target Verify and Certify version support for presentation and issuance? | Fills the compatibility table behind FR-14 | Role A | Read `/meta` data from each service and test each format once | Open |
-| P-005 | Will the playground run against local Inji services or the Collab sandbox for the demo? | Affects base URLs, CORS/ngrok needs and flakiness | Team | Decide after M0 based on setup effort | Open |
+| P-003 | What exact `vp_token` and submission shape does the current Inji Verify accept? | Reference Wallet must send an acceptable VP | Role A/D | Capture a working Inji wallet submission against the discovered v2/DCQL request | Partly resolved by D-018: request and response URI known; submission body remains open |
+| P-004 | Which credential formats and proof types does the target Verify and Certify version support end to end? | Fills the compatibility table behind FR-14 | Role A | Test each advertised format with a real wallet and verifier | Partly resolved by D-018: advertised capabilities captured; end-to-end results open |
+| P-005 | Will the playground run against local Inji services or the Collab sandbox for the demo? | Affects base URLs, CORS/ngrok needs and flakiness | Team | Phase 0 decision | Resolved by D-016: Collab first, local fallback/mocks |
 
 ---
 
 ## Log
+
+### D-018 · Discover and pin deployed protocol contracts
+- **Date:** 2026-10-20   **Status:** Accepted
+- **Context:** The repository planned against legacy Certify discovery and Inji Verify presentation-definition endpoints, while the Collab deployment has moved.
+- **Decision:** Read issuer metadata and service OpenAPI at startup/spike time, save sanitized versioned fixtures, and select a version-specific adapter. The current Collab baseline is Certify root discovery plus separate nonce endpoint, and Verify v2 with DCQL.
+- **Alternatives considered:** Hard-code paths from repository documents (already returned 404); support only the latest contract without identifying it (makes regressions hard to explain).
+- **Why this one:** The playground must report what was actually tested and survive differences between releases.
+- **Trade-off accepted:** Adapter and fixture maintenance across versions.
+- **Revisit if:** Inji publishes and maintains one stable compatibility contract across deployed releases.
+- **Affects:** P-001, P-003, P-004, `PHASE0_1.md`, `spikes/collab-contract-spike.mjs`, `drivers/*`.
+
+### D-017 · Capture protocol exchanges at adapters before adding a transparent Tap
+- **Date:** 2026-10-20   **Status:** Accepted
+- **Context:** Rewriting traffic through `/tap/...` can alter signed issuer identifiers, audiences, DIDs, request URIs, redirect URIs, and QR payloads.
+- **Decision:** Record outbound and inbound protocol data at issuer, wallet, and verifier adapters. Add proxy capture only for a client and flow proven to tolerate it without rewriting signed values.
+- **Alternatives considered:** Force every request through a rewriting proxy (complete view but can invalidate messages); packet capture (hard to associate with runs and encrypted traffic).
+- **Why this one:** It gives the inspector trustworthy payloads without changing the protocol under test.
+- **Trade-off accepted:** Browser/mobile internals may be represented only by boundary messages unless the client exposes diagnostics.
+- **Revisit if:** A no-rewrite observability proxy can preserve every signed URL and payload for the pinned releases.
+- **Affects:** D-003, FR-40..44, `TRD.md`, `BACKEND.md`.
+
+### D-016 · Phase 0 targets Collab, Inji Web, and a one-week MVP
+- **Date:** 2026-10-20   **Status:** Accepted
+- **Context:** Implementation needed a concrete target before the integration spikes.
+- **Decision:** Use Collab first, local mocks for the development loop, and prioritize Inji Web as the real wallet. Use Inji Wallet mobile if the pinned Web/Verify combination cannot finish presentation. Optimize for the mandatory one-week team MVP.
+- **Alternatives considered:** Full local stack first (high setup cost); Reference Wallet as the only wallet (does not prove an all-Inji combination); broad P1/P2 scope from day one (risks the required flow).
+- **Why this one:** It reaches a real integration quickly while preserving a credible all-Inji target.
+- **Trade-off accepted:** The first demo depends on Collab availability and may require a mobile fallback.
+- **Revisit if:** Collab is unstable or the target deployment must be fully offline.
+- **Affects:** P-002, P-005, PRD milestones, environments, demo path.
 
 ### D-015 · Test data only, secrets masked before storage
 - **Date:** 2026-10-17   **Status:** Accepted
