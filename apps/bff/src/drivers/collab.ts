@@ -7,6 +7,7 @@ import jsonld from "jsonld";
 import jsigs from "jsonld-signatures";
 import type { RunConfig } from "@playground/shared";
 import type { DriverContext, DriverExchange, DriverResult, DriverSet, IssuerDriver, VerifierDriver, WalletDriver } from "./types.js";
+import { applyCredentialTamper, presentationNonce } from "../tamper/index.js";
 
 const { AuthenticationProofPurpose } = jsigs.purposes;
 
@@ -311,7 +312,7 @@ class CollabWalletDriver implements WalletDriver {
 
   async present(context: DriverContext): Promise<DriverResult> {
     const config = await loadConfig(context);
-    const credential = stateValue<any>(context, STATE.credential);
+    const issuedCredential = stateValue<any>(context, STATE.credential);
     const requestClaims = stateValue<JsonObject>(context, STATE.requestClaims);
     const holderPublicJwk = stateValue<JsonObject>(context, STATE.holderPublicJwk);
     const holderPrivateJwk = stateValue<JWK>(context, STATE.holderPrivateJwk);
@@ -319,26 +320,32 @@ class CollabWalletDriver implements WalletDriver {
     let vpToken: any;
     let holderKeyMatchesCredential = false;
     if (config.credentialFormat === "dc+sd-jwt") {
-      const issuerClaims = decodeJwtPayload(credential.split("~", 1)[0]);
+      const issuerClaims = decodeJwtPayload(issuedCredential.split("~", 1)[0]);
       let boundPublicJwk = issuerClaims.cnf?.jwk;
       if (!boundPublicJwk && issuerClaims.cnf?.kid?.startsWith("did:jwk:")) {
         boundPublicJwk = JSON.parse(Buffer.from(issuerClaims.cnf.kid.slice("did:jwk:".length).split("#", 1)[0], "base64url").toString("utf8"));
       }
       holderKeyMatchesCredential = boundPublicJwk?.kty === holderPublicJwk.kty && boundPublicJwk?.crv === holderPublicJwk.crv && boundPublicJwk?.x === holderPublicJwk.x;
       if (!holderKeyMatchesCredential) throw new Error("Issued SD-JWT is not bound to the holder key");
-      const keyBindingJwt = await createJwt(holderPrivateJwk, { aud: requestClaims.client_id, nonce: requestClaims.nonce, sd_hash: sha256Base64url(credential) }, { alg: "EdDSA", typ: "kb+jwt" });
+      const credential = context.config.tamper
+        ? applyCredentialTamper(issuedCredential, context.config.tamper, context.config.format) as string
+        : issuedCredential;
+      const keyBindingJwt = await createJwt(holderPrivateJwk, { aud: requestClaims.client_id, nonce: presentationNonce(requestClaims.nonce, context.config.tamper), sd_hash: sha256Base64url(credential) }, { alg: "EdDSA", typ: "kb+jwt" });
       vpToken = `${credential}${keyBindingJwt}`;
     } else {
-      const holderId = credential.credentialSubject?.id;
+      const holderId = issuedCredential.credentialSubject?.id;
       if (!holderId?.startsWith("did:jwk:")) throw new Error("Issued credential is not bound to the holder did:jwk");
       const boundPublicJwk = JSON.parse(Buffer.from(holderId.slice("did:jwk:".length).split("#", 1)[0], "base64url").toString("utf8"));
       holderKeyMatchesCredential = boundPublicJwk.kty === holderPublicJwk.kty && boundPublicJwk.crv === holderPublicJwk.crv && boundPublicJwk.x === holderPublicJwk.x;
       if (!holderKeyMatchesCredential) throw new Error("Issued JSON-LD credential is not bound to the holder key");
       const controller = `did:key:${holderKey.fingerprint()}`;
       const presentationKey = await Ed25519VerificationKey2020.from({ ...holderKey.export({ publicKey: true, privateKey: true }), controller, id: `${controller}#${holderKey.fingerprint()}` });
+      const credential = context.config.tamper
+        ? applyCredentialTamper(issuedCredential, context.config.tamper, context.config.format)
+        : issuedCredential;
       vpToken = await jsigs.sign({ "@context": ["https://www.w3.org/ns/credentials/v2"], type: ["VerifiablePresentation"], holder: holderId, verifiableCredential: [credential] }, {
         suite: new Ed25519Signature2020({ key: presentationKey, canonizeOptions: { safe: false } }),
-        purpose: new AuthenticationProofPurpose({ challenge: requestClaims.nonce, domain: requestClaims.client_id }),
+        purpose: new AuthenticationProofPurpose({ challenge: presentationNonce(requestClaims.nonce, context.config.tamper), domain: requestClaims.client_id }),
         documentLoader: jsonld.documentLoaders.node(),
       });
     }
@@ -349,6 +356,7 @@ class CollabWalletDriver implements WalletDriver {
         format: config.credentialFormat,
         holderProofType: config.credentialFormat === "dc+sd-jwt" ? "kb+jwt" : "Ed25519Signature2020",
         holderKeyMatchesCredential,
+        tamper: context.config.tamper,
       }, { accepted: result.status < 300, error: result.body?.error, errorCode: result.body?.errorCode })],
       summary: { holderKeyMatchesCredential, submissionAccepted: result.status < 300 },
     };

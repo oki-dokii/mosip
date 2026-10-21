@@ -85,7 +85,7 @@ app.ts → POST /api/v1/runs
        ⇒ repository.updateRun(passed/failed/errored); emit run:finished
 ```
 
-`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read through the same repository. PostgreSQL records survive BFF restarts; memory records intentionally do not. Negative outcomes and durable reports remain planned.
+`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read through the same repository. PostgreSQL records survive BFF restarts; memory records intentionally do not. Run configuration can select a tamper; the wallet applies it immediately before presentation, and the orchestrator marks the run passed when the verifier's invalid result matches the expected invalid outcome. Replay endpoints and durable reports remain planned.
 
 ### 3.3 Where exchange data is recorded
 
@@ -120,6 +120,8 @@ client request → /tap/:runId/:service/*
 
 `present(ctx)` ⇒ validate credential-to-holder binding ⇒ build JSON-LD `Ed25519Signature2020` VP or SD-JWT `kb+jwt` ⇒ DCQL direct post.
 
+When `config.tamper` is set, `tamper/index.ts → applyCredentialTamper()` changes the credential or presentation nonce before the holder proof is created. The untampered issued credential remains only in per-run memory.
+
 ### 4.3 Inji Web assisted (`drivers/wallet/injiWebAssisted.ts`) 🟦
 `acceptOffer(ctx, offer)` ⇒ emit `action:required (open_inji_web)` ⇒ wait on `tap/recorder.ts → waitForExchange(runId, matcher)` until issuance calls are seen ⇒ read the credential from the recorded response.
 
@@ -135,7 +137,7 @@ Same interfaces, calling `apps/mock-issuer` and `apps/mock-verifier` through the
 
 ## 5. Secondary flows
 
-### 5.1 Replay with tamper
+### 5.1 Replay with tamper 🟦
 `POST /runs/:id/replay` ⇒ `runService.replay(parentId, tamper)` ⇒ new `runs` row with `parent_run_id` ⇒ `runOrchestrator.start()` with steps 1–5 skipped (credential loaded from `credentials`) ⇒ step 7 applies `tamper/index.ts → applyTamper()` ⇒ `outcome.evaluate(expectedFromTamper, actual)`.
 
 ### 5.2 Report download
@@ -203,6 +205,7 @@ Current M1 files:
 | `apps/bff/src/drivers/types.ts` | Issuer, wallet, verifier, and per-run context contracts |
 | `apps/bff/src/drivers/fixture.ts` | Deterministic local driver set |
 | `apps/bff/src/drivers/collab.ts` | Live Certify/eSignet, Reference Wallet, and Verify adapter |
+| `apps/bff/src/tamper/index.ts` | Pure JSON-LD/SD-JWT fault injection and nonce replay simulation |
 | `apps/bff/src/redaction.ts` | Recursive write-time masking |
 | `apps/bff/src/store.ts` | Repository contract plus memory and Prisma implementations |
 | `apps/bff/prisma/schema.prisma` | Implemented PostgreSQL run, step, and exchange schema |

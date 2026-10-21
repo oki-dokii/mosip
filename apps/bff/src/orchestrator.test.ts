@@ -89,4 +89,30 @@ describe("walking-skeleton orchestration", () => {
       summary: { error: "DRIVER_EXECUTION_FAILED" },
     });
   });
+
+  it("passes a tamper run when the verifier returns the expected invalid outcome", async () => {
+    const repository = new MemoryRunRepository();
+    const id = randomUUID();
+    const run: RunSummary = {
+      id,
+      config: { issuer: "inji_certify", wallet: "reference_wallet", verifier: "inji_verify", format: "vc_sd_jwt", flow: "cross_device", tamper: "bad_signature", scenarioId: null },
+      status: "pending",
+      expectedOutcome: "invalid",
+      actualOutcome: null,
+      proofType: "kb+jwt",
+      algorithm: "EdDSA",
+      createdAt: new Date().toISOString(),
+      startedAt: null,
+      finishedAt: null,
+    };
+    await repository.create({ run, steps: createSteps(id), exchanges: [] });
+    const io = { of: () => ({ to: () => ({ emit: () => undefined }) }) } as unknown as Server;
+
+    await runDemo(id, io, repository, 0);
+
+    const stored = await repository.get(id);
+    expect(stored?.run).toMatchObject({ status: "passed", expectedOutcome: "invalid", actualOutcome: "invalid" });
+    expect(stored?.exchanges.find((item) => item.url.includes("direct-post"))?.request)
+      .toMatchObject({ tamper: "bad_signature" });
+  });
 });

@@ -55,6 +55,14 @@ enum VerifyOutcome {
   error
 }
 
+enum TamperKind {
+  expired
+  bad_signature
+  wrong_type
+  missing_disclosure
+  replay_nonce
+}
+
 model Run {
   id              String           @id @db.Uuid
   scenarioId      String?          @map("scenario_id") @db.Uuid
@@ -66,6 +74,7 @@ model Run {
   proofType       String           @map("proof_type")
   algorithm       String
   flow            FlowVariant      @default(cross_device)
+  tamper          TamperKind?
   expectedOutcome VerifyOutcome    @default(valid) @map("expected_outcome")
   actualOutcome   VerifyOutcome?   @map("actual_outcome")
   createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz

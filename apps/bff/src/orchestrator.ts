@@ -102,7 +102,7 @@ export async function runDemo(
       namespace.to(room).emit("step:finished", step);
     }
 
-    record.run.status = actualOutcome === "valid" ? "passed" : "failed";
+    record.run.status = actualOutcome === record.run.expectedOutcome ? "passed" : "failed";
     record.run.actualOutcome = actualOutcome;
   } catch {
     if (activeStep) {

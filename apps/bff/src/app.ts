@@ -66,7 +66,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
       id,
       config: parsed.data,
       status: "pending",
-      expectedOutcome: "valid",
+      expectedOutcome: parsed.data.tamper ? "invalid" : "valid",
       actualOutcome: null,
       proofType: format.proofType,
       algorithm: format.algorithm,

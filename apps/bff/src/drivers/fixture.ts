@@ -82,6 +82,7 @@ class FixtureWalletDriver implements WalletDriver {
         request: {
           format: format(context),
           holder_proof: context.config.format === "ldp_vc" ? "Ed25519Signature2020" : "kb+jwt",
+          tamper: context.config.tamper,
         },
         response: { accepted: true },
       }],
@@ -125,6 +126,7 @@ class FixtureVerifierDriver implements VerifierDriver {
   }
 
   async getResult(_context: DriverContext): Promise<DriverResult> {
+    const invalid = Boolean(_context.config.tamper);
     return {
       exchanges: [{
         actorFrom: "playground",
@@ -134,9 +136,9 @@ class FixtureVerifierDriver implements VerifierDriver {
         status: 200,
         durationMs: 164,
         request: { includeClaims: false, skipStatusChecks: true },
-        response: { allChecksSuccessful: true, credentialProofValid: true, holderProofValid: true },
+        response: { allChecksSuccessful: !invalid, credentialProofValid: !invalid, holderProofValid: !invalid },
       }],
-      summary: { outcome: "valid" },
+      summary: { outcome: invalid ? "invalid" : "valid" },
     };
   }
 }

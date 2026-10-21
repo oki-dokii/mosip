@@ -66,7 +66,7 @@ export class MemoryRunRepository implements RunRepository {
 type StoredRun = Prisma.RunGetPayload<{ include: { steps: true; exchanges: true } }>;
 
 function fromStored(record: StoredRun): RunRecord {
-  if (record.expectedOutcome !== "valid") {
+  if (record.expectedOutcome === "error") {
     throw new Error(`Unsupported expected outcome: ${record.expectedOutcome}`);
   }
   return {
@@ -78,7 +78,7 @@ function fromStored(record: StoredRun): RunRecord {
         verifier: record.verifier,
         format: record.format,
         flow: record.flow,
-        tamper: null,
+        tamper: record.tamper,
         scenarioId: record.scenarioId,
       },
       status: record.status,
@@ -143,6 +143,7 @@ export class PrismaRunRepository implements RunRepository {
         proofType: record.run.proofType,
         algorithm: record.run.algorithm,
         flow: record.run.config.flow,
+        tamper: record.run.config.tamper,
         expectedOutcome: record.run.expectedOutcome,
         actualOutcome: record.run.actualOutcome,
         createdAt: new Date(record.run.createdAt),

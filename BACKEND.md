@@ -111,6 +111,8 @@ apps/bff/
 }
 ```
 
+`tamper` accepts `expired`, `bad_signature`, `wrong_type`, `missing_disclosure`, or `replay_nonce`. A tamper run expects `invalid`; it passes when the verifier rejects the modified presentation as expected.
+
 ### 2.3 Matrix and scenarios
 
 | Method & path | Purpose |

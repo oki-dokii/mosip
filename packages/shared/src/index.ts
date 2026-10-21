@@ -5,6 +5,7 @@ export const walletSchema = z.enum(["reference_wallet", "inji_web_assisted"]);
 export const verifierSchema = z.enum(["inji_verify", "mock_verifier"]);
 export const credentialFormatSchema = z.enum(["ldp_vc", "vc_sd_jwt"]);
 export const flowSchema = z.literal("cross_device");
+export const tamperKindSchema = z.enum(["expired", "bad_signature", "wrong_type", "missing_disclosure", "replay_nonce"]);
 
 export const runConfigSchema = z.object({
   issuer: issuerSchema,
@@ -12,7 +13,7 @@ export const runConfigSchema = z.object({
   verifier: verifierSchema,
   format: credentialFormatSchema,
   flow: flowSchema.default("cross_device"),
-  tamper: z.null().default(null),
+  tamper: tamperKindSchema.nullable().default(null),
   scenarioId: z.string().uuid().nullable().default(null),
 });
 
@@ -24,7 +25,7 @@ export interface RunSummary {
   id: string;
   config: RunConfig;
   status: RunStatus;
-  expectedOutcome: "valid";
+  expectedOutcome: "valid" | "invalid" | "expired";
   actualOutcome: "valid" | "invalid" | "expired" | "error" | null;
   proofType: string;
   algorithm: string;

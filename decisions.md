@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-027 · Apply tamper faults immediately before presentation
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** The playground needs visible negative paths without storing live credentials or reusable tokens. A tamper run must also distinguish a correctly rejected credential from an application failure.
+- **Decision:** Make tamper kind part of the shared run configuration and persist it with the run. Keep the issued credential in per-run memory, derive a modified presentation copy immediately before holder proof creation, and expect `invalid` for all five current faults. Mark a run passed when actual equals expected, including expected-invalid runs.
+- **Alternatives considered:** Persist credentials for later mutation (conflicts with write-time data minimization); alter stored inspector payloads only (does not test the verifier); treat every invalid verifier result as a failed run (cannot express successful negative testing).
+- **Why this one:** It exercises the real verifier boundary, preserves the untampered source during a run, and makes expected-versus-actual semantics useful in both fixture and Collab modes.
+- **Trade-off accepted:** Replay currently starts as a new full run, missing-disclosure behavior can vary by credential claims, and live negative paths still need a configured Collab smoke run.
+- **Revisit if:** Credentials are encrypted for durable replay, scenario-specific expected outcomes are added, or Verify exposes richer invalid/expired classifications.
+- **Affects:** `packages/shared`, `apps/bff/src/tamper`, `apps/bff/src/orchestrator.ts`, `apps/web/src/App.tsx`, PostgreSQL `runs.tamper`, FR-60, FR-61.
+
 ### D-026 · Make verifier submission status an explicit bounded step
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** Inji Verify exposes the presentation result separately from request status. Fetching the result immediately after direct post can race slower deployments and makes waiting invisible in the run timeline.
