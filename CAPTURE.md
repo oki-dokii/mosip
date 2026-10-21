@@ -6,6 +6,8 @@ The capture path accepts a filtered, synthetic browser HAR after a run finishes.
 
 The default origin allowlist covers the Collab Inji Web/Mimoto, Certify, eSignet, and Verify hosts. For a local synthetic stack, set `CAPTURE_ORIGINS_JSON` on the BFF to a JSON object mapping exact origins to `mimoto`, `certify`, `esignet`, or `verify`, for example `{"http://127.0.0.1:9001":"certify"}`. Only HTTPS origins and HTTP loopback origins are accepted. This configuration does not cause the BFF to fetch those URLs.
 
+Entries are ordered by `startedDateTime` before assigning exchange sequence numbers. HAR `time: -1` is accepted as unknown and represented as `durationMs: 0`; do not interpret that as a measured zero-duration request. A JSON body marked `encoding: "base64"` is decoded within the same 128 KiB cap and then redacted. Malformed base64 or malformed JSON is represented by a redaction marker. An invalid entry or untrusted origin still rejects the import; partial imports of malformed HAR files are not implemented.
+
 Recognized protocol paths map to the existing run steps. Unknown paths on an allowlisted origin are skipped. The response gives `imported`, `skipped`, and a capture-gap note. Open the run inspector or `GET /api/v1/runs/:id/exchanges` to see the resulting exchanges. Imported exchanges have `request.source` and `response.source` set to `har_import`; they do not change the run outcome or prove that a wallet stored a credential.
 
 Before storage or Socket.IO emission, the importer replaces path identifiers with route templates, masks every query value, keeps only safe MIME header metadata, masks auth/cookie headers, and keeps only the shape of JSON/form bodies. Protocol enum values from a short allowlist may remain; all other scalar values are masked. The original HAR is never persisted. Parse failures return stable error codes without echoing input.
@@ -25,7 +27,7 @@ The committed [four-service synthetic HAR](apps/bff/src/capture/fixtures/four-se
 
 The fixture does **not** cover `STORE`, `PRESENT_SUBMIT`, `PRESENT_STATUS`, or `PRESENT_RESULT`. Even when those browser calls appear in another HAR, the capture can only prove what the browser sent and received. It cannot see server-to-server Certify/eSignet requests, wallet-local storage or cryptographic operations, native-wallet app traffic, response content encrypted for another party, or calls made before recording began or after it ended. A browser may also omit response bodies from its HAR export. These are evidence boundaries, not failed protocol steps.
 
-The redaction tests assert separate handling for authorization and cookie headers, URL query and path values, JSON and form fields, nested JWK values, malformed JSON and HAR input, stored rows, the inspector API, and Socket.IO summaries. The source HAR is never stored. The PostgreSQL test runs only when `CAPTURE_POSTGRES_TEST_URL` points to a disposable local database; it creates one run, inspects the raw exchange rows, and deletes that run afterward.
+The redaction tests assert separate handling for authorization and cookie headers, URL query and path values, JSON and form fields, nested JWK values, malformed JSON/base64 and HAR input, stored rows, the inspector API, and Socket.IO summaries. The shared exchange redactor also masks common token-name variants, private RSA JWK parameters, bearer strings, compact JWTs, and private PEM strings. The source HAR is never stored. The PostgreSQL test runs only when `CAPTURE_POSTGRES_TEST_URL` points to a disposable local database; it creates one run, inspects the raw exchange rows, and deletes that run afterward.
 
 ```sh
 pnpm --filter @playground/bff exec vitest run src/capture/har.test.ts
@@ -33,4 +35,4 @@ CAPTURE_POSTGRES_TEST_URL='postgresql://playground:playground@127.0.0.1:55433/pl
   pnpm --filter @playground/bff exec vitest run src/capture/har.test.ts
 ```
 
-On 22 October 2026, the targeted suite passed locally with PostgreSQL (`7 tests passed`) and without it (`6 passed, 1 skipped`). The API test emitted four Socket.IO summaries and read four exchanges through the inspector endpoint without any fixture canary. This is synthetic capture proof only. The live Inji Web case remains **unobserved** until the real-wallet workstream supplies traffic and a corresponding verifier result.
+On 22 October 2026, the targeted suite passed locally with PostgreSQL (`8 tests passed`) and without it (`7 passed, 1 skipped`). The API test emitted four Socket.IO summaries and read four exchanges through the inspector endpoint without any fixture canary. This is synthetic capture proof only. The live Inji Web case remains **unobserved** until the real-wallet workstream supplies traffic and a corresponding verifier result.

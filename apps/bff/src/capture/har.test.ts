@@ -116,6 +116,28 @@ describe("passive HAR capture", () => {
     expect(result.exchanges[0]?.request).toMatchObject({ body: "[REDACTED: malformed JSON]" });
     expect(JSON.stringify(result)).not.toContain(secret);
   });
+
+  it("sorts browser entries and redacts base64 bodies with unknown HAR timing", () => {
+    const record = fixture();
+    const encoded = {
+      ...entry("https://verifier.example/vp-request/synthetic"),
+      startedDateTime: "2026-10-22T09:00:02.000Z",
+      time: -1,
+      response: { status: 200, headers: [], content: {
+        mimeType: "application/json", encoding: "base64",
+        text: Buffer.from(JSON.stringify({ nonce: secret, response_mode: "direct_post" })).toString("base64"),
+      } },
+    };
+    const earlier = { ...entry("https://issuer.example/credential"), startedDateTime: "2026-10-22T09:00:01.000Z" };
+    const result = prepareHarImport(wrap(record.run.id, [encoded, earlier]), record, origins);
+    expect(result.exchanges.map(({ actorTo }) => actorTo)).toEqual(["certify", "verify"]);
+    expect(result.exchanges[1]?.durationMs).toBe(0);
+    expect(result.exchanges[1]?.response).toMatchObject({ body: { nonce: "[REDACTED]", response_mode: "direct_post" } });
+    expect(JSON.stringify(result)).not.toContain(secret);
+    const malformed = { ...encoded, response: { ...encoded.response, content: { ...encoded.response.content, text: "not base64!!!" } } };
+    expect(prepareHarImport(wrap(record.run.id, [malformed]), record, origins).exchanges[0]?.response)
+      .toMatchObject({ body: "[REDACTED: malformed base64]" });
+  });
 });
 
 describe("capture API", () => {

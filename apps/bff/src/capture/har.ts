@@ -112,9 +112,20 @@ function body(part: Record<string, unknown>, path: string, redactions: string[])
   const payload = part.postData ?? part.content;
   if (!payload || typeof payload !== "object") return null;
   const data = payload as Record<string, unknown>;
-  const text = data.text;
-  if (typeof text !== "string") return null;
+  const rawText = data.text;
+  if (typeof rawText !== "string") return null;
+  let text: string = rawText;
   if (text.length > 131_072) throw new CaptureError("CAPTURE_ENTRY_TOO_LARGE", 413);
+  if (data.encoding === "base64") {
+    const normalized = text.replace(/\s/g, "");
+    if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(normalized)) {
+      redactions.push(path);
+      return "[REDACTED: malformed base64]";
+    }
+    const decoded = Buffer.from(normalized, "base64");
+    if (decoded.length > 131_072) throw new CaptureError("CAPTURE_ENTRY_TOO_LARGE", 413);
+    text = decoded.toString("utf8");
+  }
   const mime = (String(data.mimeType ?? "").split(";")[0] ?? "").toLowerCase();
   if (mime === "application/json" || mime.endsWith("+json")) {
     try { return bodyShape(JSON.parse(text), path, redactions); }
@@ -153,13 +164,18 @@ export function prepareHarImport(input: unknown, record: RunRecord, origins: Cap
   let seq = Math.max(0, ...record.exchanges.map((exchange) => exchange.seq));
   let skipped = 0;
   const exchanges: Exchange[] = [];
-  for (const rawEntry of log.entries) {
+  const entries = [...log.entries].sort((left, right) => {
+    const leftTime = Date.parse(left?.startedDateTime ?? "");
+    const rightTime = Date.parse(right?.startedDateTime ?? "");
+    return (Number.isFinite(leftTime) ? leftTime : Number.POSITIVE_INFINITY) - (Number.isFinite(rightTime) ? rightTime : Number.POSITIVE_INFINITY);
+  });
+  for (const rawEntry of entries) {
     if (!rawEntry || typeof rawEntry !== "object") throw new CaptureError("CAPTURE_INVALID_HAR");
     const entry = rawEntry as Record<string, unknown>;
     const request = entry.request as Record<string, unknown> | undefined;
     const response = entry.response as Record<string, unknown> | undefined;
     if (!request || !response || typeof request.url !== "string" || typeof request.method !== "string" || !Number.isInteger(response.status) || typeof entry.startedDateTime !== "string" || !Number.isFinite(Date.parse(entry.startedDateTime))) throw new CaptureError("CAPTURE_INVALID_HAR");
-    if (!Number.isFinite(entry.time) || Number(entry.time) < 0 || Number(entry.time) > 120_000 || Number(response.status) < 100 || Number(response.status) > 599) throw new CaptureError("CAPTURE_INVALID_HAR");
+    if (!Number.isFinite(entry.time) || (Number(entry.time) < 0 && Number(entry.time) !== -1) || Number(entry.time) > 120_000 || Number(response.status) < 100 || Number(response.status) > 599) throw new CaptureError("CAPTURE_INVALID_HAR");
     let url: URL;
     try { url = new URL(request.url); } catch { throw new CaptureError("CAPTURE_INVALID_HAR"); }
     const service = origins.get(url.origin);
@@ -182,7 +198,7 @@ export function prepareHarImport(input: unknown, record: RunRecord, origins: Cap
     const captured: Exchange = {
       id, runId: record.run.id, stepId: step.id, seq: ++seq,
       actorFrom: "browser", actorTo: route.actorTo, method, url: sanitizedUrl,
-      status: Number(response.status), durationMs: Math.round(Number(entry.time)),
+      status: Number(response.status), durationMs: Math.max(0, Math.round(Number(entry.time))),
       request: { source: "har_import", headers: headers(request.headers, "$.request.headers", redactions), body: body(request, "$.request.body", redactions) },
       response: { source: "har_import", headers: headers(response.headers, "$.response.headers", redactions), body: body(response, "$.response.body", redactions) },
       redactions,
