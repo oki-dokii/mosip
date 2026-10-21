@@ -115,9 +115,11 @@ apps/bff/
 
 ### 2.3 Matrix and scenarios
 
+`GET /api/v1/runs` accepts optional `issuer`, `wallet`, `verifier`, `format`, `status`, `tamper`, `issuerVersion`, and `verifierVersion` query filters. Each run carries a `serviceVersions` snapshot; remote labels default to `unreported` unless configured. Live run creation returns `422 UNSUPPORTED_COMBINATION` for role/format selections the current adapter cannot execute.
+
 | Method & path | Purpose |
 |---|---|
-| `GET /matrix` | Latest outcome per combination (reads `matrix_latest`). |
+| `GET /api/v1/matrix` | Latest outcome per combination (computed from run history). |
 | `GET /matrix/export?format=md|json|csv` | Download the matrix. |
 | `GET /scenarios` | Presets and saved scenarios. |
 | `POST /scenarios` | Save a scenario. |

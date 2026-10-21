@@ -74,6 +74,7 @@ model Run {
   format          CredentialFormat
   proofType       String           @map("proof_type")
   algorithm       String
+  serviceVersions Json             @default("{}") @map("service_versions")
   flow            FlowVariant      @default(cross_device)
   tamper          TamperKind?
   expectedOutcome VerifyOutcome    @default(valid) @map("expected_outcome")

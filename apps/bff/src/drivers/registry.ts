@@ -15,5 +15,5 @@ export function configuredDriverMode(): DriverMode {
 
 export function resolveDrivers(config: RunConfig, mode = configuredDriverMode()): DriverSet {
   if (mode === "fixture") return createFixtureDrivers(config);
-  return createCollabDrivers();
+  return createCollabDrivers(config);
 }

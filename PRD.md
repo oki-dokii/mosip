@@ -71,6 +71,8 @@ Inji says its modules follow OpenID4VCI, OpenID4VP and common credential formats
 4. As an Inji engineer, I download a Markdown report for a run so that I can attach it to a bug.
 5. As an Inji engineer, I replay a presentation with a corrupted signature so that I can confirm Verify rejects it, and see expected vs actual.
 6. As an Inji engineer, I filter history by Certify version and outcome so that I can spot a regression.
+
+Version filters use the release labels recorded with each run. For Collab deployments that do not publish a version, operators can set a known release label; otherwise the app displays `unreported`.
 7. As an integrator, I swap in the mock external issuer so that I can see whether Inji handles a non-Inji issuer.
 8. As a judge, I follow an animated sequence diagram so that I understand OpenID4VP without reading the spec.
 

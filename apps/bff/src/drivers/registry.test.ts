@@ -28,7 +28,7 @@ describe("driver registry", () => {
     const unsupported: RunConfig = { ...config, issuer: "mock_issuer" };
     const drivers = resolveDrivers(unsupported, "collab");
     await expect(drivers.issuer.createOffer({ config: unsupported, state: new Map() }))
-      .rejects.toThrow("Inji Certify + Reference Wallet + Inji Verify");
+      .rejects.toThrow("Mock issuer currently supports SD-JWT VC only");
   });
 
   it("rejects unknown modes instead of silently falling back", () => {

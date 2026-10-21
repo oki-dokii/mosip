@@ -1,6 +1,7 @@
 import type { DriverContext } from "./types.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createCollabDrivers } from "./collab.js";
+import { importJWK, jwtVerify } from "jose";
 
 function context(): DriverContext {
   return {
@@ -68,5 +69,45 @@ describe("Collab verifier status polling", () => {
 
     await expect(createCollabDrivers().verifier.pollStatus(context()))
       .rejects.toThrow("Timed out waiting for Inji Verify presentation status");
+  });
+});
+
+describe("local non-Inji issuer", () => {
+  it("issues a signed holder-bound SD-JWT with a matching disclosure", async () => {
+    const mockContext = context();
+    mockContext.config.issuer = "mock_issuer";
+    mockContext.config.format = "vc_sd_jwt";
+    mockContext.state.set("collab.config", { ...(mockContext.state.get("collab.config") as object), credentialConfigurationId: "MockVerifiableCredential_SD_JWT", credentialFormat: "dc+sd-jwt" });
+    const drivers = createCollabDrivers(mockContext.config);
+    await drivers.issuer.createOffer(mockContext);
+    await drivers.wallet.authorize(mockContext);
+    await drivers.wallet.requestCredential(mockContext);
+    const credential = mockContext.state.get("collab.credential") as string;
+    const [jwt = "", disclosure] = credential.split("~");
+    const payload = JSON.parse(Buffer.from(jwt.split(".")[1] ?? "", "base64url").toString("utf8"));
+    const publicJwk = JSON.parse(Buffer.from(payload.iss.slice("did:jwk:".length), "base64url").toString("utf8"));
+    await expect(jwtVerify(jwt, await importJWK(publicJwk, "EdDSA"))).resolves.toBeDefined();
+    expect(payload.cnf.jwk.x).toBeDefined();
+    expect(disclosure).toBeTruthy();
+  });
+
+  it("passes a signed presentation to the mock verifier and rejects a bad signature", async () => {
+    for (const tamper of [null, "bad_signature"] as const) {
+      const mockContext = context();
+      mockContext.config.issuer = "mock_issuer";
+      mockContext.config.verifier = "mock_verifier";
+      mockContext.config.format = "vc_sd_jwt";
+      mockContext.config.tamper = tamper;
+      mockContext.state.set("collab.config", { ...(mockContext.state.get("collab.config") as object), credentialConfigurationId: "MockVerifiableCredential_SD_JWT", credentialFormat: "dc+sd-jwt" });
+      const drivers = createCollabDrivers(mockContext.config);
+      await drivers.issuer.createOffer(mockContext);
+      await drivers.wallet.authorize(mockContext);
+      await drivers.wallet.requestCredential(mockContext);
+      await drivers.wallet.store(mockContext);
+      await drivers.verifier.createRequest(mockContext);
+      await drivers.wallet.present(mockContext);
+      expect((await drivers.verifier.pollStatus(mockContext)).summary?.status).toBe("VP_SUBMITTED");
+      expect((await drivers.verifier.getResult(mockContext)).summary?.outcome).toBe(tamper ? "invalid" : "valid");
+    }
   });
 });

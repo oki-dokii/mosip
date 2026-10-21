@@ -2,7 +2,7 @@
 
 **Engine:** PostgreSQL 16 · **Access layer:** Prisma (migrations and typed client)
 
-> **Implementation status (2026-10-21):** `runs`, `run_steps`, and `exchanges` are implemented in `apps/bff/prisma/schema.prisma` and the initial migration. The remaining tables and views in this reference design are planned. The implemented exchange payload columns use JSONB so both structured JSON and JSON string values can be stored through one repository contract.
+> **Implementation status (2026-10-21):** `runs`, `run_steps`, and `exchanges` are implemented in `apps/bff/prisma/schema.prisma`. Phase 3 adds `runs.service_versions` JSONB as a compact per-run snapshot; the separate `service_versions` reference table below remains planned. The implemented exchange payload columns use JSONB so both structured JSON and JSON string values can be stored through one repository contract.
 **Version:** 0.1 (design phase) · **Date:** 2026-10-17
 **Related:** SRS.md (data needs), BACKEND.md (API that reads and writes this), decisions.md (D-006)
 

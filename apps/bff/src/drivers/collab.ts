@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
 import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-key-2020";
-import { importJWK, SignJWT, type JWK } from "jose";
+import { importJWK, importX509, jwtVerify, SignJWT, type JWK } from "jose";
 import jsonld from "jsonld";
 import jsigs from "jsonld-signatures";
 import type { RunConfig } from "@playground/shared";
@@ -46,6 +46,7 @@ const STATE = {
   verifyTransactionId: "collab.verifyTransactionId",
   verifyRequestId: "collab.verifyRequestId",
   requestClaims: "collab.requestClaims",
+  mockVpToken: "collab.mockVpToken",
 } as const;
 
 function stateValue<T>(context: DriverContext, key: string): T {
@@ -96,8 +97,8 @@ async function createJwt(privateJwk: JWK, payload: JsonObject, header: JsonObjec
 async function loadConfig(context: DriverContext): Promise<CollabConfig> {
   const existing = context.state.get(STATE.config);
   if (existing) return existing as CollabConfig;
-  if (context.config.issuer !== "inji_certify" || context.config.wallet !== "reference_wallet" || context.config.verifier !== "inji_verify") {
-    throw new Error("Collab mode currently supports only Inji Certify + Reference Wallet + Inji Verify");
+  if (context.config.wallet !== "reference_wallet" || ((context.config.issuer === "mock_issuer" || context.config.verifier === "mock_verifier") && context.config.format !== "vc_sd_jwt")) {
+    throw new Error("Collab mode supports the Reference Wallet; mock roles support SD-JWT VC only");
   }
   const postmanEnvironmentPath = process.env.OFFICIAL_POSTMAN_ENV_PATH;
   const mockOtp = process.env.MOCK_OTP;
@@ -130,6 +131,37 @@ async function loadConfig(context: DriverContext): Promise<CollabConfig> {
   };
   context.state.set(STATE.config, config);
   return config;
+}
+
+class MockIssuerDriver implements IssuerDriver {
+  readonly id = "mock_issuer" as const;
+
+  async createOffer(context: DriverContext): Promise<DriverResult> {
+    if (context.config.format !== "vc_sd_jwt") throw new Error("Mock issuer currently supports SD-JWT VC only");
+    return {
+      exchanges: [exchange(context.config.wallet, this.id, "GET", "mock://issuer/.well-known/openid-credential-issuer", { status: 200, body: {}, durationMs: 0 }, {}, {
+        credential_issuer: "mock://issuer", credential_configuration_id: "MockVerifiableCredential_SD_JWT", format: "dc+sd-jwt",
+      })],
+      summary: { credentialConfigurationId: "MockVerifiableCredential_SD_JWT", format: "dc+sd-jwt", source: "local_non_inji_mock" },
+    };
+  }
+}
+
+async function issueMockSdJwt(holderPublicJwk: JsonObject) {
+  const issuerKey = await Ed25519VerificationKey2020.generate();
+  const publicJwk = issuerKey.toJwk({ publicKey: true });
+  const privateJwk = issuerKey.toJwk({ publicKey: true, privateKey: true });
+  privateJwk.d = Buffer.from(privateJwk.d, "base64url").subarray(0, 32).toString("base64url");
+  const issuerDid = `did:jwk:${Buffer.from(JSON.stringify(publicJwk)).toString("base64url")}`;
+  const disclosure = Buffer.from(JSON.stringify([randomBytes(16).toString("base64url"), "given_name", "Test"])).toString("base64url");
+  const digest = createHash("sha256").update(disclosure).digest("base64url");
+  const now = Math.floor(Date.now() / 1000);
+  const key = await importJWK(privateJwk, "EdDSA");
+  const jwt = await new SignJWT({
+    iss: issuerDid, vct: "MockVerifiableCredential_SD_JWT", cnf: { jwk: holderPublicJwk },
+    _sd_alg: "sha-256", _sd: [digest], iat: now, nbf: now - 5, exp: now + 3600,
+  }).setProtectedHeader({ alg: "EdDSA", typ: "vc+sd-jwt", kid: `${issuerDid}#0` }).sign(key);
+  return `${jwt}~${disclosure}~`;
 }
 
 async function request(context: DriverContext, url: string, options: RequestInit & { allowStatuses?: number[] } = {}): Promise<HttpResult> {
@@ -202,6 +234,9 @@ class CollabWalletDriver implements WalletDriver {
   readonly id = "reference_wallet" as const;
 
   async authorize(context: DriverContext): Promise<DriverResult> {
+    if (context.config.issuer === "mock_issuer") {
+      return { exchanges: [exchange(this.id, "mock_issuer", "POST", "mock://issuer/token", { status: 200, body: {}, durationMs: 0 }, { grant_type: "pre-authorized_code" }, { token_type: "Bearer", access_token: "synthetic-token" })], summary: { authorized: true, source: "local_non_inji_mock" } };
+    }
     const config = await loadConfig(context);
     const exchanges: DriverExchange[] = [];
     const csrfUrl = `${config.authBaseUrl}/csrf/token`;
@@ -273,8 +308,6 @@ class CollabWalletDriver implements WalletDriver {
 
   async requestCredential(context: DriverContext): Promise<DriverResult> {
     const config = await loadConfig(context);
-    const accessToken = stateValue<string>(context, STATE.accessToken);
-    let credentialNonce = stateValue<string>(context, STATE.credentialNonce);
     const holderKey = await Ed25519VerificationKey2020.generate();
     const holderPublicJwk = holderKey.toJwk({ publicKey: true });
     const holderPrivateJwk = holderKey.toJwk({ publicKey: true, privateKey: true });
@@ -282,6 +315,16 @@ class CollabWalletDriver implements WalletDriver {
     context.state.set(STATE.holderKey, holderKey);
     context.state.set(STATE.holderPublicJwk, holderPublicJwk);
     context.state.set(STATE.holderPrivateJwk, holderPrivateJwk);
+    if (context.config.issuer === "mock_issuer") {
+      const credential = await issueMockSdJwt(holderPublicJwk);
+      context.state.set(STATE.credential, credential);
+      return {
+        exchanges: [exchange(this.id, "mock_issuer", "POST", "mock://issuer/credential", { status: 200, body: {}, durationMs: 0 }, { credential_configuration_id: config.credentialConfigurationId, proof_type: "jwt" }, { credentialReturned: true, format: "dc+sd-jwt" })],
+        summary: { credentialReceived: true, format: "dc+sd-jwt", source: "local_non_inji_mock" },
+      };
+    }
+    const accessToken = stateValue<string>(context, STATE.accessToken);
+    let credentialNonce = stateValue<string>(context, STATE.credentialNonce);
     const url = `${config.certifyBaseUrl}/v1/certify/issuance/credential`;
     const attempts: DriverExchange[] = [];
     let result: HttpResult;
@@ -302,7 +345,12 @@ class CollabWalletDriver implements WalletDriver {
     const credential = result!.body?.credential ?? result!.body?.credentials?.[0]?.credential ?? result!.body?.credentials?.[0];
     if (!credential) throw new Error(`Issuer did not return a credential${result!.body?.error ? `: ${result!.body.error}` : ""}`);
     context.state.set(STATE.credential, credential);
-    return { exchanges: attempts, summary: { credentialReceived: true, nonceRefreshRequired: refreshed, format: config.credentialFormat } };
+    const sdJwt = typeof credential === "string" ? credential.split("~", 1)[0] : null;
+    const header = sdJwt ? JSON.parse(Buffer.from(sdJwt.split(".")[0] ?? "", "base64url").toString("utf8")) : null;
+    const claims = sdJwt ? decodeJwtPayload(sdJwt) : null;
+    return { exchanges: attempts, summary: { credentialReceived: true, nonceRefreshRequired: refreshed, format: config.credentialFormat,
+      ...(sdJwt ? { issuer: claims?.iss, signingAlgorithm: header?.alg, keyId: header?.kid } : {}),
+    } };
   }
 
   async store(context: DriverContext): Promise<DriverResult> {
@@ -350,6 +398,12 @@ class CollabWalletDriver implements WalletDriver {
       });
     }
     const form = new URLSearchParams({ state: requestClaims.state, vp_token: JSON.stringify({ credential: [vpToken] }) });
+    if (context.config.verifier === "mock_verifier") {
+      context.state.set(STATE.mockVpToken, vpToken);
+      return { exchanges: [exchange(this.id, "mock_verifier", "POST", "mock://verifier/direct-post", { status: 200, body: {}, durationMs: 0 }, {
+        format: config.credentialFormat, holderProofType: "kb+jwt", holderKeyMatchesCredential, tamper: context.config.tamper,
+      }, { accepted: true })], summary: { holderKeyMatchesCredential, submissionAccepted: true } };
+    }
     const result = await request(context, requestClaims.response_uri, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: form, allowStatuses: [400] });
     return {
       exchanges: [exchange(this.id, context.config.verifier, "POST", requestClaims.response_uri, result, {
@@ -360,6 +414,75 @@ class CollabWalletDriver implements WalletDriver {
       }, { accepted: result.status < 300, error: result.body?.error, errorCode: result.body?.errorCode })],
       summary: { holderKeyMatchesCredential, submissionAccepted: result.status < 300 },
     };
+  }
+}
+
+async function verifyMockPresentation(token: string, requestClaims: JsonObject) {
+  const pieces = token.split("~");
+  const issuerJwt = pieces[0] ?? "";
+  const bindingJwt = pieces.at(-1) ?? "";
+  const header = JSON.parse(Buffer.from(issuerJwt.split(".")[0] ?? "", "base64url").toString("utf8"));
+  const claims = decodeJwtPayload(issuerJwt);
+  let issuerKey: Awaited<ReturnType<typeof importJWK>>;
+  if (Array.isArray(header.x5c) && typeof header.x5c[0] === "string") {
+    const certificate = `-----BEGIN CERTIFICATE-----\n${header.x5c[0]}\n-----END CERTIFICATE-----`;
+    issuerKey = await importX509(certificate, header.alg);
+  } else if (typeof claims.iss === "string" && claims.iss.startsWith("did:jwk:")) {
+    const jwk = JSON.parse(Buffer.from(claims.iss.slice("did:jwk:".length), "base64url").toString("utf8"));
+    issuerKey = await importJWK(jwk, header.alg);
+  } else {
+    throw new Error("No supported issuer public key in the SD-JWT");
+  }
+  const verified = await jwtVerify(issuerJwt, issuerKey, { algorithms: [header.alg] });
+  if (verified.payload.vct !== "MockVerifiableCredential_SD_JWT") throw new Error("Credential type does not match the request");
+  const confirmation = verified.payload.cnf && typeof verified.payload.cnf === "object" ? verified.payload.cnf as JsonObject : {};
+  let holderJwk = confirmation.jwk;
+  if (!holderJwk && typeof confirmation.kid === "string" && confirmation.kid.startsWith("did:jwk:")) {
+    holderJwk = JSON.parse(Buffer.from(confirmation.kid.slice("did:jwk:".length).split("#", 1)[0] ?? "", "base64url").toString("utf8"));
+  }
+  if (!holderJwk) throw new Error("Credential is missing holder binding");
+  const credential = token.slice(0, token.length - bindingJwt.length);
+  const holderKey = await importJWK(holderJwk, "EdDSA");
+  const binding = await jwtVerify(bindingJwt, holderKey, { algorithms: ["EdDSA"], audience: requestClaims.client_id });
+  if (binding.payload.nonce !== requestClaims.nonce) throw new Error("Presentation nonce does not match");
+  if (binding.payload.sd_hash !== sha256Base64url(credential)) throw new Error("SD-JWT key binding hash does not match");
+  const digests: string[] = [];
+  const collectDigests = (value: unknown) => {
+    if (!value || typeof value !== "object") return;
+    if (Array.isArray(value)) { value.forEach(collectDigests); return; }
+    const object = value as JsonObject;
+    if (Array.isArray(object._sd)) digests.push(...object._sd.filter((item: unknown) => typeof item === "string"));
+    Object.values(object).forEach(collectDigests);
+  };
+  collectDigests(verified.payload);
+  for (const disclosure of pieces.slice(1, -1).filter(Boolean)) {
+    if (!digests.includes(sha256Base64url(disclosure))) throw new Error("SD-JWT disclosure digest does not match");
+  }
+  return { issuerSignatureValid: true, holderProofValid: true, disclosedClaims: pieces.slice(1, -1).filter(Boolean).length, certificateTrustChecked: false };
+}
+
+class MockVerifierDriver implements VerifierDriver {
+  readonly id = "mock_verifier" as const;
+
+  async createRequest(context: DriverContext): Promise<DriverResult> {
+    if (context.config.format !== "vc_sd_jwt") throw new Error("Mock verifier currently supports SD-JWT VC only");
+    const requestClaims = { client_id: "mock-verifier", nonce: randomUUID(), state: randomUUID(), response_uri: "mock://verifier/direct-post" };
+    context.state.set(STATE.requestClaims, requestClaims);
+    return { exchanges: [exchange("playground", this.id, "POST", "mock://verifier/vp-request", { status: 201, body: {}, durationMs: 0 }, { format: "dc+sd-jwt" }, { requestCreated: true, responseMode: "direct_post" })], summary: { signedRequestReceived: false, queryLanguage: "DCQL", source: "local_non_inji_mock" } };
+  }
+
+  async pollStatus(context: DriverContext): Promise<DriverResult> {
+    const submitted = Boolean(context.state.get(STATE.mockVpToken));
+    return { exchanges: [exchange("playground", this.id, "GET", "mock://verifier/status", { status: 200, body: {}, durationMs: 0 }, {}, { status: submitted ? "VP_SUBMITTED" : "PENDING" })], summary: { status: submitted ? "VP_SUBMITTED" : "PENDING", attempts: 1 } };
+  }
+
+  async getResult(context: DriverContext): Promise<DriverResult> {
+    const token = stateValue<string>(context, STATE.mockVpToken);
+    const requestClaims = stateValue<JsonObject>(context, STATE.requestClaims);
+    let result: Record<string, unknown>;
+    try { result = { ...await verifyMockPresentation(token, requestClaims), outcome: "valid" }; }
+    catch (error) { result = { outcome: "invalid", failureDetail: error instanceof Error ? error.message : "Verification failed" }; }
+    return { exchanges: [exchange("playground", this.id, "POST", "mock://verifier/vp-results", { status: 200, body: {}, durationMs: 0 }, { includeClaims: false }, result)], summary: result };
   }
 }
 
@@ -438,11 +561,17 @@ class CollabVerifierDriver implements VerifierDriver {
         errorCode: result.body?.errorCode,
         errorMessage: result.body?.errorMessage,
       })],
-      summary: { outcome: valid ? "valid" : "invalid", allChecksSuccessful: result.body?.allChecksSuccessful === true },
+      summary: { outcome: valid ? "valid" : "invalid", allChecksSuccessful: result.body?.allChecksSuccessful === true,
+        ...(valid ? {} : { failureDetail: credentialResult?.schemaAndSignatureCheck?.valid === false
+          ? "Verifier rejected the credential schema or issuer signature"
+          : credentialResult?.holderProofCheck?.valid === false
+            ? "Verifier rejected the holder proof"
+            : result.body?.errorCode ?? "Verifier returned an invalid result" }),
+      },
     };
   }
 }
 
-export function createCollabDrivers(): DriverSet {
-  return { issuer: new CollabIssuerDriver(), wallet: new CollabWalletDriver(), verifier: new CollabVerifierDriver() };
+export function createCollabDrivers(config?: RunConfig): DriverSet {
+  return { issuer: config?.issuer === "mock_issuer" ? new MockIssuerDriver() : new CollabIssuerDriver(), wallet: new CollabWalletDriver(), verifier: config?.verifier === "mock_verifier" ? new MockVerifierDriver() : new CollabVerifierDriver() };
 }

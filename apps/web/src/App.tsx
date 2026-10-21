@@ -30,12 +30,14 @@ const tamperOptions: Array<{ value: RunConfig["tamper"]; label: string }> = [
 
 export default function App() {
   const [metadata, setMetadata] = useState<ImplementationMetadata | null>(null);
+  const [driverMode, setDriverMode] = useState<"fixture" | "collab" | null>(null);
   const [config, setConfig] = useState<RunConfig>(initialConfig);
   const [runId, setRunId] = useState<string | null>(null);
   const [run, setRun] = useState<RunSummary | null>(null);
   const [steps, setSteps] = useState<RunStep[]>([]);
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
+  const [selectedExchangeId, setSelectedExchangeId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [history, setHistory] = useState<RunSummary[]>([]);
   const [matrix, setMatrix] = useState<RunSummary[]>([]);
@@ -48,7 +50,7 @@ export default function App() {
     setMatrix(latest.items);
   }, []);
 
-  useEffect(() => { void Promise.all([api.metadata().then(setMetadata), refreshArchive()]); }, [refreshArchive]);
+  useEffect(() => { void Promise.all([api.metadata().then(setMetadata), api.health().then((health) => setDriverMode(health.driverMode)), refreshArchive()]); }, [refreshArchive]);
 
   const refresh = useCallback(async (id: string) => {
     const [nextRun, nextSteps, nextExchanges] = await Promise.all([api.run(id), api.steps(id), api.exchanges(id)]);
@@ -56,6 +58,7 @@ export default function App() {
     setSteps(nextSteps.items);
     setExchanges(nextExchanges.items);
     setSelectedStepId((current) => current ?? nextExchanges.items.at(-1)?.stepId ?? nextSteps.items[0]?.id ?? null);
+    setSelectedExchangeId((current) => current ?? nextExchanges.items.at(-1)?.id ?? null);
     if (["passed", "failed", "errored"].includes(nextRun.status) && archivedRunId.current !== nextRun.id) {
       archivedRunId.current = nextRun.id;
       void refreshArchive();
@@ -78,7 +81,7 @@ export default function App() {
 
   async function startRun() {
     setBusy(true);
-    setRun(null); setSteps([]); setExchanges([]); setSelectedStepId(null);
+    setRun(null); setSteps([]); setExchanges([]); setSelectedStepId(null); setSelectedExchangeId(null);
     try {
       const created = await api.createRun(config);
       setRunId(created.runId);
@@ -92,7 +95,7 @@ export default function App() {
     setBusy(true);
     try {
       const created = await api.replayRun(run.id, config.tamper);
-      setRun(null); setSteps([]); setExchanges([]); setSelectedStepId(null);
+      setRun(null); setSteps([]); setExchanges([]); setSelectedStepId(null); setSelectedExchangeId(null);
       setRunId(created.runId);
     } finally {
       setBusy(false);
@@ -100,13 +103,28 @@ export default function App() {
   }
 
   function selectArchivedRun(id: string) {
-    setRun(null); setSteps([]); setExchanges([]); setSelectedStepId(null);
+    setRun(null); setSteps([]); setExchanges([]); setSelectedStepId(null); setSelectedExchangeId(null);
     setRunId(id);
     window.scrollTo({ top: 430, behavior: "smooth" });
   }
 
   const format = metadata?.formats.find((item) => item.id === config.format);
-  const selectedExchange = useMemo(() => exchanges.find((item) => item.stepId === selectedStepId) ?? exchanges.at(-1) ?? null, [exchanges, selectedStepId]);
+  const unsupportedReason = driverMode === "collab" && config.wallet !== "reference_wallet"
+    ? "Live runs require the Reference Wallet. Assisted Inji Web is not automated yet."
+      : driverMode === "collab" && (config.issuer === "mock_issuer" || config.verifier === "mock_verifier") && config.format !== "vc_sd_jwt"
+        ? "Local non-Inji mock roles currently support SD-JWT VC only."
+        : driverMode === "collab" && config.verifier === "mock_verifier" && config.tamper === "missing_disclosure"
+          ? "The mock verifier has no required-disclosure policy for this credential."
+        : null;
+  const selectedExchange = useMemo(() => exchanges.find((item) => item.id === selectedExchangeId) ?? exchanges.find((item) => item.stepId === selectedStepId) ?? exchanges.at(-1) ?? null, [exchanges, selectedExchangeId, selectedStepId]);
+  const selectStep = useCallback((stepId: string) => {
+    setSelectedStepId(stepId);
+    setSelectedExchangeId(exchanges.find((item) => item.stepId === stepId)?.id ?? null);
+  }, [exchanges]);
+  const selectExchange = useCallback((exchange: Exchange) => {
+    setSelectedStepId(exchange.stepId);
+    setSelectedExchangeId(exchange.id);
+  }, []);
   const runFinished = run && ["passed", "failed", "errored"].includes(run.status);
   const actualLabel = run?.actualOutcome ? `${run.actualOutcome.charAt(0).toUpperCase()}${run.actualOutcome.slice(1)}` : "Unknown";
   const runMessage = !runFinished
@@ -116,6 +134,7 @@ export default function App() {
       : run.status === "passed"
         ? `✓ ${actualLabel} — expected result matched`
         : `Mismatch — expected ${run.expectedOutcome}, received ${run.actualOutcome}`;
+  const verifierDetail = steps.find((step) => step.stepKey === "PRESENT_RESULT")?.summary?.failureDetail;
 
   if (!metadata) return <main className="grid min-h-screen place-items-center text-slate-600"><Activity className="animate-pulse" /> Loading playground…</main>;
 
@@ -125,7 +144,7 @@ export default function App() {
         <div className="mx-auto flex max-w-[1500px] items-center gap-4 px-5 py-4 lg:px-8">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-ink text-white shadow-lg"><FlaskConical size={22} /></span>
           <div><h1 className="text-lg font-bold tracking-tight">Inji Interoperability Playground</h1><p className="text-xs text-slate-500">Issue, present, verify — and inspect every boundary.</p></div>
-          <span className="ml-auto hidden rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 sm:block">Test data only</span>
+          <span className="ml-auto hidden rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 sm:block">{driverMode === "fixture" ? "Fixture simulation · test data" : "Live Collab · test data"}</span>
         </div>
       </header>
 
@@ -152,7 +171,8 @@ export default function App() {
                 {tamperOptions.map((item) => <option key={item.value ?? "none"} value={item.value ?? ""}>{item.label}</option>)}
               </select>
             </label>
-            <div className="sm:ml-auto"><button disabled={busy} onClick={() => void startRun()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-issuer px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60 sm:w-auto"><Play size={17} fill="currentColor" />{busy ? "Starting…" : "Run flow"}</button></div>
+            {unsupportedReason && <p role="status" className="text-xs font-semibold text-amber-800">{unsupportedReason}</p>}
+            <div className="sm:ml-auto"><button disabled={busy || Boolean(unsupportedReason)} onClick={() => void startRun()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-issuer px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60 sm:w-auto"><Play size={17} fill="currentColor" />{busy ? "Starting…" : "Run flow"}</button></div>
           </div>
         </section>
 
@@ -165,11 +185,12 @@ export default function App() {
             <div className="grid gap-6 p-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:p-8">
               <div>
                 <div className={`mb-4 rounded-xl border px-4 py-3 text-sm font-semibold ${run?.status === "passed" ? "border-green-200 bg-green-50 text-ok" : runFinished ? "border-red-200 bg-red-50 text-fail" : "border-blue-200 bg-blue-50 text-issuer"}`} aria-live="polite">{runMessage}</div>
+                {typeof verifierDetail === "string" && <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">Verifier detail: {verifierDetail}</p>}
                 {runFinished && run?.status !== "errored" && <button disabled={busy} onClick={() => void replayRun()} className="mb-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:border-slate-500 disabled:opacity-60">Replay with selected fault</button>}
                 {runFinished && run && <div className="mb-4 grid grid-cols-2 gap-2 text-center text-xs font-bold"><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=md`}>Report · Markdown</a><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=json`}>Report · JSON</a></div>}
-                <RunTimeline steps={steps} selectedStepId={selectedStepId} onSelect={setSelectedStepId} />
+                <RunTimeline steps={steps} selectedStepId={selectedStepId} onSelect={selectStep} />
               </div>
-              <div><SequenceView runId={runId} exchanges={exchanges} selectedStepId={selectedStepId} onSelect={setSelectedStepId} /><Inspector exchange={selectedExchange} /></div>
+              <div><SequenceView runId={runId} exchanges={exchanges} selectedExchangeId={selectedExchangeId} onSelect={selectExchange} /><Inspector exchange={selectedExchange} /></div>
             </div>
           )}
         </section>

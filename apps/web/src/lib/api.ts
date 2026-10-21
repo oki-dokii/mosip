@@ -8,7 +8,8 @@ async function json<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   metadata: () => json<ImplementationMetadata>("/api/v1/meta/implementations"),
-  runs: () => json<{ items: RunSummary[] }>("/api/v1/runs"),
+  health: () => json<{ driverMode: "fixture" | "collab"; storage: "memory" | "postgres" }>("/api/v1/health"),
+  runs: (filters?: Record<string, string>) => json<{ items: RunSummary[] }>(`/api/v1/runs${filters ? `?${new URLSearchParams(filters)}` : ""}`),
   matrix: () => json<{ items: RunSummary[] }>("/api/v1/matrix"),
   createRun: (config: RunConfig) => json<{ runId: string }>("/api/v1/runs", {
     method: "POST",

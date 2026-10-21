@@ -95,6 +95,7 @@ Same layout as the live panel but read-only, plus tabs for **Sequence** and **Re
 ### 2.5 Report view
 - Header: run id, date, status, expected vs actual.
 - Table: issuer, wallet, verifier, format, proof type, algorithm, flow, tamper, service versions.
+- History filters include role, format, outcome, issuer version, and verifier version. Unknown remote releases appear as `unreported`.
 - Findings list: error detail and any expected-vs-actual mismatch.
 - Buttons: **Download Markdown**, **Download JSON**, **Create issue draft** (P2).
 

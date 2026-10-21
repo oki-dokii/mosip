@@ -2,7 +2,7 @@
 
 How code travels between files and functions: **entry points, order of execution, and who calls whom.**
 
-> **Status: PHASE 2 REFERENCE WALLET TRACK COMPLETE.** The BFF selects deterministic fixtures by default or the live Collab path through `PLAYGROUND_DRIVER_MODE=collab`. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Replay, reports, interactive sequence inspection, history, and matrix exports are implemented. Assisted Inji Web automation and transparent Tap capture are deferred under D-030.
+> **Status: PHASE 3 CORE P1 TOOLS AND LOCAL MOCK PATHS IMPLEMENTED.** The BFF selects deterministic fixtures by default or live Collab plus local mock roles through `PLAYGROUND_DRIVER_MODE=collab`. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Replay, reports, sequence playback, filtered history, and matrix exports are implemented. Standalone mock protocol services, assisted Inji Web automation, and transparent Tap capture remain open.
 
 Legend: `file → function()` means "this function in that file". `A ⇒ B` means A calls B. Status: 🟦 planned · 🟩 implemented · 🟥 changed from plan (explain in decisions.md).
 
@@ -130,8 +130,10 @@ When `config.tamper` is set, `tamper/index.ts → applyCredentialTamper()` chang
 - `pollStatus` ⇒ `GET /vp-request/{requestId}/status` until `VP_SUBMITTED`, a terminal failure, or the configured deadline.
 - `getResult` ⇒ `POST /v2/vp-results/{transactionId}` ⇒ map verification checks to the run outcome.
 
-### 4.5 Mocks (`drivers/issuer/mockIssuer.ts`, `drivers/verifier/mockVerifier.ts`) 🟦
-Same interfaces, calling `apps/mock-issuer` and `apps/mock-verifier` through the Tap.
+### 4.5 Local non-Inji mocks (`drivers/collab.ts`) 🟩 SD-JWT
+`MockIssuerDriver.createOffer()` ⇒ advertise SD-JWT configuration with `mock://` transport marker. `CollabWalletDriver.authorize()` ⇒ local synthetic authorization. `requestCredential()` ⇒ sign a holder-bound SD-JWT with a fresh per-run Ed25519 issuer key.
+
+`MockVerifierDriver.createRequest()` ⇒ create an in-memory DCQL-style request. `CollabWalletDriver.present()` ⇒ create a key-bound SD-JWT presentation and submit to the in-memory mock boundary. `pollStatus()` ⇒ report submission. `getResult()` ⇒ verify issuer signature, type, expiry, holder proof, nonce, audience, and disclosure digests. The embedded Certify certificate's trust chain is not checked.
 
 ---
 
@@ -144,10 +146,10 @@ Same interfaces, calling `apps/mock-issuer` and `apps/mock-verifier` through the
 `GET /api/v1/runs/:id/report?format=md|json` ⇒ load the stored run record ⇒ `report.ts → buildReport()` ⇒ return structured JSON or `renderMarkdown()` with sanitized exchanges.
 
 ### 5.3 Sequence view 🟩
-`GET /api/v1/runs/:id/sequence` ⇒ `sequence.ts → buildSequence(exchanges)` ⇒ return Mermaid text plus exchange/step line markers. `SequenceView.tsx` renders the recorded messages as an interactive actor-to-actor list; selecting a message selects the corresponding timeline step and inspector exchange. Mermaid source can be copied for external rendering.
+`GET /api/v1/runs/:id/sequence` ⇒ `sequence.ts → buildSequence(exchanges)` ⇒ return Mermaid text plus exchange/step line markers. `SequenceView.tsx` renders recorded messages as an actor-to-actor list and reveals them one at a time during playback. Selecting a message selects its exact exchange and the corresponding timeline step. Mermaid source can be copied for external rendering.
 
 ### 5.4 History and matrix 🟩
-`GET /api/v1/runs` ⇒ `repository.list()` ⇒ newest-first run summaries displayed by `RunArchive.tsx`; selecting a row opens that run.
+`GET /api/v1/runs` ⇒ `repository.list()` ⇒ `history.ts → filterRuns()` ⇒ newest-first run summaries displayed by `RunArchive.tsx`; role, format, status, fault, and version filters can be applied. Selecting a row opens that run.
 
 `GET /api/v1/matrix` ⇒ `matrix.ts → latestMatrix()` ⇒ newest run for each complete role/format/flow/fault combination. `GET /api/v1/matrix/export?format=json|csv|md` renders the same snapshot for download.
 
@@ -210,6 +212,9 @@ Current M1 files:
 | `apps/bff/src/report.ts` | Sanitized JSON report model and Markdown rendering |
 | `apps/bff/src/sequence.ts` | Mermaid sequence text and exchange-to-step markers |
 | `apps/bff/src/matrix.ts` | Latest-combination projection and CSV/Markdown exports |
+| `apps/bff/src/history.ts` | Run history filters |
+| `apps/bff/src/capabilities.ts` | Live combination validation |
+| `apps/bff/src/versions.ts` | Immutable service release-label snapshot |
 | `apps/bff/src/redaction.ts` | Recursive write-time masking |
 | `apps/bff/src/store.ts` | Repository contract plus memory and Prisma implementations |
 | `apps/bff/prisma/schema.prisma` | Implemented PostgreSQL run, step, and exchange schema |
@@ -235,3 +240,4 @@ When you change code:
 | 2026-10-20 | Added the headless authorization-code Reference Wallet flow for JSON-LD and SD-JWT issuance, holder proof, DCQL direct post, and Verify results | implementation |
 | 2026-10-21 | Added the M1 web/BFF walking skeleton, shared schemas, in-memory orchestration, live events, inspector, and write-time redaction | implementation |
 | 2026-10-21 | Added Prisma/PostgreSQL run persistence, initial migration, repository fallback, and graceful disconnect | implementation |
+| 2026-10-21 | Added Phase 3 local SD-JWT mock roles, exact-exchange sequence playback, filtered history, and service version snapshots | implementation |

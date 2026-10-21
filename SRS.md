@@ -167,7 +167,7 @@ The playground sits **in front of** existing Inji services. It does not replace 
 | FR-80 | A history dashboard lists past runs. | P1 |
 | FR-81 | History can be filtered by module version, format, outcome, and role implementations. | P1 |
 | FR-82 | Two runs can be compared side by side (config, steps, outcome, payload differences). | P2 |
-| FR-83 | Each run records the versions of every service it touched. | P1 |
+| FR-83 | Each run snapshots issuer, wallet, and verifier release labels. When a Collab service has no published version or configured label, store `unreported` rather than guessing. | P1 |
 
 ### 3.10 Non-Inji (cross-ecosystem) mocks
 | ID | Requirement | Pri |

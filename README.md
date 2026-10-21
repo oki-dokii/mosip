@@ -16,11 +16,14 @@ Read in this order:
 | 8 | [flow.md](flow.md) | How code moves between files and functions (entry points, order of execution, call chains) |
 | 9 | [PHASE0_1.md](PHASE0_1.md) | What Phase 0 decided and what the live Collab contract spikes found |
 | 10 | [PHASE2.md](PHASE2.md) | What the application walking skeleton implements and what comes next |
+| 11 | [PHASE3.md](PHASE3.md) | Regression views, mock roles, validation evidence, and limits |
 
 Working rules for people and AI assistants are in `CLAUDE.md`: quiz before changes, log every meaningful decision, keep `flow.md` true.
 
 ## Status of this documentation
 Phase 0 and Phase 1 are complete as of 2026-10-20. Phase 2's Reference Wallet track is complete as of 2026-10-21. The application has fixture and live Collab driver modes, verifier-status polling, five selectable tamper paths, linked replay runs, downloadable sanitized reports, an interactive sequence view with Mermaid export, run history, a latest-result matrix with three export formats, expected-versus-actual evaluation, live updates, exchange inspection, write-time secret redaction, explicit failure states, and optional PostgreSQL persistence. Application-level JSON-LD and SD-JWT Collab runs both passed all ten steps and returned valid verifier results.
+
+Phase 3 adds exact-exchange sequence playback, history filters with version snapshots, a signed local SD-JWT mock issuer, and a cryptographic local mock verifier. [PHASE3.md](PHASE3.md) records which cross-ecosystem runs passed, which one Inji Verify rejected, and the mock verifier's trust boundary.
 
 Run the application locally with:
 

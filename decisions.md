@@ -54,6 +54,26 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-032 · Snapshot explicit service release labels with each run
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** History needs version filters for regression review, but the tested Collab public endpoints do not report reliable service release versions.
+- **Decision:** Store issuer, wallet, and verifier version labels in `runs.service_versions` at creation. Assign known local mock/fixture labels; accept strictly limited `CERTIFY_VERSION_LABEL` and `VERIFY_VERSION_LABEL` from deployment configuration; otherwise record `unreported`.
+- **Alternatives considered:** Guess a version from endpoint behavior (misleading); call inaccessible actuator endpoints for every run (slow and often forbidden); omit version tracking (cannot compare known releases).
+- **Why this one:** The record is explicit and stable across replay, history, and reports without inventing external version numbers.
+- **Trade-off accepted:** Operators must supply Collab release labels when available, and older runs have no version snapshot.
+- **Revisit if:** The deployments publish stable version metadata.
+- **Affects:** `runs.service_versions`, `apps/bff/src/versions.ts`, history filters, reports, FR-81, FR-83.
+
+### D-031 · Add local cryptographic mock roles to the live driver path
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** Fixture selectors made mock roles look interchangeable without exercising issuer signatures or verifier checks. Phase 3 needs observable non-Inji boundaries.
+- **Decision:** Add a local per-run Ed25519 SD-JWT issuer and a local SD-JWT verifier to the Collab driver set. The mock verifier checks issuer signature, holder binding, audience, nonce, expiry, type, and disclosure digests. Reject unsupported live combinations before run creation and label fixture mode in the UI.
+- **Alternatives considered:** Keep fixture-only mock roles (does not test interoperability); require separate containers before testing role logic (adds deployment work); proxy signed traffic through a Tap (can change the protocol under test).
+- **Why this one:** It tests real cryptographic behavior through the existing run, report, and inspector lifecycle and isolates the observed Certify/Verify compatibility gap.
+- **Trade-off accepted:** Mock roles run in-process using `mock://` transport markers. The mock verifier checks the embedded Certify certificate's key but not its chain or trust anchor; the mock issuer's `did:jwk` SD-JWT is rejected by the tested Inji Verify path.
+- **Revisit if:** A standalone mock service or trust-store validation becomes necessary, or Inji Verify adds DID-key SD-JWT issuer support.
+- **Affects:** `apps/bff/src/drivers/collab.ts`, capabilities, `PHASE3.md`, FR-14, FR-90, FR-91, A8.
+
 ### D-030 · Close Phase 2 on the automated Reference Wallet path
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** The mandatory interoperability proof needs reproducible JSON-LD and SD-JWT application runs, while assisted Inji Web presentation needs a persistent login, lacks the tested SD-JWT path, and cannot safely be forced through a URL-rewriting Tap.

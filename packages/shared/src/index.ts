@@ -30,6 +30,7 @@ export interface RunSummary {
   actualOutcome: "valid" | "invalid" | "expired" | "error" | null;
   proofType: string;
   algorithm: string;
+  serviceVersions?: { issuer: string; wallet: string; verifier: string };
   createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;

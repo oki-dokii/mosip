@@ -9,6 +9,9 @@ import { createSteps, runDemo } from "./orchestrator.js";
 import { buildReport, renderMarkdown } from "./report.js";
 import { buildSequence } from "./sequence.js";
 import { latestMatrix, renderMatrixCsv, renderMatrixMarkdown } from "./matrix.js";
+import { filterRuns } from "./history.js";
+import { unsupportedReason } from "./capabilities.js";
+import { snapshotVersions } from "./versions.js";
 import type { RunRepository } from "./store.js";
 
 const metadata: ImplementationMetadata = {
@@ -44,6 +47,7 @@ function createRun(config: RunConfig, parentRunId: string | null = null): RunSum
     actualOutcome: null,
     proofType: format.proofType,
     algorithm: format.algorithm,
+    serviceVersions: snapshotVersions(config, configuredDriverMode()),
     createdAt: new Date().toISOString(),
     startedAt: null,
     finishedAt: null,
@@ -99,7 +103,9 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
   });
   app.get("/api/v1/runs", async (_request, response, next) => {
     try {
-      response.json({ items: await repository.list() });
+      const allowed = ["issuer", "wallet", "verifier", "format", "status", "tamper", "issuerVersion", "verifierVersion"] as const;
+      const filters = Object.fromEntries(allowed.flatMap((key) => typeof _request.query[key] === "string" ? [[key, _request.query[key]]] : []));
+      response.json({ items: filterRuns(await repository.list(), filters) });
     } catch (error) {
       next(error);
     }
@@ -117,6 +123,8 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
       });
       return;
     }
+    const reason = unsupportedReason(parsed.data, configuredDriverMode());
+    if (reason) return response.status(422).json({ code: "UNSUPPORTED_COMBINATION", detail: reason });
     const run = createRun(parsed.data);
     try {
       await repository.create({ run, steps: createSteps(run.id), exchanges: [] });
@@ -140,6 +148,8 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
         return response.status(409).json({ code: "RUN_NOT_REPLAYABLE" });
       }
       const config: RunConfig = { ...source.run.config, tamper: parsed.data.tamper };
+      const reason = unsupportedReason(config, configuredDriverMode());
+      if (reason) return response.status(422).json({ code: "UNSUPPORTED_COMBINATION", detail: reason });
       const run = createRun(config, source.run.id);
       await repository.create({ run, steps: createSteps(run.id), exchanges: [] });
       response.status(202).json({ runId: run.id });
