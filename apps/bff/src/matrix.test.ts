@@ -19,7 +19,11 @@ describe("interoperability matrix", () => {
   it("exports portable CSV and Markdown", () => {
     expect(renderMatrixCsv([run("new", "2026-01-03T00:00:00Z")])).toContain('"new","inji_certify"');
     expect(renderMatrixCsv([run("new", "2026-01-03T00:00:00Z")])).toContain('"unverified"');
-    expect(renderMatrixMarkdown([run("new", "2026-01-03T00:00:00Z")])).toContain("| inji_certify | reference_wallet |");
+    const markdown = renderMatrixMarkdown([run("new", "2026-01-03T00:00:00Z")]);
+    expect(markdown).toContain("| inji_certify | reference_wallet |");
+    const table = markdown.split("\n").filter((line) => line.startsWith("|"));
+    expect(table).toHaveLength(3);
+    expect(table.map((line) => line.split("|").length - 2)).toEqual([10, 10, 10]);
   });
 
   it("keeps fixture and live evidence in separate latest-result rows", () => {

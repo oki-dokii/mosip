@@ -31,7 +31,7 @@ export function renderMatrixCsv(runs: RunSummary[]) {
 
 export function renderMatrixMarkdown(runs: RunSummary[]) {
   const header = "| Issuer | Wallet | Verifier | Format | Fault | Status | Expected | Actual | Evidence | Run |";
-  const separator = "|---|---|---|---|---|---|---|---|---|---|---|";
+  const separator = `| ${Array(10).fill("---").join(" | ")} |`;
   const rows = latestMatrix(runs).map((run) => `| ${run.config.issuer} | ${run.config.wallet} | ${run.config.verifier} | ${run.config.format} | ${run.config.tamper ?? "none"} | ${run.status} | ${run.expectedOutcome} | ${run.actualOutcome ?? "—"} | ${evidenceTier(run)} | \`${run.id}\` |`);
   return ["# Interoperability matrix", "", header, separator, ...rows, ""].join("\n");
 }

@@ -45,6 +45,36 @@ afterEach(() => {
 });
 
 describe("Collab verifier status polling", () => {
+  it("finishes an HTTP 400 direct-post rejection without polling or requesting a missing result", async () => {
+    const run = context();
+    run.config.issuer = "mock_issuer";
+    run.config.format = "vc_sd_jwt";
+    run.config.tamper = "replay_nonce";
+    run.state.set("collab.config", { ...(run.state.get("collab.config") as object), credentialConfigurationId: "MockVerifiableCredential_SD_JWT", credentialFormat: "dc+sd-jwt" });
+    const drivers = createCollabDrivers(run.config);
+    await drivers.issuer.createOffer(run);
+    await drivers.wallet.authorize(run);
+    await drivers.wallet.requestCredential(run);
+    run.state.set("collab.requestClaims", {
+      client_id: "did:web:verify.example", nonce: "expected-nonce", state: "test-state",
+      response_uri: "https://verify.example/direct-post",
+    });
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: "invalid_request", error_description: "Bearer should-not-be-saved" }), {
+      status: 400, headers: { "content-type": "application/json" },
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const submitted = await drivers.wallet.present(run);
+    const status = await drivers.verifier.pollStatus(run);
+    const result = await drivers.verifier.getResult(run);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(submitted.exchanges?.[0]?.status).toBe(400);
+    expect(submitted.exchanges?.[0]?.response).toEqual({ accepted: false, errorCode: "invalid_request" });
+    expect(status.summary).toMatchObject({ status: "SUBMISSION_REJECTED", attempts: 0, errorCode: "invalid_request" });
+    expect(result.summary).toMatchObject({ outcome: "invalid", failureDetail: "invalid_request", resultSource: "direct_post_rejection" });
+  });
+
   it("records polls until Verify reports VP_SUBMITTED", async () => {
     process.env.VERIFY_POLL_INTERVAL_MS = "0";
     const fetchMock = vi.fn()

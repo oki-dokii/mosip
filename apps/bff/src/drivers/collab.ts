@@ -48,6 +48,7 @@ const STATE = {
   requestClaims: "collab.requestClaims",
   mockVpToken: "collab.mockVpToken",
   mockVerifierRequestId: "collab.mockVerifierRequestId",
+  verifySubmissionRejection: "collab.verifySubmissionRejection",
 } as const;
 
 function stateValue<T>(context: DriverContext, key: string): T {
@@ -65,6 +66,12 @@ function positiveInteger(value: string | undefined, fallback: number) {
   const parsed = Number(value);
   if (!Number.isSafeInteger(parsed) || parsed < 0) throw new Error(`Expected a non-negative integer, received ${value}`);
   return parsed;
+}
+
+function submissionErrorCode(body: JsonObject | undefined) {
+  const candidate = body?.errorCode ?? body?.error;
+  return typeof candidate === "string" && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(candidate)
+    ? candidate : "VERIFIER_REJECTED_SUBMISSION";
 }
 
 function wait(durationMs: number) {
@@ -453,13 +460,15 @@ class CollabWalletDriver implements WalletDriver {
       }, { accepted: true })], summary: { holderKeyMatchesCredential, submissionAccepted: true } };
     }
     const result = await request(context, requestClaims.response_uri, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: form, allowStatuses: [400] });
+    const rejection = result.status === 400 ? { status: result.status, errorCode: submissionErrorCode(result.body) } : null;
+    if (rejection) context.state.set(STATE.verifySubmissionRejection, rejection);
     return {
       exchanges: [exchange(this.id, context.config.verifier, "POST", requestClaims.response_uri, result, {
         format: config.credentialFormat,
         holderProofType: config.credentialFormat === "dc+sd-jwt" ? "kb+jwt" : "Ed25519Signature2020",
         holderKeyMatchesCredential,
         tamper: context.config.tamper,
-      }, { accepted: result.status < 300, error: result.body?.error, errorCode: result.body?.errorCode })],
+      }, { accepted: result.status < 300, ...(rejection ? { errorCode: rejection.errorCode } : {}) })],
       summary: { holderKeyMatchesCredential, submissionAccepted: result.status < 300 },
     };
   }
@@ -588,6 +597,10 @@ class CollabVerifierDriver implements VerifierDriver {
   }
 
   async pollStatus(context: DriverContext): Promise<DriverResult> {
+    const rejection = context.state.get(STATE.verifySubmissionRejection) as { status: number; errorCode: string } | undefined;
+    if (rejection) {
+      return { summary: { status: "SUBMISSION_REJECTED", submissionHttpStatus: rejection.status, errorCode: rejection.errorCode, attempts: 0 } };
+    }
     const config = await loadConfig(context);
     const requestId = stateValue<string>(context, STATE.verifyRequestId);
     const intervalMs = positiveInteger(process.env.VERIFY_POLL_INTERVAL_MS, 1_000);
@@ -614,6 +627,10 @@ class CollabVerifierDriver implements VerifierDriver {
   }
 
   async getResult(context: DriverContext): Promise<DriverResult> {
+    const rejection = context.state.get(STATE.verifySubmissionRejection) as { status: number; errorCode: string } | undefined;
+    if (rejection) {
+      return { summary: { outcome: "invalid", failureDetail: rejection.errorCode, submissionHttpStatus: rejection.status, resultSource: "direct_post_rejection" } };
+    }
     const config = await loadConfig(context);
     const transactionId = stateValue<string>(context, STATE.verifyTransactionId);
     const url = `${config.verifyBaseUrl}/v2/vp-results/${encodeURIComponent(transactionId)}`;
