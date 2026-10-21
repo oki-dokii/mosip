@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-029 · Generate reports and sequences from redacted run records
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** Reports and diagrams must be reproducible from run history without reintroducing the credentials, keys, and tokens intentionally removed at the recording boundary.
+- **Decision:** Build JSON/Markdown reports and Mermaid sequence text directly from the repository's run, step, and redacted exchange records. Include exchange-to-step markers for a later interactive player. Expose Markdown and JSON downloads from the finished-run UI.
+- **Alternatives considered:** Capture a second detailed artifact during execution (duplicates sensitive-data handling); regenerate from live services (not reproducible); report only the final outcome (insufficient debugging evidence).
+- **Why this one:** Stored records are the authoritative sanitized history, so generated artifacts remain consistent with the inspector and persistence modes.
+- **Trade-off accepted:** Reports cannot include secret-bearing raw protocol artifacts, and Mermaid rendering/playback remains a separate UI task.
+- **Revisit if:** A local-only encrypted evidence bundle is approved or report signing is required.
+- **Affects:** `apps/bff/src/report.ts`, `apps/bff/src/sequence.ts`, report and sequence API routes, FR-45, FR-70, FR-71.
+
 ### D-028 · Replay as a linked fresh full run
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** Users need to repeat a completed combination with a different fault, while D-015 prevents storing the raw credential, keys, and tokens required for presentation-only replay.

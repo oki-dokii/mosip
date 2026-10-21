@@ -20,7 +20,7 @@ Read in this order:
 Working rules for people and AI assistants are in `CLAUDE.md`: quiz before changes, log every meaningful decision, keep `flow.md` true.
 
 ## Status of this documentation
-Phase 0 and Phase 1 are complete as of 2026-10-20. The live Reference Wallet spike issued and verified both JSON-LD and SD-JWT credentials on MOSIP Collab. Phase 2 has a working web and BFF with fixture and live Collab driver modes, verifier-status polling, five selectable tamper paths, linked replay runs, expected-versus-actual evaluation, live run updates, exchange inspection, write-time secret redaction, explicit failure states, and optional PostgreSQL persistence. An application-level Collab smoke run is the next live checkpoint.
+Phase 0 and Phase 1 are complete as of 2026-10-20. The live Reference Wallet spike issued and verified both JSON-LD and SD-JWT credentials on MOSIP Collab. Phase 2 has a working web and BFF with fixture and live Collab driver modes, verifier-status polling, five selectable tamper paths, linked replay runs, downloadable sanitized reports, Mermaid sequence output, expected-versus-actual evaluation, live run updates, exchange inspection, write-time secret redaction, explicit failure states, and optional PostgreSQL persistence. An application-level Collab smoke run is the next live checkpoint.
 
 Run the application locally with:
 

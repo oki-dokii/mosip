@@ -85,7 +85,7 @@ app.ts → POST /api/v1/runs
        ⇒ repository.updateRun(passed/failed/errored); emit run:finished
 ```
 
-`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read through the same repository. PostgreSQL records survive BFF restarts; memory records intentionally do not. Run configuration can select a tamper; the wallet applies it immediately before presentation, and the orchestrator marks the run passed when the verifier's invalid result matches the expected invalid outcome. Durable reports remain planned.
+`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read through the same repository. PostgreSQL records survive BFF restarts; memory records intentionally do not. Run configuration can select a tamper; the wallet applies it immediately before presentation, and the orchestrator marks the run passed when the verifier's invalid result matches the expected invalid outcome. Reports and sequence output are generated only from these already-redacted records.
 
 ### 3.3 Where exchange data is recorded
 
@@ -140,11 +140,11 @@ Same interfaces, calling `apps/mock-issuer` and `apps/mock-verifier` through the
 ### 5.1 Replay with tamper 🟩
 `POST /api/v1/runs/:id/replay` ⇒ require a passed or mismatched source run ⇒ clone its combination with the requested tamper ⇒ create a full child run with `parent_run_id` ⇒ execute the normal driver-backed flow with fresh credentials and protocol state. Re-running issuance follows D-015 because reusable tokens and credentials are not persisted.
 
-### 5.2 Report download
-`GET /runs/:id/report?format=md` ⇒ `reportService.build(runId)` ⇒ `report/markdown.ts → render(model)` (or `report/json.ts`).
+### 5.2 Report download 🟩
+`GET /api/v1/runs/:id/report?format=md|json` ⇒ load the stored run record ⇒ `report.ts → buildReport()` ⇒ return structured JSON or `renderMarkdown()` with sanitized exchanges.
 
-### 5.3 Sequence view
-`GET /runs/:id/sequence` ⇒ `sequence/mermaid.ts → fromExchanges(exchanges)` ⇒ returns text plus step markers ⇒ `components/SequenceDiagram.tsx` renders with mermaid.js and drives playback.
+### 5.3 Sequence view 🟩 API · 🟦 interactive UI
+`GET /api/v1/runs/:id/sequence` ⇒ `sequence.ts → buildSequence(exchanges)` ⇒ return Mermaid text plus exchange/step line markers. Interactive rendering and playback remain planned.
 
 ### 5.4 History and matrix
 `GET /runs?filters` ⇒ `runService.list(filters)` ⇒ Prisma query joined with `service_versions`.
@@ -206,6 +206,8 @@ Current M1 files:
 | `apps/bff/src/drivers/fixture.ts` | Deterministic local driver set |
 | `apps/bff/src/drivers/collab.ts` | Live Certify/eSignet, Reference Wallet, and Verify adapter |
 | `apps/bff/src/tamper/index.ts` | Pure JSON-LD/SD-JWT fault injection and nonce replay simulation |
+| `apps/bff/src/report.ts` | Sanitized JSON report model and Markdown rendering |
+| `apps/bff/src/sequence.ts` | Mermaid sequence text and exchange-to-step markers |
 | `apps/bff/src/redaction.ts` | Recursive write-time masking |
 | `apps/bff/src/store.ts` | Repository contract plus memory and Prisma implementations |
 | `apps/bff/prisma/schema.prisma` | Implemented PostgreSQL run, step, and exchange schema |

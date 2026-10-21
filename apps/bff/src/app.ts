@@ -6,6 +6,8 @@ import { runConfigSchema, tamperKindSchema, type ImplementationMetadata, type Ru
 import { z } from "zod";
 import { configuredDriverMode } from "./drivers/registry.js";
 import { createSteps, runDemo } from "./orchestrator.js";
+import { buildReport, renderMarkdown } from "./report.js";
+import { buildSequence } from "./sequence.js";
 import type { RunRepository } from "./store.js";
 
 const metadata: ImplementationMetadata = {
@@ -145,6 +147,32 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
       if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
       const stepId = typeof request.query.stepId === "string" ? request.query.stepId : null;
       response.json({ items: stepId ? record.exchanges.filter((item) => item.stepId === stepId) : record.exchanges });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/v1/runs/:id/report", async (request, response, next) => {
+    try {
+      const record = await repository.get(request.params.id);
+      if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
+      const format = request.query.format ?? "json";
+      if (format !== "json" && format !== "md") return response.status(400).json({ code: "UNSUPPORTED_REPORT_FORMAT" });
+      const report = buildReport(record);
+      const extension = format === "md" ? "md" : "json";
+      response.setHeader("content-disposition", `attachment; filename=run-${record.run.id}.${extension}`);
+      if (format === "md") return response.type("text/markdown").send(renderMarkdown(report));
+      response.json(report);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/v1/runs/:id/sequence", async (request, response, next) => {
+    try {
+      const record = await repository.get(request.params.id);
+      if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
+      response.json(buildSequence(record.exchanges));
     } catch (error) {
       next(error);
     }
