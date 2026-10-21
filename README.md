@@ -1,6 +1,6 @@
 # Inji Interoperability Playground: documentation index
 
-A web app where you pick an issuer, a wallet and a verifier, run a live issue → hold → present → verify flow across Inji Certify, Inji Web/Mimoto and Inji Verify (and non-Inji mocks), and see every protocol exchange.
+A web app where you pick an issuer, a wallet and a verifier, run an issue → hold → present → verify flow, and inspect its protocol exchanges. Live automation uses Inji Certify, the Reference Wallet, Inji Verify, and optional non-Inji mock services; assisted Inji Web remains a separate integration path.
 
 Read in this order:
 
