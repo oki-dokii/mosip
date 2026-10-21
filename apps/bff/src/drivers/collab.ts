@@ -47,6 +47,7 @@ const STATE = {
   verifyRequestId: "collab.verifyRequestId",
   requestClaims: "collab.requestClaims",
   mockVpToken: "collab.mockVpToken",
+  mockVerifierRequestId: "collab.mockVerifierRequestId",
 } as const;
 
 function stateValue<T>(context: DriverContext, key: string): T {
@@ -138,6 +139,15 @@ class MockIssuerDriver implements IssuerDriver {
 
   async createOffer(context: DriverContext): Promise<DriverResult> {
     if (context.config.format !== "vc_sd_jwt") throw new Error("Mock issuer currently supports SD-JWT VC only");
+    const baseUrl = process.env.MOCK_ISSUER_BASE_URL;
+    if (baseUrl) {
+      const url = `${baseUrl}/.well-known/openid-credential-issuer`;
+      const result = await request(context, url);
+      if (!result.body?.credential_configurations_supported?.MockVerifiableCredential_SD_JWT) throw new Error("External mock issuer does not advertise the SD-JWT configuration");
+      return { exchanges: [exchange(context.config.wallet, this.id, "GET", url, result, {}, {
+        credential_issuer: result.body.credential_issuer, credential_configuration_id: "MockVerifiableCredential_SD_JWT", format: "dc+sd-jwt",
+      })], summary: { credentialConfigurationId: "MockVerifiableCredential_SD_JWT", format: "dc+sd-jwt", source: "external_non_inji_mock" } };
+    }
     return {
       exchanges: [exchange(context.config.wallet, this.id, "GET", "mock://issuer/.well-known/openid-credential-issuer", { status: 200, body: {}, durationMs: 0 }, {}, {
         credential_issuer: "mock://issuer", credential_configuration_id: "MockVerifiableCredential_SD_JWT", format: "dc+sd-jwt",
@@ -235,6 +245,15 @@ class CollabWalletDriver implements WalletDriver {
 
   async authorize(context: DriverContext): Promise<DriverResult> {
     if (context.config.issuer === "mock_issuer") {
+      const baseUrl = process.env.MOCK_ISSUER_BASE_URL;
+      if (baseUrl) {
+        const url = `${baseUrl}/token`;
+        const token = await request(context, url, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:pre-authorized_code", "pre-authorized_code": "public-test-code" }) });
+        if (!token.body?.access_token || !token.body?.c_nonce) throw new Error("External mock issuer omitted token or nonce");
+        context.state.set(STATE.accessToken, token.body.access_token);
+        context.state.set(STATE.credentialNonce, token.body.c_nonce);
+        return { exchanges: [exchange(this.id, "mock_issuer", "POST", url, token, { grant_type: "pre-authorized_code" }, { token_type: token.body.token_type, access_token: token.body.access_token, c_nonce: token.body.c_nonce })], summary: { authorized: true, source: "external_non_inji_mock" } };
+      }
       return { exchanges: [exchange(this.id, "mock_issuer", "POST", "mock://issuer/token", { status: 200, body: {}, durationMs: 0 }, { grant_type: "pre-authorized_code" }, { token_type: "Bearer", access_token: "synthetic-token" })], summary: { authorized: true, source: "local_non_inji_mock" } };
     }
     const config = await loadConfig(context);
@@ -316,6 +335,17 @@ class CollabWalletDriver implements WalletDriver {
     context.state.set(STATE.holderPublicJwk, holderPublicJwk);
     context.state.set(STATE.holderPrivateJwk, holderPrivateJwk);
     if (context.config.issuer === "mock_issuer") {
+      const baseUrl = process.env.MOCK_ISSUER_BASE_URL;
+      if (baseUrl) {
+        const accessToken = stateValue<string>(context, STATE.accessToken);
+        const nonce = stateValue<string>(context, STATE.credentialNonce);
+        const proof = await createJwt(holderPrivateJwk, { aud: baseUrl, nonce, iss: config.clientId }, { alg: "EdDSA", typ: "openid4vci-proof+jwt", jwk: holderPublicJwk });
+        const url = `${baseUrl}/credential`;
+        const issued = await request(context, url, { method: "POST", headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json" }, body: JSON.stringify({ credential_configuration_id: config.credentialConfigurationId, proofs: { jwt: [proof] } }) });
+        if (!issued.body?.credential) throw new Error("External mock issuer did not return a credential");
+        context.state.set(STATE.credential, issued.body.credential);
+        return { exchanges: [exchange(this.id, "mock_issuer", "POST", url, issued, { credential_configuration_id: config.credentialConfigurationId, proof }, { credentialReturned: true, format: issued.body.format })], summary: { credentialReceived: true, format: "dc+sd-jwt", source: "external_non_inji_mock" } };
+      }
       const credential = await issueMockSdJwt(holderPublicJwk);
       context.state.set(STATE.credential, credential);
       return {
@@ -399,6 +429,13 @@ class CollabWalletDriver implements WalletDriver {
     }
     const form = new URLSearchParams({ state: requestClaims.state, vp_token: JSON.stringify({ credential: [vpToken] }) });
     if (context.config.verifier === "mock_verifier") {
+      const baseUrl = process.env.MOCK_VERIFIER_BASE_URL;
+      if (baseUrl) {
+        const result = await request(context, requestClaims.response_uri, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: form });
+        return { exchanges: [exchange(this.id, "mock_verifier", "POST", requestClaims.response_uri, result, {
+          format: config.credentialFormat, holderProofType: "kb+jwt", holderKeyMatchesCredential, tamper: context.config.tamper,
+        }, { accepted: result.body?.accepted === true })], summary: { holderKeyMatchesCredential, submissionAccepted: result.body?.accepted === true } };
+      }
       context.state.set(STATE.mockVpToken, vpToken);
       return { exchanges: [exchange(this.id, "mock_verifier", "POST", "mock://verifier/direct-post", { status: 200, body: {}, durationMs: 0 }, {
         format: config.credentialFormat, holderProofType: "kb+jwt", holderKeyMatchesCredential, tamper: context.config.tamper,
@@ -466,17 +503,38 @@ class MockVerifierDriver implements VerifierDriver {
 
   async createRequest(context: DriverContext): Promise<DriverResult> {
     if (context.config.format !== "vc_sd_jwt") throw new Error("Mock verifier currently supports SD-JWT VC only");
+    const baseUrl = process.env.MOCK_VERIFIER_BASE_URL;
+    if (baseUrl) {
+      const url = `${baseUrl}/vp-request`;
+      const result = await request(context, url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "dc+sd-jwt" }) });
+      if (!result.body?.requestId || !result.body?.claims?.response_uri) throw new Error("External mock verifier omitted its request state");
+      context.state.set(STATE.mockVerifierRequestId, result.body.requestId);
+      context.state.set(STATE.requestClaims, result.body.claims);
+      return { exchanges: [exchange("playground", this.id, "POST", url, result, { format: "dc+sd-jwt" }, { requestCreated: true, responseMode: "direct_post" })], summary: { signedRequestReceived: false, queryLanguage: "DCQL", source: "external_non_inji_mock" } };
+    }
     const requestClaims = { client_id: "mock-verifier", nonce: randomUUID(), state: randomUUID(), response_uri: "mock://verifier/direct-post" };
     context.state.set(STATE.requestClaims, requestClaims);
     return { exchanges: [exchange("playground", this.id, "POST", "mock://verifier/vp-request", { status: 201, body: {}, durationMs: 0 }, { format: "dc+sd-jwt" }, { requestCreated: true, responseMode: "direct_post" })], summary: { signedRequestReceived: false, queryLanguage: "DCQL", source: "local_non_inji_mock" } };
   }
 
   async pollStatus(context: DriverContext): Promise<DriverResult> {
+    const baseUrl = process.env.MOCK_VERIFIER_BASE_URL;
+    if (baseUrl) {
+      const url = `${baseUrl}/status/${encodeURIComponent(stateValue<string>(context, STATE.mockVerifierRequestId))}`;
+      const result = await request(context, url);
+      return { exchanges: [exchange("playground", this.id, "GET", url, result, {}, { status: result.body?.status })], summary: { status: result.body?.status, attempts: 1 } };
+    }
     const submitted = Boolean(context.state.get(STATE.mockVpToken));
     return { exchanges: [exchange("playground", this.id, "GET", "mock://verifier/status", { status: 200, body: {}, durationMs: 0 }, {}, { status: submitted ? "VP_SUBMITTED" : "PENDING" })], summary: { status: submitted ? "VP_SUBMITTED" : "PENDING", attempts: 1 } };
   }
 
   async getResult(context: DriverContext): Promise<DriverResult> {
+    const baseUrl = process.env.MOCK_VERIFIER_BASE_URL;
+    if (baseUrl) {
+      const url = `${baseUrl}/result/${encodeURIComponent(stateValue<string>(context, STATE.mockVerifierRequestId))}`;
+      const result = await request(context, url);
+      return { exchanges: [exchange("playground", this.id, "GET", url, result, {}, result.body)], summary: result.body };
+    }
     const token = stateValue<string>(context, STATE.mockVpToken);
     const requestClaims = stateValue<JsonObject>(context, STATE.requestClaims);
     let result: Record<string, unknown>;

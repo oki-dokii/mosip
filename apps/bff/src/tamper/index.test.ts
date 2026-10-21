@@ -8,7 +8,9 @@ function jwt(payload: object, signature = "signature") {
 describe("tamper engine", () => {
   it("corrupts an SD-JWT issuer signature", () => {
     const original = `${jwt({ vct: "Example" })}~disclosure~`;
-    expect(applyCredentialTamper(original, "bad_signature", "vc_sd_jwt")).not.toBe(original);
+    const changed = applyCredentialTamper(original, "bad_signature", "vc_sd_jwt") as string;
+    const signature = (value: string) => Buffer.from(value.split("~")[0]!.split(".")[2]!, "base64url");
+    expect(signature(changed).equals(signature(original))).toBe(false);
   });
 
   it("removes one SD-JWT disclosure", () => {

@@ -21,10 +21,20 @@ function mutateJwtPayload(jwt: string, mutate: (payload: Record<string, unknown>
   return parts.join(".");
 }
 
+function corruptJwtSignature(jwt: string) {
+  const parts = jwt.split(".");
+  if (parts.length !== 3 || !parts[2]) throw new Error("Expected a signed compact JWT");
+  const signature = Buffer.from(parts[2], "base64url");
+  if (!signature.length) throw new Error("Expected a non-empty JWT signature");
+  signature[0] = signature[0]! ^ 0x01;
+  parts[2] = signature.toString("base64url");
+  return parts.join(".");
+}
+
 function tamperSdJwt(credential: string, kind: TamperKind) {
   const parts = credential.split("~");
   if (!parts[0]) throw new Error("Expected an SD-JWT credential");
-  if (kind === "bad_signature") parts[0] = flipLastCharacter(parts[0]);
+  if (kind === "bad_signature") parts[0] = corruptJwtSignature(parts[0]);
   if (kind === "expired") parts[0] = mutateJwtPayload(parts[0], (payload) => { payload.exp = 1; });
   if (kind === "wrong_type") parts[0] = mutateJwtPayload(parts[0], (payload) => { payload.vct = "UnexpectedCredential"; });
   if (kind === "missing_disclosure") {

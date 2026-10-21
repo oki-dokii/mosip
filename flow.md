@@ -2,7 +2,7 @@
 
 How code travels between files and functions: **entry points, order of execution, and who calls whom.**
 
-> **Status: PHASE 3 CORE P1 TOOLS AND LOCAL MOCK PATHS IMPLEMENTED.** The BFF selects deterministic fixtures by default or live Collab plus local mock roles through `PLAYGROUND_DRIVER_MODE=collab`. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Replay, reports, sequence playback, filtered history, and matrix exports are implemented. Standalone mock protocol services, assisted Inji Web automation, and transparent Tap capture remain open.
+> **Status: PHASE 3 CORE P1 TOOLS AND STANDALONE MOCK SERVICES IMPLEMENTED.** The BFF selects deterministic fixtures by default or live Collab plus mock roles through `PLAYGROUND_DRIVER_MODE=collab`. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Replay, reports, sequence playback, filtered history, and matrix exports are implemented. Assisted Inji Web automation and transparent Tap capture remain open.
 
 Legend: `file → function()` means "this function in that file". `A ⇒ B` means A calls B. Status: 🟦 planned · 🟩 implemented · 🟥 changed from plan (explain in decisions.md).
 
@@ -35,8 +35,8 @@ Legend: `file → function()` means "this function in that file". `A ⇒ B` mean
 |---|---|---|---|
 | BFF process | `apps/bff/src/server.ts` | `pnpm --filter @playground/bff dev` or `node dist/server.js` | 🟩 |
 | Web app | `apps/web/src/main.tsx` | `pnpm --filter @playground/web dev` / built static files | 🟩 |
-| Mock issuer | `apps/mock-issuer/src/server.ts` | Compose profile `mocks` | 🟦 |
-| Mock verifier | `apps/mock-verifier/src/server.ts` | Compose profile `mocks` | 🟦 |
+| Mock issuer | `apps/mock-issuer/src/server.ts` | `pnpm dev` or `node apps/mock-issuer/dist/server.js` | 🟩 |
+| Mock verifier | `apps/mock-verifier/src/server.ts` | `pnpm dev` or `node apps/mock-verifier/dist/server.js` | 🟩 |
 | DB migrations | `apps/bff/prisma/migrations` | `pnpm db:deploy` | 🟩 |
 | DB seeds | `apps/bff/prisma/seed.ts` | Future preset-scenario seed | 🟦 |
 | Nightly matrix runner (bonus) | `apps/bff/src/cli/nightly.ts` | GitHub Actions schedule | 🟦 |
@@ -131,9 +131,9 @@ When `config.tamper` is set, `tamper/index.ts → applyCredentialTamper()` chang
 - `getResult` ⇒ `POST /v2/vp-results/{transactionId}` ⇒ map verification checks to the run outcome.
 
 ### 4.5 Local non-Inji mocks (`drivers/collab.ts`) 🟩 SD-JWT
-`MockIssuerDriver.createOffer()` ⇒ advertise SD-JWT configuration with `mock://` transport marker. `CollabWalletDriver.authorize()` ⇒ local synthetic authorization. `requestCredential()` ⇒ sign a holder-bound SD-JWT with a fresh per-run Ed25519 issuer key.
+With `MOCK_ISSUER_BASE_URL`, `MockIssuerDriver.createOffer()` ⇒ fetch the standalone issuer's discovery document. `CollabWalletDriver.authorize()` ⇒ form-encoded pre-authorized token exchange. `requestCredential()` ⇒ generate a holder proof JWT and call the issuer's `/credential` endpoint. `apps/mock-issuer/src/server.ts` validates the token, nonce, and holder proof, then signs a holder-bound SD-JWT. Without the URL, these steps use the in-process mock and `mock://` transport markers.
 
-`MockVerifierDriver.createRequest()` ⇒ create an in-memory DCQL-style request. `CollabWalletDriver.present()` ⇒ create a key-bound SD-JWT presentation and submit to the in-memory mock boundary. `pollStatus()` ⇒ report submission. `getResult()` ⇒ verify issuer signature, type, expiry, holder proof, nonce, audience, and disclosure digests. The embedded Certify certificate's trust chain is not checked.
+With `MOCK_VERIFIER_BASE_URL`, `MockVerifierDriver.createRequest()` ⇒ call the standalone `/vp-request` endpoint. `CollabWalletDriver.present()` ⇒ create a key-bound SD-JWT and post it to `/direct-post`. `pollStatus()` ⇒ read `/status/:id`. `getResult()` ⇒ read `/result/:id`. `apps/mock-verifier/src/verify.ts` checks issuer signature, type, expiry, holder proof, nonce, audience, and disclosure digests. Without the URL, the same checks run in the BFF's in-process mock. The embedded Certify certificate's trust chain is not checked.
 
 ---
 
@@ -215,6 +215,9 @@ Current M1 files:
 | `apps/bff/src/history.ts` | Run history filters |
 | `apps/bff/src/capabilities.ts` | Live combination validation |
 | `apps/bff/src/versions.ts` | Immutable service release-label snapshot |
+| `apps/mock-issuer/src/server.ts` | Standalone test-only OpenID4VCI discovery, token, and credential endpoints |
+| `apps/mock-verifier/src/server.ts` | Standalone test-only OpenID4VP request, direct-post, status, and result endpoints |
+| `apps/mock-verifier/src/verify.ts` | Standalone SD-JWT issuer and holder proof checks |
 | `apps/bff/src/redaction.ts` | Recursive write-time masking |
 | `apps/bff/src/store.ts` | Repository contract plus memory and Prisma implementations |
 | `apps/bff/prisma/schema.prisma` | Implemented PostgreSQL run, step, and exchange schema |
@@ -241,3 +244,5 @@ When you change code:
 | 2026-10-21 | Added the M1 web/BFF walking skeleton, shared schemas, in-memory orchestration, live events, inspector, and write-time redaction | implementation |
 | 2026-10-21 | Added Prisma/PostgreSQL run persistence, initial migration, repository fallback, and graceful disconnect | implementation |
 | 2026-10-21 | Added Phase 3 local SD-JWT mock roles, exact-exchange sequence playback, filtered history, and service version snapshots | implementation |
+| 2026-10-21 | Added a standalone OpenID4VCI mock issuer and an opt-in HTTP adapter in the Reference Wallet path | implementation |
+| 2026-10-21 | Added a standalone OpenID4VP mock verifier, opt-in HTTP adapter, and reliable signature fault mutation | implementation |

@@ -23,7 +23,7 @@ Working rules for people and AI assistants are in `CLAUDE.md`: quiz before chang
 ## Status of this documentation
 Phase 0 and Phase 1 are complete as of 2026-10-20. Phase 2's Reference Wallet track is complete as of 2026-10-21. The application has fixture and live Collab driver modes, verifier-status polling, five selectable tamper paths, linked replay runs, downloadable sanitized reports, an interactive sequence view with Mermaid export, run history, a latest-result matrix with three export formats, expected-versus-actual evaluation, live updates, exchange inspection, write-time secret redaction, explicit failure states, and optional PostgreSQL persistence. Application-level JSON-LD and SD-JWT Collab runs both passed all ten steps and returned valid verifier results.
 
-Phase 3 adds exact-exchange sequence playback, history filters with version snapshots, a signed local SD-JWT mock issuer, and a cryptographic local mock verifier. [PHASE3.md](PHASE3.md) records which cross-ecosystem runs passed, which one Inji Verify rejected, and the mock verifier's trust boundary.
+Phase 3 adds exact-exchange sequence playback, history filters with version snapshots, and standalone SD-JWT mock issuer and verifier services. [PHASE3.md](PHASE3.md) records which cross-ecosystem runs passed, which one Inji Verify rejected, and the mock verifier's trust boundary.
 
 Run the application locally with:
 

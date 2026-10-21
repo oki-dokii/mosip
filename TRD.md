@@ -94,6 +94,8 @@ interface VerifierDriver { createRequest(ctx): Promise<VpRequest>; status(ctx, i
 | Verifier | `mockVerifier` | Mock external OpenID4VP verifier |
 
 ### 3.3 Recorder and optional Tap (`apps/bff/src/recorder`, `apps/bff/src/tap`)
+
+Phase 3 also provides separate localhost mock issuer and verifier processes. The BFF selects their real HTTP boundaries through `MOCK_ISSUER_BASE_URL` and `MOCK_VERIFIER_BASE_URL`; without those values, its in-process mock roles remain available for tests. The standalone mock verifier checks cryptographic consistency but does not establish certificate-chain trust.
 - Drivers call the recorder around external exchanges, preserving the original protocol URL and payload.
 - The recorder stores method, URL, redacted headers, size-capped bodies, status, timing, provenance and actor pair.
 - Redaction removes or hashes `Authorization`, `access_token`, `pre-authorized_code`, `refresh_token`, `c_nonce` where needed, and private JWK fields before persistence.

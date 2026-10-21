@@ -54,6 +54,26 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-034 · Offer a standalone test verifier behind the mock driver
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** The in-process verifier exercised cryptographic checks but could not prove the Reference Wallet's direct-post and status handling across an independent HTTP service.
+- **Decision:** Add a separate localhost-only test verifier with request, direct-post, status, and result endpoints. Select it with `MOCK_VERIFIER_BASE_URL`; retain the in-process verifier when the URL is absent. Keep presentations in process memory and return only check summaries.
+- **Alternatives considered:** Keep all verification in the BFF (misses transport behavior); require the mock process for every test (slows the deterministic loop); proxy Inji Verify under a mock label (does not test an independent verifier).
+- **Why this one:** It validates the protocol boundary and cryptographic behavior independently while preserving simple fixture tests.
+- **Trade-off accepted:** The mock checks the embedded Certify certificate's signature but not its chain or trust anchor. It must remain a local test tool, not a production trust decision.
+- **Revisit if:** A trust-store backed verifier or public deployment is needed.
+- **Affects:** `apps/mock-verifier`, `MOCK_VERIFIER_BASE_URL`, `apps/bff/src/drivers/collab.ts`, `PHASE3.md`, FR-91.
+
+### D-033 · Offer a standalone test issuer behind the mock driver
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** The first mock issuer signed real SD-JWTs but lived in the BFF, so it did not test an HTTP OpenID4VCI boundary.
+- **Decision:** Add a separate test-only issuer process with discovery, form-encoded pre-authorized token exchange, and JWT-proof credential issuance. Select it with `MOCK_ISSUER_BASE_URL`; retain the in-process mock when the URL is absent. Keep signing keys in process memory and record only sanitized request and response summaries.
+- **Alternatives considered:** Replace every mock run with a required extra process (slows fixture and unit-test loops); use an Inji issuer under another label (does not test non-Inji implementation); expose a public mock deployment (requires separate trust and abuse controls).
+- **Why this one:** The Reference Wallet now crosses a real independent service boundary while existing local tests remain deterministic.
+- **Trade-off accepted:** The standalone issuer uses a public test grant and a self-declared `did:jwk` key. It must stay local/test-only, and the tested Inji Verify path rejects its credential signature or schema.
+- **Revisit if:** The mock is deployed outside a trusted local test network or Verify adds a DID-key SD-JWT issuer path.
+- **Affects:** `apps/mock-issuer`, `MOCK_ISSUER_BASE_URL`, `apps/bff/src/drivers/collab.ts`, `PHASE3.md`, FR-90, A8.
+
 ### D-032 · Snapshot explicit service release labels with each run
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** History needs version filters for regression review, but the tested Collab public endpoints do not report reliable service release versions.
