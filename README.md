@@ -279,6 +279,7 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 | Code paths and design choices | [Flow map](flow.md), [decision log](decisions.md) |
 | Phase evidence | [Phase 0–1](PHASE0_1.md), [Phase 2](PHASE2.md), [Phase 3](PHASE3.md) |
 | Independent remaining work | [Four-person plan](NEXT_STEPS_4_PERSON_PLAN.md) |
+| Five-day priority order and rival finding probes | [Catch-up plan](CATCH_UP.md) |
 | Scenario provenance | [Scenarios and evidence](SCENARIOS_AND_EVIDENCE.md) |
 | Observed interoperability findings | [Gap register](GAPS.md) |
 | A1/A2 proof and cut-off | [Wallet validation](WALLET_VALIDATION.md) |
