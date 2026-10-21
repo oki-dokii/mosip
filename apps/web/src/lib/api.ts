@@ -8,6 +8,8 @@ async function json<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   metadata: () => json<ImplementationMetadata>("/api/v1/meta/implementations"),
+  runs: () => json<{ items: RunSummary[] }>("/api/v1/runs"),
+  matrix: () => json<{ items: RunSummary[] }>("/api/v1/matrix"),
   createRun: (config: RunConfig) => json<{ runId: string }>("/api/v1/runs", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -21,4 +23,5 @@ export const api = {
   run: (id: string) => json<RunSummary>(`/api/v1/runs/${id}`),
   steps: (id: string) => json<{ items: RunStep[] }>(`/api/v1/runs/${id}/steps`),
   exchanges: (id: string) => json<{ items: Exchange[] }>(`/api/v1/runs/${id}/exchanges`),
+  sequence: (id: string) => json<{ mermaid: string; markers: Array<{ exchangeId: string; stepId: string; line: number }> }>(`/api/v1/runs/${id}/sequence`),
 };

@@ -8,6 +8,7 @@ import { configuredDriverMode } from "./drivers/registry.js";
 import { createSteps, runDemo } from "./orchestrator.js";
 import { buildReport, renderMarkdown } from "./report.js";
 import { buildSequence } from "./sequence.js";
+import { latestMatrix, renderMatrixCsv, renderMatrixMarkdown } from "./matrix.js";
 import type { RunRepository } from "./store.js";
 
 const metadata: ImplementationMetadata = {
@@ -71,6 +72,31 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
   });
 
   app.get("/api/v1/meta/implementations", (_request, response) => response.json(metadata));
+  app.get("/api/v1/matrix", async (_request, response, next) => {
+    try {
+      response.json({ items: latestMatrix(await repository.list()) });
+    } catch (error) {
+      next(error);
+    }
+  });
+  app.get("/api/v1/matrix/export", async (request, response, next) => {
+    try {
+      const format = request.query.format ?? "csv";
+      const runs = await repository.list();
+      if (format === "json") return response.json({ items: latestMatrix(runs) });
+      if (format === "csv") {
+        response.setHeader("content-disposition", "attachment; filename=interoperability-matrix.csv");
+        return response.type("text/csv").send(renderMatrixCsv(runs));
+      }
+      if (format === "md") {
+        response.setHeader("content-disposition", "attachment; filename=interoperability-matrix.md");
+        return response.type("text/markdown").send(renderMatrixMarkdown(runs));
+      }
+      return response.status(400).json({ code: "UNSUPPORTED_MATRIX_FORMAT" });
+    } catch (error) {
+      next(error);
+    }
+  });
   app.get("/api/v1/runs", async (_request, response, next) => {
     try {
       response.json({ items: await repository.list() });

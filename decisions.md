@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-030 · Close Phase 2 on the automated Reference Wallet path
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** The mandatory interoperability proof needs reproducible JSON-LD and SD-JWT application runs, while assisted Inji Web presentation needs a persistent login, lacks the tested SD-JWT path, and cannot safely be forced through a URL-rewriting Tap.
+- **Decision:** Complete Phase 2 around the automated Reference Wallet, adapter-level capture, durable history, latest-combination matrix, exports, and interactive recorded-message selection. Keep Mermaid as a generated portable artifact and use a small native React sequence renderer in the app. Defer assisted Inji Web automation and transparent Tap capture to Phase 3, subject to a dedicated test account and a no-rewrite capture design.
+- **Alternatives considered:** Block Phase 2 on an all-Inji Web path (depends on unavailable capability/account state); proxy signed browser traffic (can change the protocol under test); add mermaid.js only for display (larger dependency and weaker message-to-inspector interaction).
+- **Why this one:** Both required formats now pass all ten application steps against live Collab, and the UI exposes every sanitized boundary without overstating the assisted wallet coverage.
+- **Trade-off accepted:** Phase 2 proves Certify and Verify interoperability with the standards-based Reference Wallet; it does not claim complete automated Inji Web presentation.
+- **Revisit if:** A dedicated persistent Inji Web test account, SD-JWT presentation, or safe no-rewrite observability becomes available.
+- **Affects:** `PHASE2.md`, `apps/web/src/components/SequenceView.tsx`, `apps/web/src/components/RunArchive.tsx`, `apps/bff/src/matrix.ts`, D-003, D-009, D-017, FR-52, FR-70, FR-71, FR-80.
+
 ### D-029 · Generate reports and sequences from redacted run records
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** Reports and diagrams must be reproducible from run history without reintroducing the credentials, keys, and tokens intentionally removed at the recording boundary.
@@ -255,7 +265,7 @@ Version 0.1 · started 2026-10-17
 - **Affects:** repo root, Dockerfiles, CI.
 
 ### D-009 · Sequence diagrams generated from recorded exchanges with mermaid.js
-- **Date:** 2026-10-17   **Status:** Accepted
+- **Date:** 2026-10-17   **Status:** Superseded by D-030
 - **Context:** FR-70/71 need an animated OpenID4VP/VCI sequence view.
 - **Decision:** Generate Mermaid `sequenceDiagram` text from stored exchanges and render it with mermaid.js; implement animation by revealing messages progressively.
 - **Alternatives considered:** Hand-drawn static diagrams (not tied to real runs); custom SVG/WebSocket timeline (more work); D3 (overkill).

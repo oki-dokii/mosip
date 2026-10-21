@@ -2,7 +2,7 @@
 
 How code travels between files and functions: **entry points, order of execution, and who calls whom.**
 
-> **Status: SPIKES, M1, RUN PERSISTENCE, AND REFERENCE WALLET COLLAB DRIVERS IMPLEMENTED.** The BFF selects deterministic fixtures by default or the live Collab path through `PLAYGROUND_DRIVER_MODE=collab`. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Assisted Inji Web, Tap, replay, and reporting remain planned.
+> **Status: PHASE 2 REFERENCE WALLET TRACK COMPLETE.** The BFF selects deterministic fixtures by default or the live Collab path through `PLAYGROUND_DRIVER_MODE=collab`. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Replay, reports, interactive sequence inspection, history, and matrix exports are implemented. Assisted Inji Web automation and transparent Tap capture are deferred under D-030.
 
 Legend: `file → function()` means "this function in that file". `A ⇒ B` means A calls B. Status: 🟦 planned · 🟩 implemented · 🟥 changed from plan (explain in decisions.md).
 
@@ -143,12 +143,13 @@ Same interfaces, calling `apps/mock-issuer` and `apps/mock-verifier` through the
 ### 5.2 Report download 🟩
 `GET /api/v1/runs/:id/report?format=md|json` ⇒ load the stored run record ⇒ `report.ts → buildReport()` ⇒ return structured JSON or `renderMarkdown()` with sanitized exchanges.
 
-### 5.3 Sequence view 🟩 API · 🟦 interactive UI
-`GET /api/v1/runs/:id/sequence` ⇒ `sequence.ts → buildSequence(exchanges)` ⇒ return Mermaid text plus exchange/step line markers. Interactive rendering and playback remain planned.
+### 5.3 Sequence view 🟩
+`GET /api/v1/runs/:id/sequence` ⇒ `sequence.ts → buildSequence(exchanges)` ⇒ return Mermaid text plus exchange/step line markers. `SequenceView.tsx` renders the recorded messages as an interactive actor-to-actor list; selecting a message selects the corresponding timeline step and inspector exchange. Mermaid source can be copied for external rendering.
 
-### 5.4 History and matrix
-`GET /runs?filters` ⇒ `runService.list(filters)` ⇒ Prisma query joined with `service_versions`.
-`GET /matrix` ⇒ `matrixService.latest()` ⇒ `SELECT * FROM matrix_latest`. `GET /matrix/export` ⇒ `matrixService.export(format)`.
+### 5.4 History and matrix 🟩
+`GET /api/v1/runs` ⇒ `repository.list()` ⇒ newest-first run summaries displayed by `RunArchive.tsx`; selecting a row opens that run.
+
+`GET /api/v1/matrix` ⇒ `matrix.ts → latestMatrix()` ⇒ newest run for each complete role/format/flow/fault combination. `GET /api/v1/matrix/export?format=json|csv|md` renders the same snapshot for download.
 
 ### 5.5 Health
 `GET /health` ⇒ `healthService.check()` ⇒ parallel pings to each configured service plus a DB query ⇒ list of `{name, status, version, latencyMs}`.
@@ -208,6 +209,7 @@ Current M1 files:
 | `apps/bff/src/tamper/index.ts` | Pure JSON-LD/SD-JWT fault injection and nonce replay simulation |
 | `apps/bff/src/report.ts` | Sanitized JSON report model and Markdown rendering |
 | `apps/bff/src/sequence.ts` | Mermaid sequence text and exchange-to-step markers |
+| `apps/bff/src/matrix.ts` | Latest-combination projection and CSV/Markdown exports |
 | `apps/bff/src/redaction.ts` | Recursive write-time masking |
 | `apps/bff/src/store.ts` | Repository contract plus memory and Prisma implementations |
 | `apps/bff/prisma/schema.prisma` | Implemented PostgreSQL run, step, and exchange schema |

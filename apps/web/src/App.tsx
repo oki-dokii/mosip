@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Exchange, ImplementationMetadata, RunConfig, RunStep, RunSummary } from "@playground/shared";
 import { Activity, ArrowRight, FlaskConical, Play, ShieldCheck } from "lucide-react";
 import { io } from "socket.io-client";
 import { Inspector } from "./components/Inspector";
 import { RoleSelector } from "./components/RoleSelector";
 import { RunTimeline } from "./components/RunTimeline";
+import { RunArchive } from "./components/RunArchive";
+import { SequenceView } from "./components/SequenceView";
 import { api } from "./lib/api";
 
 const initialConfig: RunConfig = {
@@ -35,8 +37,18 @@ export default function App() {
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [history, setHistory] = useState<RunSummary[]>([]);
+  const [matrix, setMatrix] = useState<RunSummary[]>([]);
+  const [archiveView, setArchiveView] = useState<"history" | "matrix">("history");
+  const archivedRunId = useRef<string | null>(null);
 
-  useEffect(() => { void api.metadata().then(setMetadata); }, []);
+  const refreshArchive = useCallback(async () => {
+    const [runs, latest] = await Promise.all([api.runs(), api.matrix()]);
+    setHistory(runs.items);
+    setMatrix(latest.items);
+  }, []);
+
+  useEffect(() => { void Promise.all([api.metadata().then(setMetadata), refreshArchive()]); }, [refreshArchive]);
 
   const refresh = useCallback(async (id: string) => {
     const [nextRun, nextSteps, nextExchanges] = await Promise.all([api.run(id), api.steps(id), api.exchanges(id)]);
@@ -44,7 +56,11 @@ export default function App() {
     setSteps(nextSteps.items);
     setExchanges(nextExchanges.items);
     setSelectedStepId((current) => current ?? nextExchanges.items.at(-1)?.stepId ?? nextSteps.items[0]?.id ?? null);
-  }, []);
+    if (["passed", "failed", "errored"].includes(nextRun.status) && archivedRunId.current !== nextRun.id) {
+      archivedRunId.current = nextRun.id;
+      void refreshArchive();
+    }
+  }, [refreshArchive]);
 
   useEffect(() => {
     if (!runId) return;
@@ -81,6 +97,12 @@ export default function App() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function selectArchivedRun(id: string) {
+    setRun(null); setSteps([]); setExchanges([]); setSelectedStepId(null);
+    setRunId(id);
+    window.scrollTo({ top: 430, behavior: "smooth" });
   }
 
   const format = metadata?.formats.find((item) => item.id === config.format);
@@ -147,10 +169,11 @@ export default function App() {
                 {runFinished && run && <div className="mb-4 grid grid-cols-2 gap-2 text-center text-xs font-bold"><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=md`}>Report · Markdown</a><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=json`}>Report · JSON</a></div>}
                 <RunTimeline steps={steps} selectedStepId={selectedStepId} onSelect={setSelectedStepId} />
               </div>
-              <Inspector exchange={selectedExchange} />
+              <div><SequenceView runId={runId} exchanges={exchanges} selectedStepId={selectedStepId} onSelect={setSelectedStepId} /><Inspector exchange={selectedExchange} /></div>
             </div>
           )}
         </section>
+        <RunArchive history={history} matrix={matrix} active={archiveView} onActiveChange={setArchiveView} onSelectRun={selectArchivedRun} />
       </main>
     </div>
   );
