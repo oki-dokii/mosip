@@ -17,6 +17,7 @@ Phase 2 turns the verified protocol work from Phase 1 into a usable application.
 - Run the Phase 1 authorization-code + PKCE Reference Wallet path against Collab for JSON-LD or SD-JWT.
 - Poll Inji Verify until the presentation reaches `VP_SUBMITTED`, recording each attempt with a bounded timeout.
 - Run five negative paths—expired, bad signature, wrong type, missing disclosure, and replayed nonce—and compare the verifier outcome with the expected invalid result.
+- Replay any passed or mismatched run as a new linked run, optionally changing the selected fault.
 - Mark the active step failed and the run errored when an adapter or upstream service fails.
 
 Fixture mode stores synthetic exchanges using `.example` hosts. Collab mode calls the live services and records redacted protocol metadata while keeping credentials, holder keys, cookies, proofs, and bearer tokens in the run's in-memory context. Without `DATABASE_URL`, the BFF intentionally uses in-memory storage for a zero-setup development loop.
@@ -79,4 +80,4 @@ pnpm build
 
 1. Run and pin an application-level Collab smoke result with the external public test environment configured.
 2. Add the assisted Inji Web driver and optional Tap capture path.
-3. Add replay-from-run and downloadable reports around the implemented tamper engine.
+3. Add downloadable reports and sequence diagrams around stored runs.

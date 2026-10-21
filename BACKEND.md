@@ -93,7 +93,7 @@ apps/bff/
 | `GET /runs/:id/report?format=json|md` | Report download. |
 | `GET /runs/:id/sequence` | Mermaid sequence text and per-step markers for animation. |
 | `POST /runs/:id/cancel` | Cancel a running run. |
-| `POST /runs/:id/replay` | Present again from a finished run's credential. Body: `{ tamper?: kind }`. Returns `202 { runId }` of the child run. |
+| `POST /runs/:id/replay` | Clone a passed/failed run and execute a fresh full flow. Body: `{ tamper?: kind }`. Returns `202 { runId }` of the linked child run. |
 | `POST /runs/:id/issue-draft` | (P2) Build a GitHub issue draft. |
 | `GET /runs/diff?a=&b=` | (P2) Compare two runs. |
 

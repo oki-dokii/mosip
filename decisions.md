@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-028 · Replay as a linked fresh full run
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** Users need to repeat a completed combination with a different fault, while D-015 prevents storing the raw credential, keys, and tokens required for presentation-only replay.
+- **Decision:** `POST /api/v1/runs/:id/replay` clones a passed or mismatched run's configuration, applies the requested tamper, links the child through `parent_run_id`, and executes the complete flow with fresh protocol state. The UI exposes replay with the currently selected fault.
+- **Alternatives considered:** Persist raw credentials for presentation-only replay (expands sensitive storage); create an unlinked new run (loses provenance); permit replay while the source is active (ambiguous snapshot).
+- **Why this one:** It preserves a reproducible lineage without weakening write-time data minimization, and it works identically with fixture and Collab drivers.
+- **Trade-off accepted:** Replay repeats issuance and therefore takes longer and depends on issuer availability.
+- **Revisit if:** Encrypted credential storage with explicit retention becomes a product requirement.
+- **Affects:** `POST /api/v1/runs/:id/replay`, `runs.parent_run_id`, `apps/web/src/App.tsx`, D-015, FR-60, FR-61.
+
 ### D-027 · Apply tamper faults immediately before presentation
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** The playground needs visible negative paths without storing live credentials or reusable tokens. A tamper run must also distinguish a correctly rejected credential from an application failure.

@@ -72,6 +72,7 @@ function fromStored(record: StoredRun): RunRecord {
   return {
     run: {
       id: record.id,
+      parentRunId: record.parentRunId,
       config: {
         issuer: record.issuer,
         wallet: record.wallet,
@@ -134,6 +135,7 @@ export class PrismaRunRepository implements RunRepository {
     const created = await this.prisma.run.create({
       data: {
         id: record.run.id,
+        parentRunId: record.run.parentRunId,
         scenarioId: record.run.config.scenarioId,
         status: record.run.status,
         issuer: record.run.config.issuer,

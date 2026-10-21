@@ -65,6 +65,7 @@ enum TamperKind {
 
 model Run {
   id              String           @id @db.Uuid
+  parentRunId     String?          @map("parent_run_id") @db.Uuid
   scenarioId      String?          @map("scenario_id") @db.Uuid
   status          RunStatus        @default(pending)
   issuer          IssuerImpl
@@ -82,9 +83,12 @@ model Run {
   finishedAt      DateTime?        @map("finished_at") @db.Timestamptz
   steps           RunStep[]
   exchanges       Exchange[]
+  parent          Run?             @relation("RunReplays", fields: [parentRunId], references: [id], onDelete: SetNull)
+  replays         Run[]            @relation("RunReplays")
 
   @@index([createdAt(sort: Desc)], map: "runs_created_idx")
   @@index([status], map: "runs_status_idx")
+  @@index([parentRunId], map: "runs_parent_idx")
   @@map("runs")
 }
 

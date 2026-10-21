@@ -30,6 +30,7 @@ describe("walking-skeleton orchestration", () => {
     const id = randomUUID();
     const run: RunSummary = {
       id,
+      parentRunId: null,
       config: {
         issuer: "inji_certify",
         wallet: "reference_wallet",
@@ -65,6 +66,7 @@ describe("walking-skeleton orchestration", () => {
     const id = randomUUID();
     const run: RunSummary = {
       id,
+      parentRunId: null,
       config: { issuer: "inji_certify", wallet: "reference_wallet", verifier: "inji_verify", format: "ldp_vc", flow: "cross_device", tamper: null, scenarioId: null },
       status: "pending",
       expectedOutcome: "valid",
@@ -95,6 +97,7 @@ describe("walking-skeleton orchestration", () => {
     const id = randomUUID();
     const run: RunSummary = {
       id,
+      parentRunId: null,
       config: { issuer: "inji_certify", wallet: "reference_wallet", verifier: "inji_verify", format: "vc_sd_jwt", flow: "cross_device", tamper: "bad_signature", scenarioId: null },
       status: "pending",
       expectedOutcome: "invalid",

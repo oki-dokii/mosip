@@ -71,6 +71,18 @@ export default function App() {
     }
   }
 
+  async function replayRun() {
+    if (!run) return;
+    setBusy(true);
+    try {
+      const created = await api.replayRun(run.id, config.tamper);
+      setRun(null); setSteps([]); setExchanges([]); setSelectedStepId(null);
+      setRunId(created.runId);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const format = metadata?.formats.find((item) => item.id === config.format);
   const selectedExchange = useMemo(() => exchanges.find((item) => item.stepId === selectedStepId) ?? exchanges.at(-1) ?? null, [exchanges, selectedStepId]);
   const runFinished = run && ["passed", "failed", "errored"].includes(run.status);
@@ -131,6 +143,7 @@ export default function App() {
             <div className="grid gap-6 p-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:p-8">
               <div>
                 <div className={`mb-4 rounded-xl border px-4 py-3 text-sm font-semibold ${run?.status === "passed" ? "border-green-200 bg-green-50 text-ok" : runFinished ? "border-red-200 bg-red-50 text-fail" : "border-blue-200 bg-blue-50 text-issuer"}`} aria-live="polite">{runMessage}</div>
+                {runFinished && run?.status !== "errored" && <button disabled={busy} onClick={() => void replayRun()} className="mb-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:border-slate-500 disabled:opacity-60">Replay with selected fault</button>}
                 <RunTimeline steps={steps} selectedStepId={selectedStepId} onSelect={setSelectedStepId} />
               </div>
               <Inspector exchange={selectedExchange} />

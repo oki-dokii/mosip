@@ -13,6 +13,11 @@ export const api = {
     headers: { "content-type": "application/json" },
     body: JSON.stringify(config),
   }),
+  replayRun: (id: string, tamper: RunConfig["tamper"]) => json<{ runId: string }>(`/api/v1/runs/${id}/replay`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ tamper }),
+  }),
   run: (id: string) => json<RunSummary>(`/api/v1/runs/${id}`),
   steps: (id: string) => json<{ items: RunStep[] }>(`/api/v1/runs/${id}/steps`),
   exchanges: (id: string) => json<{ items: Exchange[] }>(`/api/v1/runs/${id}/exchanges`),

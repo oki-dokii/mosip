@@ -23,6 +23,7 @@ export type StepStatus = "pending" | "running" | "succeeded" | "failed" | "skipp
 
 export interface RunSummary {
   id: string;
+  parentRunId: string | null;
   config: RunConfig;
   status: RunStatus;
   expectedOutcome: "valid" | "invalid" | "expired";

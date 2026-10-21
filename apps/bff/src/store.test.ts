@@ -8,6 +8,7 @@ function fixture() {
   const stepId = randomUUID();
   const run: RunSummary = {
     id: runId,
+    parentRunId: null,
     config: {
       issuer: "inji_certify",
       wallet: "reference_wallet",

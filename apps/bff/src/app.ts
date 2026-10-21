@@ -2,7 +2,8 @@ import { randomUUID } from "node:crypto";
 import cors from "cors";
 import express from "express";
 import type { Server } from "socket.io";
-import { runConfigSchema, type ImplementationMetadata, type RunSummary } from "@playground/shared";
+import { runConfigSchema, tamperKindSchema, type ImplementationMetadata, type RunConfig, type RunSummary } from "@playground/shared";
+import { z } from "zod";
 import { configuredDriverMode } from "./drivers/registry.js";
 import { createSteps, runDemo } from "./orchestrator.js";
 import type { RunRepository } from "./store.js";
@@ -25,6 +26,34 @@ const metadata: ImplementationMetadata = {
     { id: "ldp_vc", name: "W3C VC JSON-LD", proofType: "Ed25519Signature2020", algorithm: "EdDSA" },
   ],
 };
+
+const replaySchema = z.object({ tamper: tamperKindSchema.nullable().default(null) });
+
+function createRun(config: RunConfig, parentRunId: string | null = null): RunSummary {
+  const id = randomUUID();
+  const format = metadata.formats.find((item) => item.id === config.format)!;
+  return {
+    id,
+    parentRunId,
+    config,
+    status: "pending",
+    expectedOutcome: config.tamper ? "invalid" : "valid",
+    actualOutcome: null,
+    proofType: format.proofType,
+    algorithm: format.algorithm,
+    createdAt: new Date().toISOString(),
+    startedAt: null,
+    finishedAt: null,
+  };
+}
+
+function startRun(runId: string, getIo: () => Server, repository: RunRepository) {
+  setTimeout(() => {
+    void runDemo(runId, getIo(), repository).catch((error: unknown) => {
+      console.error(`Run ${runId} failed`, error);
+    });
+  }, 25);
+}
 
 export function buildApp(getIo: () => Server, repository: RunRepository) {
   const app = express();
@@ -60,28 +89,33 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
       });
       return;
     }
-    const id = randomUUID();
-    const format = metadata.formats.find((item) => item.id === parsed.data.format)!;
-    const run: RunSummary = {
-      id,
-      config: parsed.data,
-      status: "pending",
-      expectedOutcome: parsed.data.tamper ? "invalid" : "valid",
-      actualOutcome: null,
-      proofType: format.proofType,
-      algorithm: format.algorithm,
-      createdAt: new Date().toISOString(),
-      startedAt: null,
-      finishedAt: null,
-    };
+    const run = createRun(parsed.data);
     try {
-      await repository.create({ run, steps: createSteps(id), exchanges: [] });
-      response.status(202).json({ runId: id });
-      setTimeout(() => {
-        void runDemo(id, getIo(), repository).catch((error: unknown) => {
-          console.error(`Run ${id} failed`, error);
-        });
-      }, 25);
+      await repository.create({ run, steps: createSteps(run.id), exchanges: [] });
+      response.status(202).json({ runId: run.id });
+      startRun(run.id, getIo, repository);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/v1/runs/:id/replay", async (request, response, next) => {
+    const parsed = replaySchema.safeParse(request.body ?? {});
+    if (!parsed.success) {
+      response.status(400).json({ code: "VALIDATION_FAILED", detail: parsed.error.flatten() });
+      return;
+    }
+    try {
+      const source = await repository.get(request.params.id);
+      if (!source) return response.status(404).json({ code: "RUN_NOT_FOUND" });
+      if (source.run.status !== "passed" && source.run.status !== "failed") {
+        return response.status(409).json({ code: "RUN_NOT_REPLAYABLE" });
+      }
+      const config: RunConfig = { ...source.run.config, tamper: parsed.data.tamper };
+      const run = createRun(config, source.run.id);
+      await repository.create({ run, steps: createSteps(run.id), exchanges: [] });
+      response.status(202).json({ runId: run.id });
+      startRun(run.id, getIo, repository);
     } catch (error) {
       next(error);
     }

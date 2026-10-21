@@ -85,7 +85,7 @@ app.ts → POST /api/v1/runs
        ⇒ repository.updateRun(passed/failed/errored); emit run:finished
 ```
 
-`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read through the same repository. PostgreSQL records survive BFF restarts; memory records intentionally do not. Run configuration can select a tamper; the wallet applies it immediately before presentation, and the orchestrator marks the run passed when the verifier's invalid result matches the expected invalid outcome. Replay endpoints and durable reports remain planned.
+`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read through the same repository. PostgreSQL records survive BFF restarts; memory records intentionally do not. Run configuration can select a tamper; the wallet applies it immediately before presentation, and the orchestrator marks the run passed when the verifier's invalid result matches the expected invalid outcome. Durable reports remain planned.
 
 ### 3.3 Where exchange data is recorded
 
@@ -137,8 +137,8 @@ Same interfaces, calling `apps/mock-issuer` and `apps/mock-verifier` through the
 
 ## 5. Secondary flows
 
-### 5.1 Replay with tamper 🟦
-`POST /runs/:id/replay` ⇒ `runService.replay(parentId, tamper)` ⇒ new `runs` row with `parent_run_id` ⇒ `runOrchestrator.start()` with steps 1–5 skipped (credential loaded from `credentials`) ⇒ step 7 applies `tamper/index.ts → applyTamper()` ⇒ `outcome.evaluate(expectedFromTamper, actual)`.
+### 5.1 Replay with tamper 🟩
+`POST /api/v1/runs/:id/replay` ⇒ require a passed or mismatched source run ⇒ clone its combination with the requested tamper ⇒ create a full child run with `parent_run_id` ⇒ execute the normal driver-backed flow with fresh credentials and protocol state. Re-running issuance follows D-015 because reusable tokens and credentials are not persisted.
 
 ### 5.2 Report download
 `GET /runs/:id/report?format=md` ⇒ `reportService.build(runId)` ⇒ `report/markdown.ts → render(model)` (or `report/json.ts`).
