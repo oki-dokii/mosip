@@ -15,6 +15,7 @@ export interface RunRepository {
   updateRun(run: RunSummary): Promise<void>;
   updateStep(step: RunStep): Promise<void>;
   addExchange(exchange: Exchange): Promise<void>;
+  addExchanges(exchanges: Exchange[]): Promise<number>;
   clear(): Promise<void>;
   disconnect(): Promise<void>;
 }
@@ -54,6 +55,15 @@ export class MemoryRunRepository implements RunRepository {
     if (record && !record.exchanges.some((item) => item.id === exchange.id)) {
       record.exchanges.push(exchange);
     }
+  }
+
+  async addExchanges(exchanges: Exchange[]) {
+    const record = exchanges.length ? this.runs.get(exchanges[0]!.runId) : undefined;
+    if (!record) return 0;
+    const existing = new Set(record.exchanges.map((item) => item.id));
+    const fresh = exchanges.filter((item) => !existing.has(item.id));
+    record.exchanges.push(...fresh);
+    return fresh.length;
   }
 
   async clear() {
@@ -219,6 +229,29 @@ export class PrismaRunRepository implements RunRepository {
         redactions: json(exchange.redactions),
       },
     });
+  }
+
+  async addExchanges(exchanges: Exchange[]) {
+    if (!exchanges.length) return 0;
+    const result = await this.prisma.exchange.createMany({
+      data: exchanges.map((exchange) => ({
+        id: exchange.id,
+        runId: exchange.runId,
+        stepId: exchange.stepId,
+        seq: exchange.seq,
+        actorFrom: exchange.actorFrom,
+        actorTo: exchange.actorTo,
+        method: exchange.method,
+        url: exchange.url,
+        status: exchange.status,
+        durationMs: exchange.durationMs,
+        request: json(exchange.request),
+        response: json(exchange.response),
+        redactions: json(exchange.redactions),
+      })),
+      skipDuplicates: true,
+    });
+    return result.count;
   }
 
   async clear() {

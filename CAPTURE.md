@@ -1,0 +1,13 @@
+# Passive browser protocol capture
+
+The capture path accepts a filtered, synthetic browser HAR after a run finishes. It never proxies or rewrites an issuer URL, request URI, signed request object, audience, redirect, or request body. A transparent proxy would need TLS interception or URL rewriting for cross-origin Inji traffic, which could invalidate signed protocol values and change wallet behavior. Passive import preserves the original flow; the playground only reads the exported evidence afterward.
+
+`POST /api/v1/runs/:id/capture/har` accepts JSON `{ "runId": "<same id>", "har": { "log": { "entries": [...] } } }`. Export browser Network traffic as HAR, filter it to the intended protocol calls, and use synthetic identities only. The run must already be finished. The request limit is 2 MiB and 100 entries; each body is capped at 128 KiB. A run-id mismatch, malformed HAR, or any entry from an unapproved origin rejects the import. Re-importing identical entries skips them.
+
+The default origin allowlist covers the Collab Inji Web/Mimoto, Certify, eSignet, and Verify hosts. For a local synthetic stack, set `CAPTURE_ORIGINS_JSON` on the BFF to a JSON object mapping exact origins to `mimoto`, `certify`, `esignet`, or `verify`, for example `{"http://127.0.0.1:9001":"certify"}`. Only HTTPS origins and HTTP loopback origins are accepted. This configuration does not cause the BFF to fetch those URLs.
+
+Recognized protocol paths map to the existing run steps. Unknown paths on an allowlisted origin are skipped. The response gives `imported`, `skipped`, and a capture-gap note. Open the run inspector or `GET /api/v1/runs/:id/exchanges` to see the resulting exchanges. Imported exchanges have `request.source` and `response.source` set to `har_import`; they do not change the run outcome or prove that a wallet stored a credential.
+
+Before storage or Socket.IO emission, the importer replaces path identifiers with route templates, masks every query value, keeps only safe MIME header metadata, masks auth/cookie headers, and keeps only the shape of JSON/form bodies. Protocol enum values from a short allowlist may remain; all other scalar values are masked. The original HAR is never persisted. Parse failures return stable error codes without echoing input.
+
+Browser HAR can miss server-to-server Certify/eSignet calls, native-wallet traffic, encrypted exchanges, and requests outside the browser's recording window. Record those as gaps; do not label a HAR as complete end-to-end evidence. Live Inji Web capture and wallet proof remain integration checks with the real-wallet workstream.

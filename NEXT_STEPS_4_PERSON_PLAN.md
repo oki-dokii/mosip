@@ -29,6 +29,8 @@ Each developer gives the integrator: a short change summary, files changed, comm
 
 ## Person 1 — protocol capture and safe evidence
 
+**Implementation status:** backend passive-HAR import, sanitizer, run mapping, storage, and fixture/API tests are implemented. See [CAPTURE.md](CAPTURE.md). A live Inji Web capture still depends on the real-wallet workstream and a dedicated test account.
+
 **Owns:** new `apps/bff/src/capture/` files, capture-specific tests, and narrowly scoped changes to `apps/bff/src/redaction.ts` and `apps/bff/src/store.ts`. Coordinate any route in `apps/bff/src/app.ts` with the integrator. Do not edit `apps/web/` or wallet drivers.
 
 1. Compare a passive browser-network/HAR import with a transparent proxy. Choose a path that leaves issuer identifiers, audiences, request URIs, redirects, and signed request objects unchanged. A rewriting `/tap/...` proxy does **not** meet this condition.
