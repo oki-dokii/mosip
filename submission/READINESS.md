@@ -6,7 +6,7 @@ This folder is a separate submission handoff. It does not change application cod
 
 | Criterion | Weight | What we can show now | Main gap |
 |---|---:|---|---|
-| Functionality completion | 40% | Fixture and Reference Wallet flows, issue/present/verify timeline, sanitized inspector, reports, scenarios, matrix, and mock roles | A1/A2 need real Inji-wallet evidence; A6 needs one-command app packaging |
+| Functionality completion | 40% | Fixture and Reference Wallet flows, inspector, reports, scenarios, matrix, and mock roles; one-command playground/mocks bundle passed local smoke | A1/A2 need real Inji-wallet evidence; local Inji stack and clean-machine rehearsal remain open |
 | Deliverable quality | 40% | Typed monorepo, unit/contract tests, separate drivers, redaction, API and architecture notes | Clean-machine setup and automated browser smoke still need proof |
 | UX/design | 10% | Working React playground, role selection, timeline, inspector, history, and evidence labels | Test accessibility and capture finished-screen screenshots/wireframes |
 | Presentation | 10% | Narrative and demo outline in this folder | Actual slide deck and 2–5 minute video are still required |
@@ -19,7 +19,7 @@ This folder is a separate submission handoff. It does not change application cod
 | Working prototype/demo | Partial | Local fixture UI and Reference Wallet flow exist. Rehearse on a clean machine and record a stable fallback demo. Do not label fixture or Reference Wallet as an all-Inji pass | Yes, rehearsal; real-wallet check remains with owners |
 | Pitch slide deck | Missing | Build from [PITCH_AND_DEMO.md](PITCH_AND_DEMO.md), then export PDF as a backup | Yes |
 | 2–5 minute video demo | Missing | Record the actual UI and verifier outcome using the script; check audio and playback | Yes, after a stable demo environment is ready |
-| Installation instructions | Partial | [README.md](../README.md) now covers fixture, Collab, and mock startup. `COREPACK_HOME=/tmp/mosip-corepack-check corepack pnpm --version` resolved the pinned `11.25.0` on this host; a separate clean-machine install and full-app Compose remain Person 4's task | Documentation review and independent install check |
+| Installation instructions | Prepared, needs independent rehearsal | [README.md](../README.md) and [DEPLOYMENT.md](../DEPLOYMENT.md) cover host and container startup. `pnpm demo:docker` passed locally; Corepack resolved pinned `11.25.0`. A separate clean-machine check remains | Yes |
 | API documentation | Prepared | [API_REFERENCE.md](API_REFERENCE.md) lists current BFF endpoints; compare with the final build | Yes |
 | Git version history | Partial | Main has incremental commits, but the current log shows one author. Preserve each new contributor's identity using their own sequential commits or `git format-patch` + `git am`; do not squash/rewrite | Yes, integrator coordination |
 | College/university IDs | Pending, private | Each student uploads their own valid ID through the required submission channel | Individual students only; never commit IDs |
@@ -41,7 +41,7 @@ This folder is a separate submission handoff. It does not change application cod
 
 1. **A1:** Inji Certify → a logged-in Inji Web or mobile wallet → Inji Verify, JSON-LD, with observed storage, presentation, and `Valid` result. A dedicated persistent Inji Web test account is not yet available.
 2. **A2:** The same all-Inji path with SD-JWT and a pinned capable Inji mobile wallet build. Inji Web currently does not offer SD-JWT OpenID4VP presentation. A Reference Wallet pass does not close this gate.
-3. **A6:** `docker compose up` (or a clearly documented profile command) opens the full playground from a clean checkout. Current Compose packages PostgreSQL only.
+3. **A6:** `pnpm demo:docker` built the playground, BFF, PostgreSQL, and separate mocks and printed `DEMO PASS` locally on 2026-10-21. A two-cell synthetic mock matrix passed locally; the [CI workflow](../.github/workflows/ci.yml) still needs a hosted result. Run the same command on a separate clean machine before final sign-off. This bundle does not include local Inji services.
 4. **A3/A5:** Inspect the final browser capture and exported report for missing boundaries and any secret leakage. Passive HAR import is synthetic-only and cannot see server-to-server or native-wallet exchanges.
 5. **Go/no-go:** use [WALLET_VALIDATION.md](../WALLET_VALIDATION.md)'s provisional 2026-10-24 21:00 IST A1/A2 cutoff, 48 hours before the working freeze; adjust when the official deadline is known.
 6. **Release quality:** Person 2 owns accessibility, keyboard/contrast review, browser smoke, and annotated screenshots; Person 4 owns the clean-machine Corepack/pnpm install and tracked-file secret audit. The integrator owns the later `collab.ts` split, contributor license confirmation, and complete notice audit.

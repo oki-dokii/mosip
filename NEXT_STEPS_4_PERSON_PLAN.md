@@ -69,6 +69,8 @@ Each developer gives the integrator: a short change summary, files changed, comm
 
 ## Person 4 — packaging, CI, and release checks
 
+**Implementation status:** `pnpm demo:docker` now builds and starts the playground, PostgreSQL, and separate mocks and passed a local cross-container smoke on 2026-10-21. A two-cell synthetic mock matrix passed locally, and a CI workflow is ready for its first hosted run. [DEPLOYMENT.md](DEPLOYMENT.md) records the command and limits. Clean-machine rehearsal and a pinned local Inji profile remain.
+
 **Owns:** `docker-compose.yml`, Dockerfiles, `.dockerignore`, `.github/workflows/`, new `e2e/` smoke tests, and `DEPLOYMENT.md`. Avoid app source files; request any required health/config hook from the integrator.
 
 1. Package the web, BFF, issuer, verifier, and PostgreSQL. Make `core` and `mocks` profiles work with health checks, dependency readiness, migration deployment, and synthetic-only defaults. Next, make a **pinned local Inji profile the primary live integration target**: Certify + Verify first, then Mimoto + Inji Web for A1. Use official upstream configuration as a referenced dependency, document every local override, and never claim A1 until login, storage, presentation, and verifier result are observed. Official Web setup needs an OIDC client keystore and authentication configuration; containers alone do not remove that blocker.

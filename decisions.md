@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-038 · Package the playground and separate mocks before local Inji services
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** A6 needed one command that starts a reviewable playground from a clean checkout. The host already uses ports 5173, 5432, and sometimes 5433, and the official local Inji Web path still requires OIDC client/keystore configuration.
+- **Decision:** Add a multi-target Docker build and `core`/`mocks` Compose profiles. `pnpm demo:docker` starts PostgreSQL, BFF, web, mock issuer, and mock verifier, waits for health, and runs a synthetic SD-JWT cross-service smoke. Publish the web on loopback port 5174 and PostgreSQL on loopback 55433 by default. Keep local Inji services as the next pinned profile, with separate evidence.
+- **Alternatives considered:** Wait for the full Inji stack before packaging anything (leaves A6 untested); keep only PostgreSQL in Compose (does not show a running app); expose all mock ports to the host (unnecessary attack surface).
+- **Why this one:** The local smoke now exercises container networking, migrations, real mock HTTP protocols, stored exchanges, and the UI proxy, and prints `DEMO PASS`. It can be reproduced without Collab credentials or a wallet account.
+- **Trade-off accepted:** The build image retains workspace dependencies and is larger than an optimized production image. This proves the playground/mocks slice on one Docker Desktop host, not a separate clean machine or all-Inji wallet interoperability.
+- **Revisit if:** The local Inji profile is ready, a clean-machine smoke reveals portability problems, or image size becomes a delivery blocker.
+- **Affects:** `Dockerfile`, `.dockerignore`, `docker-compose.yml`, `deploy/nginx.conf`, `scripts/demo-docker.sh`, `scripts/compose-smoke.mjs`, mock listener envs, `DEPLOYMENT.md`, A6.
+
 ### D-037 · Name repeatable scenarios and label evidence provenance
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** A passed fixture or Reference Wallet run can look like an all-Inji wallet result in the history and matrix; the unused `scenarioId` gives no repeatable case definition.

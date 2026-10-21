@@ -63,5 +63,6 @@ export const mockVerifierServer = createServer(async (request, response) => {
 });
 
 if (process.env.MOCK_VERIFIER_NO_LISTEN !== "1") {
-  mockVerifierServer.listen(port, "127.0.0.1", () => console.log(`Mock verifier listening on http://127.0.0.1:${port}`));
+  const host = process.env.MOCK_VERIFIER_HOST ?? "127.0.0.1";
+  mockVerifierServer.listen(port, host, () => console.log(`Mock verifier listening on http://${host}:${port}`));
 }

@@ -71,5 +71,6 @@ export const mockIssuerServer = createHttpServer(async (request, response) => {
 });
 
 if (process.env.MOCK_ISSUER_NO_LISTEN !== "1") {
-  mockIssuerServer.listen(port, "127.0.0.1", () => console.log(`Mock issuer listening on http://127.0.0.1:${port}`));
+  const host = process.env.MOCK_ISSUER_HOST ?? "127.0.0.1";
+  mockIssuerServer.listen(port, host, () => console.log(`Mock issuer listening on http://${host}:${port}`));
 }

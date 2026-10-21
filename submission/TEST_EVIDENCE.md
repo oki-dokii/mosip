@@ -25,7 +25,7 @@ Total automated test cases reported by the current commands: **43 passed**. The 
 | Malformed/cross-run/oversized HAR import | `apps/bff/src/capture/har.test.ts` | Rejected or redacted before stored inspector output |
 | JSON-LD with real Inji Web/mobile wallet (A1) | No dedicated persistent Web account | **Not passed / externally blocked** |
 | SD-JWT with real Inji mobile wallet (A2) | No pinned app/device result committed | **Not passed / needs validation** |
-| Full one-command app Compose (A6) | `docker-compose.yml` currently has PostgreSQL only | **Not passed / packaging work remains** |
+| One-command playground + mocks Compose (A6 slice) | [DEPLOYMENT.md](../DEPLOYMENT.md): 2026-10-21 local `pnpm demo:docker` printed `DEMO PASS`; the subsequent two-cell baseline/bad-signature matrix had 10 steps, 7 exchanges, and `mock_interop` provenance per cell. An earlier fixture run survived BFF restart | **Local smoke passed**; hosted CI, clean-machine rehearsal, and local Inji stack remain |
 
 ## Safe synthetic inputs
 

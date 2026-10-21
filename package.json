@@ -7,6 +7,7 @@
     "postinstall": "pnpm --filter @playground/bff db:generate",
     "dev": "pnpm --parallel --filter @playground/bff --filter @playground/web --filter @playground/mock-issuer --filter @playground/mock-verifier dev",
     "dev:x509-mock": "bash scripts/dev-x509-mock.sh",
+    "demo:docker": "bash scripts/demo-docker.sh",
     "build": "pnpm -r build",
     "db:generate": "pnpm --filter @playground/bff db:generate",
     "db:migrate": "pnpm --filter @playground/bff db:migrate",

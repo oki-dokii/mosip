@@ -142,7 +142,7 @@ stateDiagram-v2
 
 ## Quick start
 
-Prerequisites: **Node.js 20+**, **pnpm 11** (the repo pins `pnpm@11.25.0`), and optionally Docker with Compose for PostgreSQL. OpenSSL is needed only for the ephemeral X.509 mock-issuer helper.
+Prerequisites: **Node.js 20+**, **pnpm 11** (the repo pins `pnpm@11.25.0`), and Docker with Compose for the container bundle. OpenSSL is needed only for the ephemeral X.509 mock-issuer helper.
 
 From the repository root:
 
@@ -159,16 +159,24 @@ Check the active driver and storage modes:
 curl http://localhost:4000/api/v1/health
 ```
 
-For persistent run history, Compose currently starts **PostgreSQL only**:
+For persistent run history while running the app processes on the host, start only the PostgreSQL service:
 
 ```bash
 docker compose up -d postgres
-export DATABASE_URL='postgresql://playground:playground@127.0.0.1:5432/playground?schema=public'
+export DATABASE_URL='postgresql://playground:playground@127.0.0.1:55433/playground?schema=public'
 pnpm db:deploy
 pnpm dev
 ```
 
-The health response reports `storage: "postgres"` when this connection is active. Without it, runs disappear on BFF restart. Full app Compose packaging remains a [release gate](submission/READINESS.md).
+The health response reports `storage: "postgres"` when this connection is active. Without it, runs disappear on BFF restart. Compose binds PostgreSQL to host port 55433 by default to avoid an existing local PostgreSQL on 5432; set `PLAYGROUND_POSTGRES_PORT` to override it.
+
+For the **one-command container demo** with the web app, BFF, PostgreSQL, and separate mock issuer/verifier:
+
+```bash
+pnpm demo:docker
+```
+
+Open **http://localhost:5174**. The command builds and health-checks the services, then runs two cross-container synthetic SD-JWT cases (valid baseline and corrupted signature) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. A 2026-10-21 local smoke passed; hosted CI and independent clean-machine verification remain open.
 
 ## Integration modes
 
@@ -280,6 +288,7 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 | Phase evidence | [Phase 0–1](PHASE0_1.md), [Phase 2](PHASE2.md), [Phase 3](PHASE3.md) |
 | Independent remaining work | [Four-person plan](NEXT_STEPS_4_PERSON_PLAN.md) |
 | Five-day priority order and rival finding probes | [Catch-up plan](CATCH_UP.md) |
+| Container setup and shutdown | [Deployment guide](DEPLOYMENT.md) |
 | Scenario provenance | [Scenarios and evidence](SCENARIOS_AND_EVIDENCE.md) |
 | Observed interoperability findings | [Gap register](GAPS.md) |
 | A1/A2 proof and cut-off | [Wallet validation](WALLET_VALIDATION.md) |
@@ -290,7 +299,7 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 |---|---|---|
 | A1: real-wallet JSON-LD | A dedicated logged-in Inji Web or suitable mobile wallet stores and presents to Inji Verify; capture the result. | A Reference Wallet pass does not establish Inji-wallet interoperability. |
 | A2: real-wallet SD-JWT | Test a pinned capable Inji Wallet mobile build and record issuance, holder binding, presentation, and Verify outcome. | The tested Inji Web path does not complete SD-JWT presentation. |
-| A6: packaging | Full app Compose profile, health checks, migrations, and clean-machine smoke. | Current Compose starts PostgreSQL only. |
+| A6: packaging | Playground core + mocks now build, pass health checks, run migrations, and complete a mock smoke through `pnpm demo:docker`. | A separate clean-machine rehearsal and local Inji stack remain open. |
 | Capture and browser QA | Assisted-wallet observation without rewriting signed messages, browser smoke, and accessibility review. | Adapter logs cannot prove every browser/native boundary or user-facing behavior. |
 
 Ownership and next steps are in the [four-person plan](NEXT_STEPS_4_PERSON_PLAN.md). Until these gates have evidence, reports should state exactly which implementation was tested instead of claiming a completed all-Inji flow.

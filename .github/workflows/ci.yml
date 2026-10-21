@@ -1,0 +1,62 @@
+name: Playground checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 2 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.25.0 --activate
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Unit and contract tests
+        run: pnpm test
+      - name: Build
+        run: pnpm build
+
+  docker-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.25.0 --activate
+      - name: Synthetic container matrix
+        env:
+          MATRIX_ARTIFACT_PATH: artifacts/mock-matrix.json
+        run: pnpm demo:docker
+      - name: Upload sanitized mock matrix
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-mock-matrix
+          path: artifacts/mock-matrix.json
+          if-no-files-found: ignore
+      - name: Container logs on failure
+        if: failure()
+        run: docker compose --profile core --profile mocks logs --no-color --tail=120
+      - name: Stop containers
+        if: always()
+        run: docker compose --profile core --profile mocks down -v

@@ -38,6 +38,7 @@ Legend: `file → function()` means "this function in that file". `A ⇒ B` mean
 
 | Entry | File | What starts it | Status |
 |---|---|---|---|
+| Docker demo | `scripts/demo-docker.sh` | `pnpm demo:docker` builds/starts Compose, then calls `scripts/compose-smoke.mjs` | 🟩 |
 | BFF process | `apps/bff/src/server.ts` | `pnpm --filter @playground/bff dev` or `node dist/server.js` | 🟩 |
 | Web app | `apps/web/src/main.tsx` | `pnpm --filter @playground/web dev` / built static files | 🟩 |
 | Mock issuer | `apps/mock-issuer/src/server.ts` | `pnpm dev` or `node apps/mock-issuer/dist/server.js` | 🟩 |
@@ -49,6 +50,8 @@ Legend: `file → function()` means "this function in that file". `A ⇒ B` mean
 ---
 
 ## 2. Startup order (BFF walking skeleton) 🟩
+
+Containerized startup: `demo-docker.sh` selects a working Docker context ⇒ Compose starts PostgreSQL and separate mock services ⇒ BFF waits for healthy PostgreSQL and runs `pnpm db:deploy` ⇒ BFF serves HTTP/Socket.IO ⇒ nginx serves the built web app and proxies `/api` and `/socket.io` ⇒ `compose-smoke.mjs` requires two passed `mock_interop` reports: valid baseline and invalid corrupted signature. The CI workflow runs this synthetic matrix on pushes and daily; it is not a live Inji matrix. Mock services bind to all container interfaces only when `MOCK_ISSUER_HOST`/`MOCK_VERIFIER_HOST` are set by Compose; host development keeps the loopback default.
 
 1. `server.ts` ⇒ `store.ts → createRunRepository()` (`DATABASE_URL` selects Prisma; otherwise memory)
 2. ⇒ `app.ts → buildApp(() => io, repository)`
@@ -227,6 +230,9 @@ Current M1 files:
 | `apps/mock-issuer/src/server.ts` | Standalone test-only OpenID4VCI discovery, token, and credential endpoints |
 | `apps/mock-verifier/src/server.ts` | Standalone test-only OpenID4VP request, direct-post, status, and result endpoints |
 | `apps/mock-verifier/src/verify.ts` | Standalone SD-JWT issuer and holder proof checks |
+| `Dockerfile`, `.dockerignore`, `docker-compose.yml` | Multi-target build, core/mocks profiles, health and network settings |
+| `deploy/nginx.conf` | Built-web static hosting and same-origin API/Socket.IO proxy |
+| `scripts/demo-docker.sh`, `scripts/compose-smoke.mjs` | One-command container startup and synthetic mock interoperability smoke |
 | `apps/bff/src/redaction.ts` | Recursive write-time masking |
 | `apps/bff/src/store.ts` | Repository contract plus memory and Prisma implementations |
 | `apps/bff/prisma/schema.prisma` | Implemented PostgreSQL run, step, and exchange schema |
@@ -258,3 +264,4 @@ When you change code:
 | 2026-10-21 | Added a standalone OpenID4VCI mock issuer and an opt-in HTTP adapter in the Reference Wallet path | implementation |
 | 2026-10-21 | Added a standalone OpenID4VP mock verifier, opt-in HTTP adapter, and reliable signature fault mutation | implementation |
 | 2026-10-21 | Added fixed scenario presets, preset validation, and evidence-tier report and matrix labels; recorded the existing passive HAR capture path | implementation |
+| 2026-10-21 | Added containerized playground/mocks startup, nginx proxy, migrations-before-listen, and one-command mock smoke | implementation |

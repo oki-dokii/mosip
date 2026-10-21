@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+!.env.example
+**/node_modules
+**/dist
+**/.vite
+**/.turbo
+*.har
+*.pem
+*.key
+*.p12
+spikes/fixtures
+submission
