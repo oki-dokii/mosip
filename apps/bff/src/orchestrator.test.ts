@@ -18,6 +18,7 @@ describe("walking-skeleton orchestration", () => {
       "STORE",
       "PRESENT_REQUEST",
       "PRESENT_SUBMIT",
+      "PRESENT_STATUS",
       "PRESENT_RESULT",
       "REPORT",
     ]);
@@ -55,7 +56,7 @@ describe("walking-skeleton orchestration", () => {
 
     const stored = await repository.get(id);
     expect(stored?.run.status).toBe("passed");
-    expect(stored?.exchanges.map((exchange) => exchange.seq)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(stored?.exchanges.map((exchange) => exchange.seq)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     expect(stored?.exchanges[1]?.response).toMatchObject({ access_token: "[REDACTED]" });
   });
 

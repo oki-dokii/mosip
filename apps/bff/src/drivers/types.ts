@@ -28,6 +28,7 @@ export interface WalletDriver {
 export interface VerifierDriver {
   readonly id: RunConfig["verifier"];
   createRequest(context: DriverContext): Promise<DriverResult>;
+  pollStatus(context: DriverContext): Promise<DriverResult>;
   getResult(context: DriverContext): Promise<DriverResult>;
 }
 

@@ -43,6 +43,7 @@ const STATE = {
   holderPrivateJwk: "collab.holderPrivateJwk",
   credential: "collab.credential",
   verifyTransactionId: "collab.verifyTransactionId",
+  verifyRequestId: "collab.verifyRequestId",
   requestClaims: "collab.requestClaims",
 } as const;
 
@@ -54,6 +55,17 @@ function stateValue<T>(context: DriverContext, key: string): T {
 
 function sha256Base64url(value: string) {
   return createHash("sha256").update(value).digest("base64url");
+}
+
+function positiveInteger(value: string | undefined, fallback: number) {
+  if (value === undefined) return fallback;
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed < 0) throw new Error(`Expected a non-negative integer, received ${value}`);
+  return parsed;
+}
+
+function wait(durationMs: number) {
+  return new Promise((resolve) => setTimeout(resolve, durationMs));
 }
 
 function decodeJwtPayload(jwt: string): JsonObject {
@@ -358,18 +370,47 @@ class CollabVerifierDriver implements VerifierDriver {
       responseCodeValidationRequired: false,
     };
     const created = await request(context, url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
-    if (!created.body?.requestUri || !created.body?.transactionId) throw new Error("Inji Verify did not return a request URI and transaction id");
+    if (!created.body?.requestUri || !created.body?.transactionId || !created.body?.requestId) {
+      throw new Error("Inji Verify did not return a request URI, request id, and transaction id");
+    }
     const requestObject = await request(context, created.body.requestUri, { headers: { accept: "application/oauth-authz-req+jwt" } });
     const requestClaims = decodeJwtPayload(requestObject.body);
     context.state.set(STATE.verifyTransactionId, created.body.transactionId);
+    context.state.set(STATE.verifyRequestId, created.body.requestId);
     context.state.set(STATE.requestClaims, requestClaims);
     return {
       exchanges: [
-        exchange("playground", this.id, "POST", url, created, body, { requestUriIssued: true, transactionIdIssued: true }),
+        exchange("playground", this.id, "POST", url, created, body, { requestUriIssued: true, requestIdIssued: true, transactionIdIssued: true }),
         exchange(context.config.wallet, this.id, "GET", created.body.requestUri, requestObject, { accept: "application/oauth-authz-req+jwt" }, { signedRequestReceived: true, responseMode: requestClaims.response_mode }),
       ],
       summary: { signedRequestReceived: true, queryLanguage: "DCQL" },
     };
+  }
+
+  async pollStatus(context: DriverContext): Promise<DriverResult> {
+    const config = await loadConfig(context);
+    const requestId = stateValue<string>(context, STATE.verifyRequestId);
+    const intervalMs = positiveInteger(process.env.VERIFY_POLL_INTERVAL_MS, 1_000);
+    const timeoutMs = positiveInteger(process.env.VERIFY_POLL_TIMEOUT_MS, 120_000);
+    const url = `${config.verifyBaseUrl}/vp-request/${encodeURIComponent(requestId)}/status`;
+    const exchanges: DriverExchange[] = [];
+    const startedAt = Date.now();
+
+    while (Date.now() - startedAt <= timeoutMs) {
+      const result = await request(context, url, { headers: { accept: "application/json" } });
+      const status = result.body?.status ?? result.body?.response?.status;
+      exchanges.push(exchange("playground", this.id, "GET", url, result, {}, { status }));
+      if (status === "VP_SUBMITTED") {
+        return { exchanges, summary: { status, attempts: exchanges.length } };
+      }
+      if (["EXPIRED", "CANCELLED", "ERROR", "FAILED"].includes(status)) {
+        throw new Error(`Inji Verify presentation reached terminal status ${status}`);
+      }
+      if (Date.now() - startedAt >= timeoutMs) break;
+      await wait(intervalMs);
+    }
+
+    throw new Error(`Timed out waiting for Inji Verify presentation status after ${timeoutMs}ms`);
   }
 
   async getResult(context: DriverContext): Promise<DriverResult> {

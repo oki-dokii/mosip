@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-026 · Make verifier submission status an explicit bounded step
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** Inji Verify exposes the presentation result separately from request status. Fetching the result immediately after direct post can race slower deployments and makes waiting invisible in the run timeline.
+- **Decision:** Add `PRESENT_STATUS` between submission and result. The verifier driver polls `/vp-request/{requestId}/status` until `VP_SUBMITTED`, fails on terminal error states, and times out after a configurable deadline. Each successful poll is returned as an inspectable exchange.
+- **Alternatives considered:** Retry only the result endpoint (hides the service's lifecycle); sleep for a fixed duration (slow or racy); poll forever (can strand runs).
+- **Why this one:** It follows the deployed Verify contract discovered in Phase 1, gives the timeline an accurate waiting state, and bounds resource use.
+- **Trade-off accepted:** Poll exchanges are returned together when the step completes, and active live runs still rely on one BFF process.
+- **Revisit if:** Verify adds a push callback, status streaming, or a combined submission-result response.
+- **Affects:** `apps/bff/src/drivers`, `apps/bff/src/orchestrator.ts`, `PHASE2.md`, FR-25, FR-44.
+
 ### D-025 · Select stateful role drivers per run
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** The fixture runner and proven Phase 1 Collab script must share one lifecycle without putting protocol logic or live secrets in the HTTP layer or database.

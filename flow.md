@@ -76,7 +76,7 @@ app.ts → POST /api/v1/runs
        ⇒ drivers/registry.ts → resolve fixture or Collab role drivers
        ⇒ for each step:
             INIT → ISSUE_OFFER → ISSUE_TOKEN → ISSUE_CREDENTIAL → STORE
-            → PRESENT_REQUEST → PRESENT_SUBMIT → PRESENT_RESULT → REPORT
+            → PRESENT_REQUEST → PRESENT_SUBMIT → PRESENT_STATUS → PRESENT_RESULT → REPORT
             ⇒ emit step:started
             ⇒ call the responsible issuer, wallet, or verifier driver
             ⇒ redact each returned exchange before persistence
@@ -85,7 +85,7 @@ app.ts → POST /api/v1/runs
        ⇒ repository.updateRun(passed/failed/errored); emit run:finished
 ```
 
-`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read through the same repository. PostgreSQL records survive BFF restarts; memory records intentionally do not. Presentation polling, negative outcomes, and durable reports remain planned.
+`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read through the same repository. PostgreSQL records survive BFF restarts; memory records intentionally do not. Negative outcomes and durable reports remain planned.
 
 ### 3.3 Where exchange data is recorded
 
@@ -125,6 +125,7 @@ client request → /tap/:runId/:service/*
 
 ### 4.4 Inji Verify (`drivers/collab.ts`) 🟩
 - `createRequest` ⇒ `POST /v2/vp-request` with DCQL ⇒ fetch and decode the signed request object.
+- `pollStatus` ⇒ `GET /vp-request/{requestId}/status` until `VP_SUBMITTED`, a terminal failure, or the configured deadline.
 - `getResult` ⇒ `POST /v2/vp-results/{transactionId}` ⇒ map verification checks to the run outcome.
 
 ### 4.5 Mocks (`drivers/issuer/mockIssuer.ts`, `drivers/verifier/mockVerifier.ts`) 🟦
@@ -198,7 +199,7 @@ Current M1 files:
 | `apps/web/src/lib/api.ts` | Typed browser calls to the BFF |
 | `apps/bff/src/server.ts` | HTTP and Socket.IO process wiring |
 | `apps/bff/src/app.ts` | Implemented REST routes and run creation |
-| `apps/bff/src/orchestrator.ts` | Driver-backed nine-step run, events, redaction, and failure transitions |
+| `apps/bff/src/orchestrator.ts` | Driver-backed ten-step run, events, redaction, and failure transitions |
 | `apps/bff/src/drivers/types.ts` | Issuer, wallet, verifier, and per-run context contracts |
 | `apps/bff/src/drivers/fixture.ts` | Deterministic local driver set |
 | `apps/bff/src/drivers/collab.ts` | Live Certify/eSignet, Reference Wallet, and Verify adapter |

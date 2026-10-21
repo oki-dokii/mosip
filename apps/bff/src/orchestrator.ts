@@ -14,6 +14,7 @@ const STEP_DEFINITIONS = [
   ["STORE", "Store credential for this run"],
   ["PRESENT_REQUEST", "Create signed presentation request"],
   ["PRESENT_SUBMIT", "Submit holder-bound presentation"],
+  ["PRESENT_STATUS", "Wait for verifier submission status"],
   ["PRESENT_RESULT", "Verify credential and holder proof"],
   ["REPORT", "Build run result"],
 ] as const;
@@ -30,6 +31,7 @@ async function executeStep(step: RunStep, context: DriverContext, drivers: Drive
     case "STORE": return drivers.wallet.store(context);
     case "PRESENT_REQUEST": return drivers.verifier.createRequest(context);
     case "PRESENT_SUBMIT": return drivers.wallet.present(context);
+    case "PRESENT_STATUS": return drivers.verifier.pollStatus(context);
     case "PRESENT_RESULT": return drivers.verifier.getResult(context);
     default: return { summary: { completed: true } };
   }

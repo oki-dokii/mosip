@@ -199,6 +199,7 @@ interface WalletDriver   { authorize(ctx): Promise<DriverResult>;
                            store(ctx): Promise<DriverResult>;
                            present(ctx): Promise<DriverResult>; }
 interface VerifierDriver { createRequest(ctx): Promise<DriverResult>;
+                           pollStatus(ctx): Promise<DriverResult>;
                            getResult(ctx): Promise<DriverResult>; }
 ```
 

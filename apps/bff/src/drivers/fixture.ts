@@ -108,6 +108,22 @@ class FixtureVerifierDriver implements VerifierDriver {
     };
   }
 
+  async pollStatus(_context: DriverContext): Promise<DriverResult> {
+    return {
+      exchanges: [{
+        actorFrom: "playground",
+        actorTo: this.id,
+        method: "GET",
+        url: "https://verifier.example/vp-request/{requestId}/status",
+        status: 200,
+        durationMs: 47,
+        request: {},
+        response: { status: "VP_SUBMITTED" },
+      }],
+      summary: { status: "VP_SUBMITTED", attempts: 1 },
+    };
+  }
+
   async getResult(_context: DriverContext): Promise<DriverResult> {
     return {
       exchanges: [{
