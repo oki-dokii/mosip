@@ -4,11 +4,28 @@
   "imported": 4,
   "skipped": 1,
   "exchanges": [
-    { "id": "87a5f642-1077-4c04-ae5f-b6e9f249bd8c", "service": "mimoto", "stepKey": "ISSUE_OFFER" },
-    { "id": "ff6143cd-617e-4755-a301-264e95ef8fbc", "service": "certify", "stepKey": "ISSUE_CREDENTIAL" },
-    { "id": "82298e44-daa5-4cd4-acfb-33aa2b8f90e3", "service": "esignet", "stepKey": "ISSUE_TOKEN" },
-    { "id": "0f1e3e86-e978-4ff7-ace6-e6208c26ea31", "service": "verify", "stepKey": "PRESENT_REQUEST" }
+    {
+      "id": "97c91b0d-8276-4119-a8d1-2fc865fc2beb",
+      "service": "mimoto",
+      "stepKey": "ISSUE_OFFER"
+    },
+    {
+      "id": "d11a0b5e-011a-447e-a01a-a199a0cdc78d",
+      "service": "certify",
+      "stepKey": "ISSUE_CREDENTIAL"
+    },
+    {
+      "id": "f4a1ca40-bbc7-494d-a026-b0e36aebe760",
+      "service": "esignet",
+      "stepKey": "ISSUE_TOKEN"
+    },
+    {
+      "id": "f80d1f3b-03e4-4b9d-afaf-63d8e4523c48",
+      "service": "verify",
+      "stepKey": "PRESENT_REQUEST"
+    }
   ],
   "evidenceTier": "synthetic_browser_har",
-  "liveInjiWebObserved": false
+  "liveInjiWebObserved": false,
+  "idAlgorithm": "public_http_metadata_and_occurrence_v2"
 }

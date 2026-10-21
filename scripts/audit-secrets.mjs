@@ -6,12 +6,12 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const allowedPublicEmails = new Set(["decode@mosip.io"]);
-const unsafeName = /(?:^|\/)(?:\.env(?:\.(?!example$|sample$)[^/]*)?|[^/]*\.har|[^/]*\.(?:pem|key|p12|pfx)|[^/]*postman[^/]*environment[^/]*|[^/]*(?:student|college)[_-]?id[^/]*)$/i;
+const unsafeName = /(?:^|\/)(?:\.env(?:\.(?!example$|sample$)[^/]*)?|[^/]*\.har(?:\.json)?|[^/]*\.(?:pem|key|p12|pfx)|[^/]*postman[^/]*environment[^/]*|[^/]*(?:student|college)[_-]?id[^/]*)$/i;
 
 export function shouldScanContents(path) {
   const textFile = /\.(?:md|jsonl?|txt|csv|ya?ml|har|xml|properties)$/i.test(path);
   return textFile && (path.endsWith(".md") || path.startsWith("submission/evidence/") ||
-    path.startsWith("spikes/fixtures/") || path.startsWith("docs/"));
+    /(?:^|\/)fixtures\//.test(path) || path.startsWith("docs/"));
 }
 
 export function scanText(contents) {
@@ -26,6 +26,10 @@ export function scanText(contents) {
     else if (/(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{180,}={0,2}(?![A-Za-z0-9+/])/.test(line)) add("long-base64-value");
     if (/openid-credential-offer:\/\/\S{30,}/i.test(line)) add("credential-offer-uri");
     if (/(?<!\w)\+[1-9]\d{9,14}(?!\d)/.test(line)) add("phone-number");
+    const normalized = line.replace(/\\"/g, '"');
+    const secretFields = /["'](?:access_token|refresh_token|id_token|pre[-_]authorized_code|tx_code|otp|d|p|q|dp|dq|qi|k)["']\s*:\s*["']([^"']+)["']/gi;
+    const safePlaceholder = /^(?:\[REDACTED(?: hmac:[a-f0-9]{16}|: malformed (?:JSON|base64))?\]|(?:Bearer )?CANARY_[A-Z_]+|<[^>]+>)$/;
+    if ([...normalized.matchAll(secretFields)].some((match) => !safePlaceholder.test(match[1]))) add("secret-field-value");
     const emails = line.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) ?? [];
     if (emails.some((email) => !allowedPublicEmails.has(email.toLowerCase()) && !email.toLowerCase().endsWith("@example.com"))) add("email-address");
   }
@@ -33,6 +37,8 @@ export function scanText(contents) {
 }
 
 export function scanFilename(path) {
+  // Reviewed synthetic specimen only; its contents are still scanned. Do not exempt other HARs.
+  if (path === "apps/bff/src/capture/fixtures/four-service.synthetic.har.json") return [];
   return unsafeName.test(path) ? [{ line: 0, rule: "sensitive-filename" }] : [];
 }
 

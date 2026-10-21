@@ -9,6 +9,7 @@
     "dev:x509-mock": "bash scripts/dev-x509-mock.sh",
     "demo:docker": "bash scripts/demo-docker.sh",
     "audit:secrets": "node scripts/audit-secrets.mjs",
+    "capture:filter": "pnpm --filter @playground/bff exec tsx src/capture/filter.ts",
     "build": "pnpm -r build",
     "db:generate": "pnpm --filter @playground/bff db:generate",
     "db:migrate": "pnpm --filter @playground/bff db:migrate",

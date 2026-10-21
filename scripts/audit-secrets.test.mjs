@@ -32,3 +32,15 @@ test("allows public contact and placeholder emails while finding unsafe filename
   assert.equal(shouldScanContents("spikes/fixtures/screen.png"), false);
   assert.equal(shouldScanContents("apps/bff/src/app.ts"), false);
 });
+
+test("scans capture fixtures and evidence including short literal token/private-key fields", () => {
+  assert.equal(shouldScanContents("apps/bff/src/capture/fixtures/result.json"), true);
+  assert.equal(shouldScanContents("packages/decoder/fixtures/sdjwt.json"), true);
+  assert.equal(scanFilename("submission/evidence/traffic.har.json")[0]?.rule, "sensitive-filename");
+  assert.deepEqual(scanFilename("apps/bff/src/capture/fixtures/four-service.synthetic.har.json"), []);
+  assert.deepEqual(scanText('{"access_token":"CANARY_TOKEN","d":"[REDACTED]"}'), []);
+  const contents = '{"access_token":"short-unsafe-token","d":"private-member"}';
+  const findings = scanText(contents);
+  assert.equal(findings[0]?.rule, "secret-field-value");
+  assert.equal(JSON.stringify(findings).includes("short-unsafe-token"), false);
+});

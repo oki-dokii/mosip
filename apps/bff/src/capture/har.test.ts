@@ -37,7 +37,7 @@ function entry(url: string, mimeType = "application/json", text = JSON.stringify
 })) {
   return {
     startedDateTime: "2026-10-21T00:00:00.000Z", time: 45.4,
-    request: { method: "POST", url, headers: [
+    request: { method: /\/vp-request\/|\/mimoto\/issuers/.test(url) ? "GET" : "POST", url, headers: [
       { name: "Authorization", value: `Bearer ${secret}` },
       { name: "Cookie", value: `sid=${secret}` },
       { name: "Content-Type", value: mimeType },
@@ -48,6 +48,17 @@ function entry(url: string, mimeType = "application/json", text = JSON.stringify
 }
 
 function wrap(runId: string, entries: unknown[]) { return { runId, har: { log: { entries } } }; }
+
+function withPublicEvidence(runId: string) {
+  const payload = structuredClone(fourServiceHar);
+  payload.runId = runId;
+  payload.har.log.entries[3].response.content.text = JSON.stringify({
+    allChecksSuccessful: false,
+    credential: { type: ["VerifiableCredential", "FarmerCredential"], issuer: "https://issuer.example/issuer", credentialSubject: { name: "CANARY_PERSON" } },
+    presentation_definition: { id: "CANARY_DEFINITION", input_descriptors: [{ constraints: { fields: [{ path: ["$.type"], filter: { const: "FarmerCredential" } }] } }] },
+  });
+  return payload;
+}
 
 describe("passive HAR capture", () => {
   it("imports the committed four-service fixture with stable IDs and a visible static-asset skip", () => {
@@ -82,7 +93,7 @@ describe("passive HAR capture", () => {
     const entries = [
       entry(`https://wallet.example/v1/mimoto/issuers?code=${secret}`),
       entry(`https://issuer.example/credential?access_token=${secret}`),
-      entry(`https://identity.example/oauth/authorize?state=${secret}`, "application/x-www-form-urlencoded", `code=${secret}&otp=${secret}`),
+      entry(`https://identity.example/oauth/token?state=${secret}`, "application/x-www-form-urlencoded", `code=${secret}&otp=${secret}`),
       entry(`https://verifier.example/vp-request/${secret}?request_uri=${secret}`),
     ];
     const result = prepareHarImport(wrap(record.run.id, entries), record, origins);
@@ -104,9 +115,15 @@ describe("passive HAR capture", () => {
     const record = fixture();
     expect(() => prepareHarImport(wrap(randomUUID(), []), record, origins)).toThrowError(CaptureError);
     expect(() => prepareHarImport(wrap(record.run.id, [entry("https://evil.example/credential")]), record, origins)).toThrowError(/CAPTURE_ORIGIN_NOT_ALLOWED/);
-    expect(() => prepareHarImport(wrap(record.run.id, [{ request: { url: "broken" } }]), record, origins)).toThrowError(/CAPTURE_INVALID_HAR/);
+    expect(prepareHarImport(wrap(record.run.id, [{ request: { url: "broken" } }]), record, origins).skippedReasons).toEqual({ malformed_entry: 1 });
     expect(() => prepareHarImport(wrap(record.run.id, [entry("https://issuer.example/credential", "text/plain", "x".repeat(131_073))]), record, origins)).toThrowError(/CAPTURE_ENTRY_TOO_LARGE/);
     expect(() => prepareHarImport(wrap(record.run.id, Array.from({ length: 101 }, () => entry("https://issuer.example/credential"))), record, origins)).toThrowError(/CAPTURE_INVALID_HAR/);
+  });
+
+  it("withholds unknown field names as well as their values", () => {
+    const record = fixture();
+    const result = prepareHarImport(wrap(record.run.id, [entry(`https://issuer.example/credential?CANARY_QUERY_NAME=value`, "application/json", JSON.stringify({ CANARY_FIELD_NAME: "value", nested: { CANARY_NESTED_NAME: "value" } }))]), record, origins);
+    expect(JSON.stringify(result)).not.toContain("CANARY_");
   });
 
   it("keeps malformed JSON body content out of imported exchanges", () => {
@@ -114,6 +131,18 @@ describe("passive HAR capture", () => {
     const badBody = `{ "credential": "${secret}"`;
     const result = prepareHarImport(wrap(record.run.id, [entry("https://issuer.example/credential", "application/json", badBody)]), record, origins);
     expect(result.exchanges[0]?.request).toMatchObject({ body: "[REDACTED: malformed JSON]" });
+    expect(JSON.stringify(result)).not.toContain(secret);
+  });
+
+  it("counts malformed, unfinished, untagged, and duplicate entries without guessing step coverage", () => {
+    const record = fixture();
+    const valid = entry("https://issuer.example/credential");
+    const result = prepareHarImport(wrap(record.run.id, [null, { broken: true }, { ...valid, response: { ...valid.response, status: 0 } }, entry("https://identity.example/login"), valid, valid]), record, origins);
+    expect(result.skippedReasons).toEqual({ malformed_entry: 2, unfinished_request: 1, untagged: 1, duplicate: 1 });
+    expect(result.exchanges).toHaveLength(1);
+    expect(result.coverage.find(({ stepKey }) => stepKey === "ISSUE_CREDENTIAL")).toMatchObject({ state: "captured", count: 1 });
+    expect(result.coverage.find(({ stepKey }) => stepKey === "STORE")?.state).toBe("not_observable");
+    expect(result.coverage.find(({ stepKey }) => stepKey === "PRESENT_RESULT")?.state).toBe("missing");
     expect(JSON.stringify(result)).not.toContain(secret);
   });
 
@@ -160,13 +189,15 @@ describe("capture API", () => {
       const base = `http://127.0.0.1:${address.port}`;
       const response = await fetch(`${base}/api/v1/runs/${record.run.id}/capture/har`, {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...fourServiceHar, runId: record.run.id }),
+        body: JSON.stringify(withPublicEvidence(record.run.id)),
       });
       expect(response.status).toBe(200);
       expect(await response.json()).toMatchObject({ imported: 4, skipped: 1 });
       const exchanges = await fetch(`${base}/api/v1/runs/${record.run.id}/exchanges`).then((item) => item.text());
       expect(exchanges).not.toMatch(canary);
       expect(exchanges).toContain("har_import");
+      expect(exchanges).toContain("verifiable_credential");
+      expect(exchanges).toContain("FarmerCredential");
       expect(JSON.stringify(await repository.get(record.run.id))).not.toMatch(canary);
       expect(emitted).toHaveLength(4);
       expect(JSON.stringify(emitted)).not.toMatch(canary);
@@ -184,6 +215,36 @@ describe("capture API", () => {
       else process.env.CAPTURE_ORIGINS_JSON = previous;
     }
   });
+  it("rejects wrong content types, oversized/malformed JSON, and excessive attempts without echoing bodies", async () => {
+    const repository = new MemoryRunRepository();
+    const io = { of: () => ({ to: () => ({ emit: () => undefined }) }) } as unknown as SocketServer;
+    server = buildApp(() => io, repository).listen(0, "127.0.0.1");
+    await new Promise<void>((resolve, reject) => { server!.once("listening", resolve); server!.once("error", reject); });
+    const address = server.address();
+    if (!address || typeof address === "string") throw new Error("No address");
+    const url = `http://127.0.0.1:${address.port}/api/v1/runs/${randomUUID()}/capture/har`;
+    const wrong = await fetch(url, { method: "POST", headers: { "content-type": "text/plain" }, body: secret });
+    expect(wrong.status).toBe(415);
+    expect(await wrong.text()).not.toContain(secret);
+    const malformed = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: `{ "secret": "${secret}"` });
+    expect(malformed.status).toBe(400);
+    expect(await malformed.text()).not.toContain(secret);
+    const large = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ value: secret.repeat(100_000) }) });
+    expect(large.status).toBe(413);
+    expect(await large.text()).not.toContain(secret);
+    const trailing = await fetch(`${url}/`, { method: "POST", headers: { "content-type": "application/json" }, body: `{ "secret": "${secret}"` });
+    expect(trailing.status).toBe(400);
+    expect(await trailing.text()).not.toContain(secret);
+    for (let i = 0; i < 6; i++) {
+      const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": `192.0.2.${i}` }, body: "{}" });
+      expect(response.status).toBe(404);
+    }
+    const limited = await fetch(url, { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": "192.0.2.200" }, body: "{}" });
+    expect(limited.status).toBe(429);
+    expect(limited.headers.get("retry-after")).toBeTruthy();
+    expect(await limited.json()).toEqual({ code: "CAPTURE_RATE_LIMITED" });
+  });
+
 });
 
 describe.skipIf(!process.env.CAPTURE_POSTGRES_TEST_URL)("capture PostgreSQL persistence", () => {
@@ -191,7 +252,7 @@ describe.skipIf(!process.env.CAPTURE_POSTGRES_TEST_URL)("capture PostgreSQL pers
     const prisma = new PrismaClient({ datasources: { db: { url: process.env.CAPTURE_POSTGRES_TEST_URL! } } });
     const repository = new PrismaRunRepository(prisma);
     const record = fixture();
-    const payload = { ...fourServiceHar, runId: record.run.id };
+    const payload = withPublicEvidence(record.run.id);
     try {
       await repository.create(record);
       const { exchanges } = prepareHarImport(payload, record, origins);
@@ -199,6 +260,7 @@ describe.skipIf(!process.env.CAPTURE_POSTGRES_TEST_URL)("capture PostgreSQL pers
       const rows = await prisma.exchange.findMany({ where: { runId: record.run.id } });
       expect(rows).toHaveLength(4);
       expect(JSON.stringify(rows)).not.toMatch(canary);
+      expect(JSON.stringify(rows)).toContain("verifiable_credential");
       expect(JSON.stringify(await repository.get(record.run.id))).not.toMatch(canary);
       expect(await repository.addExchanges(exchanges)).toBe(0);
     } finally {

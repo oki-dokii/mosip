@@ -13,7 +13,8 @@ import { filterRuns } from "./history.js";
 import { unsupportedReason } from "./capabilities.js";
 import { snapshotVersions } from "./versions.js";
 import type { RunRepository } from "./store.js";
-import { CaptureError, prepareHarImport } from "./capture/har.js";
+import { browserCoverage, CaptureError, prepareHarImport } from "./capture/har.js";
+import { captureIngress } from "./capture/ingress.js";
 import { listScenarios, scenarioMismatch } from "./scenarios.js";
 
 const metadata: ImplementationMetadata = {
@@ -68,7 +69,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
   const app = express();
   const importingRuns = new Set<string>();
   app.use(cors({ origin: process.env.WEB_ORIGIN ?? "http://localhost:5173" }));
-  app.use("/api/v1/runs/:id/capture/har", express.json({ limit: "2mb" }));
+  app.use("/api/v1/runs/:id/capture/har", captureIngress(), express.json({ limit: "2mb" }));
   app.use(express.json({ limit: "256kb" }));
 
   app.get("/api/v1/health", (_request, response) => {
@@ -206,14 +207,16 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
       if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
       const prepared = prepareHarImport(request.body, record);
       const imported = await repository.addExchanges(prepared.exchanges);
-      for (const exchange of prepared.exchanges.slice(0, imported)) {
+      const saved = await repository.get(runId);
+      const storedIds = new Set(saved?.exchanges.map(({ id }) => id) ?? []);
+      for (const exchange of prepared.exchanges.filter(({ id }) => storedIds.has(id))) {
         getIo().of("/runs").to(`run:${runId}`).emit("exchange:recorded", {
           runId, exchangeId: exchange.id, seq: exchange.seq, actorFrom: exchange.actorFrom,
           actorTo: exchange.actorTo, method: exchange.method, url: exchange.url,
-          status: exchange.status, durationMs: exchange.durationMs,
+          status: exchange.status, durationMs: exchange.durationMs, redactionCount: new Set(exchange.redactions).size,
         });
       }
-      return response.json({ imported, skipped: prepared.skipped + prepared.exchanges.length - imported, gaps: prepared.gaps });
+      return response.json({ imported, skipped: prepared.skipped + prepared.exchanges.length - imported, skippedReasons: { ...prepared.skippedReasons, ...(prepared.exchanges.length > imported ? { persistence_conflict: prepared.exchanges.length - imported } : {}) }, coverage: saved ? browserCoverage(saved) : prepared.coverage, gaps: prepared.gaps });
     } catch (error) {
       if (error instanceof CaptureError) return response.status(error.status).json({ code: error.code });
       next(error);
@@ -249,7 +252,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
   });
 
   app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
-    if (_request.path.endsWith("/capture/har")) {
+    if (response.locals.captureRequest === true) {
       const status = typeof error === "object" && error && "status" in error && error.status === 413 ? 413 : 400;
       return response.status(status).json({ code: status === 413 ? "CAPTURE_TOO_LARGE" : "CAPTURE_INVALID_HAR" });
     }
