@@ -4,7 +4,7 @@ import express from "express";
 import type { Server } from "socket.io";
 import { runConfigSchema, type ImplementationMetadata, type RunSummary } from "@playground/shared";
 import { createSteps, runDemo } from "./orchestrator.js";
-import { runStore } from "./store.js";
+import type { RunRepository } from "./store.js";
 
 const metadata: ImplementationMetadata = {
   issuers: [
@@ -25,19 +25,28 @@ const metadata: ImplementationMetadata = {
   ],
 };
 
-export function buildApp(getIo: () => Server) {
+export function buildApp(getIo: () => Server, repository: RunRepository) {
   const app = express();
   app.use(cors({ origin: process.env.WEB_ORIGIN ?? "http://localhost:5173" }));
   app.use(express.json({ limit: "256kb" }));
 
   app.get("/api/v1/health", (_request, response) => {
-    response.json({ services: [{ name: "playground", status: "up", version: "0.1.0", latencyMs: 0 }] });
+    response.json({
+      services: [{ name: "playground", status: "up", version: "0.2.0", latencyMs: 0 }],
+      storage: repository.storage,
+    });
   });
 
   app.get("/api/v1/meta/implementations", (_request, response) => response.json(metadata));
-  app.get("/api/v1/runs", (_request, response) => response.json({ items: runStore.list() }));
+  app.get("/api/v1/runs", async (_request, response, next) => {
+    try {
+      response.json({ items: await repository.list() });
+    } catch (error) {
+      next(error);
+    }
+  });
 
-  app.post("/api/v1/runs", (request, response) => {
+  app.post("/api/v1/runs", async (request, response, next) => {
     const parsed = runConfigSchema.safeParse(request.body);
     if (!parsed.success) {
       response.status(400).type("application/problem+json").json({
@@ -63,26 +72,56 @@ export function buildApp(getIo: () => Server) {
       startedAt: null,
       finishedAt: null,
     };
-    runStore.create({ run, steps: createSteps(id), exchanges: [] });
-    response.status(202).json({ runId: id });
-    setTimeout(() => void runDemo(id, getIo()), 25);
+    try {
+      await repository.create({ run, steps: createSteps(id), exchanges: [] });
+      response.status(202).json({ runId: id });
+      setTimeout(() => {
+        void runDemo(id, getIo(), repository).catch((error: unknown) => {
+          console.error(`Run ${id} failed`, error);
+        });
+      }, 25);
+    } catch (error) {
+      next(error);
+    }
   });
 
-  app.get("/api/v1/runs/:id", (request, response) => {
-    const record = runStore.get(request.params.id);
-    if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
-    response.json(record.run);
+  app.get("/api/v1/runs/:id", async (request, response, next) => {
+    try {
+      const record = await repository.get(request.params.id);
+      if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
+      response.json(record.run);
+    } catch (error) {
+      next(error);
+    }
   });
-  app.get("/api/v1/runs/:id/steps", (request, response) => {
-    const record = runStore.get(request.params.id);
-    if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
-    response.json({ items: record.steps });
+  app.get("/api/v1/runs/:id/steps", async (request, response, next) => {
+    try {
+      const record = await repository.get(request.params.id);
+      if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
+      response.json({ items: record.steps });
+    } catch (error) {
+      next(error);
+    }
   });
-  app.get("/api/v1/runs/:id/exchanges", (request, response) => {
-    const record = runStore.get(request.params.id);
-    if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
-    const stepId = typeof request.query.stepId === "string" ? request.query.stepId : null;
-    response.json({ items: stepId ? record.exchanges.filter((item) => item.stepId === stepId) : record.exchanges });
+  app.get("/api/v1/runs/:id/exchanges", async (request, response, next) => {
+    try {
+      const record = await repository.get(request.params.id);
+      if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
+      const stepId = typeof request.query.stepId === "string" ? request.query.stepId : null;
+      response.json({ items: stepId ? record.exchanges.filter((item) => item.stepId === stepId) : record.exchanges });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
+    console.error(error);
+    response.status(500).type("application/problem+json").json({
+      type: "https://playground/errors/internal",
+      title: "The playground could not complete the request",
+      status: 500,
+      code: "INTERNAL_ERROR",
+    });
   });
 
   return app;

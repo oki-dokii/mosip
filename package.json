@@ -4,8 +4,12 @@
   "type": "module",
   "packageManager": "pnpm@11.25.0",
   "scripts": {
+    "postinstall": "pnpm --filter @playground/bff db:generate",
     "dev": "pnpm --parallel --filter @playground/bff --filter @playground/web dev",
     "build": "pnpm -r build",
+    "db:generate": "pnpm --filter @playground/bff db:generate",
+    "db:migrate": "pnpm --filter @playground/bff db:migrate",
+    "db:deploy": "pnpm --filter @playground/bff db:deploy",
     "typecheck": "pnpm -r typecheck",
     "test": "node --test spikes/*.test.mjs && pnpm -r test",
     "spike:contracts": "node spikes/collab-contract-spike.mjs",

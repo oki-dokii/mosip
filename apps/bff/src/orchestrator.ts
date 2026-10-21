@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { Exchange, RunConfig, RunStep } from "@playground/shared";
 import type { Server } from "socket.io";
 import { redact } from "./redaction.js";
-import { runStore } from "./store.js";
+import type { RunRepository } from "./store.js";
 
 const STEP_DEFINITIONS = [
   ["INIT", "Initialize run"],
@@ -103,23 +103,27 @@ function exchangeFor(step: RunStep, config: RunConfig, sequence: number): Omit<E
   };
 }
 
-export async function runDemo(runId: string, io: Server) {
-  const record = runStore.get(runId);
+export async function runDemo(runId: string, io: Server, repository: RunRepository, stepDelayMs = 110) {
+  const record = await repository.get(runId);
   if (!record) return;
   const room = `run:${runId}`;
   const namespace = io.of("/runs");
   record.run.status = "running";
   record.run.startedAt = new Date().toISOString();
+  await repository.updateRun(record.run);
   namespace.to(room).emit("run:created", { runId, config: record.run.config });
+  let exchangeSequence = record.exchanges.length;
 
   for (const step of record.steps) {
     step.status = "running";
+    await repository.updateStep(step);
     namespace.to(room).emit("step:started", step);
-    await wait(110);
-    const exchange = exchangeFor(step, record.run.config, record.exchanges.length + 1);
+    await wait(stepDelayMs);
+    const exchange = exchangeFor(step, record.run.config, exchangeSequence + 1);
     if (exchange) {
       const stored: Exchange = { ...exchange, id: randomUUID(), runId, stepId: step.id };
-      record.exchanges.push(stored);
+      await repository.addExchange(stored);
+      exchangeSequence += 1;
       namespace.to(room).emit("exchange:recorded", {
         runId,
         exchangeId: stored.id,
@@ -134,12 +138,14 @@ export async function runDemo(runId: string, io: Server) {
     }
     step.status = "succeeded";
     step.summary = { completed: true };
+    await repository.updateStep(step);
     namespace.to(room).emit("step:finished", step);
   }
 
   record.run.status = "passed";
   record.run.actualOutcome = "valid";
   record.run.finishedAt = new Date().toISOString();
+  await repository.updateRun(record.run);
   namespace.to(room).emit("run:finished", {
     runId,
     status: record.run.status,

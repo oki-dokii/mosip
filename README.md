@@ -20,7 +20,7 @@ Read in this order:
 Working rules for people and AI assistants are in `CLAUDE.md`: quiz before changes, log every meaningful decision, keep `flow.md` true.
 
 ## Status of this documentation
-Phase 0 and Phase 1 are complete as of 2026-10-20. The live Reference Wallet spike issued and verified both JSON-LD and SD-JWT credentials on MOSIP Collab. Phase 2 has a working fixture-backed web and BFF walking skeleton with live run updates, exchange inspection, and write-time secret redaction. Live adapters and Postgres persistence are the next slice.
+Phase 0 and Phase 1 are complete as of 2026-10-20. The live Reference Wallet spike issued and verified both JSON-LD and SD-JWT credentials on MOSIP Collab. Phase 2 has a working fixture-backed web and BFF with live run updates, exchange inspection, write-time secret redaction, and optional PostgreSQL persistence. Live protocol adapters are the next slice.
 
 Run the application locally with:
 

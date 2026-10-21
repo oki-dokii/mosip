@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-024 · Select PostgreSQL through the run repository boundary
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** M1 stored runs in process memory, while D-006 requires PostgreSQL for durable history. Developers still need the playground to start without infrastructure for UI work and deterministic tests.
+- **Decision:** Put all run, step, and exchange reads and writes behind an asynchronous repository. Select Prisma/PostgreSQL when `DATABASE_URL` exists and use the in-memory implementation otherwise. Report the selected mode from the health endpoint.
+- **Alternatives considered:** Require PostgreSQL for every command (slows the local UI loop); silently fall back after a database connection error (can hide lost durability); maintain separate API paths for fixture and database modes (causes drift).
+- **Why this one:** Both modes exercise the same lifecycle contract, while configuration remains explicit and PostgreSQL failures are surfaced instead of hidden.
+- **Trade-off accepted:** A developer who forgets `DATABASE_URL` gets non-durable runs, so health and startup logs must make the active mode clear.
+- **Revisit if:** Tests need database-specific behavior by default or another process must consume the run event stream.
+- **Affects:** `apps/bff/src/store.ts`, `apps/bff/prisma`, `docker-compose.yml`, `/api/v1/health`, D-006, FR-80.
+
 ### D-023 · Build M1 with a fixture-backed in-memory runner
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** The first application slice must prove the browser, BFF, run lifecycle, real-time events, inspector, and redaction boundary before database and live-adapter integration increase the debugging surface.

@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RunStatus {
+  pending
+  running
+  passed
+  failed
+  errored
+  cancelled
+}
+
+enum StepStatus {
+  pending
+  running
+  succeeded
+  failed
+  skipped
+}
+
+enum IssuerImpl {
+  inji_certify
+  mock_issuer
+}
+
+enum WalletImpl {
+  reference_wallet
+  inji_web_assisted
+}
+
+enum VerifierImpl {
+  inji_verify
+  mock_verifier
+}
+
+enum CredentialFormat {
+  ldp_vc
+  vc_sd_jwt
+}
+
+enum FlowVariant {
+  cross_device
+}
+
+enum VerifyOutcome {
+  valid
+  invalid
+  expired
+  error
+}
+
+model Run {
+  id              String           @id @db.Uuid
+  scenarioId      String?          @map("scenario_id") @db.Uuid
+  status          RunStatus        @default(pending)
+  issuer          IssuerImpl
+  wallet          WalletImpl
+  verifier        VerifierImpl
+  format          CredentialFormat
+  proofType       String           @map("proof_type")
+  algorithm       String
+  flow            FlowVariant      @default(cross_device)
+  expectedOutcome VerifyOutcome    @default(valid) @map("expected_outcome")
+  actualOutcome   VerifyOutcome?   @map("actual_outcome")
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  startedAt       DateTime?        @map("started_at") @db.Timestamptz
+  finishedAt      DateTime?        @map("finished_at") @db.Timestamptz
+  steps           RunStep[]
+  exchanges       Exchange[]
+
+  @@index([createdAt(sort: Desc)], map: "runs_created_idx")
+  @@index([status], map: "runs_status_idx")
+  @@map("runs")
+}
+
+model RunStep {
+  id        String     @id @db.Uuid
+  runId     String     @map("run_id") @db.Uuid
+  seq       Int
+  stepKey   String     @map("step_key")
+  title     String
+  status    StepStatus @default(pending)
+  summary   Json?
+  run       Run        @relation(fields: [runId], references: [id], onDelete: Cascade)
+  exchanges Exchange[]
+
+  @@unique([runId, seq])
+  @@index([runId, seq], map: "run_steps_run_idx")
+  @@map("run_steps")
+}
+
+model Exchange {
+  id         String  @id @db.Uuid
+  runId      String  @map("run_id") @db.Uuid
+  stepId     String  @map("step_id") @db.Uuid
+  seq        Int
+  actorFrom  String  @map("actor_from")
+  actorTo    String  @map("actor_to")
+  method     String
+  url        String
+  status     Int
+  durationMs Int     @map("duration_ms")
+  request    Json
+  response   Json
+  redactions Json    @default("[]")
+  run        Run     @relation(fields: [runId], references: [id], onDelete: Cascade)
+  step       RunStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, seq])
+  @@index([runId, seq], map: "exchanges_run_idx")
+  @@index([stepId], map: "exchanges_step_idx")
+  @@map("exchanges")
+}

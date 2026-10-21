@@ -1,6 +1,8 @@
 # Database Schema
 
 **Engine:** PostgreSQL 16 · **Access layer:** Prisma (migrations and typed client)
+
+> **Implementation status (2026-10-21):** `runs`, `run_steps`, and `exchanges` are implemented in `apps/bff/prisma/schema.prisma` and the initial migration. The remaining tables and views in this reference design are planned. The implemented exchange payload columns use JSONB so both structured JSON and JSON string values can be stored through one repository contract.
 **Version:** 0.1 (design phase) · **Date:** 2026-10-17
 **Related:** SRS.md (data needs), BACKEND.md (API that reads and writes this), decisions.md (D-006)
 
@@ -295,5 +297,5 @@ GROUP BY r.issuer, r.wallet, r.format, sv.version;
 ---
 
 ## 7. Migrations and seeds
-- Prisma migrations live in `apps/bff/prisma/migrations`.
+- Prisma migrations live in `apps/bff/prisma/migrations`; `20261021000100_init` creates the implemented run, step, and exchange slice.
 - Seeds: preset scenarios (all-Inji SD-JWT, all-Inji JSON-LD, mock issuer → Verify, Certify → mock verifier, and one preset per tamper kind).

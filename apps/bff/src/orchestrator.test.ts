@@ -1,5 +1,9 @@
+import { randomUUID } from "node:crypto";
+import type { RunSummary } from "@playground/shared";
+import type { Server } from "socket.io";
 import { describe, expect, it } from "vitest";
-import { createSteps } from "./orchestrator.js";
+import { createSteps, runDemo } from "./orchestrator.js";
+import { MemoryRunRepository } from "./store.js";
 
 describe("walking-skeleton orchestration", () => {
   it("creates the ordered issue-to-verify timeline", () => {
@@ -17,5 +21,40 @@ describe("walking-skeleton orchestration", () => {
       "REPORT",
     ]);
     expect(steps.every((step) => step.status === "pending")).toBe(true);
+  });
+
+  it("persists ordered, redacted exchanges through the repository", async () => {
+    const repository = new MemoryRunRepository();
+    const id = randomUUID();
+    const run: RunSummary = {
+      id,
+      config: {
+        issuer: "inji_certify",
+        wallet: "reference_wallet",
+        verifier: "inji_verify",
+        format: "vc_sd_jwt",
+        flow: "cross_device",
+        tamper: null,
+        scenarioId: null,
+      },
+      status: "pending",
+      expectedOutcome: "valid",
+      actualOutcome: null,
+      proofType: "kb+jwt",
+      algorithm: "EdDSA",
+      createdAt: new Date().toISOString(),
+      startedAt: null,
+      finishedAt: null,
+    };
+    await repository.create({ run, steps: createSteps(id), exchanges: [] });
+    const emit = () => undefined;
+    const io = { of: () => ({ to: () => ({ emit }) }) } as unknown as Server;
+
+    await runDemo(id, io, repository, 0);
+
+    const stored = await repository.get(id);
+    expect(stored?.run.status).toBe("passed");
+    expect(stored?.exchanges.map((exchange) => exchange.seq)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(stored?.exchanges[1]?.response).toMatchObject({ access_token: "[REDACTED]" });
   });
 });

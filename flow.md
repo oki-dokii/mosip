@@ -2,7 +2,7 @@
 
 How code travels between files and functions: **entry points, order of execution, and who calls whom.**
 
-> **Status: SPIKES AND M1 WALKING SKELETON IMPLEMENTED; LIVE APPLICATION IN PROGRESS.** The current web/BFF flow uses sanitized fixture-backed exchanges and an in-memory store. The deeper driver, database, Tap, replay, and reporting paths remain planned.
+> **Status: SPIKES, M1 WALKING SKELETON, AND RUN PERSISTENCE IMPLEMENTED; LIVE APPLICATION IN PROGRESS.** The current web/BFF flow uses sanitized fixture-backed exchanges. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Live drivers, Tap, replay, and reporting remain planned.
 
 Legend: `file → function()` means "this function in that file". `A ⇒ B` means A calls B. Status: 🟦 planned · 🟩 implemented · 🟥 changed from plan (explain in decisions.md).
 
@@ -37,17 +37,19 @@ Legend: `file → function()` means "this function in that file". `A ⇒ B` mean
 | Web app | `apps/web/src/main.tsx` | `pnpm --filter @playground/web dev` / built static files | 🟩 |
 | Mock issuer | `apps/mock-issuer/src/server.ts` | Compose profile `mocks` | 🟦 |
 | Mock verifier | `apps/mock-verifier/src/server.ts` | Compose profile `mocks` | 🟦 |
-| DB migrations and seeds | `apps/bff/prisma/migrations`, `apps/bff/prisma/seed.ts` | `prisma migrate deploy` on container start | 🟦 |
+| DB migrations | `apps/bff/prisma/migrations` | `pnpm db:deploy` | 🟩 |
+| DB seeds | `apps/bff/prisma/seed.ts` | Future preset-scenario seed | 🟦 |
 | Nightly matrix runner (bonus) | `apps/bff/src/cli/nightly.ts` | GitHub Actions schedule | 🟦 |
 
 ---
 
 ## 2. Startup order (BFF walking skeleton) 🟩
 
-1. `server.ts` ⇒ `app.ts → buildApp(() => io)`
-2. ⇒ `http.createServer(app)`
-3. ⇒ attach Socket.IO namespace `/runs`; clients join room `run:{runId}`
-4. ⇒ `httpServer.listen(PORT)` (default `4000`)
+1. `server.ts` ⇒ `store.ts → createRunRepository()` (`DATABASE_URL` selects Prisma; otherwise memory)
+2. ⇒ `app.ts → buildApp(() => io, repository)`
+3. ⇒ `http.createServer(app)`
+4. ⇒ attach Socket.IO namespace `/runs`; clients join room `run:{runId}`
+5. ⇒ `httpServer.listen(PORT)` (default `4000`)
 
 Environment validation, database startup, structured logging, rate limiting, and graceful shutdown remain planned.
 
@@ -67,7 +69,7 @@ Environment validation, database startup, structured logging, rate limiting, and
 ```
 app.ts → POST /api/v1/runs
   ⇒ packages/shared → runConfigSchema.safeParse(body)
-  ⇒ store.ts → runStore.create(run plus createSteps(runId))
+  ⇒ store.ts → repository.create(run plus createSteps(runId))
   ⇒ return 202 { runId }
   ⇒ orchestrator.ts → runDemo(runId, io)
        ⇒ mark run running; emit run:created
@@ -76,12 +78,12 @@ app.ts → POST /api/v1/runs
             → PRESENT_REQUEST → PRESENT_SUBMIT → PRESENT_RESULT → REPORT
             ⇒ emit step:started
             ⇒ create sanitized exchange where the step has a protocol boundary
-            ⇒ store exchange; emit exchange:recorded
-            ⇒ mark succeeded; emit step:finished
-       ⇒ mark run passed with actualOutcome valid; emit run:finished
+            ⇒ repository.addExchange(); emit exchange:recorded
+            ⇒ repository.updateStep(succeeded); emit step:finished
+       ⇒ repository.updateRun(passed, actualOutcome valid); emit run:finished
 ```
 
-`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read the same in-memory record. Database writes, real drivers, presentation polling, negative outcomes, and durable reports remain planned.
+`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read through the same repository. PostgreSQL records survive BFF restarts; memory records intentionally do not. Real drivers, presentation polling, negative outcomes, and durable reports remain planned.
 
 ### 3.3 Where exchange data is recorded
 
@@ -205,7 +207,8 @@ Current M1 files:
 | `apps/bff/src/app.ts` | Implemented REST routes and run creation |
 | `apps/bff/src/orchestrator.ts` | Fixture-backed nine-step run and events |
 | `apps/bff/src/redaction.ts` | Recursive write-time masking |
-| `apps/bff/src/store.ts` | In-memory run records |
+| `apps/bff/src/store.ts` | Repository contract plus memory and Prisma implementations |
+| `apps/bff/prisma/schema.prisma` | Implemented PostgreSQL run, step, and exchange schema |
 | `packages/shared/src/index.ts` | Shared Zod configuration schema and API types |
 
 ---
@@ -227,3 +230,4 @@ When you change code:
 | 2026-10-20 | Added token/JWKS diagnostics, Verify cancellation lifecycle, and sanitized contract fixture test | implementation |
 | 2026-10-20 | Added the headless authorization-code Reference Wallet flow for JSON-LD and SD-JWT issuance, holder proof, DCQL direct post, and Verify results | implementation |
 | 2026-10-21 | Added the M1 web/BFF walking skeleton, shared schemas, in-memory orchestration, live events, inspector, and write-time redaction | implementation |
+| 2026-10-21 | Added Prisma/PostgreSQL run persistence, initial migration, repository fallback, and graceful disconnect | implementation |
