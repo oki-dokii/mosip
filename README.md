@@ -288,6 +288,7 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 | Phase evidence | [Phase 0–1](PHASE0_1.md), [Phase 2](PHASE2.md), [Phase 3](PHASE3.md) |
 | Independent remaining work | [Four-person plan](NEXT_STEPS_4_PERSON_PLAN.md) |
 | Five-day priority order and rival finding probes | [Catch-up plan](CATCH_UP.md) |
+| Evidence-based comparison with the attached Paradox-73 snapshot | [Competitor gap analysis](COMPETITOR_GAP_ANALYSIS.md) |
 | Container setup and shutdown | [Deployment guide](DEPLOYMENT.md) |
 | Scenario provenance | [Scenarios and evidence](SCENARIOS_AND_EVIDENCE.md) |
 | Observed interoperability findings | [Gap register](GAPS.md) |
