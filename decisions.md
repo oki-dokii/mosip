@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-036 · Split remaining delivery by file ownership and one integration seam
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** The stricter seven-phase checklist still needs real Inji-wallet evidence, safe browser capture, accurate negative cases, and runnable packaging. Four developers must be able to make progress without overlapping edits or new branches.
+- **Decision:** Allocate capture, assisted UI, protocol validation, and packaging to four separate file areas. Keep the current shared run/step/exchange types stable during the first pass; one integrator owns any shared API change, common documentation, serial commits, and pushes to `main`.
+- **Alternatives considered:** Have all four developers edit the orchestrator and README concurrently (high conflict risk); create feature branches (contrary to the user's current instruction); treat a Reference Wallet pass as an all-Inji pass (invalidates A1/A2).
+- **Why this one:** Each person can build and test against existing fixtures independently while the capture-to-assisted-wallet interface is reconciled once. External account and device blockers remain visible.
+- **Trade-off accepted:** Shared API integration and final A1/A2 validation are sequential, and a persistent Inji Web test account is still needed for the Web path.
+- **Revisit if:** The user permits branches, an Inji Web test account becomes available, or a selected wallet changes the protocol contract.
+- **Affects:** `NEXT_STEPS_4_PERSON_PLAN.md`, FR-25, FR-40, A1, A2, A6.
+
 ### D-035 · Add an optional X.509 test identity to the standalone mock issuer
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** The standalone `did:jwk` SD-JWT reached Inji Verify but failed its schema/signature check. The verifier's documented SD-JWT key path uses X.509 certificates.

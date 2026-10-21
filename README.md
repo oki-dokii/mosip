@@ -17,6 +17,7 @@ Read in this order:
 | 9 | [PHASE0_1.md](PHASE0_1.md) | What Phase 0 decided and what the live Collab contract spikes found |
 | 10 | [PHASE2.md](PHASE2.md) | What the application walking skeleton implements and what comes next |
 | 11 | [PHASE3.md](PHASE3.md) | Regression views, mock roles, validation evidence, and limits |
+| 12 | [NEXT_STEPS_4_PERSON_PLAN.md](NEXT_STEPS_4_PERSON_PLAN.md) | Remaining work, comparable repositories, four independent owners, and integration gates |
 
 Working rules for people and AI assistants are in `CLAUDE.md`: quiz before changes, log every meaningful decision, keep `flow.md` true.
 
