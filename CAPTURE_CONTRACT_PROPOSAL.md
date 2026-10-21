@@ -2,7 +2,7 @@
 
 Prepared 2026-10-22 after reviewing the passive HAR importer and driver redactor. This is a proposal, **not an implemented `Exchange` schema change**. Person 1 owns capture and redaction; the integrator will apply any shared type/API change after reviewing a fixture and tests. Person 2 owns inspector rendering, and Person 4 owns CI wiring.
 
-**Order of work:** Person 1's immediate handoff is the four-service synthetic HAR fixture, reproducible exchange IDs, boundary list, and negative redaction-test output in [the four-person plan](NEXT_STEPS_4_PERSON_PLAN.md). The schema, decoded view, HAR tolerance, and per-step coverage ideas below are subsequent work. They must not delay that handoff.
+**Order of work:** Person 1's immediate four-service synthetic HAR handoff is complete in `77be60a`; [CAPTURE.md](CAPTURE.md) links the fixture, reproducible exchange IDs, boundary list, and negative redaction-test output. HAR timing/base64 tolerance and redactor hardening landed in `9bd766a`. The schema, decoded view, and dynamic per-step coverage ideas below remain proposed work.
 
 ## Current risk and boundaries
 
