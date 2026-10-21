@@ -2,6 +2,8 @@
 
 Prepared 2026-10-22 after reviewing the passive HAR importer and driver redactor. This is a proposal, **not an implemented `Exchange` schema change**. Person 1 owns capture and redaction; the integrator will apply any shared type/API change after reviewing a fixture and tests. Person 2 owns inspector rendering, and Person 4 owns CI wiring.
 
+**Order of work:** Person 1's immediate handoff is the four-service synthetic HAR fixture, reproducible exchange IDs, boundary list, and negative redaction-test output in [the four-person plan](NEXT_STEPS_4_PERSON_PLAN.md). The schema, decoded view, HAR tolerance, and per-step coverage ideas below are subsequent work. They must not delay that handoff.
+
 ## Current risk and boundaries
 
 `apps/bff/src/capture/har.ts` keeps JSON/form body shape but masks nearly every scalar, while `apps/bff/src/redaction.ts` recursively masks only named fields. Both paths eventually feed `Exchange` records, so a driver can accidentally persist a complete credential or JWT under an unexpected key. The importer also rejects a whole HAR when Chrome records `time: -1` or `status: 0`, and its 100-entry cap requires manual filtering. These are code observations; no real Inji Web HAR was tested in this review.
@@ -34,4 +36,8 @@ Return a per-step list separate from `Exchange` with `stepKey`, `state` (`captur
 - The report states which steps were captured or unobservable. The UI does not claim a complete wallet journey from HAR alone.
 - The integrator adds the optional field only after Person 1's fixture and Person 2's rendering contract agree; Person 4 then enables the tests in CI.
 
-The independent `pnpm audit:secrets` check scans tracked/non-ignored artifact filenames plus documentation/evidence contents. It is a final-artefact guard, not a substitute for write-time sanitization. Person 4 can add it to CI after reviewing the baseline.
+The independent `pnpm audit:secrets` check scans tracked/non-ignored artifact filenames plus documentation/evidence text. It does not inspect binary content and is not a substitute for write-time sanitization. Person 4 can add it to CI after reviewing the baseline.
+
+## Requirement trace
+
+The current HAR path cannot by itself satisfy SRS FR-40's **every exchange** claim: it sees browser traffic after a run and omits server-to-server, native-wallet, encrypted, and out-of-window boundaries. A per-step coverage list makes this limit visible, but the acceptance claim remains open until those other boundaries are observed or the requirement is revised with the team. FR-42/A3 calls for useful offer, token, presentation definition, VP token, and result detail; body-shape-only HAR records do not satisfy that inspector detail. The decoded public view is a proposed safe partial remedy; complete signed or secret-bearing objects still cannot be shown unmasked under FR-43/A5. The current capture test checks in-memory repository storage and API output; it does not test PostgreSQL rows or Socket.IO payloads.

@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-039 · Use passive HAR import for browser evidence without rewriting signed flows
+- **Date:** 2026-10-22   **Status:** Accepted
+- **Context:** The original `/tap/...` proxy design (D-003) would rewrite service URLs, redirects, or request URIs that can be signed or bound into OpenID4VC flows. The implemented capture path needs to observe Inji Web browser traffic without changing those protocol values.
+- **Decision:** Use bounded, origin-allowlisted, synthetic-only passive HAR import after the run. Redact before persistence and attach observable browser calls to run steps. Treat missing server-to-server, native-wallet, encrypted, and out-of-window traffic as explicit coverage gaps. Keep FR-40's full-capture acceptance open; the HAR path alone does not prove it.
+- **Alternatives considered:** Rewriting `/tap/...` proxy (may alter signed audiences, request URIs, and redirects); TLS-intercepting transparent proxy (adds certificate trust and operational complexity); driver logging only (misses browser traffic).
+- **Why this one:** It preserves the original exchange values and can be tied to a run without changing Inji service behavior. The importer is already implemented for synthetic test traffic.
+- **Trade-off accepted:** Capture is post-hoc and browser-limited; the current importer masks most body values, and a real Inji Web HAR has not been validated. FR-42/A3 inspector detail and FR-43/A5 no-secret proof require further tests and a safe public-field view.
+- **Revisit if:** The team can add a truly transparent, non-rewriting capture point or a reliable server-side event feed with complete sanitized coverage.
+- **Affects:** `apps/bff/src/capture/`, `CAPTURE.md`, `CAPTURE_CONTRACT_PROPOSAL.md`, FR-40–FR-43, A3, A5; supersedes D-003's Tap decision.
+
 ### D-038 · Package the playground and separate mocks before local Inji services
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** A6 needed one command that starts a reviewable playground from a clean checkout. The host already uses ports 5173, 5432, and sometimes 5433, and the official local Inji Web path still requires OIDC client/keystore configuration.
@@ -406,7 +416,7 @@ Version 0.1 · started 2026-10-17
 - **Affects:** `apps/bff`, TRD §2.
 
 ### D-003 · A logging reverse proxy ("Tap") records all protocol traffic
-- **Date:** 2026-10-17   **Status:** Accepted
+- **Date:** 2026-10-17   **Status:** Superseded by D-039
 - **Context:** The inspector must show raw payloads for any caller: the BFF, the Reference Wallet, or Inji Web running in a browser.
 - **Decision:** All base URLs given to clients point at `/tap/<runId>/<service>/…`. The Tap forwards and records every exchange.
 - **Alternatives considered:** Each driver logs its own calls (misses Inji Web traffic); a packet sniffer or mitmproxy (hard to set up, hard to tie to a run); modifying Inji services to emit logs (out of scope).
