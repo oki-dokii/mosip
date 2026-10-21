@@ -1,4 +1,4 @@
-import type { Exchange, ImplementationMetadata, RunConfig, RunStep, RunSummary } from "@playground/shared";
+import type { Exchange, ImplementationMetadata, RunConfig, RunStep, RunSummary, ScenarioDefinition } from "@playground/shared";
 
 async function json<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init);
@@ -8,6 +8,7 @@ async function json<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   metadata: () => json<ImplementationMetadata>("/api/v1/meta/implementations"),
+  scenarios: () => json<{ items: ScenarioDefinition[] }>("/api/v1/scenarios"),
   health: () => json<{ driverMode: "fixture" | "collab"; storage: "memory" | "postgres" }>("/api/v1/health"),
   runs: (filters?: Record<string, string>) => json<{ items: RunSummary[] }>(`/api/v1/runs${filters ? `?${new URLSearchParams(filters)}` : ""}`),
   matrix: () => json<{ items: RunSummary[] }>("/api/v1/matrix"),

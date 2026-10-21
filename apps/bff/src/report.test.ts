@@ -29,6 +29,7 @@ describe("run artifacts", () => {
   it("renders a self-contained sanitized Markdown report", () => {
     const markdown = renderMarkdown(buildReport(record));
     expect(markdown).toContain("Expected outcome: **valid**");
+    expect(markdown).toContain("Evidence: **Wallet evidence unverified**");
     expect(markdown).toContain('"access_token": "[REDACTED]"');
     expect(markdown).toContain("`$.access_token`");
   });

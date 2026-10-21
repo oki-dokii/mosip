@@ -18,6 +18,14 @@ describe("interoperability matrix", () => {
 
   it("exports portable CSV and Markdown", () => {
     expect(renderMatrixCsv([run("new", "2026-01-03T00:00:00Z")])).toContain('"new","inji_certify"');
+    expect(renderMatrixCsv([run("new", "2026-01-03T00:00:00Z")])).toContain('"unverified"');
     expect(renderMatrixMarkdown([run("new", "2026-01-03T00:00:00Z")])).toContain("| inji_certify | reference_wallet |");
+  });
+
+  it("keeps fixture and live evidence in separate latest-result rows", () => {
+    const fixture = { ...run("fixture", "2026-01-04T00:00:00Z"), serviceVersions: { issuer: "fixture/1", wallet: "fixture/1", verifier: "fixture/1" } };
+    const live = { ...run("live", "2026-01-03T00:00:00Z"), serviceVersions: { issuer: "unreported", wallet: "reference-wallet/0.1", verifier: "unreported" } };
+    expect(latestMatrix([fixture, live]).map((item) => item.id)).toEqual(["fixture", "live"]);
+    expect(latestMatrix([fixture, live]).map((item) => item.evidenceTier)).toEqual(["fixture", "reference_wallet"]);
   });
 });

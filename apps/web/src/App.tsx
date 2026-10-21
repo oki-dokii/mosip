@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Exchange, ImplementationMetadata, RunConfig, RunStep, RunSummary } from "@playground/shared";
+import type { Exchange, ImplementationMetadata, RunConfig, RunStep, RunSummary, ScenarioDefinition } from "@playground/shared";
+import { evidenceLabels, evidenceTier } from "@playground/shared/evidence";
 import { Activity, ArrowRight, FlaskConical, Play, ShieldCheck } from "lucide-react";
 import { io } from "socket.io-client";
 import { Inspector } from "./components/Inspector";
@@ -30,6 +31,7 @@ const tamperOptions: Array<{ value: RunConfig["tamper"]; label: string }> = [
 
 export default function App() {
   const [metadata, setMetadata] = useState<ImplementationMetadata | null>(null);
+  const [scenarios, setScenarios] = useState<ScenarioDefinition[]>([]);
   const [driverMode, setDriverMode] = useState<"fixture" | "collab" | null>(null);
   const [config, setConfig] = useState<RunConfig>(initialConfig);
   const [runId, setRunId] = useState<string | null>(null);
@@ -50,7 +52,7 @@ export default function App() {
     setMatrix(latest.items);
   }, []);
 
-  useEffect(() => { void Promise.all([api.metadata().then(setMetadata), api.health().then((health) => setDriverMode(health.driverMode)), refreshArchive()]); }, [refreshArchive]);
+  useEffect(() => { void Promise.all([api.metadata().then(setMetadata), api.scenarios().then((result) => setScenarios(result.items)), api.health().then((health) => setDriverMode(health.driverMode)), refreshArchive()]); }, [refreshArchive]);
 
   const refresh = useCallback(async (id: string) => {
     const [nextRun, nextSteps, nextExchanges] = await Promise.all([api.run(id), api.steps(id), api.exchanges(id)]);
@@ -135,6 +137,8 @@ export default function App() {
         ? `✓ ${actualLabel} — expected result matched`
         : `Mismatch — expected ${run.expectedOutcome}, received ${run.actualOutcome}`;
   const verifierDetail = steps.find((step) => step.stepKey === "PRESENT_RESULT")?.summary?.failureDetail;
+  const selectedScenario = scenarios.find((item) => item.id === config.scenarioId);
+  const scenarioGaps = [...new Set(scenarios.flatMap((item) => item.unavailableReason ? [item.unavailableReason] : []))];
 
   if (!metadata) return <main className="grid min-h-screen place-items-center text-slate-600"><Activity className="animate-pulse" /> Loading playground…</main>;
 
@@ -155,19 +159,31 @@ export default function App() {
               <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-issuer">Configure a run</p><h2 className="mt-1 text-2xl font-bold tracking-tight">Choose the credential journey</h2></div>
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-500"><ShieldCheck size={16} className="text-ok" />Secrets are masked before recording</div>
             </div>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <label htmlFor="scenario-preset" className="text-sm font-semibold text-slate-700">Scenario</label>
+              <select id="scenario-preset" value={config.scenarioId ?? ""} onChange={(event) => {
+                const scenario = scenarios.find((item) => item.id === event.target.value);
+                setConfig(scenario ? scenario.config : { ...config, scenarioId: null });
+              }} className="min-w-0 max-w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-ink">
+                <option value="">Custom configuration</option>
+                {scenarios.map((scenario) => <option key={scenario.id} value={scenario.id} disabled={!scenario.available}>{scenario.name}{scenario.available ? "" : " · unavailable"}</option>)}
+              </select>
+              {selectedScenario && <span className="text-xs text-slate-500">{selectedScenario.description}</span>}
+              {scenarioGaps.length > 0 && <p className="basis-full text-xs text-amber-800">Preset setup: {scenarioGaps.join(" ")}</p>}
+            </div>
           </div>
           <div className="grid gap-7 p-6 md:grid-cols-3 lg:p-8">
-            <RoleSelector role="issuer" label="1 · Issuer" options={metadata.issuers} value={config.issuer} onChange={(issuer) => setConfig({ ...config, issuer: issuer as RunConfig["issuer"] })} />
-            <RoleSelector role="wallet" label="2 · Wallet" options={metadata.wallets} value={config.wallet} onChange={(wallet) => setConfig({ ...config, wallet: wallet as RunConfig["wallet"] })} />
-            <RoleSelector role="verifier" label="3 · Verifier" options={metadata.verifiers} value={config.verifier} onChange={(verifier) => setConfig({ ...config, verifier: verifier as RunConfig["verifier"] })} />
+            <RoleSelector role="issuer" label="1 · Issuer" options={metadata.issuers} value={config.issuer} onChange={(issuer) => setConfig({ ...config, issuer: issuer as RunConfig["issuer"], scenarioId: null })} />
+            <RoleSelector role="wallet" label="2 · Wallet" options={metadata.wallets} value={config.wallet} onChange={(wallet) => setConfig({ ...config, wallet: wallet as RunConfig["wallet"], scenarioId: null })} />
+            <RoleSelector role="verifier" label="3 · Verifier" options={metadata.verifiers} value={config.verifier} onChange={(verifier) => setConfig({ ...config, verifier: verifier as RunConfig["verifier"], scenarioId: null })} />
           </div>
           <div className="flex flex-col gap-4 border-t border-slate-200 bg-slate-50 px-6 py-5 sm:flex-row sm:items-center lg:px-8">
             <div className="flex flex-wrap gap-2">
-              {metadata.formats.map((item) => <button key={item.id} onClick={() => setConfig({ ...config, format: item.id })} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${config.format === item.id ? "border-ink bg-ink text-white" : "border-slate-300 bg-white text-slate-600 hover:border-slate-500"}`}>{item.name}</button>)}
+              {metadata.formats.map((item) => <button key={item.id} onClick={() => setConfig({ ...config, format: item.id, scenarioId: null })} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${config.format === item.id ? "border-ink bg-ink text-white" : "border-slate-300 bg-white text-slate-600 hover:border-slate-500"}`}>{item.name}</button>)}
             </div>
             <label className="flex items-center gap-2 text-sm font-semibold text-slate-600">
               Fault
-              <select value={config.tamper ?? ""} onChange={(event) => setConfig({ ...config, tamper: (event.target.value || null) as RunConfig["tamper"] })} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-ink">
+              <select value={config.tamper ?? ""} onChange={(event) => setConfig({ ...config, tamper: (event.target.value || null) as RunConfig["tamper"], scenarioId: null })} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-ink">
                 {tamperOptions.map((item) => <option key={item.value ?? "none"} value={item.value ?? ""}>{item.label}</option>)}
               </select>
             </label>
@@ -185,6 +201,7 @@ export default function App() {
             <div className="grid gap-6 p-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:p-8">
               <div>
                 <div className={`mb-4 rounded-xl border px-4 py-3 text-sm font-semibold ${run?.status === "passed" ? "border-green-200 bg-green-50 text-ok" : runFinished ? "border-red-200 bg-red-50 text-fail" : "border-blue-200 bg-blue-50 text-issuer"}`} aria-live="polite">{runMessage}</div>
+                {run && <p className="mb-4 text-xs font-semibold text-slate-600">Evidence: {evidenceLabels[evidenceTier(run)]}</p>}
                 {typeof verifierDetail === "string" && <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">Verifier detail: {verifierDetail}</p>}
                 {runFinished && run?.status !== "errored" && <button disabled={busy} onClick={() => void replayRun()} className="mb-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:border-slate-500 disabled:opacity-60">Replay with selected fault</button>}
                 {runFinished && run && <div className="mb-4 grid grid-cols-2 gap-2 text-center text-xs font-bold"><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=md`}>Report · Markdown</a><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=json`}>Report · JSON</a></div>}

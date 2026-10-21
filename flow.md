@@ -2,7 +2,7 @@
 
 How code travels between files and functions: **entry points, order of execution, and who calls whom.**
 
-> **Status: PHASE 3 P1 ACCEPTANCE PASSED.** The BFF selects deterministic fixtures by default or live Collab plus mock roles through `PLAYGROUND_DRIVER_MODE=collab`. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Replay, reports, sequence playback, filtered history, matrix exports, and X.509 mock-issuer interoperability with Inji Verify are implemented. Assisted Inji Web presentation and transparent Tap capture remain open.
+> **Status: PHASE 3 P1 ACCEPTANCE PASSED.** The BFF selects deterministic fixtures by default or live Collab plus mock roles through `PLAYGROUND_DRIVER_MODE=collab`. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Replay, reports, sequence playback, filtered history, evidence-tier matrix exports, scenario presets, and X.509 mock-issuer interoperability with Inji Verify are implemented. Passive HAR import is available for synthetic browser evidence; live assisted Inji Web presentation remains open.
 
 Legend: `file → function()` means "this function in that file". `A ⇒ B` means A calls B. Status: 🟦 planned · 🟩 implemented · 🟥 changed from plan (explain in decisions.md).
 
@@ -63,17 +63,19 @@ Environment validation, database startup, structured logging, rate limiting, and
 ## 3. Main flow: "Run flow" button to final report
 
 ### 3.1 Frontend side 🟩
-1. `App.tsx → startRun()`
-2. ⇒ `lib/api.ts → createRun(config)` → `POST /api/v1/runs`
-3. ⇒ connect Socket.IO namespace `/runs` and emit `join(runId)`; start a 500 ms polling fallback
-4. Socket events or polling ⇒ `App.tsx → refresh(runId)` ⇒ fetch run, steps, and exchanges
-5. ⇒ update `RunTimeline` and `Inspector`; selecting a step selects its recorded exchange
+1. `App.tsx` loads `GET /api/v1/scenarios`; selecting a preset copies its `RunConfig`, while manual edits clear `scenarioId`.
+2. `App.tsx → startRun()`
+3. ⇒ `lib/api.ts → createRun(config)` → `POST /api/v1/runs`
+4. ⇒ connect Socket.IO namespace `/runs` and emit `join(runId)`; start a 500 ms polling fallback
+5. Socket events or polling ⇒ `App.tsx → refresh(runId)` ⇒ fetch run, steps, and exchanges
+6. ⇒ update `RunTimeline` and `Inspector`; selecting a step selects its recorded exchange
 
 ### 3.2 BFF side: implemented driver-backed order 🟩
 
 ```
 app.ts → POST /api/v1/runs
   ⇒ packages/shared → runConfigSchema.safeParse(body)
+  ⇒ scenarios.ts → scenarioMismatch(config) rejects unknown or edited presets
   ⇒ store.ts → repository.create(run plus createSteps(runId))
   ⇒ return 202 { runId }
   ⇒ orchestrator.ts → runDemo(runId, io)
@@ -96,20 +98,18 @@ app.ts → POST /api/v1/runs
 
 Fixture and Collab drivers return protocol exchanges to `orchestrator.ts`, which passes request and response objects through `redaction.ts → redact()` before writing them to `store.ts`. The Collab driver retains credentials, keys, cookies, bearer tokens, and complete presentations only in its per-run in-memory state and emits safe summaries for inspection.
 
-The previously designed transparent Tap remains optional and planned. Its proposed path is:
+The implemented passive browser capture path is:
 
 ```
-client request → /tap/:runId/:service/*
-  ⇒ tap/proxy.ts → forward()
-       ⇒ buffers request body (size cap)
-       ⇒ proxies to real service base URL
-       ⇒ buffers response body
-       ⇒ tap/redaction.ts → redact(exchange)
-       ⇒ tap/recorder.ts → record(runId, exchange)
-            ⇒ db: INSERT exchanges
-            ⇒ ws/gateway.ts → emitToRun(runId, "exchange:recorded", meta)
-  ⇒ returns the upstream response to the caller (Location headers rewritten to the Tap)
+browser performs its original requests → user exports synthetic protocol HAR
+  ⇒ POST /api/v1/runs/:id/capture/har after run completion
+  ⇒ capture/har.ts → prepareHarImport() validates run, bounds, origin, route, and body
+  ⇒ mask URLs, headers, and JSON/form scalar values
+  ⇒ store.ts → repository.addExchanges() stores sanitized Exchange rows
+  ⇒ Socket.IO emits exchange:recorded metadata; Inspector fetches safe bodies
 ```
+
+HAR import does not modify browser requests or prove server-to-server and native-wallet boundaries; see `CAPTURE.md`.
 
 ---
 
@@ -150,7 +150,7 @@ With `MOCK_VERIFIER_BASE_URL`, `MockVerifierDriver.createRequest()` ⇒ call the
 `POST /api/v1/runs/:id/replay` ⇒ require a passed or mismatched source run ⇒ clone its combination with the requested tamper ⇒ create a full child run with `parent_run_id` ⇒ execute the normal driver-backed flow with fresh credentials and protocol state. Re-running issuance follows D-015 because reusable tokens and credentials are not persisted.
 
 ### 5.2 Report download 🟩
-`GET /api/v1/runs/:id/report?format=md|json` ⇒ load the stored run record ⇒ `report.ts → buildReport()` ⇒ return structured JSON or `renderMarkdown()` with sanitized exchanges.
+`GET /api/v1/runs/:id/report?format=md|json` ⇒ load the stored run record ⇒ `report.ts → buildReport()` ⇒ `packages/shared/src/evidence.ts → evidenceTier()` ⇒ return structured JSON or `renderMarkdown()` with sanitized exchanges and a provenance label.
 
 ### 5.3 Sequence view 🟩
 `GET /api/v1/runs/:id/sequence` ⇒ `sequence.ts → buildSequence(exchanges)` ⇒ return Mermaid text plus exchange/step line markers. `SequenceView.tsx` renders recorded messages as an actor-to-actor list and reveals them one at a time during playback. Selecting a message selects its exact exchange and the corresponding timeline step. Mermaid source can be copied for external rendering.
@@ -158,7 +158,7 @@ With `MOCK_VERIFIER_BASE_URL`, `MockVerifierDriver.createRequest()` ⇒ call the
 ### 5.4 History and matrix 🟩
 `GET /api/v1/runs` ⇒ `repository.list()` ⇒ `history.ts → filterRuns()` ⇒ newest-first run summaries displayed by `RunArchive.tsx`; role, format, status, fault, and version filters can be applied. Selecting a row opens that run.
 
-`GET /api/v1/matrix` ⇒ `matrix.ts → latestMatrix()` ⇒ newest run for each complete role/format/flow/fault combination. `GET /api/v1/matrix/export?format=json|csv|md` renders the same snapshot for download.
+`GET /api/v1/matrix` ⇒ `matrix.ts → latestMatrix()` ⇒ newest run for each complete role/format/flow/fault/evidence-tier combination. `GET /api/v1/matrix/export?format=json|csv|md` renders the same snapshot for download.
 
 ### 5.5 Health
 `GET /health` ⇒ `healthService.check()` ⇒ parallel pings to each configured service plus a DB query ⇒ list of `{name, status, version, latencyMs}`.
@@ -211,6 +211,8 @@ Current M1 files:
 | `apps/web/src/lib/api.ts` | Typed browser calls to the BFF |
 | `apps/bff/src/server.ts` | HTTP and Socket.IO process wiring |
 | `apps/bff/src/app.ts` | Implemented REST routes and run creation |
+| `apps/bff/src/scenarios.ts` | Stable preset catalog, availability and run-config validation |
+| `apps/bff/src/capture/har.ts` | Bounded passive HAR import and pre-storage sanitization |
 | `apps/bff/src/orchestrator.ts` | Driver-backed ten-step run, events, redaction, and failure transitions |
 | `apps/bff/src/drivers/types.ts` | Issuer, wallet, verifier, and per-run context contracts |
 | `apps/bff/src/drivers/fixture.ts` | Deterministic local driver set |
@@ -229,6 +231,7 @@ Current M1 files:
 | `apps/bff/src/store.ts` | Repository contract plus memory and Prisma implementations |
 | `apps/bff/prisma/schema.prisma` | Implemented PostgreSQL run, step, and exchange schema |
 | `packages/shared/src/index.ts` | Shared Zod configuration schema and API types |
+| `packages/shared/src/evidence.ts` | Derived provenance tier and display labels |
 
 ---
 
@@ -254,3 +257,4 @@ When you change code:
 | 2026-10-21 | Added optional X.509 signing and ephemeral test setup for the standalone mock issuer; removed unnecessary Certify OAuth configuration from mock-issuer runs | implementation |
 | 2026-10-21 | Added a standalone OpenID4VCI mock issuer and an opt-in HTTP adapter in the Reference Wallet path | implementation |
 | 2026-10-21 | Added a standalone OpenID4VP mock verifier, opt-in HTTP adapter, and reliable signature fault mutation | implementation |
+| 2026-10-21 | Added fixed scenario presets, preset validation, and evidence-tier report and matrix labels; recorded the existing passive HAR capture path | implementation |

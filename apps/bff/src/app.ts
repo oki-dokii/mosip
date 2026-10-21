@@ -14,6 +14,7 @@ import { unsupportedReason } from "./capabilities.js";
 import { snapshotVersions } from "./versions.js";
 import type { RunRepository } from "./store.js";
 import { CaptureError, prepareHarImport } from "./capture/har.js";
+import { listScenarios, scenarioMismatch } from "./scenarios.js";
 
 const metadata: ImplementationMetadata = {
   issuers: [
@@ -79,6 +80,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
   });
 
   app.get("/api/v1/meta/implementations", (_request, response) => response.json(metadata));
+  app.get("/api/v1/scenarios", (_request, response) => response.json({ items: listScenarios(configuredDriverMode()) }));
   app.get("/api/v1/matrix", async (_request, response, next) => {
     try {
       response.json({ items: latestMatrix(await repository.list()) });
@@ -126,6 +128,10 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
       });
       return;
     }
+    const mismatch = scenarioMismatch(parsed.data);
+    if (mismatch) return response.status(422).json({ code: mismatch });
+    const selectedScenario = parsed.data.scenarioId ? listScenarios(configuredDriverMode()).find((item) => item.id === parsed.data.scenarioId) : null;
+    if (selectedScenario && !selectedScenario.available) return response.status(422).json({ code: "SCENARIO_UNAVAILABLE", detail: selectedScenario.unavailableReason });
     const reason = unsupportedReason(parsed.data, configuredDriverMode());
     if (reason) return response.status(422).json({ code: "UNSUPPORTED_COMBINATION", detail: reason });
     const run = createRun(parsed.data);
@@ -150,7 +156,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
       if (source.run.status !== "passed" && source.run.status !== "failed") {
         return response.status(409).json({ code: "RUN_NOT_REPLAYABLE" });
       }
-      const config: RunConfig = { ...source.run.config, tamper: parsed.data.tamper };
+      const config: RunConfig = { ...source.run.config, tamper: parsed.data.tamper, scenarioId: null };
       const reason = unsupportedReason(config, configuredDriverMode());
       if (reason) return response.status(422).json({ code: "UNSUPPORTED_COMBINATION", detail: reason });
       const run = createRun(config, source.run.id);

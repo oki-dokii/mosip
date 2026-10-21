@@ -54,6 +54,17 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-037 · Name repeatable scenarios and label evidence provenance
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** A passed fixture or Reference Wallet run can look like an all-Inji wallet result in the history and matrix; the unused `scenarioId` gives no repeatable case definition.
+- **Decision:** Expose a fixed synthetic scenario catalog through `GET /api/v1/scenarios`, validate preset configs on run creation, and derive an evidence tier from saved roles and version labels for reports and matrix rows. Editing a preset or replaying it creates a custom run.
+- **Alternatives considered:** Free-form runs only (harder to compare); one mutable JSON scenario file (would need runtime config and migration rules); a new persisted evidence column (adds schema migration before there is a real-wallet attestation process).
+- **Why this one:** It adds repeatability and truthful result labels without changing the stored run schema or claiming a live Inji wallet pass. It adapts the case separation seen in EWC and SIROS tests to current supported combinations.
+- **Trade-off accepted:** The catalog is code-owned for now; real-wallet evidence remains `unverified` until an explicit observation and approval gate exists.
+- **Revisit if:** External teams need to add scenarios without a deployment, or a real-wallet run can be attested from observed checkpoints.
+- **Affects:** `packages/shared/src/evidence.ts`, `apps/bff/src/scenarios.ts`, `apps/bff/src/app.ts`, reports, matrix, web selector, FR-14, FR-32.
+
+
 ### D-036 · Split remaining delivery by file ownership and one integration seam
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** The stricter seven-phase checklist still needs real Inji-wallet evidence, safe browser capture, accurate negative cases, and runnable packaging. Four developers must be able to make progress without overlapping edits or new branches.

@@ -36,6 +36,20 @@ export interface RunSummary {
   finishedAt: string | null;
 }
 
+export { evidenceTier, evidenceLabels } from "./evidence.js";
+export type { EvidenceTier } from "./evidence.js";
+
+export interface ScenarioDefinition {
+  id: string;
+  name: string;
+  description: string;
+  category: "happy_path" | "negative" | "external_mock";
+  config: RunConfig;
+  expectedOutcome: "valid" | "invalid";
+  available: boolean;
+  unavailableReason: string | null;
+}
+
 export interface RunStep {
   id: string;
   runId: string;

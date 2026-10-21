@@ -94,6 +94,7 @@ apps/bff/
 | `GET /runs/:id/sequence` | Mermaid sequence text and per-step markers for animation. |
 | `POST /runs/:id/cancel` | Cancel a running run. |
 | `POST /runs/:id/replay` | Clone a passed/failed run and execute a fresh full flow. Body: `{ tamper?: kind }`. Returns `202 { runId }` of the linked child run. |
+| `POST /runs/:id/capture/har` | Import bounded, sanitized synthetic browser HAR evidence after the run finishes; see `CAPTURE.md`. |
 | `POST /runs/:id/issue-draft` | (P2) Build a GitHub issue draft. |
 | `GET /runs/diff?a=&b=` | (P2) Compare two runs. |
 
@@ -112,6 +113,7 @@ apps/bff/
 ```
 
 `tamper` accepts `expired`, `bad_signature`, `wrong_type`, `missing_disclosure`, or `replay_nonce`. A tamper run expects `invalid`; it passes when the verifier rejects the modified presentation as expected.
+When `scenarioId` is set, the complete configuration must match a catalog preset; an unknown or edited preset returns `422`. Replays clear `scenarioId` because their fault can differ.
 
 ### 2.3 Matrix and scenarios
 
@@ -119,10 +121,12 @@ apps/bff/
 
 | Method & path | Purpose |
 |---|---|
-| `GET /api/v1/matrix` | Latest outcome per combination (computed from run history). |
+| `GET /api/v1/matrix` | Latest outcome per combination and evidence tier (computed from run history). |
 | `GET /matrix/export?format=md|json|csv` | Download the matrix. |
-| `GET /scenarios` | Presets and saved scenarios. |
-| `POST /scenarios` | Save a scenario. |
+| `GET /api/v1/scenarios` | Built-in, immutable scenario presets with availability and expected outcome. |
+| `POST /scenarios` | Planned: save a user-defined scenario. |
+
+Reports and matrix CSV/Markdown include the derived evidence tier: `fixture`, `mock_interop`, `reference_wallet`, or `unverified`. A pass with an automated Reference Wallet is never labeled as an Inji wallet pass. See `SCENARIOS_AND_EVIDENCE.md`.
 
 ### 2.4 Tools (P2)
 
@@ -131,15 +135,11 @@ apps/bff/
 | `POST /tools/decode` | Decode a pasted JWT, SD-JWT or JSON-LD credential. |
 | `POST /tools/qr-probe` | Measure payload size against QR limits. |
 
-### 2.5 Optional Tap routes
+### 2.5 Mock services and passive capture
 
 The separate test-only mock services run on localhost when selected with `MOCK_ISSUER_BASE_URL` and `MOCK_VERIFIER_BASE_URL`. The mock issuer exposes `GET /.well-known/openid-credential-issuer`, `POST /token`, and `POST /credential`. The mock verifier exposes `POST /vp-request`, `POST /direct-post`, `GET /status/:id`, and `GET /result/:id`. Their bearer tokens, nonces, holder proofs, and presentations remain in process memory; the playground stores sanitized summaries of the HTTP exchanges. Mock-issuer runs need no Certify OAuth environment. The standalone issuer defaults to `did:jwk`; optional `MOCK_ISSUER_SIGNING_KEY_PATH`, `MOCK_ISSUER_CERT_CHAIN_PATH`, and matching HTTPS `MOCK_ISSUER_ISSUER_ID` select X.509 signing. `pnpm dev:x509-mock` supplies an ephemeral test certificate and `MOCK_ISSUER_VERSION_LABEL=mock-x509-1`.
 
-| Route | Meaning |
-|---|---|
-| `ANY /tap/:runId/:service/*` | Optional forwarding for a client/flow whose signed values remain unchanged; record the exchange against `runId`. |
-
-`:service ∈ certify | mimoto | verify | esignet | mockIssuer | mockVerifier`. Clients that can send headers may use `/tap/:service/*` with `X-Playground-Run-Id`.
+The implemented browser capture path is passive HAR import. No `/tap` forwarding route is installed, because rewritten URLs may alter signed protocol requests. See `CAPTURE.md` for bounds, allowlists, redaction, and visibility gaps.
 
 ### 2.6 Errors
 ```json

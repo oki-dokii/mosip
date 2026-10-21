@@ -1,13 +1,16 @@
 import type { RunRecord } from "./store.js";
+import { evidenceLabels, evidenceTier, type EvidenceTier } from "@playground/shared";
 
 export interface RunReport {
   run: RunRecord["run"];
   steps: RunRecord["steps"];
   exchanges: RunRecord["exchanges"];
+  evidence: { tier: EvidenceTier; label: string };
 }
 
 export function buildReport(record: RunRecord): RunReport {
-  return { run: record.run, steps: record.steps, exchanges: record.exchanges };
+  const tier = evidenceTier(record.run);
+  return { run: record.run, steps: record.steps, exchanges: record.exchanges, evidence: { tier, label: evidenceLabels[tier] } };
 }
 
 function fencedJson(value: unknown) {
@@ -15,13 +18,14 @@ function fencedJson(value: unknown) {
 }
 
 export function renderMarkdown(report: RunReport) {
-  const { run, steps, exchanges } = report;
+  const { run, steps, exchanges, evidence } = report;
   const lines = [
     `# Interoperability run ${run.id}`,
     "",
     `- Status: **${run.status}**`,
     `- Expected outcome: **${run.expectedOutcome}**`,
     `- Actual outcome: **${run.actualOutcome ?? "pending"}**`,
+    `- Evidence: **${evidence.label}**`,
     `- Issuer: \`${run.config.issuer}\``,
     `- Wallet: \`${run.config.wallet}\``,
     `- Verifier: \`${run.config.verifier}\``,

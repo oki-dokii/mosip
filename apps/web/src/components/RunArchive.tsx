@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { RunSummary } from "@playground/shared";
+import { evidenceLabels, evidenceTier } from "@playground/shared/evidence";
 import { Download } from "lucide-react";
 
 interface Props {
@@ -55,10 +56,10 @@ export function RunArchive({ history, matrix, active, onActiveChange, onSelectRu
       </div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1050px] text-left text-sm">
-          <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500"><tr><th className="px-6 py-3">Run</th><th className="px-4 py-3">Journey</th><th className="px-4 py-3">Format</th><th className="px-4 py-3">Versions</th><th className="px-4 py-3">Fault</th><th className="px-4 py-3">Outcome</th><th className="px-6 py-3">Created</th></tr></thead>
+          <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500"><tr><th className="px-6 py-3">Run</th><th className="px-4 py-3">Journey</th><th className="px-4 py-3">Format</th><th className="px-4 py-3">Versions</th><th className="px-4 py-3">Fault</th><th className="px-4 py-3">Outcome</th><th className="px-4 py-3">Evidence</th><th className="px-6 py-3">Created</th></tr></thead>
           <tbody className="divide-y divide-slate-100">
-            {rows.map((run) => <tr key={run.id} onClick={() => onSelectRun(run.id)} className="cursor-pointer hover:bg-blue-50/50"><td className="px-6 py-3 font-mono text-xs font-bold text-issuer">{run.id.slice(0, 8)}</td><td className="px-4 py-3 text-xs text-slate-600">{run.config.issuer} → {run.config.wallet} → {run.config.verifier}</td><td className="px-4 py-3 font-semibold">{run.config.format}</td><td className="px-4 py-3 text-[11px] text-slate-500">{run.serviceVersions?.issuer ?? "unreported"} / {run.serviceVersions?.verifier ?? "unreported"}</td><td className="px-4 py-3 text-slate-500">{run.config.tamper ?? "none"}</td><td className="px-4 py-3"><Outcome run={run} /></td><td className="px-6 py-3 text-xs text-slate-500">{new Date(run.createdAt).toLocaleString()}</td></tr>)}
-            {rows.length === 0 && <tr><td colSpan={7} className="px-6 py-12 text-center text-slate-400">No runs match these filters.</td></tr>}
+            {rows.map((run) => <tr key={run.id} onClick={() => onSelectRun(run.id)} className="cursor-pointer hover:bg-blue-50/50"><td className="px-6 py-3 font-mono text-xs font-bold text-issuer">{run.id.slice(0, 8)}</td><td className="px-4 py-3 text-xs text-slate-600">{run.config.issuer} → {run.config.wallet} → {run.config.verifier}</td><td className="px-4 py-3 font-semibold">{run.config.format}</td><td className="px-4 py-3 text-[11px] text-slate-500">{run.serviceVersions?.issuer ?? "unreported"} / {run.serviceVersions?.verifier ?? "unreported"}</td><td className="px-4 py-3 text-slate-500">{run.config.tamper ?? "none"}</td><td className="px-4 py-3"><Outcome run={run} /></td><td className="px-4 py-3 text-xs text-slate-500">{evidenceLabels[evidenceTier(run)]}</td><td className="px-6 py-3 text-xs text-slate-500">{new Date(run.createdAt).toLocaleString()}</td></tr>)}
+            {rows.length === 0 && <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-400">No runs match these filters.</td></tr>}
           </tbody>
         </table>
       </div>

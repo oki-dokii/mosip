@@ -18,6 +18,7 @@ Read in this order:
 | 10 | [PHASE2.md](PHASE2.md) | What the application walking skeleton implements and what comes next |
 | 11 | [PHASE3.md](PHASE3.md) | Regression views, mock roles, validation evidence, and limits |
 | 12 | [NEXT_STEPS_4_PERSON_PLAN.md](NEXT_STEPS_4_PERSON_PLAN.md) | Remaining work, comparable repositories, four independent owners, and integration gates |
+| 13 | [SCENARIOS_AND_EVIDENCE.md](SCENARIOS_AND_EVIDENCE.md) | Named test scenarios and what each evidence tier actually proves |
 
 Working rules for people and AI assistants are in `CLAUDE.md`: quiz before changes, log every meaningful decision, keep `flow.md` true.
 
@@ -25,6 +26,8 @@ Working rules for people and AI assistants are in `CLAUDE.md`: quiz before chang
 Phase 0 and Phase 1 are complete as of 2026-10-20. Phase 2's Reference Wallet track is complete as of 2026-10-21. The application has fixture and live Collab driver modes, verifier-status polling, five selectable tamper paths, linked replay runs, downloadable sanitized reports, an interactive sequence view with Mermaid export, run history, a latest-result matrix with three export formats, expected-versus-actual evaluation, live updates, exchange inspection, write-time secret redaction, explicit failure states, and optional PostgreSQL persistence. Application-level JSON-LD and SD-JWT Collab runs both passed all ten steps and returned valid verifier results.
 
 Phase 3 adds exact-exchange sequence playback, history filters with version snapshots, and standalone SD-JWT mock issuer and verifier services. The X.509 mock issuer passed Inji Verify, and the earlier `did:jwk` rejection remains documented. [PHASE3.md](PHASE3.md) records the validation evidence, trust boundary, and assisted Inji Web limits.
+
+Named scenario presets now let you repeat the baseline, format change, mock-issuer path, and bad-signature case without manually rebuilding each configuration. Reports and the latest-result matrix label fixture, mock, Reference Wallet, and unverified evidence separately; see [SCENARIOS_AND_EVIDENCE.md](SCENARIOS_AND_EVIDENCE.md).
 
 Run the application locally with:
 
