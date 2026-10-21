@@ -15,6 +15,7 @@ This is a **test playground**, not a production identity provider or wallet. It 
 - [API and repository map](#api-and-repository-map)
 - [Tests and evidence](#tests-and-evidence)
 - [Security boundaries](#security-boundaries)
+- [License and attributions](#license-and-attributions)
 - [Submission and project documents](#submission-and-project-documents)
 - [Known gaps](#known-gaps)
 
@@ -253,7 +254,7 @@ pnpm build
 
 At the **2026-10-21** documentation checkpoint, all passed: **43 automated tests**, strict typechecks, and the production build. The tests cover contract fixtures, schemas, BFF behavior, capture/redaction, scenarios, and mock services. The web package has no automated browser test yet; a build pass does not replace an end-to-end UI check. These commands do **not** perform a fresh Collab run. The [test evidence](submission/TEST_EVIDENCE.md) has the breakdown and claim limits.
 
-For a live synthetic contract probe, use `pnpm spike:contracts` only after configuring the official public test environment in [Phase 0–1](PHASE0_1.md). The committed fixtures let ordinary tests run offline.
+Fresh synthetic X.509 mock-issuer → Reference Wallet → Collab Verify positive and bad-signature reports were exported on 2026-10-21 at commit `ec1cbbd`; see the [standalone evidence and matrix](submission/evidence/README.md). They are `mock_interop` evidence, not all-Inji wallet evidence. For a live synthetic contract probe, use `pnpm spike:contracts` only after configuring the official public test environment in [Phase 0–1](PHASE0_1.md). The committed fixtures let ordinary tests run offline.
 
 ## Security boundaries
 
@@ -263,9 +264,13 @@ For a live synthetic contract probe, use `pnpm spike:contracts` only after confi
 - A self-signed X.509 mock issuer acceptance is a compatibility result, not proof of production certificate-chain trust.
 - The local API has no user authentication. Do not expose this development server publicly with test credentials configured.
 
+## License and attributions
+
+Project source is provided under [MPL-2.0](LICENSE), consistent with [MOSIP's published licensing](https://github.com/mosip) and the [official Mozilla license text](https://www.mozilla.org/en-US/MPL/2.0/). Direct library credits and the remaining transitive-notice review are in [ATTRIBUTIONS.md](ATTRIBUTIONS.md). The team should confirm all contributors agree to this license before final publication.
+
 ## Submission and project documents
 
-The [submission checklist](submission/READINESS.md) maps judging weights and mandatory artifacts to current evidence and open work. It links the [architecture diagram](submission/ARCHITECTURE.md), [test cases/results](submission/TEST_EVIDENCE.md), [API reference](submission/API_REFERENCE.md), and [pitch/video outline](submission/PITCH_AND_DEMO.md). The actual slide deck, 2–5 minute video, private student IDs, cloud links, and final email remain separate tasks; the outline is not a finished deck or recording.
+The [submission checklist](submission/READINESS.md) maps judging weights and mandatory artifacts to current evidence and open work. It links the [architecture diagram](submission/ARCHITECTURE.md), [test cases/results](submission/TEST_EVIDENCE.md), [fresh synthetic live reports and matrix](submission/evidence/README.md), [API reference](submission/API_REFERENCE.md), and [pitch/video outline](submission/PITCH_AND_DEMO.md). The actual slide deck, 2–5 minute video, private student IDs, cloud links, and final email remain separate tasks; the outline is not a finished deck or recording.
 
 | Read this for… | Document |
 |---|---|
@@ -275,6 +280,8 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 | Phase evidence | [Phase 0–1](PHASE0_1.md), [Phase 2](PHASE2.md), [Phase 3](PHASE3.md) |
 | Independent remaining work | [Four-person plan](NEXT_STEPS_4_PERSON_PLAN.md) |
 | Scenario provenance | [Scenarios and evidence](SCENARIOS_AND_EVIDENCE.md) |
+| Observed interoperability findings | [Gap register](GAPS.md) |
+| A1/A2 proof and cut-off | [Wallet validation](WALLET_VALIDATION.md) |
 
 ## Known gaps
 

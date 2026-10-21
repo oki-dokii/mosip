@@ -10,7 +10,9 @@ The remaining mandatory evidence is: an **Inji wallet** issuing, holding, and pr
 
 The four workstreams below can start in parallel. They should use separate local copies and **must not create branches** until the user changes that rule. One integrator serializes reviewed commits and pushes to `main`; each developer pulls the latest `main` before handing over a patch or committing. No one edits another person's owned files without coordinating first. The integrator alone reconciles `README.md`, `SRS.md`, `decisions.md`, and the final acceptance report.
 
-Suggested timebox with four developers: one day to freeze the exchange contract and start the four tracks, two to three days of parallel implementation, then one to two days for serial integration, mock smoke tests, and documentation. Live A1/A2 validation has no reliable estimate until the test account and wallet/device are available; do not use the timebox to declare those checks passed.
+**Preserve contributor history without branches.** The current history has one author. Each developer should make several focused commits with their own Git name/email in their separate copy, then send `git format-patch` files. The integrator reviews and applies them in order with `git am`, which retains the original commit author. Alternatively, schedule one developer at a time to commit directly to `main` with their own identity. Do not squash, impersonate another contributor, or rewrite submitted history. Record a short handoff note with patch commit IDs and the test result. The integrator remains responsible for the final push, not for claiming sole authorship.
+
+Suggested timebox with four developers: one day to freeze the exchange contract and start the four tracks, two to three days of parallel implementation, then one to two days for serial integration, mock smoke tests, and documentation. Based on the team's “five days remaining” estimate on 2026-10-21, the working code freeze is **2026-10-26 21:00 IST** and A1/A2 go/no-go is **2026-10-24 21:00 IST**. Adjust these if the official deadline differs. [WALLET_VALIDATION.md](WALLET_VALIDATION.md) defines the proof and blocker record; the cutoff does not declare an unavailable test passed.
 
 ## Research worth using
 
@@ -37,6 +39,7 @@ Each developer gives the integrator: a short change summary, files changed, comm
 2. Implement a bounded, allowlisted import/observer path for **synthetic test traffic only**. Parse and redact before persistence or WebSocket emission. Reject oversized, malformed, cross-run, and non-allowlisted traffic. Avoid logging raw error bodies.
 3. Map captured Mimoto, Certify, eSignet, and Verify requests to the existing run/step/exchange model. Mark gaps when the capture method cannot see a boundary; do not claim every exchange was captured without evidence.
 4. Test redaction for headers, URL query values, JSON/form bodies, nested JWK private fields, and malformed input. Verify the database and API contain only sanitized values.
+5. Hand the integrator a sanitized capture example and a short evidence-gap list. Do not wait until the final day to export safe reports from a working sandbox.
 
 **Done when:** a browser mock-flow fixture can be imported/observed without changing any protocol URL or body, its safe exchanges appear under the correct run, and negative redaction tests pass. Live Inji Web capture is a later integration check with Person 2.
 
@@ -48,6 +51,7 @@ Each developer gives the integrator: a short change summary, files changed, comm
 2. In the selector, distinguish supported JSON-LD Web presentation, unavailable SD-JWT Web presentation, and the automated Reference Wallet. Never relabel one wallet as another.
 3. Keep credentials and login state in Inji Web/Mimoto; the playground stores only redacted exchange evidence and normalized outcome. Add mock-driven UI/driver tests for waiting, completion, cancellation, and timeout.
 4. Prepare a manual A1 checklist for a **dedicated persistent test account**. The user said none is available now, so complete the fixture path and record live A1 as blocked until a test account exists.
+5. Add a keyboard-only pass, automated accessibility scan (axe or Lighthouse), color-contrast review, and a browser happy-path smoke against mocks. Save annotated final UI screenshots or wireframes for the design submission. Coordinate the browser test with Person 4's CI setup.
 
 **Done when:** the assisted UI and state machine pass fixture tests and can consume Person 1's redacted capture contract. A1 is signed off only after a real Inji wallet stores and presents a JSON-LD VC to Verify; guest download alone does not count.
 
@@ -59,6 +63,7 @@ Each developer gives the integrator: a short change summary, files changed, comm
 2. Add an explicit required-disclosure policy to the mock verifier before asserting that a missing disclosure is invalid; an omitted optional claim is not a valid negative test.
 3. Probe a pinned Inji mobile wallet build for Certify → Inji Wallet → Verify SD-JWT (A2), then JSON-LD if feasible. Record issuance, holder binding, direct-post shape, verifier result, version/draft, and **sanitized** failure evidence. Do not commit real credentials, OTPs, HAR files, or private keys.
 4. Keep the X.509 issuer success separate from trust-chain assurance. If exploring trust, use a configured test trust anchor and make that a separate result, not an inference from the self-signed Collab pass.
+5. Maintain [GAPS.md](GAPS.md): pin versions, reduce each observed incompatibility to synthetic steps, check existing upstream issues, and propose a sanitized issue under your own GitHub identity if the behavior is still relevant. Add any filed issue URL to the findings register.
 
 **Done when:** negative cases identify the intended validation failure independently, and `WALLET_VALIDATION.md` gives a reproducible pass or an exact external blocker for A2. A Reference Wallet pass cannot close A2.
 
@@ -70,6 +75,7 @@ Each developer gives the integrator: a short change summary, files changed, comm
 2. Add CI for install, strict typecheck, unit/contract tests, build, and a Compose-backed mock smoke flow. Add one browser happy-path smoke test if the runner budget supports it; otherwise document and automate the HTTP path first.
 3. Verify `docker compose --profile core --profile mocks up --build` opens one URL and runs a mock happy path (A6). Report actual component versions/labels; do not invent versions for Collab services.
 4. Write `DEPLOYMENT.md` with startup, shutdown, required ports, synthetic-data setup, and the difference between fixture, mock, and Collab modes. Do not put secrets in images or the repo.
+5. On a clean machine, test `corepack enable`, the pinned `pnpm@11.25.0`, install, startup, and smoke. Before public submission, inspect `git ls-files` for `.env`, Postman configurations, private keys, HAR files, and student IDs. Record the actual command output and any exception.
 
 **Done when:** a clean machine can start the playground with Compose, CI passes, the mock smoke run completes, and a reviewer can reproduce it from `DEPLOYMENT.md`.
 
@@ -79,6 +85,8 @@ Each developer gives the integrator: a short change summary, files changed, comm
 2. **Serial integration on `main`:** the integrator applies one workstream at a time, resolves the shared capture/API seam, runs `pnpm test`, `pnpm build`, `pnpm typecheck`, a Compose mock smoke, and checks redaction. No new branches or concurrent pushes to `main`.
 3. **External validation:** run A1 only with a dedicated logged-in Inji Web test account; run A2 with a pinned capable Inji mobile wallet. Capture the exact Verify result and keep any unavailable test marked blocked.
 4. **Final evidence:** update the compatibility matrix and reports from real run records, reconcile the stale planning language in `SRS.md`/`TRD.md`, record reproducible version labels, make a 3–5 minute demo, and publish the gap write-up. A release is ready when A1, A2, A6 and the redaction checks have evidence, or when the user explicitly accepts named external blockers as the release boundary.
+
+**Integrator-owned release tasks, outside the four code areas:** keep the now-expanded root README current; export sanitized real-run reports and a standalone matrix while Collab works (the first fresh pair is in [submission/evidence](submission/evidence/README.md)); fix the extra separator cell in the BFF Markdown matrix export and add a small format test; assign a post-integration owner to split `apps/bff/src/drivers/collab.ts` only after parallel edits land; confirm contributor agreement to the new [MPL-2.0 license](LICENSE), finish the transitive/asset notice audit begun in [ATTRIBUTIONS.md](ATTRIBUTIONS.md), and check README, deck, and screenshots against the original-UI requirement. Same-device/deep-link presentation is the first optional feature if A1/A2 and A6 are settled with time left; defer mDoc. No optional feature should displace acceptance or release checks.
 
 ## Extra research after the mandatory path
 

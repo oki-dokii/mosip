@@ -35,3 +35,5 @@ Total automated test cases reported by the current commands: **43 passed**. The 
 - `.env.example` describes configuration names and placeholders. Do not submit an actual `.env`, Postman client configuration, OTP, bearer token, private key, real student identity, or raw HAR.
 
 Before the final pitch, record the exact commit, environment, component versions, and timestamp for any new live result. Export a sanitized run report and verifier result; do not change a blocked case to “passed” based on fixture or Reference Wallet evidence.
+
+**Later fresh live evidence:** [2026-10-21 mock X.509 positive/negative reports and matrix](evidence/README.md) were exported from new synthetic runs against public Collab Verify at commit `ec1cbbd`. They are `mock_interop` evidence, separate from the test-suite snapshot above and from A1/A2.

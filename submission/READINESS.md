@@ -19,9 +19,9 @@ This folder is a separate submission handoff. It does not change application cod
 | Working prototype/demo | Partial | Local fixture UI and Reference Wallet flow exist. Rehearse on a clean machine and record a stable fallback demo. Do not label fixture or Reference Wallet as an all-Inji pass | Yes, rehearsal; real-wallet check remains with owners |
 | Pitch slide deck | Missing | Build from [PITCH_AND_DEMO.md](PITCH_AND_DEMO.md), then export PDF as a backup | Yes |
 | 2–5 minute video demo | Missing | Record the actual UI and verifier outcome using the script; check audio and playback | Yes, after a stable demo environment is ready |
-| Installation instructions | Partial | [README.md](../README.md) covers pnpm startup; clean-machine Compose packaging is still Person 4's task | Documentation review only |
+| Installation instructions | Partial | [README.md](../README.md) now covers fixture, Collab, and mock startup. `COREPACK_HOME=/tmp/mosip-corepack-check corepack pnpm --version` resolved the pinned `11.25.0` on this host; a separate clean-machine install and full-app Compose remain Person 4's task | Documentation review and independent install check |
 | API documentation | Prepared | [API_REFERENCE.md](API_REFERENCE.md) lists current BFF endpoints; compare with the final build | Yes |
-| Git version history | Present | Main branch has incremental commits; preserve the history and verify repository visibility | Yes, final access check |
+| Git version history | Partial | Main has incremental commits, but the current log shows one author. Preserve each new contributor's identity using their own sequential commits or `git format-patch` + `git am`; do not squash/rewrite | Yes, integrator coordination |
 | College/university IDs | Pending, private | Each student uploads their own valid ID through the required submission channel | Individual students only; never commit IDs |
 
 ## Supporting items worth submitting
@@ -32,6 +32,9 @@ This folder is a separate submission handoff. It does not change application cod
 | Design mockups/wireframes | Partial | [UIUX.md](../UIUX.md) describes behavior; capture current UI and add final annotated screenshots or wireframes |
 | Synthetic test data | Prepared | [TEST_EVIDENCE.md](TEST_EVIDENCE.md) lists committed fixtures and data boundaries |
 | Test cases and results | Prepared | [TEST_EVIDENCE.md](TEST_EVIDENCE.md) records the current automated checks and unresolved acceptance cases |
+| License and credits | Partial | [MPL-2.0](../LICENSE) and [direct dependency credits](../ATTRIBUTIONS.md) added; confirm team agreement and complete transitive/asset notice audit |
+| Fresh live report and matrix | Prepared for one combination | [2026-10-21 evidence](evidence/README.md) contains exported mock X.509 issuer → Reference Wallet → Collab Verify positive/negative runs; all-Inji wallet proof remains open |
+| Interoperability gaps | Drafted | [GAPS.md](../GAPS.md) separates observed findings from upstream issues, none filed yet |
 
 ## Release gates to verify before claiming completion
 
@@ -39,6 +42,8 @@ This folder is a separate submission handoff. It does not change application cod
 2. **A2:** The same all-Inji path with SD-JWT and a pinned capable Inji mobile wallet build. Inji Web currently does not offer SD-JWT OpenID4VP presentation. A Reference Wallet pass does not close this gate.
 3. **A6:** `docker compose up` (or a clearly documented profile command) opens the full playground from a clean checkout. Current Compose packages PostgreSQL only.
 4. **A3/A5:** Inspect the final browser capture and exported report for missing boundaries and any secret leakage. Passive HAR import is synthetic-only and cannot see server-to-server or native-wallet exchanges.
+5. **Go/no-go:** use [WALLET_VALIDATION.md](../WALLET_VALIDATION.md)'s provisional 2026-10-24 21:00 IST A1/A2 cutoff, 48 hours before the working freeze; adjust when the official deadline is known.
+6. **Release quality:** Person 2 owns accessibility, keyboard/contrast review, browser smoke, and annotated screenshots; Person 4 owns the clean-machine Corepack/pnpm install and tracked-file secret audit. The integrator owns the later `collab.ts` split, contributor license confirmation, and complete notice audit.
 
 ## Final handoff outside Git
 
