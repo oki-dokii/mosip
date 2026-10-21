@@ -12,11 +12,11 @@ The [official Certify bundled-stack guide](https://github.com/inji/inji-certify/
 
 | Priority | Deliverable | Owner / gate | Proof required |
 |---|---|---|---|
-| P0 | One-command **playground core + mocks** bundle (A6) with CI smoke | Person 4 | `pnpm demo:docker` passed locally on 2026-10-21; a two-cell baseline/bad-signature mock matrix also passed. CI workflow is added, with hosted run and separate clean-machine rehearsal pending. |
+| P0 | One-command **playground core + mocks** bundle (A6) with CI smoke | Person 4 | `pnpm demo:docker` and the two-cell baseline/bad-signature mock matrix passed locally on 2026-10-21; [hosted CI](https://github.com/oki-dokii/mosip/actions/runs/39632729703) passed both jobs. Separate clean-machine rehearsal remains. |
 | P0 | Add a **pinned local Inji profile** as the primary live-integration target: Certify + Verify first; Mimoto + Inji Web for A1 once auth materials are available | Person 4 infrastructure; Person 2 wallet wiring; integrator contract | Exact upstream image tags/config provenance, service health, one Certify → Reference Wallet → Verify run, then wallet storage/presentation separately. Do not relabel a partial stack as A1. |
 | P0 | A1/A2 go/no-go by 2026-10-24 21:00 IST | Persons 2 and 3 | Pinned wallet build, observed store/present, verifier outcome, sanitized report; otherwise exact blocker in [wallet validation](WALLET_VALIDATION.md). |
 | P1 | First-class independent gap probes and committed reports | Person 3, integrator for reports | One-variable synthetic reproducer, expected/actual, run ID, release label or `unreported`, redacted artifact; [GAPS.md](GAPS.md). |
-| P1 | Hosted CI plus a scheduled matrix once the local mock/live profile is stable | Person 4 | Workflow added for checks and a daily **synthetic mock** matrix; verify the hosted run. Schedule a live matrix only if secrets/config and stack are reliable. |
+| P1 | Hosted CI plus a scheduled matrix once the local mock/live profile is stable | Person 4 | Hosted checks and a **synthetic mock** matrix passed. The daily schedule is configured but its first scheduled execution is pending; schedule a live matrix only if secrets/config and stack are reliable. |
 | P1 | Browser smoke, keyboard/contrast/axe check, annotated screenshots | Person 2 | Automated smoke and saved results; visible UI examples for judges. |
 | P2 | Correctly signed expired/wrong-type and wrong-holder cases | Person 3 | Fault isolated from signature corruption; verifier reason recorded. |
 | Defer | mDoc, telemetry, Digital Credentials API, broad same-device expansion | Integrator decision | Only after A6, wallet decision, and core evidence are settled. |

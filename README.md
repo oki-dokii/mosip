@@ -176,7 +176,7 @@ For the **one-command container demo** with the web app, BFF, PostgreSQL, and se
 pnpm demo:docker
 ```
 
-Open **http://localhost:5174**. The command builds and health-checks the services, then runs two cross-container synthetic SD-JWT cases (valid baseline and corrupted signature) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. A 2026-10-21 local smoke passed; hosted CI and independent clean-machine verification remain open.
+Open **http://localhost:5174**. The command builds and health-checks the services, then runs two cross-container synthetic SD-JWT cases (valid baseline and corrupted signature) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. Local smoke and [hosted CI](https://github.com/oki-dokii/mosip/actions/runs/39632729703) passed on 2026-10-21; independent clean-machine verification remains open.
 
 ## Integration modes
 

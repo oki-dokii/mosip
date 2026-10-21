@@ -15,7 +15,7 @@ The script finds a working Docker context (including Docker Desktop's `desktop-l
 
 On 2026-10-21, this path passed on Docker Desktop 29.9.2 with the BFF storing its run in PostgreSQL. A BFF restart preserved an earlier fixture run. A separate clean-machine rehearsal is still needed before calling A6 fully signed off.
 
-The [CI workflow](.github/workflows/ci.yml) runs typecheck, tests, and build on pushes and pull requests. It also runs this two-cell synthetic container matrix on pushes, pull requests, and a daily schedule, uploading a sanitized JSON summary. This is **mock evidence**, not a nightly live-Inji matrix. The workflow needs a successful hosted run before its status can be called green.
+The [CI workflow](.github/workflows/ci.yml) runs typecheck, tests, and build on pushes and pull requests. It also runs this two-cell synthetic container matrix on pushes, pull requests, and a daily schedule, uploading a sanitized JSON summary. Both jobs passed in the [2026-10-21 hosted run](https://github.com/oki-dokii/mosip/actions/runs/39632729703). This is **mock evidence**, not a nightly live-Inji matrix.
 
 | Service | Container address | Host address | Role |
 |---|---|---|---|
