@@ -13,7 +13,7 @@ Local base URL: `http://localhost:4000/api/v1`. All routes below are implemented
 | GET | `/runs/:id/steps` | — | `{ items: RunStep[] }` |
 | GET | `/runs/:id/exchanges` | Optional `stepId` query | `{ items: Exchange[] }`, sanitized |
 | POST | `/runs/:id/replay` | `{ "tamper": null | faultKind }` | `202 { runId }`; fresh child run with cleared scenario ID |
-| POST | `/runs/:id/capture/har` | `{ "runId": "same UUID", "har": { "log": { "entries": [...] } } }` | Import counts and capture-gap note; synthetic test traffic only, after a finished run |
+| POST | `/runs/:id/capture/har` | `{ "runId": "same UUID", "har": { "log": { "entries": [...] } } }` | Import counts, skip reasons, per-step coverage and capture gaps; synthetic test traffic only, after a finished run |
 | GET | `/runs/:id/report?format=json\|md` | — | Downloadable report with evidence tier |
 | GET | `/runs/:id/sequence` | — | Mermaid source and exchange/step markers |
 | GET | `/matrix` | — | Latest run for each role/format/fault/**evidence-tier** combination |
@@ -36,3 +36,9 @@ Example run body:
 Use `GET /scenarios` to obtain a preset's exact `config`; changing a field while keeping its `scenarioId` returns `SCENARIO_CONFIG_MISMATCH`. In fixture mode, a successful run is simulated. In Collab mode, the BFF needs the configured upstream environment. The `capture/har` route accepts at most 2 MiB and 100 entries, validates allowed origins, redacts before persistence, and never stores the raw HAR; see [CAPTURE.md](../CAPTURE.md).
 
 Socket.IO namespace `/runs` accepts `join(runId)` and sends `run:created`, `step:started`, `exchange:recorded`, `step:finished`, and `run:finished` summaries. Fetch exchange bodies over REST; do not infer raw payloads from events.
+
+### Capture response and public projection
+
+The additive import response is `{ imported, skipped, skippedReasons, coverage, gaps }`. Each coverage item has `stepKey`, `state` (`captured`, `missing`, `not_observable`), `count`, and `reason`. Coverage describes browser observation and does not change a run result. Imported request/response envelopes include a versioned `publicView` with `authenticity: "not_verified"`; request metadata also records the tagging rule, reason, timing certainty and redaction count. No shared Exchange type or database migration was added.
+
+The endpoint requires `Content-Type: application/json`. Stable capture errors include `CAPTURE_JSON_REQUIRED` (415), `CAPTURE_RATE_LIMITED` (429 with `Retry-After`), malformed JSON/top-level HAR (400), active/cross-run imports (409), unapproved origins (422), and unsafe sizes (413). The per-process rate limit is ten attempts per minute per transport peer. See [the capture contract](../CAPTURE_CONTRACT_PROPOSAL.md) and [security boundaries](../SECURITY.md).

@@ -1,16 +1,16 @@
 # Passive browser protocol capture
 
-The capture path accepts a filtered, synthetic browser HAR after a run finishes. It never proxies or rewrites an issuer URL, request URI, signed request object, audience, redirect, or request body. A transparent proxy would need TLS interception or URL rewriting for cross-origin Inji traffic, which could invalidate signed protocol values and change wallet behavior. Passive import preserves the original flow; the playground only reads the exported evidence afterward.
+The capture path accepts a filtered, synthetic browser HAR after a run finishes. It reads evidence without changing issuer URLs, request URIs, signed objects, audiences, redirects or request bodies. A canonical-URL proxy on a controlled local stack is also a valid design option when all service metadata and signed values use that origin from the beginning; see [the proxy ADR](CAPTURE_PROXY_ADR.md). HAR remains the implemented browser path for Collab.
 
-`POST /api/v1/runs/:id/capture/har` accepts JSON `{ "runId": "<same id>", "har": { "log": { "entries": [...] } } }`. Export browser Network traffic as HAR, filter it to the intended protocol calls, and use synthetic identities only. The run must already be finished. The request limit is 2 MiB and 100 entries; each body is capped at 128 KiB. A run-id mismatch, malformed HAR, or any entry from an unapproved origin rejects the import. Re-importing identical entries skips them.
+`POST /api/v1/runs/:id/capture/har` accepts JSON `{ "runId": "<same id>", "har": { "log": { "entries": [...] } } }`. Export browser Network traffic as HAR, filter it to the intended protocol calls, and use synthetic identities only. The run must already be finished. The request limit is 2 MiB and 100 entries; each body is capped at 128 KiB. A run-id mismatch, malformed top-level HAR, or a structurally valid entry from an unapproved origin rejects the import. Malformed individual entries are skipped with counted reasons. Re-importing identical entries skips them.
 
 The default origin allowlist covers the Collab Inji Web/Mimoto, Certify, eSignet, and Verify hosts. For a local synthetic stack, set `CAPTURE_ORIGINS_JSON` on the BFF to a JSON object mapping exact origins to `mimoto`, `certify`, `esignet`, or `verify`, for example `{"http://127.0.0.1:9001":"certify"}`. Only HTTPS origins and HTTP loopback origins are accepted. This configuration does not cause the BFF to fetch those URLs.
 
-Entries are ordered by `startedDateTime` before assigning exchange sequence numbers. HAR `time: -1` is accepted as unknown and represented as `durationMs: 0`; do not interpret that as a measured zero-duration request. A JSON body marked `encoding: "base64"` is decoded within the same 128 KiB cap and then redacted. Malformed base64 or malformed JSON is represented by a redaction marker. An invalid entry or untrusted origin still rejects the import; partial imports of malformed HAR files are not implemented.
+Entries are ordered by `startedDateTime` before assigning exchange sequence numbers. HAR `time: -1` is accepted as unknown and represented as `durationMs: 0`; do not interpret that as a measured zero-duration request. A JSON body marked `encoding: "base64"` is decoded within the same 128 KiB cap and then redacted. Malformed base64 or malformed JSON is represented by a redaction marker. Malformed individual entries and status-zero unfinished requests are skipped with counted reasons. Unsupported origins and oversized recognized bodies remain hard failures, and no exchange is stored until preparation succeeds.
 
-Recognized protocol paths map to the existing run steps. Unknown paths on an allowlisted origin are skipped. The response gives `imported`, `skipped`, and a capture-gap note. Open the run inspector or `GET /api/v1/runs/:id/exchanges` to see the resulting exchanges. Imported exchanges have `request.source` and `response.source` set to `har_import`; they do not change the run outcome or prove that a wallet stored a credential.
+Recognized protocol paths map to the existing run steps. Unknown paths on an allowlisted origin are skipped. The response gives `imported`, `skipped`, `skippedReasons`, per-step `coverage`, and capture `gaps`. Unknown routes increment `untagged`; malformed entries, unfinished requests, duplicates and unsupported methods have separate counts. Open the run inspector or `GET /api/v1/runs/:id/exchanges` to see the resulting exchanges. Imported exchanges have `request.source` and `response.source` set to `har_import`; they do not change the run outcome or prove that a wallet stored a credential.
 
-Before storage or Socket.IO emission, the importer replaces path identifiers with route templates, masks every query value, keeps only safe MIME header metadata, masks auth/cookie headers, and keeps only the shape of JSON/form bodies. Protocol enum values from a short allowlist may remain; all other scalar values are masked. The original HAR is never persisted. Parse failures return stable error codes without echoing input.
+Before storage or Socket.IO emission, the importer replaces path identifiers with route templates, masks every query value, keeps only safe MIME header metadata, masks auth/cookie headers, and keeps only the shape of JSON/form bodies. Protocol enum values from a short allowlist may remain; all other scalar values are masked. Unknown body/query field names are generalized to `[field]` rather than retained verbatim. The original HAR is never persisted. Parse failures return stable error codes without echoing input.
 
 Browser HAR can miss server-to-server Certify/eSignet calls, native-wallet traffic, encrypted exchanges, and requests outside the browser's recording window. Record those as gaps; do not label a HAR as complete end-to-end evidence. Live Inji Web capture and wallet proof remain integration checks with the real-wallet workstream.
 
@@ -20,10 +20,10 @@ The committed [four-service synthetic HAR](apps/bff/src/capture/fixtures/four-se
 
 | Browser-visible step | Fixture service | Saved exchange ID | What the HAR proves |
 | --- | --- | --- | --- |
-| `ISSUE_OFFER` | Mimoto | `87a5f642-1077-4c04-ae5f-b6e9f249bd8c` | A synthetic issuer-list HTTP exchange was mapped. |
-| `ISSUE_CREDENTIAL` | Certify | `ff6143cd-617e-4755-a301-264e95ef8fbc` | A synthetic credential endpoint exchange was mapped; possession is not established. |
-| `ISSUE_TOKEN` | eSignet | `82298e44-daa5-4cd4-acfb-33aa2b8f90e3` | A synthetic browser authorization call was mapped. |
-| `PRESENT_REQUEST` | Verify | `0f1e3e86-e978-4ff7-ace6-e6208c26ea31` | A synthetic request-fetch exchange was mapped; submission and validation are not observed. |
+| `ISSUE_OFFER` | Mimoto | `97c91b0d-8276-4119-a8d1-2fc865fc2beb` | A synthetic issuer-list HTTP exchange was mapped. |
+| `ISSUE_CREDENTIAL` | Certify | `d11a0b5e-011a-447e-a01a-a199a0cdc78d` | A synthetic credential endpoint exchange was mapped; possession is not established. |
+| `ISSUE_TOKEN` | eSignet | `f4a1ca40-bbc7-494d-a026-b0e36aebe760` | A synthetic browser token exchange was mapped. |
+| `PRESENT_REQUEST` | Verify | `f80d1f3b-03e4-4b9d-afaf-63d8e4523c48` | A synthetic request-fetch exchange was mapped; submission and validation are not observed. |
 
 The fixture does **not** cover `STORE`, `PRESENT_SUBMIT`, `PRESENT_STATUS`, or `PRESENT_RESULT`. Even when those browser calls appear in another HAR, the capture can only prove what the browser sent and received. It cannot see server-to-server Certify/eSignet requests, wallet-local storage or cryptographic operations, native-wallet app traffic, response content encrypted for another party, or calls made before recording began or after it ended. A browser may also omit response bodies from its HAR export. These are evidence boundaries, not failed protocol steps.
 
@@ -35,4 +35,32 @@ CAPTURE_POSTGRES_TEST_URL='postgresql://playground:playground@127.0.0.1:55433/pl
   pnpm --filter @playground/bff exec vitest run src/capture/har.test.ts
 ```
 
-On 22 October 2026, the targeted suite passed locally with PostgreSQL (`8 tests passed`) and without it (`7 passed, 1 skipped`). The API test emitted four Socket.IO summaries and read four exchanges through the inspector endpoint without any fixture canary. This is synthetic capture proof only. The live Inji Web case remains **unobserved** until the real-wallet workstream supplies traffic and a corresponding verifier result.
+On 22 October 2026, the HAR suite passed locally with PostgreSQL (`11 tests passed`), including the enriched public-view persistence check, and without it (`10 passed, 1 skipped`). The API test emitted four Socket.IO summaries and read four exchanges through the inspector endpoint without any fixture canary. This is synthetic capture proof only. The live Inji Web case remains **unobserved** until the real-wallet workstream supplies traffic and a corresponding verifier result.
+
+## Public summaries and tagging v2
+
+`Exchange.request.publicView` and `Exchange.response.publicView` are optional JSON members inside the existing request/response envelopes. No shared `Exchange` type or database column changes are required. Each view has `schemaVersion: 1`, `authenticity: "not_verified"`, and bounded `items` of `{kind, summary}`. The inspector's existing JSON display can expose them now; Person 2 can add a dedicated renderer later.
+
+Supported kinds are credential offers, Presentation Exchange definitions, DCQL, request-object headers/selected claims, proof-JWT headers, SD-JWT claim/disclosure names, JSON-LD VC types/issuer method or allowed origin, claimed verification results, and a presentation-presence marker. Names come from a small fixed vocabulary of protocol claims and demo schemas; unknown names and predicate values are withheld. Issuer URLs keep only an allowlisted origin, and DIDs keep only the method. No resolver, network fetch or cryptographic verification is performed.
+
+`request.capture` contains the ordered rule ID and its reason, a redaction-path count, the normalized timestamp and `timingKnown`. Rule matching requires service, HTTP method and anchored endpoint patterns. In particular, eSignet login/consent/authorization pages are untagged, and Verify status/result resources precede request-fetch rules. This endpoint map describes the tested deployment shapes, not every Inji release.
+
+`coverage` counts only browser-HAR exchanges for each run step, including earlier imports. `captured` means an HTTP call was observed, never that the protocol step passed. `missing` means no matching browser call was recorded and may reflect server-side work or a recording-window gap. Internal `INIT`, wallet-local `STORE`, and `REPORT` are `not_observable` when no HTTP evidence exists. Global capture gaps remain separate. The eSignet fixture now represents an explicit token request; saved IDs use the public-metadata v2 algorithm described in [SECURITY.md](SECURITY.md).
+
+## Local pre-upload filter
+
+Use absolute paths for both files. The source may be a plain HAR or the API wrapper. The command reads at most 32 MiB / 20,000 entries locally, removes unapproved background origins and untagged paths, applies the same sanitizer and emits at most 100 protocol entries. It fails rather than silently truncating a larger protocol trace; split that trace into recording windows and review each. Keep raw recordings outside the repository and use synthetic identities only.
+
+```sh
+# CAPTURE_ORIGINS_JSON can add the exact origins of your synthetic local services.
+pnpm capture:filter /absolute/path/synthetic-source.har /absolute/path/safe-import.json RUN_UUID
+# Review safe-import.json locally, then import its runId/har fields:
+curl -H 'Content-Type: application/json' --data-binary @/absolute/path/safe-import.json \
+  http://127.0.0.1:4000/api/v1/runs/RUN_UUID/capture/har
+```
+
+The output includes a safe report with skip counts and public summaries decoded locally. Imported filtered bodies can produce a smaller public projection because private scalar values were already removed; use the report for that additional safe detail. The report itself is not treated as trusted server-decoded evidence. The original trace is never uploaded by this command. Output files use `0600` and cannot overwrite an existing file. A malformed source or unsafe size fails with a codes-only message.
+
+The [22 October check record](submission/evidence/2026-10-22-capture-checks.json) records the commands and local results, including 46 capture/redaction checks with PostgreSQL.
+
+Capture ingress requires JSON and limits attempts to 10 per minute per transport peer. See [SECURITY.md](SECURITY.md) for threat boundaries and private disclosure, and [the integration contract](CAPTURE_CONTRACT_PROPOSAL.md) for the additive API seam and remaining owner handoffs.

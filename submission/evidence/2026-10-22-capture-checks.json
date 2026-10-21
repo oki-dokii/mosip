@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Asia/Kolkata",
+  "evidenceTier": "synthetic_capture_checks",
+  "sourceCommitBeforeChanges": "d99f2e0",
+  "testedWorkingTree": true,
+  "checks": [
+    { "command": "CAPTURE_POSTGRES_TEST_URL=<local-test-database> pnpm --filter @playground/bff exec vitest run src/capture src/redaction.test.ts", "status": "passed", "passed": 46, "skipped": 0 },
+    { "command": "pnpm test", "status": "passed", "passed": 88, "skipped": 1, "skipReason": "PostgreSQL capture test is opt-in; separately executed successfully above." },
+    { "command": "pnpm typecheck", "status": "passed" },
+    { "command": "pnpm build", "status": "passed" },
+    { "command": "pnpm audit:secrets", "status": "passed" },
+    { "command": "pnpm capture:filter <synthetic-fixture> <new-safe-output> <synthetic-run-id>", "status": "passed", "inputEntries": 5, "outputEntries": 4, "outputContainsCanaries": false, "outputPermissions": "0600" },
+    { "command": "CAPTURE_POSTGRES_TEST_URL=<local-test-database> pnpm --filter @playground/bff exec vitest run src/capture/har.test.ts src/capture/ingress.test.ts", "status": "passed", "passed": 13, "note": "Final incremental guard regression includes trailing-slash parser-error handling." }
+  ],
+  "coverageProof": ["malformed/unfinished/untagged/duplicate counts", "per-step browser coverage", "public protocol projection", "PostgreSQL rows", "inspector API", "Socket.IO summaries", "per-run HMAC and plain short-code masks", "ordered method-specific endpoint rules", "content type, size and attempt limits", "bounded safe local filter", "disabled attribution leases"],
+  "boundaries": {
+    "liveInjiWebObserved": false,
+    "proxyForwarderImplemented": false,
+    "localInjiStackValidated": false,
+    "dedicatedPublicViewRendererImplemented": false,
+    "secretAuditWiredIntoHostedCIByThisChange": false,
+    "securityReportsSent": false
+  }
+}

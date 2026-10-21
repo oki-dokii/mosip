@@ -1,43 +1,54 @@
-# Capture contract proposal for Person 1 handoff
+# Capture integration contract and owner handoff
 
-Prepared 2026-10-22 after reviewing the passive HAR importer and driver redactor. This is a proposal, **not an implemented `Exchange` schema change**. Person 1 owns capture and redaction; the integrator will apply any shared type/API change after reviewing a fixture and tests. Person 2 owns inspector rendering, and Person 4 owns CI wiring.
+Updated 22 October 2026. The original optional `Exchange.decoded` proposal was replaced with additive JSON-envelope fields so Person 2 and the shared schema need no simultaneous edits. The integrator applied the small `app.ts` seam for the import response and ingress guard. No database migration, shared type change, driver change, Compose change or web source edit is required by this capture implementation.
 
-**Order of work:** Person 1's immediate four-service synthetic HAR handoff is complete in `77be60a`; [CAPTURE.md](CAPTURE.md) links the fixture, reproducible exchange IDs, boundary list, and negative redaction-test output. HAR timing/base64 tolerance and redactor hardening landed in `9bd766a`. The schema, decoded view, and dynamic per-step coverage ideas below remain proposed work.
-
-## Current risk and boundaries
-
-`apps/bff/src/capture/har.ts` keeps JSON/form body shape but masks nearly every scalar, while `apps/bff/src/redaction.ts` recursively masks only named fields. Both paths eventually feed `Exchange` records, so a driver can accidentally persist a complete credential or JWT under an unexpected key. The importer also rejects a whole HAR when Chrome records `time: -1` or `status: 0`, and its 100-entry cap requires manual filtering. These are code observations; no real Inji Web HAR was tested in this review.
-
-## Proposed sanitized exchange shape
-
-Keep existing `Exchange.request`, `Exchange.response`, and `redactions` for compatibility. Person 1 should submit an example before the integrator adds an **optional**, versioned `decoded` field:
+## Implemented contract
 
 ```ts
+// Existing Exchange.request and Exchange.response remain unknown/JSON.
 interface PublicProtocolView {
   schemaVersion: 1;
-  request?: Record<string, unknown>;
-  response?: Record<string, unknown>;
+  authenticity: "not_verified";
+  items: Array<{ kind: string; summary: Record<string, unknown> }>;
 }
-// Exchange.decoded?: PublicProtocolView
+// Imported request/response JSON envelopes:
+// { source: "har_import", headers, body, publicView?: PublicProtocolView }
+// request.capture additionally contains:
+// { schemaVersion: 1, ruleId, why, redactionCount, timingKnown, observedAt }
+
+// POST /api/v1/runs/:id/capture/har response (additive):
+// { imported, skipped, skippedReasons, coverage, gaps }
+// coverage: [{ stepKey, state: "captured" | "missing" | "not_observable", count, reason }]
 ```
 
-Only explicit public fields may appear: format, response type/mode, grant type, credential configuration **names**, proof type/algorithm, VC type, verifier outcome, stable error code, and JWT header `alg`/`typ`/public `kid` after bounded validation. `client_id`, issuer, `response_uri`, and other URLs should be normalized to origin plus route template with query and fragment masked. Presentation definitions may retain field names and type/format constraints; predicates or values that can identify a person remain masked. SD-JWT disclosure **claim names** may be shown only after parsing and allowlisting; values remain masked. Unknown fields default to masked. The inspector should label this as a decoded public summary, never as a full raw message.
+`skippedReasons` has counted codes: `malformed_entry`, `unfinished_request`, `unsupported_method`, `untagged`, `duplicate`; a persistence conflict can add `persistence_conflict`. Missing keys mean zero. Malformed top-level HAR, cross-run import, unapproved origin and unsafe size are hard failures. Preparation completes before any write. The endpoint recomputes coverage from stored browser exchanges; driver-only exchanges do not count as browser observation.
 
-One sanitizer policy should run before database writes, API responses, and Socket.IO events. Normalize key spelling and case so `pre-authorized_code` and `pre_authorized_code` have the same rule. Mask credential/token/OTP/cookie/JWK-private fields and scan scalar values for compact JWTs, PEM private keys, credential-offer URIs, and long opaque strings, including values under unknown keys. A value-pattern scanner is defense in depth; it does not make an arbitrary allowlist of fields safe. Never record a private-key parameter (`d`, `p`, `q`, `dp`, `dq`, `qi`) or a complete VC.
+Public summaries are projected from a fixed vocabulary before persistence. Unknown schema/claim names are withheld. Request objects and proof headers are decoded, not cryptographically validated. No raw signed object, complete credential, subject value, salt, nonce, certificate or private key is stored in the view. Arbitrary metadata `kid` values are represented only by a presence flag. Issuers keep an allowlisted origin or DID method. This is deliberately a narrower projection than a raw inspector.
 
-## Coverage contract
+Tagging is an ordered, method-specific endpoint table with a rule reason. Unknown routes are skipped as untagged, not assigned to a guessed step. The eSignet fixture now uses an explicit token endpoint. HMAC correlation tags apply only to sufficiently long HAR values and are scoped to the run and current BFF process; short codes/private key parameters use plain masks. `redactionCount` counts unique masked paths, not credential risk or bytes removed. The existing driver `redact()` signature and plain-mask default are preserved.
 
-Return a per-step list separate from `Exchange` with `stepKey`, `state` (`captured`, `not_observable`, or `missing`), count, and reason. A server-to-server or native-wallet boundary should be `not_observable` for browser HAR rather than inferred from an empty list. An unmatched but allowlisted path should increment a count; the route table should use service, method, path pattern, and step in that order, with one test per row.
+## Proof and current limits
 
-## Acceptance examples
+[CAPTURE.md](CAPTURE.md) links a four-service synthetic HAR, saved public-metadata exchange IDs, per-step boundaries, filter usage and database/API/socket checks. `har.test.ts` checks that useful projected VC types and verifier booleans survive while canaries do not appear in stored rows, API output or Socket.IO summaries. `filter.test.ts` removes hundreds of background calls and verifies that its reconstructed safe HAR can be imported. Decoder, rule, limiter, HMAC and attribution tests cover their separate boundaries.
 
-- A real-shaped **synthetic** HAR with hundreds of static assets is locally filtered to the allowlisted protocol calls before upload. The raw HAR never leaves the user's machine or enters git. The importer skips malformed/background entries with counted reasons, sorts valid entries by time, and handles `time: -1`, `status: 0`, and base64-encoded content explicitly.
-- Known public protocol fields appear in the inspector's decoded view, while canary tokens and personal fields do not appear in stored rows, API output, or Socket.IO payloads. Reimport remains idempotent.
-- The report states which steps were captured or unobservable. The UI does not claim a complete wallet journey from HAR alone.
-- The integrator adds the optional field only after Person 1's fixture and Person 2's rendering contract agree; Person 4 then enables the tests in CI.
+The browser pass remains synthetic. Live Inji Web is **unobserved**. Coverage and public decoding cannot close FR-40's every-exchange claim or prove A1/A2. The canonical local proxy is a [conditional design](CAPTURE_PROXY_ADR.md), with a disabled attribution module and no forwarder.
 
-The independent `pnpm audit:secrets` check scans tracked/non-ignored artifact filenames plus documentation/evidence text. It does not inspect binary content and is not a substitute for write-time sanitization. Person 4 can add it to CI after reviewing the baseline.
+## Handoffs without overlapping edit surfaces
 
-## Requirement trace
+| Owner | Concrete next task | Boundary |
+| --- | --- | --- |
+| Person 2 | Optionally render `request.publicView`, `response.publicView`, `request.capture`, and import `coverage`; show `not_verified` and timing-unknown labels. Add a dedicated live-wallet HAR when a wallet flow exists. | Existing JSON inspector remains compatible. Do not turn a captured step into a passed step. |
+| Person 3 | Maintain the [machine-readable gap snapshot](submission/gaps.json), add exact spec/profile references for each new scenario, and reproduce issuer-method/padded-DID leads with one changed variable. Privately triage security-impact findings. | No competitor claim is a confirmed gap here. Gap snapshots with no matching run/cell explicitly say so. |
+| Person 4 | Add the existing secret audit to hosted CI before build/artifact publication, and run the PostgreSQL capture check against the job database if available. Supply canonical public-URL/TLS/upstream configuration before any proxy work. | Workflow, Compose and service settings remain Person 4's files. |
+| Integrator | Apply handoffs serially on `main`; keep versions, acceptance claims and final evidence consistent. | No branches or contributor-identity rewriting. |
 
-The current HAR path cannot by itself satisfy SRS FR-40's **every exchange** claim: it sees browser traffic after a run and omits server-to-server, native-wallet, encrypted, and out-of-window boundaries. A per-step coverage list makes this limit visible, but the acceptance claim remains open until those other boundaries are observed or the requirement is revised with the team. FR-42/A3 calls for useful offer, token, presentation definition, VP token, and result detail; body-shape-only HAR records do not satisfy that inspector detail. The decoded public view is a proposed safe partial remedy; complete signed or secret-bearing objects still cannot be shown unmasked under FR-43/A5. The current capture test checks in-memory repository storage and API output; it does not test PostgreSQL rows or Socket.IO payloads.
+Suggested Person 4 CI step after install (not yet wired by this change):
+
+```yaml
+- name: Evidence and fixture secret audit
+  run: pnpm audit:secrets
+```
+
+This scan now covers text fixtures throughout the monorepo and `submission/evidence/`. It checks both sensitive filenames and high-confidence content, including literal token/private-key fields; it never prints their values. The reviewed synthetic HAR filename is the sole filename exception and remains content-scanned. `SECURITY.md` describes non-goals and private disclosure.
+
+Contract-drift diff and a public issue-draft exporter remain stretch work. Any future exporter must honor private-disclosure states and must not turn unverified leads or private security findings into public issues.

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-10-22",
+  "source": "GAPS.md",
+  "owner": "Person 3",
+  "scope": "Snapshot of existing public observations; no new competitor findings claimed.",
+  "findings": [
+    {
+      "id": "G-01",
+      "status": "observed_profile_mismatch",
+      "disclosure": "public_non_security_observation",
+      "productVersion": "unreported",
+      "evidence": [
+        "PHASE3.md",
+        "submission/evidence/2026-10-21-mock-x509-valid.json"
+      ],
+      "runIds": [
+        "27be569a-ff0a-4ef2-9595-3806adf47ad9",
+        "1328bfb9-d9cb-4390-8096-905c7fda2552"
+      ],
+      "matrixCells": [
+        "mock_issuer|reference_wallet|inji_verify|vc_sd_jwt|cross_device|none|mock_interop"
+      ],
+      "matrixDecision": "Related cell only: issuer representation is not a matrix-key axis. did:jwk mismatch and x5c success must not be collapsed into a universal issuer-method verdict.",
+      "upstreamIssue": null
+    },
+    {
+      "id": "G-02",
+      "status": "wallet_capability_or_test_blocker",
+      "disclosure": "public_non_security_observation",
+      "productVersion": "unreported",
+      "evidence": [
+        "PHASE0_1.md",
+        "WALLET_VALIDATION.md"
+      ],
+      "runIds": [],
+      "matrixCells": [],
+      "matrixDecision": "No real-wallet result cell is available; no A1/A2 pass can be decided from reference-wallet runs.",
+      "upstreamIssue": null
+    },
+    {
+      "id": "G-03",
+      "status": "version_discovery_gap",
+      "disclosure": "public_non_security_observation",
+      "productVersion": "unreported",
+      "evidence": [
+        "PHASE3.md"
+      ],
+      "runIds": [],
+      "matrixCells": [],
+      "matrixDecision": "Cross-cutting reproducibility limit; does not decide a verifier verdict.",
+      "upstreamIssue": null
+    },
+    {
+      "id": "G-04",
+      "status": "investigative_deployment_behavior",
+      "disclosure": "public_non_security_observation",
+      "productVersion": "unreported",
+      "evidence": [
+        "PHASE0_1.md",
+        "spikes/fixtures/collab-contracts-2026-10-20.json"
+      ],
+      "runIds": [],
+      "matrixCells": [],
+      "matrixDecision": "Grant/profile dimensions are not in the current matrix key. Pin deployment and reduce each grant before assigning a failure to a specific cell.",
+      "upstreamIssue": null
+    }
+  ]
+}

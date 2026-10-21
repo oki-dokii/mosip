@@ -54,6 +54,12 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-040 · Allow a canonical public-URL proxy only for a controlled local stack
+- **Date:** 2026-10-22   **Status:** Design accepted; deployment pending
+- **Decision:** Retain passive HAR for Collab. A future local proxy may be the canonical service origin configured before issuance; it must not rewrite signed identifiers or protocol payloads. D-039 does not reject this architecture.
+- **Attribution:** Build and test a disabled-by-default lease/attribution module; refuse overlapping role/origin claims rather than silently assigning traffic to the newest run. Do not claim full capture from this module.
+- **Dependency:** Person 4 supplies pinned local services, public metadata, TLS/DNS, redirects and fixed upstreams. If unavailable at 24 October 2026 21:00 IST, leave the proxy at design stage. Details and limits: [CAPTURE_PROXY_ADR.md](CAPTURE_PROXY_ADR.md).
+
 ### D-039 · Use passive HAR import for browser evidence without rewriting signed flows
 - **Date:** 2026-10-22   **Status:** Accepted
 - **Context:** The original `/tap/...` proxy design (D-003) would rewrite service URLs, redirects, or request URIs that can be signed or bound into OpenID4VC flows. The implemented capture path needs to observe Inji Web browser traffic without changing those protocol values.

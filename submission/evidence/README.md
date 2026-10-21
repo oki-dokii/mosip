@@ -12,3 +12,7 @@ The [standalone matrix](2026-10-21-matrix.md) was exported from those two in-mem
 This pair proves the tested mock issuer / Reference Wallet / Inji Verify behavior on that date. It does **not** prove an all-Inji wallet flow or that Verify validated a trusted certificate chain. The issuer certificate was self-signed. Prior Certify → Reference Wallet results remain documented in [Phase 2](../../PHASE2.md) and [fixture snapshots](../../spikes/fixtures/), but their full run records were not retained; do not present those fixture summaries as fresh exported run reports.
 
 **Separate gap probe, same source commit and synthetic roles:** [nonce-mismatch JSON report](2026-10-21-nonce-mismatch.json), run `f8756c3d-1389-4196-85d8-8b1e2909cc1a`. The new presentation used a nonce different from the verifier request. Verify returned HTTP 400 `invalid_request` at direct-post; the playground then timed out in `PRESENT_STATUS` and classified the run `errored`. This is not part of the positive/negative matrix above, and it does not test replaying a previously accepted token. See [GAPS.md](../../GAPS.md) for the exact interpretation.
+
+## Synthetic capture checks — 22 October 2026
+
+[Capture v2 check record](2026-10-22-capture-checks.json) records the local PostgreSQL/API/socket redaction, public projection, route tagging, filter and ingress checks. It is synthetic capture evidence, separate from the live Collab verifier reports above. It does not close the Inji Web/mobile or canonical-proxy acceptance gates.
