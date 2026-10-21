@@ -16,3 +16,8 @@ This pair proves the tested mock issuer / Reference Wallet / Inji Verify behavio
 ## Synthetic capture checks — 22 October 2026
 
 [Capture v2 check record](2026-10-22-capture-checks.json) records the local PostgreSQL/API/socket redaction, public projection, route tagging, filter and ingress checks. It is synthetic capture evidence, separate from the live Collab verifier reports above. It does not close the Inji Web/mobile or canonical-proxy acceptance gates.
+
+
+[Person 1 hardening check record](2026-10-22-person1-hardening-checks.json) records 116 passing tests with both PostgreSQL checks enabled, plus typecheck, build and secret audit. It covers the requested items 1–10; the four mock presentation probes remain a Person 3 handoff. Socket emission assertions use a test double, and the generated JSON-LD credential is a sanitization specimen, not a signature-validation result.
+
+[October 21 run shape comparison](2026-10-22-capture-shape-diff.json) was generated from committed reports with `scripts/evidence-tools.mjs`. It shows differing result/submission shapes between the valid and bad-signature scenarios. It is not a new Collab run or an upstream regression claim. See [CAPTURE.md](../../CAPTURE.md) for commands, comparison limits and private issue-draft export.

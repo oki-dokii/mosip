@@ -9,9 +9,9 @@ const allowedPublicEmails = new Set(["decode@mosip.io"]);
 const unsafeName = /(?:^|\/)(?:\.env(?:\.(?!example$|sample$)[^/]*)?|[^/]*\.har(?:\.json)?|[^/]*\.(?:pem|key|p12|pfx)|[^/]*postman[^/]*environment[^/]*|[^/]*(?:student|college)[_-]?id[^/]*)$/i;
 
 export function shouldScanContents(path) {
-  const textFile = /\.(?:md|jsonl?|txt|csv|ya?ml|har|xml|properties)$/i.test(path);
+  const textFile = /\.(?:md|jsonl?|txt|csv|ya?ml|har|xml|properties|[cm]?[jt]s|tsx|sh|py)$/i.test(path);
   return textFile && (path.endsWith(".md") || path.startsWith("submission/evidence/") ||
-    /(?:^|\/)fixtures\//.test(path) || path.startsWith("docs/"));
+    /(?:^|\/)fixtures\//.test(path) || path.startsWith("docs/") || path.startsWith("scripts/"));
 }
 
 export function scanText(contents) {
@@ -25,9 +25,9 @@ export function scanText(contents) {
     if (/(?<![A-Za-z0-9_/-])[A-Za-z0-9_-]{180,}(?![A-Za-z0-9_/-])/.test(line)) add("long-base64url-value");
     else if (/(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{180,}={0,2}(?![A-Za-z0-9+/])/.test(line)) add("long-base64-value");
     if (/openid-credential-offer:\/\/\S{30,}/i.test(line)) add("credential-offer-uri");
-    if (/(?<!\w)\+[1-9]\d{9,14}(?!\d)/.test(line)) add("phone-number");
+    if (/(?<!\w)\+[1-9](?:[ ().-]*\d){9,14}(?!\d)/.test(line)) add("phone-number");
     const normalized = line.replace(/\\"/g, '"');
-    const secretFields = /["'](?:access_token|refresh_token|id_token|pre[-_]authorized_code|tx_code|otp|d|p|q|dp|dq|qi|k)["']\s*:\s*["']([^"']+)["']/gi;
+    const secretFields = /["'](?:access_token|refresh_token|id_token|vp_token|client_secret|private_key|code_verifier|pre[-_]authorized_code|tx_code|otp|d|p|q|dp|dq|qi|k)["']\s*:\s*["']([^"']+)["']/gi;
     const safePlaceholder = /^(?:\[REDACTED(?: hmac:[a-f0-9]{16}|: malformed (?:JSON|base64))?\]|(?:Bearer )?CANARY_[A-Z_]+|<[^>]+>)$/;
     if ([...normalized.matchAll(secretFields)].some((match) => !safePlaceholder.test(match[1]))) add("secret-field-value");
     const emails = line.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) ?? [];
@@ -58,7 +58,7 @@ async function main() {
     console.error(`Secret audit found ${findings.length} possible exposure(s). Review locally; values are never printed.`);
     process.exitCode = 1;
   } else {
-    console.log(`Secret audit passed: ${paths.length} tracked/non-ignored filenames checked; documentation and evidence text scanned.`);
+    console.log(`Secret audit passed: ${paths.length} tracked/non-ignored filenames checked; documentation, evidence, fixtures and scripts scanned.`);
   }
 }
 

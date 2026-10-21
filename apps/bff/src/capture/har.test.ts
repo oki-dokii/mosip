@@ -9,6 +9,8 @@ import { buildApp } from "../app.js";
 import { createSteps } from "../orchestrator.js";
 import { MemoryRunRepository, PrismaRunRepository } from "../store.js";
 import { CaptureError, prepareHarImport } from "./har.js";
+import { credentialCanaries, harEntry } from "./fixtures/adversarial.js";
+import { runCorrelationKey } from "../redaction.js";
 
 const secret = "SECRET-SHOULD-NEVER-APPEAR";
 const fourServiceHar = JSON.parse(readFileSync(new URL("./fixtures/four-service.synthetic.har.json", import.meta.url), "utf8"));
@@ -209,7 +211,7 @@ describe("capture API", () => {
         method: "POST", headers: { "content-type": "application/json" }, body: `{ "token": "${secret}"`,
       });
       expect(malformed.status).toBe(400);
-      expect(await malformed.text()).not.toContain(secret);
+      expect(await malformed.json()).toEqual({ code: "CAPTURE_INVALID_HAR" });
     } finally {
       if (previous === undefined) delete process.env.CAPTURE_ORIGINS_JSON;
       else process.env.CAPTURE_ORIGINS_JSON = previous;
@@ -225,16 +227,16 @@ describe("capture API", () => {
     const url = `http://127.0.0.1:${address.port}/api/v1/runs/${randomUUID()}/capture/har`;
     const wrong = await fetch(url, { method: "POST", headers: { "content-type": "text/plain" }, body: secret });
     expect(wrong.status).toBe(415);
-    expect(await wrong.text()).not.toContain(secret);
+    expect(await wrong.json()).toEqual({ code: "CAPTURE_JSON_REQUIRED" });
     const malformed = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: `{ "secret": "${secret}"` });
     expect(malformed.status).toBe(400);
-    expect(await malformed.text()).not.toContain(secret);
+    expect(await malformed.json()).toEqual({ code: "CAPTURE_INVALID_HAR" });
     const large = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ value: secret.repeat(100_000) }) });
     expect(large.status).toBe(413);
-    expect(await large.text()).not.toContain(secret);
+    expect(await large.json()).toEqual({ code: "CAPTURE_TOO_LARGE" });
     const trailing = await fetch(`${url}/`, { method: "POST", headers: { "content-type": "application/json" }, body: `{ "secret": "${secret}"` });
     expect(trailing.status).toBe(400);
-    expect(await trailing.text()).not.toContain(secret);
+    expect(await trailing.json()).toEqual({ code: "CAPTURE_INVALID_HAR" });
     for (let i = 0; i < 6; i++) {
       const response = await fetch(url, { method: "POST", headers: { "content-type": "application/json", "x-forwarded-for": `192.0.2.${i}` }, body: "{}" });
       expect(response.status).toBe(404);
@@ -265,6 +267,66 @@ describe.skipIf(!process.env.CAPTURE_POSTGRES_TEST_URL)("capture PostgreSQL pers
       expect(await repository.addExchanges(exchanges)).toBe(0);
     } finally {
       await prisma.run.deleteMany({ where: { id: record.run.id } });
+      await repository.disconnect();
+    }
+  });
+});
+
+
+describe.skipIf(!process.env.CAPTURE_POSTGRES_TEST_URL)("credential value leakage across persistence boundaries", () => {
+  it("imports signed SD-JWT/full VC via HTTP and inspects raw rows, APIs, and emitted Socket.IO payloads", async () => {
+    const prisma = new PrismaClient({ datasources: { db: { url: process.env.CAPTURE_POSTGRES_TEST_URL! } } });
+    const repository = new PrismaRunRepository(prisma);
+    const records = [fixture(), fixture()];
+    const { token, vc, forbidden } = await credentialCanaries();
+    const previous = process.env.CAPTURE_ORIGINS_JSON;
+    process.env.CAPTURE_ORIGINS_JSON = JSON.stringify(Object.fromEntries(origins));
+    const emitted: unknown[] = [];
+    const io = { of: () => ({ to: () => ({ emit: (...args: unknown[]) => emitted.push(structuredClone(args)) }) }) } as unknown as SocketServer;
+    const server = buildApp(() => io, repository).listen(0, "127.0.0.1");
+    try {
+      await new Promise<void>((resolve, reject) => { server.once("listening", resolve); server.once("error", reject); });
+      const address = server.address();
+      if (!address || typeof address === "string") throw new Error("No address");
+      const base = `http://127.0.0.1:${address.port}/api/v1`;
+      const serialized: string[] = [];
+      const tags: string[] = [];
+      for (const record of records) {
+        await repository.create(record);
+        const body = { access_token: token, credential: token, vp_token: token, credentials: [vc] };
+        const response = await fetch(`${base}/runs/${record.run.id}/capture/har`, {
+          method: "POST", headers: { "content-type": "application/json" },
+          body: JSON.stringify(wrap(record.run.id, [harEntry(body)])),
+        });
+        expect(response.status).toBe(200);
+        serialized.push(await response.text());
+        const rows = await prisma.exchange.findMany({ where: { runId: record.run.id } });
+        expect(rows).toHaveLength(1);
+        const stored = JSON.stringify(rows);
+        expect(stored).toContain('"authenticity":"not_verified"');
+        expect(stored).toContain("sd_jwt");
+        expect(stored).toContain("verifiable_credential");
+        tags.push(stored.match(/hmac:[a-f0-9]{16}/)![0]);
+        serialized.push(stored, JSON.stringify(await repository.get(record.run.id)));
+        for (const path of [`/runs/${record.run.id}`, `/runs/${record.run.id}/exchanges`, `/runs/${record.run.id}/report`, `/runs/${record.run.id}/report?format=md`]) {
+          const read = await fetch(`${base}${path}`);
+          expect(read.status).toBe(200);
+          serialized.push(await read.text());
+        }
+      }
+      expect(tags[0]).not.toBe(tags[1]);
+      expect(emitted).toHaveLength(2);
+      serialized.push(JSON.stringify(emitted));
+      for (const record of records) {
+        const key = runCorrelationKey(record.run.id);
+        forbidden.push(key.toString("hex"), key.toString("base64"), key.toString("base64url"), JSON.stringify([...key]));
+      }
+      for (const output of serialized) for (const secret of forbidden) expect(output).not.toContain(secret);
+    } finally {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      if (previous === undefined) delete process.env.CAPTURE_ORIGINS_JSON;
+      else process.env.CAPTURE_ORIGINS_JSON = previous;
+      await prisma.run.deleteMany({ where: { id: { in: records.map(({ run }) => run.id) } } });
       await repository.disconnect();
     }
   });

@@ -64,3 +64,49 @@ The output includes a safe report with skip counts and public summaries decoded 
 The [22 October check record](submission/evidence/2026-10-22-capture-checks.json) records the commands and local results, including 46 capture/redaction checks with PostgreSQL.
 
 Capture ingress requires JSON and limits attempts to 10 per minute per transport peer. See [SECURITY.md](SECURITY.md) for threat boundaries and private disclosure, and [the integration contract](CAPTURE_CONTRACT_PROPOSAL.md) for the additive API seam and remaining owner handoffs.
+
+## Person 1 regression and evidence tools — 22 October
+
+The requested independent items 1–10 are implemented. Item 11 is handed to Person 3 in [PERSON3_PRESENTATION_PROBES_HANDOFF.md](PERSON3_PRESENTATION_PROBES_HANDOFF.md); the mock verifier and protocol contracts are unchanged by this work.
+
+| Request | Implementation and proof |
+| --- | --- |
+| Credential value leaks | `capture/fixtures/adversarial.ts` generates a genuinely signed SD-JWT and a structurally complete JSON-LD VC with synthetic claims/proof at runtime. `adversarial.test.ts` verifies the SD-JWT signature before checking the decoder. `har.test.ts` posts both through HTTP into PostgreSQL, then inspects raw exchange rows, repository results, run/inspector/report JSON, Markdown and captured Socket.IO emission arguments. Complete tokens, disclosures, salt, subject values and derived HMAC keys must be absent. The JSON-LD proof is a structural canary, not a cryptographic verification test. |
+| Correlation keys | Tests check 32-byte per-run keys, same-run stability, different-run tags, fresh-module key changes and absence of keys in persisted/emitted output. Keys are derived from a cryptographically random process master held in memory. They are not persisted, and tags change after process restart. Long OTPs/codes/private JWK members still use plain masks, including mixed-case keys. |
+| Adversarial HAR corpus | Permanent generated specimens cover path/fragment/Location, cookies, error bodies, base64 JSON, gzip bytes, compressed expansion, Cyrillic/fullwidth/invisible key names, 200 levels of nesting, 3,000 fields, and SD-JWT disclosures. Gzip bytes are never inflated; compressed JSON remains an opaque malformed body. HAR-exported decompressed JSON can be inspected normally. |
+| Fuzzing | Four recorded PRNG seeds generate 1,000 nested cases with random casing, separators, Unicode variants and array/object depth. Additional tests cover cycles and wide objects. This is reproducible generative testing, not exhaustive fuzzing or a promise to detect arbitrary short secrets under unrelated names. |
+| Tagging | The existing table-driven suite exercises all 12 rules independently, wrong methods, status-route precedence and unmatched/login/consent paths. Unknown traffic stays untagged. |
+| Endpoint limits | Tests assert exact codes-only errors for wrong content types, malformed JSON, trailing-slash requests, oversized bodies and rate limits, including attempts to bypass the peer limit with forwarded headers. |
+| Audit | `scripts/audit-secrets.mjs` scans evidence, fixtures and scripts (including source/test files), plus existing docs and sensitive filenames. Planted-canary tests cover JWTs, private PEM blocks, long base64, email, international phone numbers and token fields. Findings print paths/lines/rules, never matched values. |
+| CLI bounds | Subprocess tests drive 500 static assets, unknown time, status zero, missing fields, malformed input and a 33 MiB file. Commands have test deadlines, counted skip reasons, owner-only new files and overwrite protection. |
+| Drift/export | `scripts/evidence-tools.mjs` and its Node tests compare October 21 evidence and the Collab contract fixture; issue drafts include versions, steps, expected/actual and sanitized shapes. |
+
+Socket.IO tests observe the actual arguments passed to `emit` through a test double; they do not claim browser/client transport E2E coverage. PostgreSQL tests require `CAPTURE_POSTGRES_TEST_URL` and otherwise skip explicitly. Hosted CI currently runs the remaining tests through `pnpm test`; Person 4 owns enabling PostgreSQL tests and the audit command in CI.
+
+### Commands
+
+Run from the repository root. Output paths must be new files. These tools do not contact Collab, file issues or modify another person's runtime code.
+
+```sh
+node scripts/evidence-tools.mjs drift \
+  submission/evidence/2026-10-21-mock-x509-valid.json \
+  submission/evidence/2026-10-21-mock-x509-bad-signature.json \
+  /tmp/playground-shape-diff.json
+
+node scripts/evidence-tools.mjs issue \
+  submission/evidence/2026-10-21-mock-x509-valid.json \
+  /tmp/playground-issue-draft.md
+
+node --test scripts/audit-secrets.test.mjs scripts/evidence-tools.test.mjs
+pnpm --filter @playground/bff exec vitest run src/capture src/redaction.test.ts src/redaction-fuzz.test.ts
+# Set CAPTURE_POSTGRES_TEST_URL to a migrated local test database to include both DB tests.
+pnpm audit:secrets
+```
+
+The exporter reads **HEAD**, not uncommitted working-tree data, and accepts JSON under `submission/evidence/` or `spikes/fixtures/` only. Inputs are capped at 4 MiB; new output files use mode 0600 and cannot overwrite existing files. Output records source commit and SHA-256. Invalid arguments/parser errors return a fixed message without input content.
+
+Run comparison aligns exchanges by step, actors, method and occurrence order, ignoring raw URLs and volatile IDs. Each request/response has a bounded shape map: added/removed fields, primitive type changes and array element type unions. Redacted markers have their own type; unknown field names collapse to `[unknown-field]` to avoid key-name leaks. Truncation is explicit. Reordered repeated requests can misalign; omitted fields, masking and different scenarios can produce differences without an upstream protocol change. Equal shapes do not establish compatibility.
+
+The committed [shape comparison](submission/evidence/2026-10-22-capture-shape-diff.json) finds that the October 21 bad-signature result omits `holderProofValid` and its submission has string rather than null `tamper`. These are observations of different recorded scenarios, not newly reproduced vulnerabilities. The contract-fixture tests use deliberate in-memory mutations to verify detection; they are not fresh Collab evidence.
+
+Issue output defaults to a **private review draft**, with no automatic filing. It deliberately excludes arbitrary titles, summaries, error prose, URLs, secrets and unknown version strings. Add a reviewed minimal reproducer and check the applicable protocol/version before sharing. Follow `SECURITY.md` for security-impact findings. Runtime keys and generated complete credential canaries are never committed.

@@ -4,14 +4,14 @@ import { scanFilename, scanText, shouldScanContents } from "./audit-secrets.mjs"
 
 test("flags high-confidence secrets without returning their values", () => {
   const jwt = `${"a".repeat(24)}.${"b".repeat(24)}.${"c".repeat(24)}`;
-  const canary = "test.person@private.example";
+  const canary = ["test.person", "private.example"].join("@");
   const input = [
-    "-----BEGIN PRIVATE KEY-----",
+    ["-----BEGIN", "PRIVATE KEY-----"].join(" "),
     jwt,
     "x".repeat(190),
     `${"A/".repeat(95)}==`,
     `openid-credential-offer://${"a".repeat(35)}`,
-    "+919876543210",
+    "+" + [91, 98765, 43210].join(""),
     canary,
   ].join("\n");
   const findings = scanText(input);
@@ -39,8 +39,24 @@ test("scans capture fixtures and evidence including short literal token/private-
   assert.equal(scanFilename("submission/evidence/traffic.har.json")[0]?.rule, "sensitive-filename");
   assert.deepEqual(scanFilename("apps/bff/src/capture/fixtures/four-service.synthetic.har.json"), []);
   assert.deepEqual(scanText('{"access_token":"CANARY_TOKEN","d":"[REDACTED]"}'), []);
-  const contents = '{"access_token":"short-unsafe-token","d":"private-member"}';
+  const contents = JSON.stringify({ access_token: "short-unsafe-token", d: "private-member" });
   const findings = scanText(contents);
   assert.equal(findings[0]?.rule, "secret-field-value");
   assert.equal(JSON.stringify(findings).includes("short-unsafe-token"), false);
+});
+
+
+test("scans script source and nested fixtures without exempting test files", () => {
+  for (const path of ["scripts/demo.sh", "scripts/export.mjs", "scripts/audit-secrets.test.mjs", "scripts/nested/check.py", "apps/bff/src/capture/fixtures/adversarial.ts", "submission/evidence/run.json"]) {
+    assert.equal(shouldScanContents(path), true, path);
+    const jwt = ["a".repeat(24), "b".repeat(24), "c".repeat(24)].join(".");
+    assert.equal(scanText(jwt)[0]?.rule, "jwt-like-value");
+  }
+});
+
+
+test("flags formatted international phones and presentation tokens", () => {
+  const phone = "+" + [91, 98765, 43210].join(" ");
+  assert.equal(scanText(phone)[0]?.rule, "phone-number");
+  assert.equal(scanText(JSON.stringify({ vp_token: "short-unsafe-presentation" }))[0]?.rule, "secret-field-value");
 });

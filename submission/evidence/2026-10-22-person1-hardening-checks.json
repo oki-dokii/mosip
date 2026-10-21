@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Asia/Kolkata",
+  "evidenceTier": "synthetic_capture_checks",
+  "sourceCommitBeforeChanges": "aee6b32f1604f2f956142329107510a9cbf09a0d",
+  "testedWorkingTree": true,
+  "checks": [
+    {
+      "command": "CAPTURE_POSTGRES_TEST_URL=<local-test-database> pnpm test",
+      "status": "passed",
+      "passed": 116,
+      "skipped": 0,
+      "breakdown": {
+        "node_scripts_and_spikes": 15,
+        "bff": 95,
+        "shared": 3,
+        "mock_issuer": 2,
+        "mock_verifier": 1
+      },
+      "note": "Web package has no test files; this result does not establish UI E2E coverage."
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed"
+    },
+    {
+      "command": "pnpm audit:secrets",
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    }
+  ],
+  "requestedItems": {
+    "1": "passed: signed SD-JWT/full VC through HTTP, raw PostgreSQL rows, repository, run/inspector/report APIs and Socket.IO emission arguments",
+    "2": "passed: ephemeral master entropy, per-run derived keys, restart changes, cross-run tags and key absence from output",
+    "3": "passed: permanent adversarial HAR generator and regression suite",
+    "4": "passed: 1000 seeded randomized nested cases plus cycle/wide/identifier bounds",
+    "5": "passed: one test for each of 12 tagging rules plus unmatched and precedence checks",
+    "6": "passed: content-type, body-size, malformed input and peer-rate codes-only errors",
+    "7": "passed: fixtures/evidence/scripts scanning with planted patterns",
+    "8": "passed: bounded CLI subprocess tests with 500 assets and a 33 MiB input",
+    "9": "passed: committed October 21 run comparison plus Collab fixture shape tests",
+    "10": "passed: sanitized issue-draft exporter exercised on committed evidence",
+    "11": "handoff prepared for user to share with Person 3; probes not implemented or executed"
+  },
+  "limits": [
+    "Socket.IO emission calls captured by a test double, not a live browser socket",
+    "JSON-LD proof is a structural canary; only the SD-JWT signature is cryptographically verified in this capture specimen",
+    "Gzip bytes stay opaque; no decompression or compressed-body inspection",
+    "No real Inji Web/mobile evidence added",
+    "No mock-verifier, driver, frontend, shared schema or CI workflow changes",
+    "No issue filed or external report sent",
+    "PostgreSQL tests are opt-in and must be enabled separately in hosted CI"
+  ]
+}

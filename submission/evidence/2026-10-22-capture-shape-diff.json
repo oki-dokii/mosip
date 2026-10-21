@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "kind": "run_exchange_shapes",
+  "exchanges": [
+    {
+      "slot": "PRESENT_RESULT/playground/inji_verify/POST/1",
+      "change": "changed",
+      "request": {
+        "changes": [],
+        "truncated": false
+      },
+      "response": {
+        "changes": [
+          {
+            "path": "$.holderProofValid",
+            "change": "removed",
+            "before": [
+              "boolean"
+            ],
+            "after": []
+          }
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "slot": "PRESENT_SUBMIT/reference_wallet/inji_verify/POST/1",
+      "change": "changed",
+      "request": {
+        "changes": [
+          {
+            "path": "$.tamper",
+            "change": "changed",
+            "before": [
+              "null"
+            ],
+            "after": [
+              "string"
+            ]
+          }
+        ],
+        "truncated": false
+      },
+      "response": {
+        "changes": [],
+        "truncated": false
+      }
+    }
+  ],
+  "note": "Aligned by step, actors, method and occurrence order; no URL, identifier or scalar value is compared. Unknown field names are collapsed. A redacted marker describes the stored evidence, not the original wire type. Shape equality is not protocol compatibility.",
+  "sources": [
+    {
+      "path": "submission/evidence/2026-10-21-mock-x509-valid.json",
+      "commit": "aee6b32f1604f2f956142329107510a9cbf09a0d",
+      "sha256": "4bf5ccb5791a267ee9d7f32f5f2d9ae9fedd018f268871fc5a02ecebf4fe034c"
+    },
+    {
+      "path": "submission/evidence/2026-10-21-mock-x509-bad-signature.json",
+      "commit": "aee6b32f1604f2f956142329107510a9cbf09a0d",
+      "sha256": "bbbef87b456429a08095d04a1974183d7cceb2e6048787bcab2b6358c8904955"
+    }
+  ]
+}

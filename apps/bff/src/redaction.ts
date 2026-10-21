@@ -6,15 +6,16 @@ const SECRET_FIELDS = new Set([
   "tx_code", "id_token", "credential", "client_secret", "private_key", "private_key_jwk", "x_api_key", "x_csrf_token", "x_xsrf_token",
 ]);
 const PRIVATE_JWK = new Set(["d", "p", "q", "dp", "dq", "qi", "oth", "k"]);
+const COMPACT_SECRET_FIELDS = new Set([...SECRET_FIELDS].map((key) => key.replace(/_/g, "")));
 const ERROR_CODES = new Set(["invalid_request", "invalid_grant", "invalid_token", "invalid_proof", "access_denied", "CAPTURE_INVALID_HAR", "CAPTURE_TOO_LARGE", "CAPTURE_RUN_MISMATCH"]);
 const masterKey = randomBytes(32);
-export const normalizedKey = (key: string) => key.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase().replace(/[.-]/g, "_");
+export const normalizedKey = (key: string) => key.normalize("NFKC").replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, "").replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase().replace(/[.-]/g, "_");
 export const runCorrelationKey = (runId: string) => createHmac("sha256", masterKey).update(runId).digest();
 
 export function maskedValue(value: unknown, path: string, key?: Uint8Array): string {
-  const field = normalizedKey(path.split(".").at(-1) ?? "");
+  const field = normalizedKey(path.split(".").at(-1) ?? "").replace(/_/g, "");
   const scalar = typeof value === "string" ? value.replace(/^Bearer\s+/i, "") : "";
-  if (!key || scalar.length < 32 || ["code", "otp", "tx_code", "pre_authorized_code", ...PRIVATE_JWK].includes(field)) return "[REDACTED]";
+  if (!key || scalar.length < 32 || ["code", "otp", "txcode", "preauthorizedcode", ...PRIVATE_JWK].includes(field)) return "[REDACTED]";
   return `[REDACTED hmac:${createHmac("sha256", key).update(scalar).digest("hex").slice(0, 16)}]`;
 }
 
@@ -36,9 +37,11 @@ export function createRedactor(correlationKey?: Uint8Array) {
         const authorizationCode = input.grant_type === "authorization_code";
         for (const [rawKey, child] of Object.entries(input).slice(0, 128)) {
           const key = normalizedKey(rawKey);
+          const compactKey = key.replace(/_/g, "");
           const nextPath = `${itemPath}.${rawKey}`;
-          const secretCode = key === "code" && (authorizationCode || !(typeof child === "string" && ERROR_CODES.has(child)));
-          if (SECRET_FIELDS.has(key) || secretCode || (jwk && PRIVATE_JWK.has(key)) || (key === "request" && typeof child === "string")) output[rawKey] = mask(child, nextPath);
+          const secretCode = compactKey === "code" && (authorizationCode || !(typeof child === "string" && ERROR_CODES.has(child)));
+          // Non-ASCII identifiers can disguise secret field names; fail closed on their values.
+          if (/[^\x20-\x7E]/.test(rawKey) || COMPACT_SECRET_FIELDS.has(compactKey) || secretCode || (jwk && PRIVATE_JWK.has(compactKey)) || (compactKey === "request" && typeof child === "string")) output[rawKey] = mask(child, nextPath);
           else output[rawKey] = walk(child, nextPath, depth + 1);
         }
         return output;
