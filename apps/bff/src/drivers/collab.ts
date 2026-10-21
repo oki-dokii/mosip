@@ -101,6 +101,17 @@ async function loadConfig(context: DriverContext): Promise<CollabConfig> {
   if (context.config.wallet !== "reference_wallet" || ((context.config.issuer === "mock_issuer" || context.config.verifier === "mock_verifier") && context.config.format !== "vc_sd_jwt")) {
     throw new Error("Collab mode supports the Reference Wallet; mock roles support SD-JWT VC only");
   }
+  if (context.config.issuer === "mock_issuer") {
+    const config: CollabConfig = {
+      authBaseUrl: "", certifyBaseUrl: "", postmanEnvironmentPath: "", mockOtp: "",
+      verifyBaseUrl: process.env.VERIFY_BASE_URL ?? "https://injiverify.collab.mosip.net/v1/verify",
+      clientId: "playground-test-client", redirectUri: "", individualId: "", clientPrivateJwk: {},
+      credentialConfigurationId: "MockVerifiableCredential_SD_JWT", credentialScope: "",
+      credentialFormat: "dc+sd-jwt",
+    };
+    context.state.set(STATE.config, config);
+    return config;
+  }
   const postmanEnvironmentPath = process.env.OFFICIAL_POSTMAN_ENV_PATH;
   const mockOtp = process.env.MOCK_OTP;
   if (!postmanEnvironmentPath || !mockOtp) {

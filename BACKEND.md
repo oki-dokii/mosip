@@ -133,7 +133,7 @@ apps/bff/
 
 ### 2.5 Optional Tap routes
 
-The separate test-only mock services run on localhost when selected with `MOCK_ISSUER_BASE_URL` and `MOCK_VERIFIER_BASE_URL`. The mock issuer exposes `GET /.well-known/openid-credential-issuer`, `POST /token`, and `POST /credential`. The mock verifier exposes `POST /vp-request`, `POST /direct-post`, `GET /status/:id`, and `GET /result/:id`. Their bearer tokens, nonces, holder proofs, and presentations remain in process memory; the playground stores sanitized summaries of the HTTP exchanges.
+The separate test-only mock services run on localhost when selected with `MOCK_ISSUER_BASE_URL` and `MOCK_VERIFIER_BASE_URL`. The mock issuer exposes `GET /.well-known/openid-credential-issuer`, `POST /token`, and `POST /credential`. The mock verifier exposes `POST /vp-request`, `POST /direct-post`, `GET /status/:id`, and `GET /result/:id`. Their bearer tokens, nonces, holder proofs, and presentations remain in process memory; the playground stores sanitized summaries of the HTTP exchanges. Mock-issuer runs need no Certify OAuth environment. The standalone issuer defaults to `did:jwk`; optional `MOCK_ISSUER_SIGNING_KEY_PATH`, `MOCK_ISSUER_CERT_CHAIN_PATH`, and matching HTTPS `MOCK_ISSUER_ISSUER_ID` select X.509 signing. `pnpm dev:x509-mock` supplies an ephemeral test certificate and `MOCK_ISSUER_VERSION_LABEL=mock-x509-1`.
 
 | Route | Meaning |
 |---|---|

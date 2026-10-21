@@ -95,7 +95,7 @@ interface VerifierDriver { createRequest(ctx): Promise<VpRequest>; status(ctx, i
 
 ### 3.3 Recorder and optional Tap (`apps/bff/src/recorder`, `apps/bff/src/tap`)
 
-Phase 3 also provides separate localhost mock issuer and verifier processes. The BFF selects their real HTTP boundaries through `MOCK_ISSUER_BASE_URL` and `MOCK_VERIFIER_BASE_URL`; without those values, its in-process mock roles remain available for tests. The standalone mock verifier checks cryptographic consistency but does not establish certificate-chain trust.
+Phase 3 also provides separate localhost mock issuer and verifier processes. The BFF selects their real HTTP boundaries through `MOCK_ISSUER_BASE_URL` and `MOCK_VERIFIER_BASE_URL`; without those values, its in-process mock roles remain available for tests. The standalone issuer can sign with an operator-supplied X.509 key and chain so its SD-JWT passes the tested Inji Verify path; `pnpm dev:x509-mock` generates an ephemeral self-signed pair for a repeatable test. The standalone mock verifier checks cryptographic consistency but does not establish certificate-chain trust. The public Collab Verify positive test with a self-signed certificate likewise does not prove trust-anchor validation.
 - Drivers call the recorder around external exchanges, preserving the original protocol URL and payload.
 - The recorder stores method, URL, redacted headers, size-capped bodies, status, timing, provenance and actor pair.
 - Redaction removes or hashes `Authorization`, `access_token`, `pre-authorized_code`, `refresh_token`, `c_nonce` where needed, and private JWK fields before persistence.
@@ -138,6 +138,8 @@ Described in UIUX.md. Key modules: `pages/Playground`, `components/RoleSelector`
 |---|---|
 | `CERTIFY_BASE_URL`, `MIMOTO_BASE_URL`, `VERIFY_BASE_URL`, `ESIGNET_BASE_URL` | Real service URLs (local or Collab); adapters discover capabilities from metadata/OpenAPI |
 | `MOCK_ISSUER_BASE_URL`, `MOCK_VERIFIER_BASE_URL` | Mock services |
+| `MOCK_ISSUER_SIGNING_KEY_PATH`, `MOCK_ISSUER_CERT_CHAIN_PATH`, `MOCK_ISSUER_ISSUER_ID` | Optional PEM-backed X.509 test issuer; key kept outside the repository and issuer ID must be HTTPS and match the leaf certificate hostname |
+| `MOCK_ISSUER_VERSION_LABEL` | Optional BFF snapshot label for an external mock issuer; `unreported` when absent |
 | `PUBLIC_BASE_URL` | Public URL used in QR codes and callbacks (ngrok or reverse proxy when needed) |
 | `DATABASE_URL` | Postgres connection |
 | `TAP_BODY_LIMIT_BYTES` | Cap for stored bodies |

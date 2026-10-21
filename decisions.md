@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-035 · Add an optional X.509 test identity to the standalone mock issuer
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** The standalone `did:jwk` SD-JWT reached Inji Verify but failed its schema/signature check. The verifier's documented SD-JWT key path uses X.509 certificates.
+- **Decision:** Allow the standalone mock issuer to load an operator-supplied PEM key and certificate chain, check key/certificate correspondence, current validity, and HTTPS issuer hostname, and embed `x5c` in its signed SD-JWT. Keep the in-memory `did:jwk` default. Add an ephemeral self-signed development helper and permit mock-issuer runs without Certify OAuth configuration.
+- **Alternatives considered:** Change Inji Verify or weaken its checks (outside project scope); commit a reusable private test key (violates secret-handling rules); make X.509 mandatory for all mock runs (adds setup burden and hides the `did:jwk` compatibility finding).
+- **Why this one:** A synthetic X.509 mock credential passed the public Collab verifier end to end, while a corrupted issuer signature was rejected. The key can stay outside the repo and the previous mode remains testable.
+- **Trade-off accepted:** The successful public-sandbox test used a self-signed leaf certificate, so it demonstrates signature interoperability, not certificate-chain trust. The assisted Inji Web path remains unvalidated without a dedicated persistent test account; a transparent Tap is still unsafe if it rewrites signed URLs.
+- **Revisit if:** A trusted test CA or persistent Inji Web account becomes available, or the verifier supports `did:jwk` SD-JWT issuers.
+- **Affects:** `apps/mock-issuer/src/signing.ts`, `apps/mock-issuer/src/server.ts`, `apps/bff/src/drivers/collab.ts`, `scripts/dev-x509-mock.sh`, `PHASE3.md`, FR-90, A8.
+
 ### D-034 · Offer a standalone test verifier behind the mock driver
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** The in-process verifier exercised cryptographic checks but could not prove the Reference Wallet's direct-post and status handling across an independent HTTP service.

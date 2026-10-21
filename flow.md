@@ -2,7 +2,7 @@
 
 How code travels between files and functions: **entry points, order of execution, and who calls whom.**
 
-> **Status: PHASE 3 CORE P1 TOOLS AND STANDALONE MOCK SERVICES IMPLEMENTED.** The BFF selects deterministic fixtures by default or live Collab plus mock roles through `PLAYGROUND_DRIVER_MODE=collab`. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Replay, reports, sequence playback, filtered history, and matrix exports are implemented. Assisted Inji Web automation and transparent Tap capture remain open.
+> **Status: PHASE 3 P1 ACCEPTANCE PASSED.** The BFF selects deterministic fixtures by default or live Collab plus mock roles through `PLAYGROUND_DRIVER_MODE=collab`. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Replay, reports, sequence playback, filtered history, matrix exports, and X.509 mock-issuer interoperability with Inji Verify are implemented. Assisted Inji Web presentation and transparent Tap capture remain open.
 
 Legend: `file → function()` means "this function in that file". `A ⇒ B` means A calls B. Status: 🟦 planned · 🟩 implemented · 🟥 changed from plan (explain in decisions.md).
 
@@ -30,6 +30,11 @@ Legend: `file → function()` means "this function in that file". `A ⇒ B` mean
 ⇒ build an Ed25519 presentation proof or SD-JWT key-binding JWT
 ⇒ submit the DCQL response and fetch the Verify v2 result
 ⇒ print only a sanitized status summary
+
+`MOCK_ISSUER_BASE_URL=http://127.0.0.1:4101 node spikes/mock-x509-verify.mjs`
+⇒ issue a synthetic credential from the separately running X.509 mock issuer
+⇒ present it to public Inji Verify through the Reference Wallet driver
+⇒ print only status, outcome, and a safe failure category; `TAMPER_KIND=bad_signature` tests rejection
 
 | Entry | File | What starts it | Status |
 |---|---|---|---|
@@ -132,6 +137,8 @@ When `config.tamper` is set, `tamper/index.ts → applyCredentialTamper()` chang
 
 ### 4.5 Local non-Inji mocks (`drivers/collab.ts`) 🟩 SD-JWT
 With `MOCK_ISSUER_BASE_URL`, `MockIssuerDriver.createOffer()` ⇒ fetch the standalone issuer's discovery document. `CollabWalletDriver.authorize()` ⇒ form-encoded pre-authorized token exchange. `requestCredential()` ⇒ generate a holder proof JWT and call the issuer's `/credential` endpoint. `apps/mock-issuer/src/server.ts` validates the token, nonce, and holder proof, then signs a holder-bound SD-JWT. Without the URL, these steps use the in-process mock and `mock://` transport markers.
+
+For optional X.509 mode, `apps/mock-issuer/src/signing.ts → loadIssuerSigner()` reads the PEM key and chain before the server listens, verifies that the leaf matches the key and HTTPS issuer hostname, and returns the `x5c` signing header. `scripts/dev-x509-mock.sh` creates an ephemeral test certificate, sets the mock endpoint and version label, then starts `pnpm dev`. `apps/bff/src/drivers/collab.ts → loadConfig()` skips Certify OAuth configuration for mock-issuer runs. The default in-memory mock keeps its `did:jwk` key path.
 
 With `MOCK_VERIFIER_BASE_URL`, `MockVerifierDriver.createRequest()` ⇒ call the standalone `/vp-request` endpoint. `CollabWalletDriver.present()` ⇒ create a key-bound SD-JWT and post it to `/direct-post`. `pollStatus()` ⇒ read `/status/:id`. `getResult()` ⇒ read `/result/:id`. `apps/mock-verifier/src/verify.ts` checks issuer signature, type, expiry, holder proof, nonce, audience, and disclosure digests. Without the URL, the same checks run in the BFF's in-process mock. The embedded Certify certificate's trust chain is not checked.
 
@@ -244,5 +251,6 @@ When you change code:
 | 2026-10-21 | Added the M1 web/BFF walking skeleton, shared schemas, in-memory orchestration, live events, inspector, and write-time redaction | implementation |
 | 2026-10-21 | Added Prisma/PostgreSQL run persistence, initial migration, repository fallback, and graceful disconnect | implementation |
 | 2026-10-21 | Added Phase 3 local SD-JWT mock roles, exact-exchange sequence playback, filtered history, and service version snapshots | implementation |
+| 2026-10-21 | Added optional X.509 signing and ephemeral test setup for the standalone mock issuer; removed unnecessary Certify OAuth configuration from mock-issuer runs | implementation |
 | 2026-10-21 | Added a standalone OpenID4VCI mock issuer and an opt-in HTTP adapter in the Reference Wallet path | implementation |
 | 2026-10-21 | Added a standalone OpenID4VP mock verifier, opt-in HTTP adapter, and reliable signature fault mutation | implementation |

@@ -73,6 +73,21 @@ describe("Collab verifier status polling", () => {
 });
 
 describe("local non-Inji issuer", () => {
+  it("runs without the Certify OAuth test environment", async () => {
+    const mockContext = context();
+    mockContext.config.issuer = "mock_issuer";
+    mockContext.config.verifier = "mock_verifier";
+    mockContext.config.format = "vc_sd_jwt";
+    mockContext.state.clear();
+    const drivers = createCollabDrivers(mockContext.config);
+    await drivers.issuer.createOffer(mockContext);
+    await drivers.wallet.authorize(mockContext);
+    await drivers.wallet.requestCredential(mockContext);
+    await drivers.verifier.createRequest(mockContext);
+    await drivers.wallet.present(mockContext);
+    expect((await drivers.verifier.getResult(mockContext)).summary?.outcome).toBe("valid");
+  });
+
   it("issues a signed holder-bound SD-JWT with a matching disclosure", async () => {
     const mockContext = context();
     mockContext.config.issuer = "mock_issuer";

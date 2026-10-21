@@ -1,13 +1,16 @@
-import { createHash, generateKeyPairSync, randomBytes, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { createServer as createHttpServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { exportJWK, importJWK, jwtVerify, SignJWT, type JWK } from "jose";
+import { importJWK, jwtVerify, SignJWT, type JWK } from "jose";
+import { loadIssuerSigner } from "./signing.js";
 
 const configurationId = "MockVerifiableCredential_SD_JWT";
 const port = Number(process.env.MOCK_ISSUER_PORT ?? 4101);
 const publicBaseUrl = process.env.MOCK_ISSUER_PUBLIC_URL ?? `http://127.0.0.1:${port}`;
-const { publicKey, privateKey } = generateKeyPairSync("ed25519");
-const publicJwk = await exportJWK(publicKey);
-const issuerDid = `did:jwk:${Buffer.from(JSON.stringify(publicJwk)).toString("base64url")}`;
+const signer = await loadIssuerSigner({
+  privateKeyPath: process.env.MOCK_ISSUER_SIGNING_KEY_PATH,
+  certificatePath: process.env.MOCK_ISSUER_CERT_CHAIN_PATH,
+  issuerUrl: process.env.MOCK_ISSUER_ISSUER_ID ?? publicBaseUrl,
+});
 const grants = new Map<string, { nonce: string; expiresAt: number }>();
 
 function send(response: ServerResponse, status: number, body: unknown) {
@@ -30,7 +33,7 @@ async function body(request: IncomingMessage): Promise<Record<string, any>> {
 export const mockIssuerServer = createHttpServer(async (request, response) => {
   try {
     if (request.method === "GET" && request.url === "/.well-known/openid-credential-issuer") {
-      return send(response, 200, { credential_issuer: publicBaseUrl, token_endpoint: `${publicBaseUrl}/token`, credential_endpoint: `${publicBaseUrl}/credential`, credential_configurations_supported: { [configurationId]: { format: "dc+sd-jwt", vct: configurationId, credential_signing_alg_values_supported: ["EdDSA"], proof_types_supported: { jwt: { proof_signing_alg_values_supported: ["EdDSA"] } } } } });
+      return send(response, 200, { credential_issuer: publicBaseUrl, token_endpoint: `${publicBaseUrl}/token`, credential_endpoint: `${publicBaseUrl}/credential`, credential_configurations_supported: { [configurationId]: { format: "dc+sd-jwt", vct: configurationId, credential_signing_alg_values_supported: [signer.algorithm], proof_types_supported: { jwt: { proof_signing_alg_values_supported: ["EdDSA"] } } } } });
     }
     if (request.method === "POST" && request.url === "/token") {
       const input = await body(request);
@@ -57,8 +60,8 @@ export const mockIssuerServer = createHttpServer(async (request, response) => {
       const disclosure = Buffer.from(JSON.stringify([randomBytes(16).toString("base64url"), "given_name", "Test"])).toString("base64url");
       const digest = createHash("sha256").update(disclosure).digest("base64url");
       const now = Math.floor(Date.now() / 1000);
-      const jwt = await new SignJWT({ iss: issuerDid, vct: configurationId, cnf: { jwk: holderJwk }, _sd_alg: "sha-256", _sd: [digest], iat: now, nbf: now - 5, exp: now + 3600 })
-        .setProtectedHeader({ alg: "EdDSA", typ: "vc+sd-jwt", kid: `${issuerDid}#0` }).sign(privateKey);
+      const jwt = await new SignJWT({ iss: signer.issuer, vct: configurationId, cnf: { jwk: holderJwk }, _sd_alg: "sha-256", _sd: [digest], iat: now, nbf: now - 5, exp: now + 3600 })
+        .setProtectedHeader(signer.header).sign(signer.privateKey);
       return send(response, 200, { credential: `${jwt}~${disclosure}~`, format: "dc+sd-jwt" });
     }
     send(response, 404, { error: "not_found" });
