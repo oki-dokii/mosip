@@ -37,3 +37,5 @@ Total automated test cases reported by the current commands: **43 passed**. The 
 Before the final pitch, record the exact commit, environment, component versions, and timestamp for any new live result. Export a sanitized run report and verifier result; do not change a blocked case to “passed” based on fixture or Reference Wallet evidence.
 
 **Later fresh live evidence:** [2026-10-21 mock X.509 positive/negative reports and matrix](evidence/README.md) were exported from new synthetic runs against public Collab Verify at commit `ec1cbbd`. They are `mock_interop` evidence, separate from the test-suite snapshot above and from A1/A2.
+
+**2026-10-22 local check:** `pnpm test` passed 46 cases after one Collab submission-rejection test and two secret-audit tests were added. `pnpm audit:secrets` passed on the current tracked/non-ignored filenames and documentation/evidence text. The scanner reports only paths, line numbers, and rule names; it does not inspect binary contents or replace the capture/redaction work outlined in [CAPTURE_CONTRACT_PROPOSAL.md](../CAPTURE_CONTRACT_PROPOSAL.md). No fresh live Collab run was performed for this check.

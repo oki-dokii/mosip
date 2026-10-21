@@ -258,9 +258,10 @@ Run these checks from the repository root:
 pnpm test
 pnpm typecheck
 pnpm build
+pnpm audit:secrets
 ```
 
-At the **2026-10-21** documentation checkpoint, all passed: **43 automated tests**, strict typechecks, and the production build. The tests cover contract fixtures, schemas, BFF behavior, capture/redaction, scenarios, and mock services. The web package has no automated browser test yet; a build pass does not replace an end-to-end UI check. These commands do **not** perform a fresh Collab run. The [test evidence](submission/TEST_EVIDENCE.md) has the breakdown and claim limits.
+At the **2026-10-22** checkpoint, **46 automated tests**, strict typechecks, and the production build passed. The tests cover contract fixtures, schemas, BFF behavior, capture/redaction, scenarios, mock services, and the secret-audit script. `pnpm audit:secrets` passed separately; it checks sensitive filenames and documentation/evidence **text** without printing matched values. It does not inspect image or other binary contents and is not a substitute for write-time redaction. The web package has no automated browser test yet; a build pass does not replace an end-to-end UI check. These commands do **not** perform a fresh Collab run. The [test evidence](submission/TEST_EVIDENCE.md) has the breakdown and claim limits.
 
 Fresh synthetic X.509 mock-issuer → Reference Wallet → Collab Verify positive and bad-signature reports were exported on 2026-10-21 at commit `ec1cbbd`; see the [standalone evidence and matrix](submission/evidence/README.md). They are `mock_interop` evidence, not all-Inji wallet evidence. For a live synthetic contract probe, use `pnpm spike:contracts` only after configuring the official public test environment in [Phase 0–1](PHASE0_1.md). The committed fixtures let ordinary tests run offline.
 
@@ -292,6 +293,7 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 | Container setup and shutdown | [Deployment guide](DEPLOYMENT.md) |
 | Scenario provenance | [Scenarios and evidence](SCENARIOS_AND_EVIDENCE.md) |
 | Observed interoperability findings | [Gap register](GAPS.md) |
+| Proposed capture safety and inspector contract | [Capture contract proposal](CAPTURE_CONTRACT_PROPOSAL.md) |
 | A1/A2 proof and cut-off | [Wallet validation](WALLET_VALIDATION.md) |
 
 ## Known gaps
