@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
-import type { Exchange, RunConfig, RunStep } from "@playground/shared";
+import type { Exchange, RunStep } from "@playground/shared";
 import type { Server } from "socket.io";
+import { resolveDrivers } from "./drivers/registry.js";
+import type { DriverContext, DriverResult, DriverSet } from "./drivers/types.js";
 import { redact } from "./redaction.js";
 import type { RunRepository } from "./store.js";
 
@@ -20,82 +22,24 @@ function wait(durationMs: number) {
   return new Promise((resolve) => setTimeout(resolve, durationMs));
 }
 
-function exchangeFor(step: RunStep, config: RunConfig, sequence: number): Omit<Exchange, "id" | "runId" | "stepId"> | null {
-  const format = config.format === "ldp_vc" ? "ldp_vc" : "dc+sd-jwt";
-  const templates: Record<string, Omit<Exchange, "id" | "runId" | "stepId" | "seq">> = {
-    ISSUE_OFFER: {
-      actorFrom: "reference_wallet",
-      actorTo: "certify",
-      method: "GET",
-      url: "https://issuer.example/.well-known/openid-credential-issuer",
-      status: 200,
-      durationMs: 84,
-      request: { accept: "application/json" },
-      response: { credential_issuer: "https://issuer.example", format },
-      redactions: [],
-    },
-    ISSUE_TOKEN: {
-      actorFrom: "reference_wallet",
-      actorTo: "esignet",
-      method: "POST",
-      url: "https://authorization.example/oauth/v2/token",
-      status: 200,
-      durationMs: 132,
-      request: { grant_type: "authorization_code", code_verifier: "synthetic-secret" },
-      response: { token_type: "Bearer", access_token: "synthetic-token", c_nonce: "synthetic-nonce" },
-      redactions: [],
-    },
-    ISSUE_CREDENTIAL: {
-      actorFrom: "reference_wallet",
-      actorTo: "certify",
-      method: "POST",
-      url: "https://issuer.example/v1/certify/issuance/credential",
-      status: 200,
-      durationMs: 206,
-      request: { credential_configuration_id: config.format === "ldp_vc" ? "FarmerCredential_VCDM2.0" : "MockVerifiableCredential_SD_JWT" },
-      response: { credential_received: true, format, holder_bound: true },
-      redactions: [],
-    },
-    PRESENT_REQUEST: {
-      actorFrom: "playground",
-      actorTo: "verify",
-      method: "POST",
-      url: "https://verifier.example/v2/vp-request",
-      status: 201,
-      durationMs: 91,
-      request: { query_language: "DCQL", format },
-      response: { request_object_signed: true, response_mode: "direct_post" },
-      redactions: [],
-    },
-    PRESENT_SUBMIT: {
-      actorFrom: "reference_wallet",
-      actorTo: "verify",
-      method: "POST",
-      url: "https://verifier.example/v2/vp-submission/direct-post",
-      status: 200,
-      durationMs: 118,
-      request: { format, holder_proof: config.format === "ldp_vc" ? "Ed25519Signature2020" : "kb+jwt" },
-      response: { accepted: true },
-      redactions: [],
-    },
-    PRESENT_RESULT: {
-      actorFrom: "playground",
-      actorTo: "verify",
-      method: "POST",
-      url: "https://verifier.example/v2/vp-results/{transactionId}",
-      status: 200,
-      durationMs: 164,
-      request: { includeClaims: false, skipStatusChecks: true },
-      response: { allChecksSuccessful: true, credentialProofValid: true, holderProofValid: true },
-      redactions: [],
-    },
-  };
-  const template = templates[step.stepKey];
-  if (!template) return null;
-  const request = redact(template.request);
-  const response = redact(template.response);
+async function executeStep(step: RunStep, context: DriverContext, drivers: DriverSet): Promise<DriverResult> {
+  switch (step.stepKey) {
+    case "ISSUE_OFFER": return drivers.issuer.createOffer(context);
+    case "ISSUE_TOKEN": return drivers.wallet.authorize(context);
+    case "ISSUE_CREDENTIAL": return drivers.wallet.requestCredential(context);
+    case "STORE": return drivers.wallet.store(context);
+    case "PRESENT_REQUEST": return drivers.verifier.createRequest(context);
+    case "PRESENT_SUBMIT": return drivers.wallet.present(context);
+    case "PRESENT_RESULT": return drivers.verifier.getResult(context);
+    default: return { summary: { completed: true } };
+  }
+}
+
+function sanitizeExchange(exchange: NonNullable<DriverResult["exchanges"]>[number], sequence: number) {
+  const request = redact(exchange.request);
+  const response = redact(exchange.response);
   return {
-    ...template,
+    ...exchange,
     seq: sequence,
     request: request.value,
     response: response.value,
@@ -103,9 +47,17 @@ function exchangeFor(step: RunStep, config: RunConfig, sequence: number): Omit<E
   };
 }
 
-export async function runDemo(runId: string, io: Server, repository: RunRepository, stepDelayMs = 110) {
+export async function runDemo(
+  runId: string,
+  io: Server,
+  repository: RunRepository,
+  stepDelayMs = 110,
+  selectedDrivers?: DriverSet,
+) {
   const record = await repository.get(runId);
   if (!record) return;
+  const drivers = selectedDrivers ?? resolveDrivers(record.run.config);
+  const context: DriverContext = { config: record.run.config, state: new Map() };
   const room = `run:${runId}`;
   const namespace = io.of("/runs");
   record.run.status = "running";
@@ -113,45 +65,66 @@ export async function runDemo(runId: string, io: Server, repository: RunReposito
   await repository.updateRun(record.run);
   namespace.to(room).emit("run:created", { runId, config: record.run.config });
   let exchangeSequence = record.exchanges.length;
+  let actualOutcome: "valid" | "invalid" = "valid";
+  let activeStep: RunStep | undefined;
 
-  for (const step of record.steps) {
-    step.status = "running";
-    await repository.updateStep(step);
-    namespace.to(room).emit("step:started", step);
-    await wait(stepDelayMs);
-    const exchange = exchangeFor(step, record.run.config, exchangeSequence + 1);
-    if (exchange) {
-      const stored: Exchange = { ...exchange, id: randomUUID(), runId, stepId: step.id };
-      await repository.addExchange(stored);
-      exchangeSequence += 1;
-      namespace.to(room).emit("exchange:recorded", {
-        runId,
-        exchangeId: stored.id,
-        seq: stored.seq,
-        actorFrom: stored.actorFrom,
-        actorTo: stored.actorTo,
-        method: stored.method,
-        url: stored.url,
-        status: stored.status,
-        durationMs: stored.durationMs,
-      });
+  try {
+    for (const step of record.steps) {
+      activeStep = step;
+      step.status = "running";
+      await repository.updateStep(step);
+      namespace.to(room).emit("step:started", step);
+      await wait(stepDelayMs);
+      const result = await executeStep(step, context, drivers);
+      for (const driverExchange of result.exchanges ?? []) {
+        const exchange = sanitizeExchange(driverExchange, exchangeSequence + 1);
+        const stored: Exchange = { ...exchange, id: randomUUID(), runId, stepId: step.id };
+        await repository.addExchange(stored);
+        exchangeSequence += 1;
+        namespace.to(room).emit("exchange:recorded", {
+          runId,
+          exchangeId: stored.id,
+          seq: stored.seq,
+          actorFrom: stored.actorFrom,
+          actorTo: stored.actorTo,
+          method: stored.method,
+          url: stored.url,
+          status: stored.status,
+          durationMs: stored.durationMs,
+        });
+      }
+      if (result.summary?.outcome === "invalid") actualOutcome = "invalid";
+      step.status = "succeeded";
+      step.summary = result.summary ?? { completed: true };
+      await repository.updateStep(step);
+      namespace.to(room).emit("step:finished", step);
     }
-    step.status = "succeeded";
-    step.summary = { completed: true };
-    await repository.updateStep(step);
-    namespace.to(room).emit("step:finished", step);
+
+    record.run.status = actualOutcome === "valid" ? "passed" : "failed";
+    record.run.actualOutcome = actualOutcome;
+  } catch {
+    if (activeStep) {
+      activeStep.status = "failed";
+      activeStep.summary = { error: "DRIVER_EXECUTION_FAILED" };
+      await repository.updateStep(activeStep);
+      namespace.to(room).emit("step:finished", activeStep);
+    }
+    record.run.status = "errored";
+    record.run.actualOutcome = "error";
+  } finally {
+    record.run.finishedAt = new Date().toISOString();
+    await repository.updateRun(record.run);
+    namespace.to(room).emit("run:finished", {
+      runId,
+      status: record.run.status,
+      expected: record.run.expectedOutcome,
+      actual: record.run.actualOutcome,
+    });
   }
 
-  record.run.status = "passed";
-  record.run.actualOutcome = "valid";
-  record.run.finishedAt = new Date().toISOString();
-  await repository.updateRun(record.run);
-  namespace.to(room).emit("run:finished", {
-    runId,
-    status: record.run.status,
-    expected: record.run.expectedOutcome,
-    actual: record.run.actualOutcome,
-  });
+  if (record.run.status === "errored") {
+    throw new Error(`Run ${runId} failed during ${activeStep?.stepKey ?? "initialization"}`);
+  }
 }
 
 export function createSteps(runId: string): RunStep[] {

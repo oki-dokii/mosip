@@ -188,20 +188,18 @@ Timeouts: per step default 30 s, request polling up to 120 s (configurable). Pol
 
 ```ts
 interface RunContext {
-  runId: string;
   config: RunConfig;
-  urls: { certify: string; mimoto: string; verify: string; esignet: string; mockIssuer: string; mockVerifier: string }; // all via the Tap
-  keys: { holder: CryptoKeyPair };       // in memory only
-  emit: (event: string, payload: unknown) => void;
-  recordStep: (key: string, status: StepStatus, summary?: object) => Promise<void>;
+  state: Map<string, unknown>; // per-run protocol state; never persisted
 }
 
-interface IssuerDriver   { createOffer(ctx): Promise<Offer>; }
-interface WalletDriver   { acceptOffer(ctx, offer): Promise<IssuedCredential>;
-                           present(ctx, request, cred): Promise<Submission>; }
-interface VerifierDriver { createRequest(ctx): Promise<VpRequest>;
-                           pollStatus(ctx, requestId): Promise<RequestStatus>;
-                           getResult(ctx, txnId): Promise<VerifyResult>; }
+interface DriverResult { exchanges?: DriverExchange[]; summary?: Record<string, unknown>; }
+interface IssuerDriver   { createOffer(ctx): Promise<DriverResult>; }
+interface WalletDriver   { authorize(ctx): Promise<DriverResult>;
+                           requestCredential(ctx): Promise<DriverResult>;
+                           store(ctx): Promise<DriverResult>;
+                           present(ctx): Promise<DriverResult>; }
+interface VerifierDriver { createRequest(ctx): Promise<DriverResult>;
+                           getResult(ctx): Promise<DriverResult>; }
 ```
 
 Mapping to the current Inji Verify Collab contract discovered on 2026-10-20:
@@ -211,9 +209,9 @@ Mapping to the current Inji Verify Collab contract discovered on 2026-10-20:
 | `createRequest` | `POST {verify}/v2/vp-request` (client id and DCQL query) |
 | `present` (by wallet) | `POST {verify}/v2/vp-submission/direct-post` |
 | `pollStatus` | `GET {verify}/vp-request/{requestId}/status` (ACTIVE, VP_SUBMITTED, EXPIRED) |
-| `getResult` | `GET {verify}/vp-result/{transactionId}` |
+| `getResult` | `POST {verify}/v2/vp-results/{transactionId}` |
 
-Current Collab Certify mapping: root `/.well-known/openid-credential-issuer`, `/v1/certify/pre-authorized-data`, `/v1/certify/credential-offer-data/{id}`, `/v1/certify/oauth/token`, `/v1/certify/nonce`, and `/v1/certify/issuance/credential`. Current Mimoto discovery uses `/v1/mimoto/issuers` and `/v1/mimoto/issuers/{issuer-id}/configuration`; the older `/credentialTypes` route is absent. Version-specific adapters must use discovered contracts rather than assuming these paths for every deployment.
+The implemented Collab application path uses eSignet authorization code with PKCE, `POST /v1/certify/nonce`, and `POST /v1/certify/issuance/credential`. The separately tested pre-authorized paths are `POST /v1/certify/pre-authorized-data`, `GET /v1/certify/credential-offer-data/{id}`, and `POST /v1/certify/oauth/token`. Current Mimoto discovery uses `/v1/mimoto/issuers` and `/v1/mimoto/issuers/{issuer-id}/configuration`; the older `/credentialTypes` route is absent. Version-specific adapters must use discovered contracts rather than assuming these paths for every deployment.
 
 ---
 

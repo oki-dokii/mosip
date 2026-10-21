@@ -2,7 +2,7 @@
 
 How code travels between files and functions: **entry points, order of execution, and who calls whom.**
 
-> **Status: SPIKES, M1 WALKING SKELETON, AND RUN PERSISTENCE IMPLEMENTED; LIVE APPLICATION IN PROGRESS.** The current web/BFF flow uses sanitized fixture-backed exchanges. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Live drivers, Tap, replay, and reporting remain planned.
+> **Status: SPIKES, M1, RUN PERSISTENCE, AND REFERENCE WALLET COLLAB DRIVERS IMPLEMENTED.** The BFF selects deterministic fixtures by default or the live Collab path through `PLAYGROUND_DRIVER_MODE=collab`. It selects PostgreSQL when `DATABASE_URL` is configured and otherwise uses an in-memory repository. Assisted Inji Web, Tap, replay, and reporting remain planned.
 
 Legend: `file → function()` means "this function in that file". `A ⇒ B` means A calls B. Status: 🟦 planned · 🟩 implemented · 🟥 changed from plan (explain in decisions.md).
 
@@ -64,7 +64,7 @@ Environment validation, database startup, structured logging, rate limiting, and
 4. Socket events or polling ⇒ `App.tsx → refresh(runId)` ⇒ fetch run, steps, and exchanges
 5. ⇒ update `RunTimeline` and `Inspector`; selecting a step selects its recorded exchange
 
-### 3.2 BFF side: implemented walking-skeleton order 🟩
+### 3.2 BFF side: implemented driver-backed order 🟩
 
 ```
 app.ts → POST /api/v1/runs
@@ -73,21 +73,23 @@ app.ts → POST /api/v1/runs
   ⇒ return 202 { runId }
   ⇒ orchestrator.ts → runDemo(runId, io)
        ⇒ mark run running; emit run:created
-       ⇒ for each fixture-backed step:
+       ⇒ drivers/registry.ts → resolve fixture or Collab role drivers
+       ⇒ for each step:
             INIT → ISSUE_OFFER → ISSUE_TOKEN → ISSUE_CREDENTIAL → STORE
             → PRESENT_REQUEST → PRESENT_SUBMIT → PRESENT_RESULT → REPORT
             ⇒ emit step:started
-            ⇒ create sanitized exchange where the step has a protocol boundary
+            ⇒ call the responsible issuer, wallet, or verifier driver
+            ⇒ redact each returned exchange before persistence
             ⇒ repository.addExchange(); emit exchange:recorded
             ⇒ repository.updateStep(succeeded); emit step:finished
-       ⇒ repository.updateRun(passed, actualOutcome valid); emit run:finished
+       ⇒ repository.updateRun(passed/failed/errored); emit run:finished
 ```
 
-`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read through the same repository. PostgreSQL records survive BFF restarts; memory records intentionally do not. Real drivers, presentation polling, negative outcomes, and durable reports remain planned.
+`GET /api/v1/runs/:id`, `/steps`, and `/exchanges` read through the same repository. PostgreSQL records survive BFF restarts; memory records intentionally do not. Presentation polling, negative outcomes, and durable reports remain planned.
 
 ### 3.3 Where exchange data is recorded
 
-The walking skeleton constructs protocol-shaped exchanges in `orchestrator.ts`, passes request and response objects through `redaction.ts → redact()`, and only then writes them to `store.ts`. This proves the UI and safe-storage boundary. Live adapters will record their real request/response boundaries through the same redaction contract, following D-017.
+Fixture and Collab drivers return protocol exchanges to `orchestrator.ts`, which passes request and response objects through `redaction.ts → redact()` before writing them to `store.ts`. The Collab driver retains credentials, keys, cookies, bearer tokens, and complete presentations only in its per-run in-memory state and emits safe summaries for inspection.
 
 The previously designed transparent Tap remains optional and planned. Its proposed path is:
 
@@ -108,31 +110,22 @@ client request → /tap/:runId/:service/*
 
 ## 4. Driver call paths
 
-### 4.1 Certify issuer (`drivers/issuer/certify.ts`) 🟦 (⚠ depends on P-001)
-`createOffer(ctx)` ⇒ `GET {tap}/certify/.well-known/openid-credential-issuer` ⇒ builds the credential offer for the chosen format ⇒ returns `Offer`.
+### 4.1 Certify issuer (`drivers/collab.ts`) 🟩
+`createOffer(ctx)` ⇒ load and validate Collab runtime configuration ⇒ `GET /.well-known/openid-credential-issuer` ⇒ require the chosen credential configuration.
 
-### 4.2 Reference Wallet (`drivers/wallet/referenceWallet.ts`) 🟦
-`acceptOffer(ctx, offer)`
-⇒ `wallet/oid4vciClient.ts → fetchMetadata()`
-⇒ `wallet/oid4vciClient.ts → requestToken(offer)` (grant per P-001)
-⇒ `wallet/keys.ts → buildProofJwt(ctx.keys.holder, nonce, audience)`
-⇒ `wallet/oid4vciClient.ts → requestCredential(token, proof)`
-⇒ `wallet/formats/{ldp|sdjwt}.ts → parseCredential(raw)`
-⇒ returns `IssuedCredential`.
+### 4.2 Reference Wallet (`drivers/collab.ts`) 🟩
+`authorize(ctx)` ⇒ eSignet CSRF → OAuth details with PKCE → OTP → authenticate → authorization code → token → issuer nonce.
 
-`present(ctx, request, cred)`
-⇒ `wallet/oid4vpClient.ts → parseRequest(request)`
-⇒ `wallet/oid4vpClient.ts → selectCredential(presentationDefinition, cred)`
-⇒ `wallet/oid4vpClient.ts → buildVpToken(cred, ctx.keys.holder, nonce, audience)` (shape per P-003)
-⇒ `wallet/oid4vpClient.ts → directPost(responseUri, vpToken, state)` (through the Tap)
+`requestCredential(ctx)` ⇒ generate an in-memory Ed25519 holder key ⇒ create OpenID4VCI proof JWT ⇒ request credential ⇒ retry once with a refreshed nonce when required.
+
+`present(ctx)` ⇒ validate credential-to-holder binding ⇒ build JSON-LD `Ed25519Signature2020` VP or SD-JWT `kb+jwt` ⇒ DCQL direct post.
 
 ### 4.3 Inji Web assisted (`drivers/wallet/injiWebAssisted.ts`) 🟦
 `acceptOffer(ctx, offer)` ⇒ emit `action:required (open_inji_web)` ⇒ wait on `tap/recorder.ts → waitForExchange(runId, matcher)` until issuance calls are seen ⇒ read the credential from the recorded response.
 
-### 4.4 Inji Verify (`drivers/verifier/injiVerify.ts`) 🟦
-- `createRequest` ⇒ `POST {tap}/verify/vp-request`
-- `pollStatus` ⇒ repeated `GET {tap}/verify/vp-request/{requestId}/status` until `VP_SUBMITTED` or `EXPIRED`
-- `getResult` ⇒ `GET {tap}/verify/vp-result/{transactionId}`
+### 4.4 Inji Verify (`drivers/collab.ts`) 🟩
+- `createRequest` ⇒ `POST /v2/vp-request` with DCQL ⇒ fetch and decode the signed request object.
+- `getResult` ⇒ `POST /v2/vp-results/{transactionId}` ⇒ map verification checks to the run outcome.
 
 ### 4.5 Mocks (`drivers/issuer/mockIssuer.ts`, `drivers/verifier/mockVerifier.ts`) 🟦
 Same interfaces, calling `apps/mock-issuer` and `apps/mock-verifier` through the Tap.
@@ -205,7 +198,10 @@ Current M1 files:
 | `apps/web/src/lib/api.ts` | Typed browser calls to the BFF |
 | `apps/bff/src/server.ts` | HTTP and Socket.IO process wiring |
 | `apps/bff/src/app.ts` | Implemented REST routes and run creation |
-| `apps/bff/src/orchestrator.ts` | Fixture-backed nine-step run and events |
+| `apps/bff/src/orchestrator.ts` | Driver-backed nine-step run, events, redaction, and failure transitions |
+| `apps/bff/src/drivers/types.ts` | Issuer, wallet, verifier, and per-run context contracts |
+| `apps/bff/src/drivers/fixture.ts` | Deterministic local driver set |
+| `apps/bff/src/drivers/collab.ts` | Live Certify/eSignet, Reference Wallet, and Verify adapter |
 | `apps/bff/src/redaction.ts` | Recursive write-time masking |
 | `apps/bff/src/store.ts` | Repository contract plus memory and Prisma implementations |
 | `apps/bff/prisma/schema.prisma` | Implemented PostgreSQL run, step, and exchange schema |

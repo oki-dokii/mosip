@@ -1,8 +1,8 @@
 # Phase 2: application walking skeleton
 
-Status: **M1 walking skeleton and PostgreSQL persistence complete; live adapters next.**
+Status: **M1 walking skeleton, PostgreSQL persistence, and the Reference Wallet Collab adapter are implemented.**
 
-Phase 2 turns the verified protocol work from Phase 1 into a usable application. The first slice is deliberately fixture-backed: it proves the browser-to-BFF contract, run lifecycle, real-time updates, exchange inspection, and write-time redaction before live service adapters and Postgres add more moving parts.
+Phase 2 turns the verified protocol work from Phase 1 into a usable application. The deterministic fixture path proves the browser-to-BFF contract, run lifecycle, real-time updates, exchange inspection, and write-time redaction. The same orchestrator can now select the live MOSIP Collab adapter.
 
 ## What works now
 
@@ -13,8 +13,11 @@ Phase 2 turns the verified protocol work from Phase 1 into a usable application.
 - See the selected proof type and algorithm alongside the final expected-versus-actual result.
 - Validate run configuration at runtime from the same Zod schema used by the web app and BFF.
 - Persist runs, step transitions, and redacted exchanges in PostgreSQL when `DATABASE_URL` is set.
+- Select role-specific issuer, wallet, and verifier drivers per run.
+- Run the Phase 1 authorization-code + PKCE Reference Wallet path against Collab for JSON-LD or SD-JWT.
+- Mark the active step failed and the run errored when an adapter or upstream service fails.
 
-The stored exchanges are synthetic and use `.example` hosts. They model the successful Phase 1 contracts, but they do not make live Collab calls yet. Without `DATABASE_URL`, the BFF intentionally uses in-memory storage for a zero-setup development loop.
+Fixture mode stores synthetic exchanges using `.example` hosts. Collab mode calls the live services and records redacted protocol metadata while keeping credentials, holder keys, cookies, proofs, and bearer tokens in the run's in-memory context. Without `DATABASE_URL`, the BFF intentionally uses in-memory storage for a zero-setup development loop.
 
 ## Run it
 
@@ -38,6 +41,17 @@ pnpm dev
 
 `GET /api/v1/health` reports `storage: "postgres"` or `storage: "memory"` so the active mode is explicit.
 
+Fixture mode is the default. To run the live adapter, use the official public test-client environment described in Phase 1:
+
+```bash
+export PLAYGROUND_DRIVER_MODE=collab
+export OFFICIAL_POSTMAN_ENV_PATH=/absolute/path/to/inji-certify-with-mock-identity.postman_environment.json
+export MOCK_OTP=<official-public-mock-otp>
+pnpm dev
+```
+
+The live adapter currently accepts only `Inji Certify + Reference Wallet + Inji Verify`. JSON-LD selects the Farmer deployment and `FarmerCredential_VCDM2.0`; SD-JWT selects the mock deployment and `MockVerifiableCredential_SD_JWT`. The base URLs and credential configuration remain overridable through `.env.example`.
+
 Validation:
 
 ```bash
@@ -59,7 +73,7 @@ pnpm build
 
 ## Next slice
 
-1. Extract issuer, wallet, and verifier driver interfaces.
-2. Move the completed Phase 1 Reference Wallet logic behind those drivers.
-3. Record sanitized live adapter exchanges into the same inspector model.
-4. Keep the fixture-backed runner as the deterministic local development path.
+1. Run and pin an application-level Collab smoke result with the external public test environment configured.
+2. Add presentation-result polling for slower Verify deployments.
+3. Add the assisted Inji Web driver and optional Tap capture path.
+4. Add negative/tamper scenarios, replay, and reports.

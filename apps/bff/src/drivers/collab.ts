@@ -1,0 +1,399 @@
+import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
+import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-key-2020";
+import { importJWK, SignJWT, type JWK } from "jose";
+import jsonld from "jsonld";
+import jsigs from "jsonld-signatures";
+import type { RunConfig } from "@playground/shared";
+import type { DriverContext, DriverExchange, DriverResult, DriverSet, IssuerDriver, VerifierDriver, WalletDriver } from "./types.js";
+
+const { AuthenticationProofPurpose } = jsigs.purposes;
+
+type JsonObject = Record<string, any>;
+
+interface CollabConfig {
+  authBaseUrl: string;
+  certifyBaseUrl: string;
+  verifyBaseUrl: string;
+  postmanEnvironmentPath: string;
+  mockOtp: string;
+  clientId: string;
+  redirectUri: string;
+  individualId: string;
+  clientPrivateJwk: JWK;
+  credentialConfigurationId: string;
+  credentialScope: string;
+  credentialFormat: "ldp_vc" | "dc+sd-jwt";
+}
+
+interface HttpResult {
+  status: number;
+  body: any;
+  durationMs: number;
+}
+
+const STATE = {
+  config: "collab.config",
+  cookie: "collab.cookie",
+  accessToken: "collab.accessToken",
+  credentialNonce: "collab.credentialNonce",
+  holderKey: "collab.holderKey",
+  holderPublicJwk: "collab.holderPublicJwk",
+  holderPrivateJwk: "collab.holderPrivateJwk",
+  credential: "collab.credential",
+  verifyTransactionId: "collab.verifyTransactionId",
+  requestClaims: "collab.requestClaims",
+} as const;
+
+function stateValue<T>(context: DriverContext, key: string): T {
+  const value = context.state.get(key);
+  if (value === undefined) throw new Error(`Collab run state is missing ${key}`);
+  return value as T;
+}
+
+function sha256Base64url(value: string) {
+  return createHash("sha256").update(value).digest("base64url");
+}
+
+function decodeJwtPayload(jwt: string): JsonObject {
+  const payload = jwt.split(".")[1];
+  if (!payload) throw new Error("Expected a compact JWT");
+  return JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+}
+
+async function createJwt(privateJwk: JWK, payload: JsonObject, header: JsonObject = {}) {
+  const now = Math.floor(Date.now() / 1000);
+  const algorithm = header.alg ?? "RS256";
+  const key = await importJWK(privateJwk, algorithm);
+  return new SignJWT(payload)
+    .setProtectedHeader({
+      typ: "JWT",
+      alg: algorithm,
+      ...(privateJwk.kid ? { kid: privateJwk.kid } : {}),
+      ...header,
+    })
+    .setIssuedAt(now - 5)
+    .setNotBefore(now - 5)
+    .setExpirationTime(now + 600)
+    .setJti(randomUUID())
+    .sign(key);
+}
+
+async function loadConfig(context: DriverContext): Promise<CollabConfig> {
+  const existing = context.state.get(STATE.config);
+  if (existing) return existing as CollabConfig;
+  if (context.config.issuer !== "inji_certify" || context.config.wallet !== "reference_wallet" || context.config.verifier !== "inji_verify") {
+    throw new Error("Collab mode currently supports only Inji Certify + Reference Wallet + Inji Verify");
+  }
+  const postmanEnvironmentPath = process.env.OFFICIAL_POSTMAN_ENV_PATH;
+  const mockOtp = process.env.MOCK_OTP;
+  if (!postmanEnvironmentPath || !mockOtp) {
+    throw new Error("Collab mode requires OFFICIAL_POSTMAN_ENV_PATH and MOCK_OTP");
+  }
+  const environment = JSON.parse(await readFile(postmanEnvironmentPath, "utf8"));
+  const values = Object.fromEntries((environment.values ?? []).map(({ key, value }: JsonObject) => [key, value]));
+  const clientPrivateJwk = JSON.parse(values.privateKey_jwk ?? "null");
+  if (!values.clientId || !values.redirectionUrl || !values.individual_id || !clientPrivateJwk?.d) {
+    throw new Error("Official environment is missing the test client, identity, redirect URI, or private JWK");
+  }
+  const isSdJwt = context.config.format === "vc_sd_jwt";
+  const config: CollabConfig = {
+    authBaseUrl: process.env.ESIGNET_BASE_URL ?? "https://esignet-mock.collab.mosip.net/v1/esignet",
+    certifyBaseUrl: process.env.CERTIFY_BASE_URL
+      ?? process.env.FARMER_CERTIFY_BASE_URL
+      ?? (isSdJwt ? "https://injicertify-mock.collab.mosip.net" : "https://injicertify-farmer.collab.mosip.net"),
+    verifyBaseUrl: process.env.VERIFY_BASE_URL ?? "https://injiverify.collab.mosip.net/v1/verify",
+    postmanEnvironmentPath,
+    mockOtp,
+    clientId: values.clientId,
+    redirectUri: values.redirectionUrl,
+    individualId: values.individual_id,
+    clientPrivateJwk,
+    credentialConfigurationId: process.env.CREDENTIAL_CONFIGURATION_ID
+      ?? (isSdJwt ? "MockVerifiableCredential_SD_JWT" : "FarmerCredential_VCDM2.0"),
+    credentialScope: process.env.CREDENTIAL_SCOPE ?? "mock_identity_vc_ldp",
+    credentialFormat: isSdJwt ? "dc+sd-jwt" : "ldp_vc",
+  };
+  context.state.set(STATE.config, config);
+  return config;
+}
+
+async function request(context: DriverContext, url: string, options: RequestInit & { allowStatuses?: number[] } = {}): Promise<HttpResult> {
+  const { allowStatuses = [], ...fetchOptions } = options;
+  const headers = new Headers(fetchOptions.headers);
+  const cookie = context.state.get(STATE.cookie);
+  if (typeof cookie === "string" && cookie) headers.set("cookie", cookie);
+  const startedAt = performance.now();
+  const response = await fetch(url, { ...fetchOptions, headers, signal: AbortSignal.timeout(20_000) });
+  const durationMs = Math.round(performance.now() - startedAt);
+  const setCookies = response.headers.getSetCookie?.() ?? [];
+  if (setCookies.length) context.state.set(STATE.cookie, setCookies.map((item) => item.split(";", 1)[0]).join("; "));
+  const text = await response.text();
+  let body: any;
+  try { body = text ? JSON.parse(text) : null; } catch { body = text; }
+  if (!response.ok && !allowStatuses.includes(response.status)) {
+    const safeError = body && typeof body === "object"
+      ? { error: body.error, errorCode: body.errorCode, error_description: body.error_description, errorMessage: body.errorMessage }
+      : {};
+    throw new Error(`${fetchOptions.method ?? "GET"} ${url} returned ${response.status}: ${JSON.stringify(safeError)}`);
+  }
+  return { status: response.status, body, durationMs };
+}
+
+function exchange(
+  actorFrom: string,
+  actorTo: string,
+  method: string,
+  url: string,
+  result: HttpResult,
+  requestBody: unknown,
+  responseBody: unknown,
+): DriverExchange {
+  return { actorFrom, actorTo, method, url, status: result.status, durationMs: result.durationMs, request: requestBody, response: responseBody };
+}
+
+function authHeaders(csrfToken: string, oauthDetailsKey?: string, oauthDetailsHash?: string) {
+  return {
+    "content-type": "application/json",
+    "x-xsrf-token": csrfToken,
+    ...(oauthDetailsKey ? { "oauth-details-key": oauthDetailsKey } : {}),
+    ...(oauthDetailsHash ? { "oauth-details-hash": oauthDetailsHash } : {}),
+  };
+}
+
+class CollabIssuerDriver implements IssuerDriver {
+  readonly id = "inji_certify" as const;
+
+  async createOffer(context: DriverContext): Promise<DriverResult> {
+    const config = await loadConfig(context);
+    const url = `${config.certifyBaseUrl}/.well-known/openid-credential-issuer`;
+    const result = await request(context, url, { headers: { accept: "application/json" } });
+    const configurations = result.body?.credential_configurations_supported ?? {};
+    if (!configurations[config.credentialConfigurationId]) {
+      throw new Error(`Issuer does not advertise ${config.credentialConfigurationId}`);
+    }
+    return {
+      exchanges: [exchange(context.config.wallet, this.id, "GET", url, result, { accept: "application/json" }, {
+        credential_issuer: result.body?.credential_issuer,
+        credential_configuration_id: config.credentialConfigurationId,
+        format: config.credentialFormat,
+        supported: true,
+      })],
+      summary: { credentialConfigurationId: config.credentialConfigurationId, format: config.credentialFormat },
+    };
+  }
+}
+
+class CollabWalletDriver implements WalletDriver {
+  readonly id = "reference_wallet" as const;
+
+  async authorize(context: DriverContext): Promise<DriverResult> {
+    const config = await loadConfig(context);
+    const exchanges: DriverExchange[] = [];
+    const csrfUrl = `${config.authBaseUrl}/csrf/token`;
+    const csrf = await request(context, csrfUrl);
+    exchanges.push(exchange(this.id, "esignet", "GET", csrfUrl, csrf, {}, { csrfCookieReceived: true }));
+    const cookie = stateValue<string>(context, STATE.cookie);
+    const csrfToken = cookie.split("; ").find((item) => item.startsWith("XSRF-TOKEN="))?.slice("XSRF-TOKEN=".length);
+    if (!csrfToken) throw new Error("eSignet did not set an XSRF-TOKEN cookie");
+
+    const codeVerifier = randomBytes(32).toString("base64url");
+    const oauthBody = {
+      requestTime: new Date().toISOString(),
+      request: {
+        clientId: config.clientId,
+        scope: config.credentialScope,
+        responseType: "code",
+        redirectUri: config.redirectUri,
+        display: "popup",
+        prompt: "login",
+        acrValues: "mosip:idp:acr:generated-code",
+        nonce: randomBytes(18).toString("base64url"),
+        state: randomBytes(12).toString("base64url"),
+        claimsLocales: "en",
+        codeChallenge: sha256Base64url(codeVerifier),
+        codeChallengeMethod: "S256",
+      },
+    };
+    const detailsUrl = `${config.authBaseUrl}/authorization/v2/oauth-details`;
+    const details = await request(context, detailsUrl, { method: "POST", headers: authHeaders(csrfToken), body: JSON.stringify(oauthBody) });
+    const detailsValue = details.body?.response;
+    const transactionId = detailsValue?.transactionId;
+    if (!transactionId) throw new Error("eSignet did not return a transaction id");
+    const detailsHash = sha256Base64url(JSON.stringify(detailsValue));
+    exchanges.push(exchange(this.id, "esignet", "POST", detailsUrl, details, oauthBody, { transactionCreated: true }));
+
+    const otpUrl = `${config.authBaseUrl}/authorization/send-otp`;
+    const otpBody = { requestTime: new Date().toISOString(), request: { transactionId, individualId: config.individualId, otpChannels: ["email", "phone"], captchaToken: "dummy" } };
+    const otp = await request(context, otpUrl, { method: "POST", headers: authHeaders(csrfToken, transactionId, detailsHash), body: JSON.stringify(otpBody) });
+    exchanges.push(exchange(this.id, "esignet", "POST", otpUrl, otp, otpBody, { otpDispatched: otp.status < 300 }));
+
+    const authenticateUrl = `${config.authBaseUrl}/authorization/v3/authenticate`;
+    const authenticateBody = { requestTime: new Date().toISOString(), request: { transactionId, individualId: config.individualId, challengeList: [{ authFactorType: "OTP", challenge: config.mockOtp, format: "alpha-numeric" }] } };
+    const authenticated = await request(context, authenticateUrl, { method: "POST", headers: authHeaders(csrfToken, transactionId, detailsHash), body: JSON.stringify(authenticateBody) });
+    exchanges.push(exchange(this.id, "esignet", "POST", authenticateUrl, authenticated, authenticateBody, { authenticated: authenticated.status < 300 }));
+
+    const codeUrl = `${config.authBaseUrl}/authorization/auth-code`;
+    const codeBody = { requestTime: new Date().toISOString(), request: { transactionId, acceptedClaims: [], permittedAuthorizeScopes: [] } };
+    const authorization = await request(context, codeUrl, { method: "POST", headers: authHeaders(csrfToken, transactionId, detailsHash), body: JSON.stringify(codeBody) });
+    const code = authorization.body?.response?.code;
+    if (!code) throw new Error("eSignet did not return an authorization code");
+    exchanges.push(exchange(this.id, "esignet", "POST", codeUrl, authorization, codeBody, { codeIssued: true }));
+
+    const tokenUrl = `${config.authBaseUrl}/oauth/v2/token`;
+    const clientAssertion = await createJwt(config.clientPrivateJwk, { sub: config.clientId, iss: config.clientId, aud: tokenUrl });
+    const tokenBody = { code, client_id: config.clientId, redirect_uri: config.redirectUri, grant_type: "authorization_code", client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer", client_assertion: clientAssertion, code_verifier: codeVerifier };
+    const token = await request(context, tokenUrl, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(tokenBody) });
+    const accessToken = token.body?.access_token;
+    const cNonce = token.body?.c_nonce;
+    if (!accessToken || !cNonce) throw new Error("eSignet token response omitted access_token or c_nonce");
+    context.state.set(STATE.accessToken, accessToken);
+    exchanges.push(exchange(this.id, "esignet", "POST", tokenUrl, token, tokenBody, { token_type: token.body?.token_type, access_token: accessToken, c_nonce: cNonce }));
+
+    const nonceUrl = `${config.certifyBaseUrl}/v1/certify/nonce`;
+    const nonce = await request(context, nonceUrl, { method: "POST", headers: { authorization: `Bearer ${accessToken}` } });
+    context.state.set(STATE.credentialNonce, nonce.body?.c_nonce ?? cNonce);
+    exchanges.push(exchange(this.id, context.config.issuer, "POST", nonceUrl, nonce, {}, { c_nonce: nonce.body?.c_nonce ?? cNonce }));
+    return { exchanges, summary: { authorized: true, nonceReceived: true } };
+  }
+
+  async requestCredential(context: DriverContext): Promise<DriverResult> {
+    const config = await loadConfig(context);
+    const accessToken = stateValue<string>(context, STATE.accessToken);
+    let credentialNonce = stateValue<string>(context, STATE.credentialNonce);
+    const holderKey = await Ed25519VerificationKey2020.generate();
+    const holderPublicJwk = holderKey.toJwk({ publicKey: true });
+    const holderPrivateJwk = holderKey.toJwk({ publicKey: true, privateKey: true });
+    holderPrivateJwk.d = Buffer.from(holderPrivateJwk.d, "base64url").subarray(0, 32).toString("base64url");
+    context.state.set(STATE.holderKey, holderKey);
+    context.state.set(STATE.holderPublicJwk, holderPublicJwk);
+    context.state.set(STATE.holderPrivateJwk, holderPrivateJwk);
+    const url = `${config.certifyBaseUrl}/v1/certify/issuance/credential`;
+    const attempts: DriverExchange[] = [];
+    let result: HttpResult;
+    let refreshed = false;
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      const proof = await createJwt(holderPrivateJwk, { aud: config.certifyBaseUrl, nonce: credentialNonce, iss: config.clientId }, { alg: "EdDSA", typ: "openid4vci-proof+jwt", jwk: holderPublicJwk });
+      const body = { credential_configuration_id: config.credentialConfigurationId, proofs: { jwt: [proof] } };
+      result = await request(context, url, { method: "POST", headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json" }, body: JSON.stringify(body), allowStatuses: [400] });
+      attempts.push(exchange(this.id, context.config.issuer, "POST", url, result, { credential_configuration_id: config.credentialConfigurationId, proof_type: "jwt", proof }, {
+        credentialReturned: Boolean(result.body?.credential || result.body?.credentials),
+        error: result.body?.error,
+        c_nonce: result.body?.c_nonce,
+      }));
+      if (result.body?.error !== "invalid_nonce" || !result.body?.c_nonce || attempt === 2) break;
+      credentialNonce = result.body.c_nonce;
+      refreshed = true;
+    }
+    const credential = result!.body?.credential ?? result!.body?.credentials?.[0]?.credential ?? result!.body?.credentials?.[0];
+    if (!credential) throw new Error(`Issuer did not return a credential${result!.body?.error ? `: ${result!.body.error}` : ""}`);
+    context.state.set(STATE.credential, credential);
+    return { exchanges: attempts, summary: { credentialReceived: true, nonceRefreshRequired: refreshed, format: config.credentialFormat } };
+  }
+
+  async store(context: DriverContext): Promise<DriverResult> {
+    stateValue(context, STATE.credential);
+    return { summary: { storedForRun: true } };
+  }
+
+  async present(context: DriverContext): Promise<DriverResult> {
+    const config = await loadConfig(context);
+    const credential = stateValue<any>(context, STATE.credential);
+    const requestClaims = stateValue<JsonObject>(context, STATE.requestClaims);
+    const holderPublicJwk = stateValue<JsonObject>(context, STATE.holderPublicJwk);
+    const holderPrivateJwk = stateValue<JWK>(context, STATE.holderPrivateJwk);
+    const holderKey = stateValue<any>(context, STATE.holderKey);
+    let vpToken: any;
+    let holderKeyMatchesCredential = false;
+    if (config.credentialFormat === "dc+sd-jwt") {
+      const issuerClaims = decodeJwtPayload(credential.split("~", 1)[0]);
+      let boundPublicJwk = issuerClaims.cnf?.jwk;
+      if (!boundPublicJwk && issuerClaims.cnf?.kid?.startsWith("did:jwk:")) {
+        boundPublicJwk = JSON.parse(Buffer.from(issuerClaims.cnf.kid.slice("did:jwk:".length).split("#", 1)[0], "base64url").toString("utf8"));
+      }
+      holderKeyMatchesCredential = boundPublicJwk?.kty === holderPublicJwk.kty && boundPublicJwk?.crv === holderPublicJwk.crv && boundPublicJwk?.x === holderPublicJwk.x;
+      if (!holderKeyMatchesCredential) throw new Error("Issued SD-JWT is not bound to the holder key");
+      const keyBindingJwt = await createJwt(holderPrivateJwk, { aud: requestClaims.client_id, nonce: requestClaims.nonce, sd_hash: sha256Base64url(credential) }, { alg: "EdDSA", typ: "kb+jwt" });
+      vpToken = `${credential}${keyBindingJwt}`;
+    } else {
+      const holderId = credential.credentialSubject?.id;
+      if (!holderId?.startsWith("did:jwk:")) throw new Error("Issued credential is not bound to the holder did:jwk");
+      const boundPublicJwk = JSON.parse(Buffer.from(holderId.slice("did:jwk:".length).split("#", 1)[0], "base64url").toString("utf8"));
+      holderKeyMatchesCredential = boundPublicJwk.kty === holderPublicJwk.kty && boundPublicJwk.crv === holderPublicJwk.crv && boundPublicJwk.x === holderPublicJwk.x;
+      if (!holderKeyMatchesCredential) throw new Error("Issued JSON-LD credential is not bound to the holder key");
+      const controller = `did:key:${holderKey.fingerprint()}`;
+      const presentationKey = await Ed25519VerificationKey2020.from({ ...holderKey.export({ publicKey: true, privateKey: true }), controller, id: `${controller}#${holderKey.fingerprint()}` });
+      vpToken = await jsigs.sign({ "@context": ["https://www.w3.org/ns/credentials/v2"], type: ["VerifiablePresentation"], holder: holderId, verifiableCredential: [credential] }, {
+        suite: new Ed25519Signature2020({ key: presentationKey, canonizeOptions: { safe: false } }),
+        purpose: new AuthenticationProofPurpose({ challenge: requestClaims.nonce, domain: requestClaims.client_id }),
+        documentLoader: jsonld.documentLoaders.node(),
+      });
+    }
+    const form = new URLSearchParams({ state: requestClaims.state, vp_token: JSON.stringify({ credential: [vpToken] }) });
+    const result = await request(context, requestClaims.response_uri, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: form, allowStatuses: [400] });
+    return {
+      exchanges: [exchange(this.id, context.config.verifier, "POST", requestClaims.response_uri, result, {
+        format: config.credentialFormat,
+        holderProofType: config.credentialFormat === "dc+sd-jwt" ? "kb+jwt" : "Ed25519Signature2020",
+        holderKeyMatchesCredential,
+      }, { accepted: result.status < 300, error: result.body?.error, errorCode: result.body?.errorCode })],
+      summary: { holderKeyMatchesCredential, submissionAccepted: result.status < 300 },
+    };
+  }
+}
+
+class CollabVerifierDriver implements VerifierDriver {
+  readonly id = "inji_verify" as const;
+
+  async createRequest(context: DriverContext): Promise<DriverResult> {
+    const config = await loadConfig(context);
+    const url = `${config.verifyBaseUrl}/v2/vp-request`;
+    const body = {
+      clientId: "decentralized_identifier:did:web:injiverify.collab.mosip.net:v1:verify",
+      nonce: `playground-${config.credentialFormat === "dc+sd-jwt" ? "sdjwt" : "jsonld"}-${Date.now()}`,
+      dcqlQuery: { credentials: [{ id: "credential", format: config.credentialFormat, meta: config.credentialFormat === "dc+sd-jwt"
+        ? { vct_values: [config.credentialConfigurationId] }
+        : { type_values: [["https://www.w3.org/ns/credentials#VerifiableCredential", "https://inji.github.io/inji-config/contexts/farmer-context.json#FarmerCredential"]] } }] },
+      responseCodeValidationRequired: false,
+    };
+    const created = await request(context, url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    if (!created.body?.requestUri || !created.body?.transactionId) throw new Error("Inji Verify did not return a request URI and transaction id");
+    const requestObject = await request(context, created.body.requestUri, { headers: { accept: "application/oauth-authz-req+jwt" } });
+    const requestClaims = decodeJwtPayload(requestObject.body);
+    context.state.set(STATE.verifyTransactionId, created.body.transactionId);
+    context.state.set(STATE.requestClaims, requestClaims);
+    return {
+      exchanges: [
+        exchange("playground", this.id, "POST", url, created, body, { requestUriIssued: true, transactionIdIssued: true }),
+        exchange(context.config.wallet, this.id, "GET", created.body.requestUri, requestObject, { accept: "application/oauth-authz-req+jwt" }, { signedRequestReceived: true, responseMode: requestClaims.response_mode }),
+      ],
+      summary: { signedRequestReceived: true, queryLanguage: "DCQL" },
+    };
+  }
+
+  async getResult(context: DriverContext): Promise<DriverResult> {
+    const config = await loadConfig(context);
+    const transactionId = stateValue<string>(context, STATE.verifyTransactionId);
+    const url = `${config.verifyBaseUrl}/v2/vp-results/${encodeURIComponent(transactionId)}`;
+    const body = { includeClaims: false, skipStatusChecks: true };
+    const result = await request(context, url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), allowStatuses: [400, 404, 500] });
+    const credentialResult = result.body?.credentialResults?.[0];
+    const valid = result.status < 300 && result.body?.allChecksSuccessful === true;
+    return {
+      exchanges: [exchange("playground", this.id, "POST", url, result, body, {
+        allChecksSuccessful: result.body?.allChecksSuccessful,
+        credentialChecksSuccessful: credentialResult?.allChecksSuccessful,
+        credentialProofValid: credentialResult?.schemaAndSignatureCheck?.valid,
+        holderProofValid: credentialResult?.holderProofCheck?.valid,
+        errorCode: result.body?.errorCode,
+        errorMessage: result.body?.errorMessage,
+      })],
+      summary: { outcome: valid ? "valid" : "invalid", allChecksSuccessful: result.body?.allChecksSuccessful === true },
+    };
+  }
+}
+
+export function createCollabDrivers(): DriverSet {
+  return { issuer: new CollabIssuerDriver(), wallet: new CollabWalletDriver(), verifier: new CollabVerifierDriver() };
+}

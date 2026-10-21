@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-025 · Select stateful role drivers per run
+- **Date:** 2026-10-21   **Status:** Accepted
+- **Context:** The fixture runner and proven Phase 1 Collab script must share one lifecycle without putting protocol logic or live secrets in the HTTP layer or database.
+- **Decision:** Define issuer, wallet, and verifier interfaces around a per-run context. Select `fixture` or `collab` explicitly with `PLAYGROUND_DRIVER_MODE`; default to fixtures. Keep live credentials, keys, cookies, proofs, and tokens in the context, return inspectable exchange summaries, and apply central write-time redaction before persistence.
+- **Alternatives considered:** Keep protocol-shaped exchanges hard-coded in the orchestrator (cannot execute live flows); run the Phase 1 script as a child process (weak lifecycle and exchange integration); persist complete live protocol bodies (unnecessary exposure of reusable secrets and personal claims).
+- **Why this one:** Both modes now exercise the same steps, repository, events, and inspector contract while each role owns its protocol operations and run state remains isolated.
+- **Trade-off accepted:** A BFF restart loses an active live run's cryptographic state, and the first Collab adapter supports only Inji Certify + Reference Wallet + Inji Verify.
+- **Revisit if:** Active runs must survive restarts, multiple BFF processes execute one run, or assisted browser traffic must be captured.
+- **Affects:** `apps/bff/src/drivers`, `apps/bff/src/orchestrator.ts`, `/api/v1/health`, `PHASE2.md`, FR-10, FR-11, FR-25, FR-40..44.
+
 ### D-024 · Select PostgreSQL through the run repository boundary
 - **Date:** 2026-10-21   **Status:** Accepted
 - **Context:** M1 stored runs in process memory, while D-006 requires PostgreSQL for durable history. Developers still need the playground to start without infrastructure for UI work and deterministic tests.

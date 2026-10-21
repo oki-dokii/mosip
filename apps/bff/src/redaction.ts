@@ -4,11 +4,17 @@ const SECRET_FIELDS = new Set([
   "c_nonce",
   "pre-authorized_code",
   "client_assertion",
+  "challenge",
+  "code",
   "code_verifier",
   "authorization",
   "cookie",
   "set-cookie",
   "d",
+  "individualid",
+  "otp",
+  "proof",
+  "vp_token",
 ]);
 
 export function redact(value: unknown, path = "$", redactions: string[] = []): { value: unknown; redactions: string[] } {

@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import type { Server } from "socket.io";
 import { runConfigSchema, type ImplementationMetadata, type RunSummary } from "@playground/shared";
+import { configuredDriverMode } from "./drivers/registry.js";
 import { createSteps, runDemo } from "./orchestrator.js";
 import type { RunRepository } from "./store.js";
 
@@ -34,6 +35,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
     response.json({
       services: [{ name: "playground", status: "up", version: "0.2.0", latencyMs: 0 }],
       storage: repository.storage,
+      driverMode: configuredDriverMode(),
     });
   });
 
