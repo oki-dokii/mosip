@@ -1,0 +1,75 @@
+{
+  "runId": "11111111-1111-4111-a111-111111111111",
+  "har": {
+    "log": {
+      "version": "1.2",
+      "creator": { "name": "synthetic-fixture", "version": "1.0" },
+      "entries": [
+        {
+          "startedDateTime": "2026-10-22T09:00:00.000Z",
+          "time": 42,
+          "request": {
+            "method": "GET",
+            "url": "https://wallet.example/v1/mimoto/issuers/Farmer?state=CANARY_MIMOTO_QUERY",
+            "headers": [{ "name": "Cookie", "value": "sid=CANARY_MIMOTO_COOKIE" }]
+          },
+          "response": {
+            "status": 200,
+            "headers": [{ "name": "Content-Type", "value": "application/json" }],
+            "content": { "mimeType": "application/json", "text": "{\"credential_issuer\":\"CANARY_MIMOTO_ISSUER\",\"format\":\"ldp_vc\"}" }
+          }
+        },
+        {
+          "startedDateTime": "2026-10-22T09:00:01.000Z",
+          "time": 53,
+          "request": {
+            "method": "POST",
+            "url": "https://issuer.example/credential?access_token=CANARY_CERTIFY_QUERY",
+            "headers": [{ "name": "Authorization", "value": "Bearer CANARY_CERTIFY_HEADER" }, { "name": "Content-Type", "value": "application/json" }],
+            "postData": { "mimeType": "application/json", "text": "{\"proof\":{\"jwt\":\"CANARY_CERTIFY_PROOF\",\"jwk\":{\"d\":\"CANARY_JWK_PRIVATE\",\"x\":\"CANARY_JWK_PUBLIC\"}},\"format\":\"vc+sd-jwt\"}" }
+          },
+          "response": {
+            "status": 200,
+            "headers": [{ "name": "Set-Cookie", "value": "sid=CANARY_CERTIFY_COOKIE" }],
+            "content": { "mimeType": "application/json", "text": "{\"credential\":\"CANARY_CERTIFY_CREDENTIAL\"}" }
+          }
+        },
+        {
+          "startedDateTime": "2026-10-22T09:00:02.000Z",
+          "time": 61,
+          "request": {
+            "method": "POST",
+            "url": "https://identity.example/oauth/authorize?state=CANARY_ESIGNET_QUERY",
+            "headers": [{ "name": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "postData": { "mimeType": "application/x-www-form-urlencoded", "text": "code=CANARY_ESIGNET_CODE&otp=CANARY_ESIGNET_OTP" }
+          },
+          "response": {
+            "status": 302,
+            "headers": [{ "name": "Location", "value": "https://wallet.example/callback?code=CANARY_ESIGNET_REDIRECT" }],
+            "content": { "mimeType": "text/plain", "text": "CANARY_ESIGNET_RESPONSE" }
+          }
+        },
+        {
+          "startedDateTime": "2026-10-22T09:00:03.000Z",
+          "time": 38,
+          "request": {
+            "method": "GET",
+            "url": "https://verifier.example/vp-request/CANARY_VERIFY_PATH?request_uri=CANARY_VERIFY_QUERY",
+            "headers": [{ "name": "X-Custom", "value": "CANARY_VERIFY_HEADER" }]
+          },
+          "response": {
+            "status": 200,
+            "headers": [{ "name": "Content-Type", "value": "application/json" }],
+            "content": { "mimeType": "application/json", "text": "{\"presentation_definition\":{\"id\":\"CANARY_VERIFY_DEFINITION\"},\"nonce\":\"CANARY_VERIFY_NONCE\"}" }
+          }
+        },
+        {
+          "startedDateTime": "2026-10-22T09:00:04.000Z",
+          "time": 4,
+          "request": { "method": "GET", "url": "https://wallet.example/assets/app.js", "headers": [] },
+          "response": { "status": 200, "headers": [], "content": { "mimeType": "text/javascript", "text": "CANARY_STATIC_ASSET" } }
+        }
+      ]
+    }
+  }
+}

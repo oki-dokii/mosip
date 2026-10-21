@@ -1,0 +1,14 @@
+{
+  "fixture": "four-service.synthetic.har.json",
+  "runId": "11111111-1111-4111-a111-111111111111",
+  "imported": 4,
+  "skipped": 1,
+  "exchanges": [
+    { "id": "87a5f642-1077-4c04-ae5f-b6e9f249bd8c", "service": "mimoto", "stepKey": "ISSUE_OFFER" },
+    { "id": "ff6143cd-617e-4755-a301-264e95ef8fbc", "service": "certify", "stepKey": "ISSUE_CREDENTIAL" },
+    { "id": "82298e44-daa5-4cd4-acfb-33aa2b8f90e3", "service": "esignet", "stepKey": "ISSUE_TOKEN" },
+    { "id": "0f1e3e86-e978-4ff7-ace6-e6208c26ea31", "service": "verify", "stepKey": "PRESENT_REQUEST" }
+  ],
+  "evidenceTier": "synthetic_browser_har",
+  "liveInjiWebObserved": false
+}
