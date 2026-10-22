@@ -66,6 +66,10 @@ Docker must have at least **2 GB of available memory** (4 GB recommended). On Ap
 | `web` | `core` | `web` (nginx build) | `127.0.0.1:5174→80` | `wget /` | React SPA + nginx reverse proxy to BFF |
 | `mock-issuer` | `mocks` | `mock-issuer` (build) | Not published | `GET /.well-known/openid-credential-issuer` | Synthetic OpenID4VCI SD-JWT issuer |
 | `mock-verifier` | `mocks` | `mock-verifier` (build) | Not published | TCP connect :4102 | Synthetic OpenID4VP SD-JWT verifier |
+| `inji-certify` | `inji` (opt-in) | `mosipid/inji-certify:v0.14.0` | `127.0.0.1:8080→8080` | `GET /actuator/health` | Official Inji Certify (requires MOSIP Keymanager/eSignet) |
+| `inji-verify` | `inji` (opt-in) | `mosipid/inji-verify:v0.18.2` | `127.0.0.1:8081→8081` | `GET /actuator/health` | Official Inji Verify (requires registered verifier config) |
+| `mimoto` | `inji` (opt-in) | `mosipid/mimoto:v0.22.0` | `127.0.0.1:9090→9090` | `GET /actuator/health` | Official Mimoto wallet BFF (requires OIDC client keystore) |
+| `inji-web` | `inji` (opt-in) | `mosipid/inji-web:v0.17.0` | `127.0.0.1:3000→80` | `wget /` | Official Inji Web frontend (requires Mimoto reachability) |
 
 All host ports bind to `127.0.0.1` (loopback only). The mock services are on the Compose network only and not accessible from the host.
 
@@ -343,7 +347,8 @@ Real-wallet gates:
 
 ## Not provided
 
-- **Local Inji stack profile**: A `docker compose` profile for Certify + Verify (and eventually Mimoto + Inji Web) is the next integration milestone. It requires: pinned official Inji image tags/digests, OIDC client keystore, eSignet/Mimoto configuration, and network/DNS setup matching the upstream bundled Compose example. These prerequisites are not yet confirmed; do not add placeholder images.
+- **Local Inji stack profile**: An opt-in Compose override (`deploy/docker-compose.inji.yml`) and complete architectural provenance documentation (`deploy/INJI_LOCAL.md`) are now provided. However, running official Inji services locally remains **BLOCKED** on upstream MOSIP Keymanager and eSignet OIDC test client/identity provisioning. See `deploy/INJI_LOCAL.md` for the exact provenance table, port mappings, and blocker details.
+- **walt.id Compatibility Study**: A documentation-only comparison of walt.id Issuer2/Verifier2 vs. Inji components is available at `deploy/WALTID_COMPARISON.md`.
 - **Collab nightly runs**: Require the public test environment credentials and are kept outside this repository.
 - **Production hardening**: TLS termination, authentication, rate limiting, and secrets management are not part of this deployment.
 - **Authentication**: The BFF API has no authentication. Do not expose this stack on a public interface with test credentials.

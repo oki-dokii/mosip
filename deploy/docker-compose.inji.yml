@@ -1,0 +1,85 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Inji Interoperability Playground — Opt-In Local Inji Stack
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f deploy/docker-compose.inji.yml --profile inji up -d
+#
+# NOTE:
+#   This profile is strictly OPT-IN and does not affect the core playground
+#   or mock services (core / mocks).
+#   Official images require upstream MOSIP infrastructure (Keymanager,
+#   eSignet IDP, and registered keystores). See deploy/INJI_LOCAL.md for
+#   the full provenance and blocker analysis.
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Inji Certify (OpenID4VCI Issuer) ────────────────────────────────────────
+  inji-certify:
+    profiles: [inji]
+    image: mosipid/inji-certify:v0.14.0
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: "8080"
+      SPRING_PROFILES_ACTIVE: default
+      MOSIP_ESIGNET_BASE_URL: ${ESIGNET_BASE_URL:-https://esignet-mock.collab.mosip.net/v1/esignet}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  # ── Inji Verify (OpenID4VP Verifier) ────────────────────────────────────────
+  inji-verify:
+    profiles: [inji]
+    image: mosipid/inji-verify:v0.18.2
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: "8081"
+      SPRING_PROFILES_ACTIVE: default
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    ports:
+      - "127.0.0.1:8081:8081"
+
+  # ── Mimoto (Wallet Backend for Inji Web) ─────────────────────────────────────
+  mimoto:
+    profiles: [inji]
+    image: mosipid/mimoto:v0.22.0
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: "9090"
+      SPRING_PROFILES_ACTIVE: default
+      INJI_CERTIFY_URL: http://inji-certify:8080
+      MOSIP_ESIGNET_URL: ${ESIGNET_BASE_URL:-https://esignet-mock.collab.mosip.net/v1/esignet}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9090/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    ports:
+      - "127.0.0.1:9090:9090"
+
+  # ── Inji Web (Web Wallet Frontend) ──────────────────────────────────────────
+  inji-web:
+    profiles: [inji]
+    image: mosipid/inji-web:v0.17.0
+    restart: unless-stopped
+    environment:
+      MIMOTO_BASE_URL: http://127.0.0.1:9090
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:80/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    ports:
+      - "127.0.0.1:3000:80"
