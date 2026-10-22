@@ -219,7 +219,7 @@ On Docker Desktop (macOS/Windows), ensure at least 2 GB RAM is allocated (Settin
 
 ### Apple Silicon / ARM notes
 
-`node:20.19.1-bookworm-slim`, `postgres:16-alpine`, and `nginx:1.27.5-alpine` all publish `linux/arm64` layers. Builds run natively on M-series without Rosetta. If you see `exec format error`, run:
+`node:22.14.0-bookworm-slim`, `postgres:16-alpine`, and `nginx:1.27.5-alpine` all publish `linux/arm64` layers. Builds run natively on M-series without Rosetta. If you see `exec format error`, run:
 
 ```bash
 docker buildx build --platform linux/arm64 ...
@@ -239,7 +239,7 @@ docker buildx build --platform linux/arm64 ...
 ### Job details
 
 **`verify`** (ci.yml):
-- Actions pinned to SHA. Node 20. pnpm 11.25.0.
+- Actions pinned to verified major version tags (`@v4`). Node 22 (required by pnpm 11.25.0 for `node:sqlite`). Pinned pnpm 11.25.0.
 - Runs `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm audit:secrets`.
 
 **`compose-smoke`** (ci.yml, depends on `verify`):
@@ -255,7 +255,7 @@ docker buildx build --platform linux/arm64 ...
 
 ```bash
 # Equivalent to the verify job:
-corepack enable && corepack prepare pnpm@11.25.0 --activate
+npm install -g pnpm@11.25.0
 pnpm install --frozen-lockfile
 pnpm typecheck && pnpm test && pnpm build && pnpm audit:secrets
 
