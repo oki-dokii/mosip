@@ -7,10 +7,9 @@
 #   BUILD_DATE     – ISO-8601 timestamp for the created label
 #
 # All runtime stages run as the non-root user "node" (uid 1000).
-# Base images are pinned to explicit digests; update them deliberately.
-# Node 20 LTS (Iron) bookworm-slim – DO NOT change to "latest".
-
-ARG NODE_IMAGE=node:20.19.1-bookworm-slim
+# Base images are pinned to explicit versions; update them deliberately.
+# Node 22 LTS (bookworm-slim) is required: pnpm 11.25.0 depends on node:sqlite introduced in Node 22.13+.
+ARG NODE_IMAGE=node:22.14.0-bookworm-slim
 ARG NGINX_IMAGE=nginx:1.27.5-alpine
 
 # ─── stage 1: dependency install ────────────────────────────────────────────
