@@ -49,10 +49,10 @@ pnpm demo:docker
 |---|---|---|---|
 | Docker Engine / Desktop | 24.0+ | Desktop 27.x | Compose V2 must be available (`docker compose version`) |
 | Docker Compose plugin | v2.20+ | v2.29+ | Bundled with Docker Desktop; `apt install docker-compose-plugin` on Linux |
-| Node.js (non-Docker only) | 20.x LTS | 20.19.1 | Only needed to run `pnpm demo:docker` or `node e2e/smoke.mjs` locally |
-| pnpm (non-Docker only) | 11.25.0 | 11.25.0 | `corepack enable && corepack prepare pnpm@11.25.0 --activate` |
+| Node.js (non-Docker only) | 22+ LTS (22.13 min) | 24.12.0 | Required by pnpm 11.25.0 (uses `node:sqlite` introduced in Node 22.13). Use nvm or fnm to install. |
+| pnpm (non-Docker only) | 11.25.0 | 11.25.0 | `npm install -g pnpm@11.25.0` (or `corepack enable && corepack prepare pnpm@11.25.0 --activate` on Node 22+) |
 
-Docker must have at least **2 GB of available memory** (4 GB recommended). On Apple Silicon (M-series), builds run under Rosetta2 emulation by default; native arm64 works if the base images have arm64 layers (`node:20.19.1-bookworm-slim` and `postgres:16-alpine` both do).
+Docker must have at least **2 GB of available memory** (4 GB recommended). On Apple Silicon (M-series), `node:22.14.0-bookworm-slim` and `postgres:16-alpine` both publish `linux/arm64` layers, so builds run natively without Rosetta.
 
 ---
 

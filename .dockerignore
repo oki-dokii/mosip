@@ -29,6 +29,7 @@ postman/
 **/.cache
 **/coverage
 **/.nyc_output
+.pnpm-store
 
 # ── editor and OS artefacts ──────────────────────────────────────────────────
 .DS_Store
@@ -51,3 +52,4 @@ evidence/
 # ── CI and rehearsal scratch files ───────────────────────────────────────────
 *.log
 tmp/
+e2e/
