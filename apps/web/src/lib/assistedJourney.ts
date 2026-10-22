@@ -45,7 +45,7 @@ export class AssistedJourney {
     this.listeners.forEach((listener) => listener());
   }
   start() { if (this.snapshot.stage === "idle") this.move("starting"); }
-  ready() { if (this.snapshot.stage === "starting") this.move("issuance"); }
+  ready() { if (!this.expired() && this.snapshot.stage === "starting") this.move("issuance"); }
   private expired() {
     if (this.snapshot.deadline !== null && this.time.now() >= this.snapshot.deadline) {
       this.move("timeout", `Timed out waiting for ${this.snapshot.stage}. No verifier verdict was established.`);

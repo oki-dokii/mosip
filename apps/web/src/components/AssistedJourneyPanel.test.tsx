@@ -43,7 +43,7 @@ it("supports keyboard cancellation", async () => {
   vi.useRealTimers();
   const user = userEvent.setup();
   render(<AssistedJourneyPanel fixture={fixture} />);
-  await user.tab(); await user.tab();
+  await user.tab(); await user.tab(); await user.tab(); await user.tab();
   expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cancel assisted run" }));
   await user.keyboard("{Enter}");
   expect(screen.getByRole("status").textContent).toMatch(/cancelled/i);
@@ -57,4 +57,30 @@ it("labels the real wallets and disables unavailable SD-JWT presentation", () =>
   expect((screen.getByRole("radio", { name: /Inji Web/ }) as HTMLInputElement).disabled).toBe(true);
   expect(screen.getByText("Automated, code-level driver")).toBeTruthy();
   expect(screen.getByRole("radio", { name: /Inji Web/ }).getAttribute("aria-describedby")).toBeTruthy();
+});
+
+it("renders fixture wallet, offer and verifier actions without advancing checkpoints", () => {
+  vi.useRealTimers();
+  render(<AssistedJourneyPanel fixture={fixture} />);
+  const wallet = screen.getByRole("link", { name: "Open wallet" });
+  const offer = screen.getByRole("link", { name: "Open credential offer" });
+  expect(wallet.getAttribute("href")).toBe(`#${fixture.target}-wallet`);
+  expect(offer.getAttribute("href")).toBe(`#${fixture.target}-offer`);
+  fireEvent.click(wallet); fireEvent.click(offer);
+  expect(fixture.journey.getSnapshot().stage).toBe("issuance");
+  click("Simulate issuance observation"); click("Simulate wallet storage confirmation");
+  expect(screen.queryByRole("link", { name: "Open wallet" })).toBeNull();
+  expect(screen.getByRole("link", { name: /Open verifier request/ }).getAttribute("href")).toBe(`#${fixture.target}-request`);
+  click("Cancel assisted run");
+  expect(screen.queryByRole("navigation", { name: "Wallet journey actions" })).toBeNull();
+});
+it("accepts transient configured HTTPS actions and renders absent or unsafe actions unavailable", () => {
+  vi.useRealTimers();
+  const { rerender } = render(<AssistedJourneyPanel fixture={fixture} actions={{ walletUrl: "https://wallet.example/", offerUrl: "javascript:alert(1)" }} />);
+  expect(screen.getByRole("link", { name: "Open wallet" }).getAttribute("target")).toBe("_blank");
+  expect(screen.queryByRole("link", { name: "Open credential offer" })).toBeNull();
+  expect(screen.getByText("Open credential offer: unavailable")).toBeTruthy();
+  rerender(<AssistedJourneyPanel fixture={fixture} actions={{}} />);
+  expect(screen.queryAllByRole("link")).toHaveLength(0);
+  expect(screen.getByText("Open wallet: unavailable")).toBeTruthy();
 });

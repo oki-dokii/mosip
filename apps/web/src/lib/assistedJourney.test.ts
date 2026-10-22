@@ -69,6 +69,15 @@ describe("assisted journey", () => {
     journey.observe(exchange());
     expect(journey.getSnapshot().stage).toBe("timeout");
   });
+  it("does not restart issuance after a delayed startup exceeds its deadline", () => {
+    const journey = new AssistedJourney("r1", { ISSUE_CREDENTIAL: "issue" });
+    journey.start();
+    vi.setSystemTime(Date.now() + 60_000);
+    journey.ready();
+    expect(journey.getSnapshot()).toMatchObject({ stage: "timeout", outcome: null, deadline: null });
+    journey.ready(); journey.observe(exchange());
+    expect(journey.getSnapshot().stage).toBe("timeout");
+  });
   it("guards format, roles and tamper without blocking the Reference Wallet", () => {
     expect(assistedUnavailable(config)).toBeNull();
     expect(assistedUnavailable({ ...config, format: "vc_sd_jwt" })).toMatch(/SD-JWT/);
