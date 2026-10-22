@@ -8,6 +8,7 @@ import { RoleSelector } from "./components/RoleSelector";
 import { RunTimeline } from "./components/RunTimeline";
 import { RunArchive } from "./components/RunArchive";
 import { SequenceView } from "./components/SequenceView";
+import { CaptureCoverage } from "./components/CaptureCoverage";
 import { api } from "./lib/api";
 import { AssistedJourneyPanel } from "./components/AssistedJourneyPanel";
 import { createAssistedFixture } from "./lib/assistedFixture";
@@ -38,6 +39,8 @@ export default function App() {
   const [driverMode, setDriverMode] = useState<"fixture" | "collab" | null>(null);
   const [config, setConfig] = useState<RunConfig>(initialConfig);
   const [runId, setRunId] = useState<string | null>(null);
+  const activeRunId = useRef(runId);
+  activeRunId.current = runId;
   const [run, setRun] = useState<RunSummary | null>(null);
   const [steps, setSteps] = useState<RunStep[]>([]);
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
@@ -62,6 +65,7 @@ export default function App() {
 
   const refresh = useCallback(async (id: string) => {
     const [nextRun, nextSteps, nextExchanges] = await Promise.all([api.run(id), api.steps(id), api.exchanges(id)]);
+    if (activeRunId.current !== id) return;
     setRun(nextRun);
     setSteps(nextSteps.items);
     setExchanges(nextExchanges.items);
@@ -230,7 +234,7 @@ export default function App() {
                 {runFinished && run && <div className="mb-4 grid grid-cols-2 gap-2 text-center text-xs font-bold"><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=md`}>Report · Markdown</a><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=json`}>Report · JSON</a></div>}
                 <RunTimeline steps={steps} selectedStepId={selectedStepId} onSelect={selectStep} />
               </div>
-              <div><SequenceView runId={runId} exchanges={exchanges} selectedExchangeId={selectedExchangeId} onSelect={selectExchange} /><Inspector exchange={selectedExchange} /></div>
+              <div><CaptureCoverage key={runId} runId={runId} canImport={Boolean(runFinished)} onImported={() => void refresh(runId)} /><SequenceView runId={runId} exchanges={exchanges} selectedExchangeId={selectedExchangeId} onSelect={selectExchange} /><Inspector exchange={selectedExchange} /></div>
             </div>
           )}
         </section>

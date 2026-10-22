@@ -16,7 +16,9 @@ it("renders truthful instructions and a valid completion only after the verifier
   expect(screen.getByRole("status").textContent).toMatch(/Waiting for issuance evidence/);
   expect(screen.getByText(/A1 blocked/)).toBeTruthy();
   expect(screen.getByRole("timer").textContent).toMatch(/60 seconds/);
+  act(() => vi.advanceTimersByTime(101));
   click("Simulate issuance observation");
+  expect(screen.getByRole("timer").textContent).toMatch(/60 seconds/);
   expect(screen.getByRole("status").textContent).toMatch(/storage is still unconfirmed/);
   click("Simulate wallet storage confirmation");
   expect(screen.getByText(/not a usable live QR/)).toBeTruthy();

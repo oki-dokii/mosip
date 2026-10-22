@@ -7,6 +7,7 @@ async function json<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  importCapture: (id: string, payload: unknown) => json<unknown>(`/api/v1/runs/${encodeURIComponent(id)}/capture/har`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }),
   metadata: () => json<ImplementationMetadata>("/api/v1/meta/implementations"),
   scenarios: () => json<{ items: ScenarioDefinition[] }>("/api/v1/scenarios"),
   health: () => json<{ driverMode: "fixture" | "collab"; storage: "memory" | "postgres" }>("/api/v1/health"),
