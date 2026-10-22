@@ -9,6 +9,9 @@ import { RunTimeline } from "./components/RunTimeline";
 import { RunArchive } from "./components/RunArchive";
 import { SequenceView } from "./components/SequenceView";
 import { api } from "./lib/api";
+import { AssistedJourneyPanel } from "./components/AssistedJourneyPanel";
+import { createAssistedFixture } from "./lib/assistedFixture";
+import { assistedUnavailable } from "./lib/assistedJourney";
 
 const initialConfig: RunConfig = {
   issuer: "inji_certify",
@@ -41,6 +44,9 @@ export default function App() {
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [selectedExchangeId, setSelectedExchangeId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [assisted, setAssisted] = useState<ReturnType<typeof createAssistedFixture> | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
+  useEffect(() => () => assisted?.journey.dispose(), [assisted]);
   const [history, setHistory] = useState<RunSummary[]>([]);
   const [matrix, setMatrix] = useState<RunSummary[]>([]);
   const [archiveView, setArchiveView] = useState<"history" | "matrix">("history");
@@ -82,11 +88,23 @@ export default function App() {
   }, [refresh, runId]);
 
   async function startRun() {
+    setStartError(null);
+    if (config.wallet === "inji_web_assisted") {
+      const reason = assistedUnavailable(config);
+      if (reason) { setStartError(reason); return; }
+      assisted?.journey.dispose();
+      setAssisted(createAssistedFixture(crypto.randomUUID()));
+      return;
+    }
+    assisted?.journey.dispose();
+    setAssisted(null);
     setBusy(true);
     setRun(null); setSteps([]); setExchanges([]); setSelectedStepId(null); setSelectedExchangeId(null);
     try {
       const created = await api.createRun(config);
       setRunId(created.runId);
+    } catch {
+      setStartError("Could not start the run. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -111,13 +129,11 @@ export default function App() {
   }
 
   const format = metadata?.formats.find((item) => item.id === config.format);
-  const unsupportedReason = driverMode === "collab" && config.wallet !== "reference_wallet"
-    ? "Live runs require the Reference Wallet. Assisted Inji Web is not automated yet."
-      : driverMode === "collab" && (config.issuer === "mock_issuer" || config.verifier === "mock_verifier") && config.format !== "vc_sd_jwt"
+  const unsupportedReason = assistedUnavailable(config) ?? (config.wallet === "inji_web_assisted" ? null : driverMode === "collab" && (config.issuer === "mock_issuer" || config.verifier === "mock_verifier") && config.format !== "vc_sd_jwt"
         ? "Local non-Inji mock roles currently support SD-JWT VC only."
         : driverMode === "collab" && config.verifier === "mock_verifier" && config.tamper === "missing_disclosure"
           ? "The mock verifier has no required-disclosure policy for this credential."
-        : null;
+        : null);
   const selectedExchange = useMemo(() => exchanges.find((item) => item.id === selectedExchangeId) ?? exchanges.find((item) => item.stepId === selectedStepId) ?? exchanges.at(-1) ?? null, [exchanges, selectedExchangeId, selectedStepId]);
   const selectStep = useCallback((stepId: string) => {
     setSelectedStepId(stepId);
@@ -174,7 +190,11 @@ export default function App() {
           </div>
           <div className="grid gap-7 p-6 md:grid-cols-3 lg:p-8">
             <RoleSelector role="issuer" label="1 · Issuer" options={metadata.issuers} value={config.issuer} onChange={(issuer) => setConfig({ ...config, issuer: issuer as RunConfig["issuer"], scenarioId: null })} />
-            <RoleSelector role="wallet" label="2 · Wallet" options={metadata.wallets} value={config.wallet} onChange={(wallet) => setConfig({ ...config, wallet: wallet as RunConfig["wallet"], scenarioId: null })} />
+            <RoleSelector role="wallet" label="2 · Wallet" options={metadata.wallets.map((wallet) => ({ ...wallet,
+              name: wallet.id === "reference_wallet" ? "Reference Wallet" : "Inji Web (Assisted)",
+              description: wallet.id === "reference_wallet" ? "Automated, code-level driver" : config.format === "ldp_vc" ? "JSON-LD presentation · fixture rehearsal available" : "SD-JWT Web presentation unavailable · select JSON-LD",
+              disabled: wallet.id === "inji_web_assisted" && config.format !== "ldp_vc",
+            }))} value={config.wallet} onChange={(wallet) => setConfig({ ...config, wallet: wallet as RunConfig["wallet"], scenarioId: null })} />
             <RoleSelector role="verifier" label="3 · Verifier" options={metadata.verifiers} value={config.verifier} onChange={(verifier) => setConfig({ ...config, verifier: verifier as RunConfig["verifier"], scenarioId: null })} />
           </div>
           <div className="flex flex-col gap-4 border-t border-slate-200 bg-slate-50 px-6 py-5 sm:flex-row sm:items-center lg:px-8">
@@ -188,10 +208,13 @@ export default function App() {
               </select>
             </label>
             {unsupportedReason && <p role="status" className="text-xs font-semibold text-amber-800">{unsupportedReason}</p>}
-            <div className="sm:ml-auto"><button disabled={busy || Boolean(unsupportedReason)} onClick={() => void startRun()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-issuer px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60 sm:w-auto"><Play size={17} fill="currentColor" />{busy ? "Starting…" : "Run flow"}</button></div>
+            <div className="sm:ml-auto"><button disabled={busy || !driverMode || Boolean(unsupportedReason)} onClick={() => void startRun()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-issuer px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60 sm:w-auto"><Play size={17} fill="currentColor" />{busy ? "Starting…" : config.wallet === "inji_web_assisted" ? "Start assisted fixture run" : "Run flow"}</button></div>
           </div>
         </section>
 
+        {startError && <p role="alert" className="mt-4 text-red-800">{startError}</p>}
+        {config.wallet === "inji_web_assisted" && <p className="mt-4 text-sm text-amber-900">Live assisted start is blocked pending a dedicated test account and backend integration. The fixture journey is available for supported configurations.</p>}
+        {assisted && <AssistedJourneyPanel key={assisted.journey.runId} fixture={assisted} />}
         <section className="mt-7 rounded-3xl border border-slate-200 bg-white shadow-card">
           <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 px-6 py-5 lg:px-8">
             <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-wallet">Live run</p><h2 className="mt-1 text-xl font-bold">{run ? `Run ${run.id.slice(0, 8)}` : "Ready when you are"}</h2></div>
