@@ -1,14 +1,53 @@
+# ── version control ─────────────────────────────────────────────────────────
 .git
+.gitignore
+
+# ── secrets and credentials (never build into images) ───────────────────────
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.p8
+
+# ── Postman / API tool files ─────────────────────────────────────────────────
+*.postman_environment.json
+*.postman_collection.json
+postman/
+
+# ── HAR captures (may contain tokens, cookies, credentials) ─────────────────
+*.har
+*.har.json
+
+# ── build output and caches (rebuilt inside container) ───────────────────────
 **/node_modules
 **/dist
 **/.vite
 **/.turbo
-*.har
-*.pem
-*.key
-*.p12
-spikes/fixtures
-submission
+**/.cache
+**/coverage
+**/.nyc_output
+
+# ── editor and OS artefacts ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# ── spike fixtures and submission docs (not needed at build time) ─────────────
+# spikes/ source is excluded; individual .mjs files are not needed in images.
+spikes/
+submission/
+
+# ── local evidence files ─────────────────────────────────────────────────────
+artifacts/
+evidence/
+*.evidence.json
+
+# ── CI and rehearsal scratch files ───────────────────────────────────────────
+*.log
+tmp/
