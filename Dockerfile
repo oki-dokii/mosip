@@ -26,9 +26,8 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates openssl \
     && rm -rf /var/lib/apt/lists/*
 
-# Enable Corepack and activate the pinned pnpm version before any install.
-RUN corepack enable \
-    && corepack prepare pnpm@11.25.0 --activate
+# Install pinned pnpm version (npm install -g avoids Node 20.19.x Corepack VM dynamic import bug).
+RUN npm install -g pnpm@11.25.0
 
 # Copy manifests first so Docker caches the install layer.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
@@ -69,8 +68,7 @@ WORKDIR /workspace
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates openssl \
     && rm -rf /var/lib/apt/lists/* \
-    && corepack enable \
-    && corepack prepare pnpm@11.25.0 --activate
+    && npm install -g pnpm@11.25.0
 
 # Copy the entire built workspace from the build stage.
 # node_modules, dist/, and generated Prisma client are all included.
