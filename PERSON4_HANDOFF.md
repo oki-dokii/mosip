@@ -62,6 +62,7 @@ All modified and added files belong strictly to Person 4's owned area (Rule 8):
 | `deploy/INJI_LOCAL.md` | Added | Component provenance table, Stage 1/2 evaluations, Person 2 endpoints, Person 1 canonical origins. |
 | `deploy/docker-compose.inji.yml` | Added | Opt-in Inji stack definition with health checks and port mappings. |
 | `deploy/WALTID_COMPARISON.md` | Added | Documentation-only comparison between walt.id Issuer2/Verifier2 and Inji stack. |
+| `deploy/README.md` | Added | Directory index and role-specific navigation guide for teammates. |
 | `DEPLOYMENT.md` | Modified | Full deployment guide with profile matrices, env catalog, modes, clean-machine checklist, and evidence limits. |
 | `e2e/smoke.mjs` | Added | Deterministic HTTP smoke test with redaction scanning and evidence boundaries. |
 | `.github/workflows/ci.yml` | Modified | Two-stage release gate (`verify` $\rightarrow$ `compose-smoke`), Node 22, pnpm 11.25.0, action tags `@v4`, secret audit, log upload. |
