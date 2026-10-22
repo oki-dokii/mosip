@@ -1,62 +1,349 @@
-# Local playground deployment
+# Deployment guide — Inji Interoperability Playground
 
-The container bundle packages **this playground**, PostgreSQL, and two independent test services. It does not yet include local Inji Certify, Mimoto, Inji Web, or Inji Verify. The one-command path uses synthetic data and proves a cross-container mock interoperability flow, not an all-Inji flow.
+This document tells a stranger how to start, stop, inspect, and reproduce the playground from a fresh clone. Read the **Evidence limits** section before making any interoperability claims.
 
-## One command
+---
 
-Requires Docker Desktop/Engine with Compose, Node.js 20+, and pnpm 11. From a fresh checkout:
+## Contents
 
-```bash
-pnpm install
-pnpm demo:docker
-```
+- [Quick start](#quick-start)
+- [Prerequisites](#prerequisites)
+- [Profiles and services](#profiles-and-services)
+- [Environment variables](#environment-variables)
+- [Modes](#modes)
+- [Startup, shutdown and reset](#startup-shutdown-and-reset)
+- [Persistent storage and migrations](#persistent-storage-and-migrations)
+- [Troubleshooting](#troubleshooting)
+- [CI and automation](#ci-and-automation)
+- [Clean-machine verification procedure](#clean-machine-verification-procedure)
+- [Evidence limits](#evidence-limits)
+- [Not provided](#not-provided)
 
-The script finds a working Docker context (including Docker Desktop's `desktop-linux` context on macOS), builds the images, starts and waits for the five services, and runs two synthetic **standalone mock issuer → Reference Wallet → standalone mock verifier** SD-JWT journeys through the browser-facing API. It requires a valid baseline and an invalid corrupted-signature result, each with ten steps, saved exchanges, and `mock_interop` provenance before printing `DEMO PASS`. It leaves the stack up at **http://localhost:5174**.
+---
 
-On 2026-10-21, this path passed on Docker Desktop 29.9.2 with the BFF storing its run in PostgreSQL. A BFF restart preserved an earlier fixture run. A separate clean-machine rehearsal is still needed before calling A6 fully signed off.
+## Quick start
 
-The [CI workflow](.github/workflows/ci.yml) runs typecheck, tests, and build on pushes and pull requests. It also runs this two-cell synthetic container matrix on pushes, pull requests, and a daily schedule, uploading a sanitized JSON summary. Both jobs passed in the [2026-10-21 hosted run](https://github.com/oki-dokii/mosip/actions/runs/39632729703). This is **mock evidence**, not a nightly live-Inji matrix.
-
-| Service | Container address | Host address | Role |
-|---|---|---|---|
-| Web / nginx | `web:80` | `127.0.0.1:5174` | Static React app, API and Socket.IO reverse proxy |
-| BFF | `bff:4000` | `127.0.0.1:4000` | Run orchestration, migrations, reports |
-| PostgreSQL | `postgres:5432` | `127.0.0.1:55433` | Durable run, step, exchange store |
-| Mock issuer | `mock-issuer:4101` | Not published | Synthetic OpenID4VCI SD-JWT issuer |
-| Mock verifier | `mock-verifier:4102` | Not published | Synthetic OpenID4VP SD-JWT verifier |
-
-The host web and database ports default to 5174 and 55433 to avoid other local projects using 5173, 5432, or 5433. Override them with `PLAYGROUND_WEB_PORT` or `PLAYGROUND_POSTGRES_PORT` before running the command. All published ports bind to loopback. The mock services are reachable only on the Compose network.
-
-## Manual profiles
-
-For fixture-mode UI and PostgreSQL without external mocks:
-
-```bash
-docker compose --profile core up -d --build --wait
-```
-
-For the independent mock services, the BFF must use the Collab driver with local mock URLs:
+Requires Docker with Compose V2 (see [Prerequisites](#prerequisites)). From a fresh clone, no `.env` file needed:
 
 ```bash
 export PLAYGROUND_DRIVER_MODE=collab
 export MOCK_ISSUER_BASE_URL=http://mock-issuer:4101
 export MOCK_VERIFIER_BASE_URL=http://mock-verifier:4102
-docker compose --profile core --profile mocks up -d --build --wait
-node scripts/compose-smoke.mjs
+docker compose --profile core --profile mocks up --build -d --wait
 ```
 
-These values use Compose DNS names; do not set them to `127.0.0.1` inside the BFF container. The default mock issuer signs with an in-memory `did:jwk` key. The standalone mock verifier checks signatures and holder binding but does not provide production trust-anchor validation. External Collab combinations need separate test credentials and endpoint configuration; the demo command does not request or embed them.
+Open **http://localhost:5174** in a browser. The app starts in cross-container mock mode. All run data is stored in PostgreSQL inside the Compose network.
 
-Inspect status with `docker compose --profile core --profile mocks ps`. Stop containers without deleting saved runs with:
+Or use the one-command demo script (builds, starts, runs two synthetic SD-JWT cases, prints DEMO PASS):
+
+```bash
+pnpm install        # only needed once, for the demo script itself
+pnpm demo:docker
+```
+
+---
+
+## Prerequisites
+
+| Tool | Minimum version | Tested with | Notes |
+|---|---|---|---|
+| Docker Engine / Desktop | 24.0+ | Desktop 27.x | Compose V2 must be available (`docker compose version`) |
+| Docker Compose plugin | v2.20+ | v2.29+ | Bundled with Docker Desktop; `apt install docker-compose-plugin` on Linux |
+| Node.js (non-Docker only) | 20.x LTS | 20.19.1 | Only needed to run `pnpm demo:docker` or `node e2e/smoke.mjs` locally |
+| pnpm (non-Docker only) | 11.25.0 | 11.25.0 | `corepack enable && corepack prepare pnpm@11.25.0 --activate` |
+
+Docker must have at least **2 GB of available memory** (4 GB recommended). On Apple Silicon (M-series), builds run under Rosetta2 emulation by default; native arm64 works if the base images have arm64 layers (`node:20.19.1-bookworm-slim` and `postgres:16-alpine` both do).
+
+---
+
+## Profiles and services
+
+| Service | Profile | Build target | Default host port | Health check | Purpose |
+|---|---|---|---|---|---|
+| `postgres` | `core` | `postgres:16-alpine` (pull) | `127.0.0.1:55433→5432` | `pg_isready` | Durable run, step, exchange store |
+| `migrate` | `core` | `migrate` (build) | None | one-shot exit 0 | Runs `prisma migrate deploy` before BFF starts |
+| `bff` | `core` | `bff` (build) | `127.0.0.1:4000→4000` | `GET /api/v1/health` HTTP 200 | Run orchestration, drivers, Socket.IO |
+| `web` | `core` | `web` (nginx build) | `127.0.0.1:5174→80` | `wget /` | React SPA + nginx reverse proxy to BFF |
+| `mock-issuer` | `mocks` | `mock-issuer` (build) | Not published | `GET /.well-known/openid-credential-issuer` | Synthetic OpenID4VCI SD-JWT issuer |
+| `mock-verifier` | `mocks` | `mock-verifier` (build) | Not published | TCP connect :4102 | Synthetic OpenID4VP SD-JWT verifier |
+
+All host ports bind to `127.0.0.1` (loopback only). The mock services are on the Compose network only and not accessible from the host.
+
+Override host ports with environment variables before running:
+
+```bash
+export PLAYGROUND_POSTGRES_PORT=55433   # default
+export PLAYGROUND_WEB_PORT=5174         # default
+```
+
+---
+
+## Environment variables
+
+Copy `.env.example` as a reference. Do not commit real values. All defaults are synthetic and safe.
+
+| Variable | Default | Purpose | Secret? |
+|---|---|---|---|
+| `PLAYGROUND_DRIVER_MODE` | `fixture` | `fixture` \| `collab`. `collab` uses mock or live Inji URLs. | No |
+| `DATABASE_URL` | `postgresql://playground:playground@postgres:5432/playground?schema=public` | Prisma connection string (Compose DNS) | No (dev default) |
+| `PLAYGROUND_POSTGRES_PORT` | `55433` | Host port for PostgreSQL | No |
+| `PLAYGROUND_WEB_PORT` | `5174` | Host port for the web app | No |
+| `MOCK_ISSUER_BASE_URL` | *(empty)* | BFF → mock issuer URL (Compose DNS: `http://mock-issuer:4101`) | No |
+| `MOCK_VERIFIER_BASE_URL` | *(empty)* | BFF → mock verifier URL (Compose DNS: `http://mock-verifier:4102`) | No |
+| `VERIFY_BASE_URL` | `https://injiverify.collab.mosip.net/v1/verify` | BFF → Inji Verify (Collab mode only) | No |
+| `OFFICIAL_POSTMAN_ENV_PATH` | *(none)* | Path to Collab Postman env (Collab mode only, kept outside repo) | **Yes** |
+| `MOCK_OTP` | *(none)* | Public mock OTP for Collab (Collab mode only) | Treat as secret |
+| `GIT_REVISION` | `unknown` | Injected at build time for OCI image labels | No |
+| `BUILD_DATE` | `unknown` | Injected at build time for OCI image labels | No |
+
+See `.env.example` for the full list with comments. Never commit real Postman environment files or OTPs.
+
+---
+
+## Modes
+
+| Mode | How to start | Valid claim | Cannot prove |
+|---|---|---|---|
+| **Fixture** (default) | `docker compose --profile core up` | Playground starts; API, storage and Socket.IO work in synthetic mode | Any interoperability with external services |
+| **Mock** (separate services) | `--profile core --profile mocks` + `PLAYGROUND_DRIVER_MODE=collab` + `MOCK_*_BASE_URL` set | Cross-container mock issuer → Reference Wallet → mock verifier SD-JWT journey ran; result stored in PostgreSQL | Inji Certify, Inji Verify, or Inji Web/Wallet interoperability |
+| **Collab** (live Inji) | Requires `OFFICIAL_POSTMAN_ENV_PATH` and Collab credentials outside the repo | Specific Inji Certify and Inji Verify versions accepted or rejected a credential | Only the exact Collab endpoint tested; not general Inji interoperability |
+| **Assisted Inji wallet** | Needs a logged-in Inji Web test account + real Mimoto/eSignet | A real Inji wallet stored and presented a credential to Inji Verify | A1 gate — not complete; blocked until a persistent test account exists |
+
+---
+
+## Startup, shutdown and reset
+
+### Start all services (core + mocks, mock mode)
+
+```bash
+export PLAYGROUND_DRIVER_MODE=collab
+export MOCK_ISSUER_BASE_URL=http://mock-issuer:4101
+export MOCK_VERIFIER_BASE_URL=http://mock-verifier:4102
+docker compose --profile core --profile mocks up --build -d --wait
+```
+
+`--wait` blocks until all health checks pass. On a cold build this takes 2–4 minutes.
+
+### Start core only (fixture mode, no mock services)
+
+```bash
+docker compose --profile core up --build -d --wait
+```
+
+The BFF starts in fixture mode. No Inji Certify or mock services are needed.
+
+### Check status
+
+```bash
+docker compose --profile core --profile mocks ps
+curl -fsS http://localhost:4000/api/v1/health
+# Should include: "storage":"postgres","driverMode":"collab"
+```
+
+### Stop (keep data)
 
 ```bash
 docker compose --profile core --profile mocks down
 ```
 
-To reset the synthetic PostgreSQL volume deliberately, use `docker compose --profile core --profile mocks down -v`. This deletes all stored runs. Docker image build requires internet access on the first run for base images and pinned pnpm packages; later builds benefit from cache.
+Run data in the PostgreSQL volume is **preserved**.
 
-## Health and failure behavior
+### Stop and delete all data ⚠️
 
-PostgreSQL uses `pg_isready`; the BFF health probe calls `/api/v1/health`; nginx serves `/`; the mock issuer checks discovery and the mock verifier checks its TCP listener. The BFF applies Prisma migrations before starting HTTP, and `depends_on` waits for PostgreSQL health. If the smoke command fails, it exits nonzero and does not print `DEMO PASS`. Read `docker compose logs bff` or the affected service logs. The host health URL is `http://localhost:5174/api/v1/health`.
+```bash
+docker compose --profile core --profile mocks down -v
+```
 
-The official upstream local Inji stack remains a separate integration milestone. Its Web path requires OIDC client/keystore and sign-in configuration, and the tested upstream bundled Compose example has Verify commented out. See [the four-person plan](NEXT_STEPS_4_PERSON_PLAN.md) and [wallet validation gate](WALLET_VALIDATION.md). Do not claim an A1/A2 real-wallet pass from this mock bundle.
+> **DATA LOSS WARNING**: `-v` removes the `playground-postgres` named volume and **permanently deletes all stored runs, steps, and exchanges**.
+
+---
+
+## Persistent storage and migrations
+
+Run history is stored in a PostgreSQL named volume (`playground-postgres`). The `migrate` one-shot service runs `prisma migrate deploy` before the BFF starts; it is idempotent and safe to re-run.
+
+To inspect the database from the host:
+
+```bash
+psql postgresql://playground:playground@127.0.0.1:55433/playground
+```
+
+To run migrations manually (outside Compose):
+
+```bash
+DATABASE_URL=postgresql://playground:playground@127.0.0.1:55433/playground?schema=public \
+  pnpm db:deploy
+```
+
+---
+
+## Troubleshooting
+
+### Port already in use
+
+If `55433` or `5174` are in use:
+
+```bash
+export PLAYGROUND_POSTGRES_PORT=55434
+export PLAYGROUND_WEB_PORT=5175
+docker compose --profile core --profile mocks up --build -d --wait
+```
+
+If local PostgreSQL is on port 5432, it does not conflict with Compose (which uses 55433 by default).
+
+### Service never becomes healthy
+
+Read the service logs:
+
+```bash
+docker compose logs bff --tail=50
+docker compose logs migrate --tail=50
+docker compose logs postgres --tail=30
+```
+
+Common causes:
+- **BFF unhealthy**: Migration failed; check `migrate` logs first.
+- **migrate fails**: PostgreSQL not ready yet; increase `HEALTH_TIMEOUT_MS` or wait and retry.
+- **web unhealthy**: BFF not healthy; fix BFF first.
+
+### Migration failures
+
+If `migrate` exits non-zero:
+1. Check `docker compose logs migrate` for the Prisma error.
+2. Ensure `postgres` is healthy: `docker compose ps postgres`.
+3. If the schema is corrupt, run `docker compose --profile core down -v` to reset.
+
+### Docker memory limits
+
+On Docker Desktop (macOS/Windows), ensure at least 2 GB RAM is allocated (Settings → Resources). The build stage is memory-intensive.
+
+### Apple Silicon / ARM notes
+
+`node:20.19.1-bookworm-slim`, `postgres:16-alpine`, and `nginx:1.27.5-alpine` all publish `linux/arm64` layers. Builds run natively on M-series without Rosetta. If you see `exec format error`, run:
+
+```bash
+docker buildx build --platform linux/arm64 ...
+```
+
+---
+
+## CI and automation
+
+### Workflows
+
+| Workflow file | Trigger | Jobs | Purpose |
+|---|---|---|---|
+| `.github/workflows/ci.yml` | push to `main`/`person4/**`, PRs, `workflow_dispatch` | `verify`, `compose-smoke` | Release gate: typecheck, test, build, audit:secrets, Compose smoke |
+| `.github/workflows/nightly.yml` | daily `0 2 * * *`, `workflow_dispatch` | `nightly-mock-smoke` | Regression: same Compose mock smoke on main daily |
+
+### Job details
+
+**`verify`** (ci.yml):
+- Actions pinned to SHA. Node 20. pnpm 11.25.0.
+- Runs `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm audit:secrets`.
+
+**`compose-smoke`** (ci.yml, depends on `verify`):
+- Builds the Docker stack from scratch with `--build --wait`.
+- Runs `node e2e/smoke.mjs` which asserts health, runs two SD-JWT cases, checks redaction.
+- Always collects and (on failure) uploads container logs as a GitHub Actions artifact.
+- Always runs `docker compose ... down -v` to clean up.
+
+**`nightly-mock-smoke`** (nightly.yml):
+- Same Compose smoke on a daily schedule. Mock/fixture evidence only; not a Collab run.
+
+### Run locally
+
+```bash
+# Equivalent to the verify job:
+corepack enable && corepack prepare pnpm@11.25.0 --activate
+pnpm install --frozen-lockfile
+pnpm typecheck && pnpm test && pnpm build && pnpm audit:secrets
+
+# Equivalent to the compose-smoke job:
+export PLAYGROUND_DRIVER_MODE=collab
+export MOCK_ISSUER_BASE_URL=http://mock-issuer:4101
+export MOCK_VERIFIER_BASE_URL=http://mock-verifier:4102
+docker compose --profile core --profile mocks up --build -d --wait
+node e2e/smoke.mjs
+docker compose --profile core --profile mocks down -v
+```
+
+### Download failure logs
+
+On a failed `compose-smoke` run, go to the GitHub Actions run page → Artifacts → `compose-logs-<run_number>`. The archive contains up to 200 lines of `docker compose logs` output for all services.
+
+---
+
+## Clean-machine verification procedure
+
+A reviewer on a **different machine** should follow these exact steps. This placeholder is marked **independent verification: open** until a second person completes and records it.
+
+```bash
+# 1. Clone the branch under test
+git clone --branch person4/packaging-ci https://github.com/oki-dokii/mosip.git playground-verify
+cd playground-verify
+
+# 2. Confirm no .env, node_modules, or Postman files are present
+ls -la .env* 2>/dev/null || echo "no .env files — correct"
+ls node_modules 2>/dev/null || echo "no node_modules — correct"
+
+# 3. Start the full stack from scratch
+export PLAYGROUND_DRIVER_MODE=collab
+export MOCK_ISSUER_BASE_URL=http://mock-issuer:4101
+export MOCK_VERIFIER_BASE_URL=http://mock-verifier:4102
+docker compose --profile core --profile mocks up --build -d --wait
+
+# 4. Check health
+docker compose --profile core --profile mocks ps
+curl -fsS http://localhost:4000/api/v1/health
+
+# 5. Run the smoke test
+node e2e/smoke.mjs
+
+# 6. Clean up
+docker compose --profile core --profile mocks down -v
+```
+
+Checklist to record:
+
+| Item | Result |
+|---|---|
+| Date | |
+| OS and version | |
+| Docker version (`docker version`) | |
+| Compose version (`docker compose version`) | |
+| Clone succeeded with no extra files | |
+| `docker compose up --build --wait` completed | |
+| All services healthy (`ps`) | |
+| `curl /api/v1/health` returns `storage:postgres` | |
+| `node e2e/smoke.mjs` exits 0 with "All N assertions passed" | |
+| `docker compose down -v` completed | |
+| Independent verification status | **OPEN** |
+
+---
+
+## Evidence limits
+
+> This section is mandatory. Do not remove or soften it.
+
+The Compose stack and smoke test exercise **mock and fixture paths only**:
+
+- The mock issuer is a synthetic OpenID4VCI server with an in-memory key. It does not represent Inji Certify.
+- The mock verifier is a synthetic OpenID4VP server. It does not represent Inji Verify.
+- The Reference Wallet is the playground's own automated wallet client. It is not Inji Web or Inji Wallet mobile.
+- No local Inji Certify, Mimoto, Inji Web, eSignet, or Inji Verify instance is started.
+- The CI nightly run is a mock-mode regression check, not a live Collab run.
+- `DEMO PASS` or a passing smoke test **does not prove Inji interoperability**.
+
+Real-wallet gates:
+- **A1 (Inji Web)**: Requires a dedicated persistent Inji Web test account with login, storage, and Verify presentation. Owned by Person 2. Status: blocked (no test account available).
+- **A2 (Inji mobile wallet)**: Requires a pinned Inji mobile wallet build tested against Certify and Verify. Owned by Person 3.
+
+---
+
+## Not provided
+
+- **Local Inji stack profile**: A `docker compose` profile for Certify + Verify (and eventually Mimoto + Inji Web) is the next integration milestone. It requires: pinned official Inji image tags/digests, OIDC client keystore, eSignet/Mimoto configuration, and network/DNS setup matching the upstream bundled Compose example. These prerequisites are not yet confirmed; do not add placeholder images.
+- **Collab nightly runs**: Require the public test environment credentials and are kept outside this repository.
+- **Production hardening**: TLS termination, authentication, rate limiting, and secrets management are not part of this deployment.
+- **Authentication**: The BFF API has no authentication. Do not expose this stack on a public interface with test credentials.
