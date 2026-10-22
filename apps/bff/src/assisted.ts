@@ -1,3 +1,5 @@
+import { matchesPresentation, webPresentationLink } from "./presentationCorrelation.js";
+import { maskedValue, runCorrelationKey } from "./redaction.js";
 import { withExchangeLock } from "./exchangeLock.js";
 import { randomUUID } from "node:crypto";
 import type { Exchange, RunConfig } from "@playground/shared";
@@ -12,7 +14,7 @@ import { snapshotVersions } from "./versions.js";
 export class AssistedRuns {
   private sessions = new Map<string, { abort: AbortController; mode: "fixture" | "live"; confirmations: AssistedObservation[]; actions: Record<string, string>; deadlineAt: number }>();
   constructor(private readonly repository: RunRepository, private readonly io: () => Server) {}
-  available() { return process.env.ASSISTED_LIVE_ENABLED === "true" && !!this.link(process.env.ASSISTED_WALLET_URL) && !!this.link(process.env.ASSISTED_OFFER_URL) && !!this.link(process.env.CERTIFY_BASE_URL) && !!this.link(process.env.VERIFY_BASE_URL) && !!process.env.VERIFY_CLIENT_ID; }
+  available() { return process.env.ASSISTED_LIVE_ENABLED === "true" && !!this.link(process.env.ASSISTED_WALLET_URL) && !!this.link(process.env.ASSISTED_OFFER_URL) && !!this.link(process.env.CERTIFY_BASE_URL) && !!this.link(process.env.VERIFY_BASE_URL) && !!process.env.VERIFY_CLIENT_ID && !!webPresentationLink(process.env.ASSISTED_PRESENTATION_URL_TEMPLATE, "openid4vp://authorize?request_uri=https%3A%2F%2Fverify.example%2Frequest"); }
   private link(value?: string) { try { const u = new URL(value ?? ""); return u.protocol === "https:" && !u.username && !u.password ? u.href : null; } catch { return null; } }
   active(id: string) { const session = this.sessions.get(id); return !!session && !session.abort.signal.aborted; }
   async start(config: RunConfig, mode: "fixture" | "live", timeoutMs = 60_000) {
@@ -35,10 +37,25 @@ export class AssistedRuns {
         return () => { stopped = true; clearInterval(timer); };
       },
     };
+    let presentationTag: string | undefined;
     const drivers = mode === "fixture" ? createFixtureDrivers(config) : createCollabDrivers(config);
-    drivers.wallet = new InjiWebAssistedDriver({ runId: id, stepIds: { ISSUE_CREDENTIAL: steps.find(s => s.stepKey === "ISSUE_CREDENTIAL")!.id, PRESENT_SUBMIT: steps.find(s => s.stepKey === "PRESENT_SUBMIT")!.id }, source, signal: session.abort.signal, timeoutMs });
+    drivers.wallet = new InjiWebAssistedDriver({ runId: id, stepIds: { ISSUE_CREDENTIAL: steps.find(s => s.stepKey === "ISSUE_CREDENTIAL")!.id, PRESENT_SUBMIT: steps.find(s => s.stepKey === "PRESENT_SUBMIT")!.id }, source, signal: session.abort.signal, timeoutMs, presentationMatches: exchange => {
+      if (mode === "fixture") return true;
+      return matchesPresentation(exchange, presentationTag, process.env.VERIFY_BASE_URL ?? "");
+    } });
     const createRequest = drivers.verifier.createRequest.bind(drivers.verifier);
-    drivers.verifier.createRequest = async context => { const result = await createRequest(context); const link = context.state.get("assisted.presentationUrl"); if (typeof link === "string") session.actions.presentationUrl = link; return result; };
+    drivers.verifier.createRequest = async context => { const result = await createRequest(context);
+      if (mode === "live") {
+        const claims = context.state.get("collab.requestClaims") as { state?: unknown } | undefined;
+        const tag = maskedValue(claims?.state, "$.request.body.state", runCorrelationKey(id));
+        if (!tag.startsWith("[REDACTED hmac:")) throw new AssistedWaitError("observation_error", "verifier request correlation unavailable");
+        presentationTag = tag;
+      }
+      const link = context.state.get("assisted.presentationUrl"); if (typeof link === "string" && mode === "live") {
+        const launch = webPresentationLink(process.env.ASSISTED_PRESENTATION_URL_TEMPLATE, link);
+        if (!launch) throw new AssistedWaitError("observation_error", "Web presentation launch unavailable");
+        session.actions.presentationUrl = launch;
+      } return result; };
     void runDemo(id, this.io(), this.repository, 0, drivers, session.abort.signal, timeoutMs, () => { session.deadlineAt = Date.now() + timeoutMs; }).catch(() => {}).finally(() => { session.abort.abort(); this.sessions.delete(id); });
     return id;
   }

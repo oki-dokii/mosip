@@ -111,3 +111,17 @@ describe("Inji Web assisted wallet driver", () => {
     expect((await presenting).summary).toMatchObject({ presentationObserved: true, verifierResultPending: true });
   });
 });
+
+it("does not advance presentation for unrelated same-run traffic", async () => {
+  const source = new Source(); const abort = new AbortController();
+  const driver = new InjiWebAssistedDriver({ runId: "run", stepIds: { ISSUE_CREDENTIAL: "issue", PRESENT_SUBMIT: "present" }, source, signal: abort.signal, presentationMatches: exchange => (exchange.request as any)?.correlation === "expected-request" });
+  source.emit({ kind: "exchange", exchange: issue }); await driver.requestCredential(context());
+  source.emit({ kind: "storage_confirmation", runId: "run", issuanceExchangeId: "issued", source: "fixture" }); await driver.store(context());
+  let finished = false;
+  const pending = driver.present(context()).then(result => { finished = true; return result; });
+  source.emit({ kind: "exchange", exchange: presentation }); await Promise.resolve();
+  expect(finished).toBe(false);
+  source.emit({ kind: "exchange", exchange: { ...presentation, id: "matching", request: { source: "fixture", correlation: "expected-request" } } });
+  expect((await pending).summary?.exchangeId).toBe("matching");
+  expect(source.listeners.size).toBe(0);
+});

@@ -29,7 +29,7 @@ Start the normal playground. Select JSON-LD, Inji Certify, Inji Web Assisted, In
 
 ## Live deployment prerequisites — A1 remains blocked
 
-Set `ASSISTED_LIVE_ENABLED=true` only after the dedicated account and pinned services exist. Supply HTTPS `ASSISTED_WALLET_URL`, `ASSISTED_OFFER_URL`, `CERTIFY_BASE_URL`, `VERIFY_BASE_URL`, plus deployment-specific `VERIFY_CLIENT_ID` and optional `CREDENTIAL_CONFIGURATION_ID`. These are endpoint/profile settings, not login secrets. Inji Web/Mimoto retains credentials, cookies, OTPs and wallet state; the assisted backend does not use the Reference Wallet's Postman credentials or holder key.
+Set `ASSISTED_LIVE_ENABLED=true` only after the dedicated account and pinned services exist. Supply HTTPS `ASSISTED_WALLET_URL`, `ASSISTED_OFFER_URL`, `CERTIFY_BASE_URL`, `VERIFY_BASE_URL`, plus a deployment-validated HTTPS `ASSISTED_PRESENTATION_URL_TEMPLATE` containing exactly one `{request_uri}` placeholder, deployment-specific `VERIFY_CLIENT_ID` and optional `CREDENTIAL_CONFIGURATION_ID`. These are endpoint/profile settings, not login secrets. Inji Web/Mimoto retains credentials, cookies, OTPs and wallet state; the assisted backend does not use the Reference Wallet's Postman credentials or holder key.
 
 The live request link comes from the configured Verify request. The existing capture origin allowlist must match the canonical deployment. The current ingress is bounded HAR import, not an autonomous network sniffer; feed observed sanitized traffic while the run is active. Storage confirmation is a user assertion and still needs the manual persistence check and sanitized evidence in `A1_WEB_EVIDENCE.md`. A1 is signed off only after a real wallet stores and presents to Verify with `valid`. No such account/deployment was provided in this task, so live interoperability is unverified.
 
@@ -42,3 +42,11 @@ Exchange sequence allocation is serialized across capture imports, orchestration
 General checks: `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm audit:secrets`, `git diff --check`. Database-specific capture tests retain their existing opt-in requirement. These checks establish the integrated fixture implementation; they do not establish real A1 acceptance.
 
 Validated on 23 October: the full unit/API suite, typecheck, production build and secret audit pass; two database-dependent tests remain skipped. All three Chromium browser checks pass, including reconnect through history after reload, connected completion/cancellation and the server matrix. Scoped axe/contrast checks report zero violations. The legacy generic start/replay path rejects assisted wallets, preventing automated-wallet relabeling.
+
+## Review corrections
+
+Status polling is serialized and stops on terminal state; old-run responses are ignored. Coverage reads carry a generation number so a delayed initial read cannot overwrite a newer import. Regression tests cover both races.
+
+Live presentation observations must match the configured verifier origin and the expected run-scoped HMAC of the signed request's state. Raw state is not persisted. Missing/short state or mismatched/redacted correlation fails closed; the driver cannot accept unrelated same-run traffic. A separately running local HAR filter uses a different process key and cannot supply this correlation unchanged. Do not bypass filtering with real-session raw HAR: a live capture adapter must preserve the approved same-process state tag, or the run remains unverified/times out. This integration compatibility must be checked before A1.
+
+A generic native `openid4vp://` URI is no longer advertised as an Inji Web handoff. Live start requires the explicitly configured HTTPS Web launch template; its request URI is encoded into the placeholder. The actual deployment route still needs real-wallet validation. Fixtures do not claim that validation.

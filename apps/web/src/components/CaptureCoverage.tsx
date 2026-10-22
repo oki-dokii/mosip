@@ -7,12 +7,14 @@ export function CaptureCoverage({ runId, onImported, canImport = true }: { runId
   const [rows, setRows] = useState<Coverage[] | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const generation = useRef(0);
   const input = useRef<HTMLInputElement>(null);
-  useEffect(() => { let stopped = false; void api.captureCoverage(runId).then(value => { if (!stopped) setRows(coverage(object(value)?.coverage)); }).catch(() => {}); return () => { stopped = true; }; }, [runId]);
+  useEffect(() => { let stopped = false; const version = ++generation.current; void api.captureCoverage(runId).then(value => { if (!stopped && version === generation.current) setRows(coverage(object(value)?.coverage)); }).catch(() => {}); return () => { stopped = true; }; }, [runId]);
   async function upload() {
     const file = input.current?.files?.[0];
     if (busy || !canImport) return;
     if (!file) { setMessage("Choose a synthetic capture JSON file first."); return; }
+    ++generation.current;
     setBusy(true); setMessage(null);
     try {
       if (file.size > 2_000_000) throw new Error();

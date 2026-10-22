@@ -19,6 +19,7 @@ export interface AssistedDriverOptions {
   source: AssistedObservationSource;
   signal: AbortSignal;
   timeoutMs?: number;
+  presentationMatches?: (exchange: Exchange) => boolean;
 }
 
 // No wallet credentials, cookies, keys, token exchange or presentation generation here.
@@ -107,7 +108,7 @@ export class InjiWebAssistedDriver implements WalletDriver {
   async present(context: DriverContext): Promise<DriverResult> {
     this.check(context);
     if (!this.stored || this.presented) throw new AssistedWaitError("observation_error", "presentation ordering");
-    const observation = await this.wait("presentation", (value) => this.exchange(value, this.options.stepIds.PRESENT_SUBMIT, "inji_verify") && value.kind === "exchange" && value.exchange.seq > (this.issued?.seq ?? Infinity));
+    const observation = await this.wait("presentation", (value) => this.exchange(value, this.options.stepIds.PRESENT_SUBMIT, "inji_verify") && value.kind === "exchange" && value.exchange.seq > (this.issued?.seq ?? Infinity) && (this.options.presentationMatches?.(value.exchange) ?? true));
     this.presented = true;
     return { summary: { presentationObserved: true, exchangeId: observation.kind === "exchange" ? observation.exchange.id : undefined, verifierResultPending: true } };
   }

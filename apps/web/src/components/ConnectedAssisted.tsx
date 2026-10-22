@@ -14,9 +14,19 @@ export function ConnectedAssisted({ config, onRun, resumeId }: { config: RunConf
   useEffect(() => {
     if (!id) return;
     let stopped = false;
-    const update = () => { void api.assistedStatus(id).then(value => { if (!stopped) { setState(value); if (!["pending", "running"].includes(value.run.status)) window.clearInterval(timer); } }).catch(() => { if (!stopped) setMessage("Assisted status unavailable. No verifier verdict can be inferred."); }); };
-    update(); const timer = window.setInterval(update, 250);
-    return () => { stopped = true; window.clearInterval(timer); };
+    let timer: number | undefined;
+    const update = async () => {
+      let again = true;
+      try {
+        const value = await api.assistedStatus(id);
+        if (stopped) return;
+        setState(value);
+        again = ["pending", "running"].includes(value.run.status);
+      } catch { if (!stopped) setMessage("Assisted status unavailable. No verifier verdict can be inferred."); }
+      if (!stopped && again) timer = window.setTimeout(() => { void update(); }, 250);
+    };
+    void update();
+    return () => { stopped = true; if (timer !== undefined) window.clearTimeout(timer); };
   }, [id]);
   const active = (id !== null && state === null) || state?.run.status === "pending" || state?.run.status === "running";
   const fixture = state?.run.serviceVersions?.wallet.startsWith("fixture/");

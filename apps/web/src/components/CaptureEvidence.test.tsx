@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { PublicEvidence } from "./PublicEvidence";
 import { CaptureCoverage } from "./CaptureCoverage";
@@ -52,4 +52,18 @@ it.each(["wrong-run", "oversized", "malformed", "server-error"])("handles %s imp
   await waitFor(() => expect(screen.getByRole("status").textContent).toMatch(/rejected/));
   expect(document.body.textContent).not.toMatch(/CANARY/);
   if (mode !== "server-error") expect(api.importCapture).not.toHaveBeenCalled();
+});
+
+it("does not overwrite imported coverage with an older delayed initial read", async () => {
+  let resolve!: (value: unknown) => void;
+  vi.mocked(api.captureCoverage).mockReturnValueOnce(new Promise(r => { resolve = r; }));
+  const row = { stepKey: "ISSUE_CREDENTIAL", state: "captured", count: 1, reason: "New import", projection: totals };
+  vi.mocked(api.importCapture).mockResolvedValueOnce({ coverage: [row] });
+  render(<CaptureCoverage runId="run" onImported={vi.fn()} />);
+  fireEvent.change(screen.getByLabelText(/Synthetic capture JSON/), { target: { files: [{ size: 20, text: async () => JSON.stringify({ runId: "run" }) }] } });
+  fireEvent.click(screen.getByRole("button", { name: "Import synthetic capture" }));
+  await screen.findByText("ISSUE_CREDENTIAL: captured");
+  await act(async () => { resolve({ coverage: [{ ...row, state: "missing", count: 0, reason: "Old snapshot" }] }); });
+  expect(screen.getByText("ISSUE_CREDENTIAL: captured")).toBeTruthy();
+  expect(screen.queryByText("Old snapshot")).toBeNull();
 });
