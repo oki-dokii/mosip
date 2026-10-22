@@ -3,7 +3,7 @@ import type { Exchange } from "@playground/shared";
 import type { RunRecord } from "../store.js";
 import { tagCapture, type CaptureService } from "./tagging.js";
 import { publicViewForHarPart } from "./public-view.js";
-import { maskedValue, runCorrelationKey } from "../redaction.js";
+import { maskedValue, publicParameter, runCorrelationKey } from "../redaction.js";
 
 type Service = CaptureService;
 export type CaptureOrigins = ReadonlyMap<string, Service>;
@@ -57,12 +57,18 @@ function safeKey(key: string) { return PUBLIC_FIELD_NAMES.has(key) ? key : "[fie
 
 function bodyShape(value: unknown, path: string, redactions: string[], depth = 0, correlationKey?: Uint8Array): unknown {
   if (depth >= 8) { redactions.push(path); return "[REDACTED]"; }
-  if (Array.isArray(value)) return value.slice(0, 32).map((item, index) => bodyShape(item, `${path}[${index}]`, redactions, depth + 1, correlationKey));
+  if (Array.isArray(value)) {
+    if (value.length > 32) redactions.push(`${path}.[truncated:${value.length - 32}]`);
+    return value.slice(0, 32).map((item, index) => bodyShape(item, `${path}[${index}]`, redactions, depth + 1, correlationKey));
+  }
   if (value && typeof value === "object") {
     const result: Record<string, unknown> = {};
-    for (const [rawKey, item] of Object.entries(value).slice(0, 64)) {
+    const entries = Object.entries(value);
+    if (entries.length > 64) redactions.push(`${path}.[truncated:${entries.length - 64}]`);
+    for (const [rawKey, item] of entries.slice(0, 64)) {
       const key = safeKey(rawKey);
-      result[key] = typeof item === "string" && Object.hasOwn(SAFE_ENUMS, key) && SAFE_ENUMS[key]?.has(item) ? item : bodyShape(item, `${path}.${key}`, redactions, depth + 1, correlationKey);
+      const outputKey = key === "[field]" ? `[field:${Object.keys(result).filter((name) => name.startsWith("[field:")).length + 1}]` : key;
+      result[outputKey] = typeof item === "string" && Object.hasOwn(SAFE_ENUMS, key) && SAFE_ENUMS[key]?.has(item) ? item : bodyShape(item, `${path}.${outputKey}`, redactions, depth + 1, correlationKey);
     }
     return result;
   }
@@ -115,10 +121,11 @@ function body(part: Record<string, unknown>, path: string, redactions: string[],
   if (mime === "application/x-www-form-urlencoded") {
     const params = new URLSearchParams(text);
     const result: Record<string, string> = {};
-    for (const [rawKey] of params) {
+    for (const [rawKey, value] of params) {
       const key = safeKey(rawKey);
-      result[key] = "[REDACTED]";
-      redactions.push(`${path}.${key}`);
+      const publicValue = key === "[field]" ? null : publicParameter(key, value);
+      result[key] = publicValue ?? "[REDACTED]";
+      if (publicValue === null) redactions.push(`${path}.${key}`);
     }
     return result;
   }
@@ -183,9 +190,11 @@ export function prepareHarImport(input: unknown, record: RunRecord, origins: Cap
     const id = deterministicId([...identity, occurrence]);
     if (existing.has(id)) { skip("duplicate"); continue; }
     const redactions: string[] = [];
-    const query = [...url.searchParams.keys()].map((key) => {
-      redactions.push(`$.url.${safeKey(key)}`);
-      return `${encodeURIComponent(safeKey(key))}=[REDACTED]`;
+    const query = [...url.searchParams].map(([key, value]) => {
+      const outputKey = safeKey(key);
+      const publicValue = outputKey === "[field]" ? null : publicParameter(outputKey, value);
+      if (publicValue === null) redactions.push(`$.url.${outputKey}`);
+      return `${encodeURIComponent(outputKey)}=${publicValue ?? "[REDACTED]"}`;
     }).join("&");
     if (url.hash) redactions.push("$.url.fragment");
     const template = route.id === "certify-metadata" ? `/.well-known/${url.pathname.split("/").filter(Boolean).at(-1)}` : route.template;
@@ -214,9 +223,16 @@ export function browserCoverage(record: RunRecord, added: Exchange[] = []) {
   const observed = [...new Map([...record.exchanges, ...added].map((exchange) => [exchange.id, exchange])).values()]
     .filter((exchange) => (exchange.request as Record<string, unknown> | null)?.source === "har_import");
   return record.steps.map((step) => {
-    const count = observed.filter((exchange) => exchange.stepId === step.id).length;
+    const stepExchanges = observed.filter((exchange) => exchange.stepId === step.id);
+    const count = stepExchanges.length;
+    const projections = stepExchanges.flatMap((exchange) => [exchange.request, exchange.response].map((part) => (part as Record<string, unknown>).publicView as Record<string, unknown> | undefined));
+    const projection = { withheldNames: 0, truncatedItems: 0, unsupportedKinds: 0 };
+    for (const part of projections) for (const field of Object.keys(projection) as (keyof typeof projection)[]) {
+      const value = part?.[field];
+      if (typeof value === "number" && Number.isSafeInteger(value) && value > 0) projection[field] += value;
+    }
     const internal = ["INIT", "STORE", "REPORT"].includes(step.stepKey);
-    return { stepKey: step.stepKey, state: count ? "captured" : internal ? "not_observable" : "missing", count,
+    return { stepKey: step.stepKey, state: count ? "captured" : internal ? "not_observable" : "missing", count, projection,
       reason: count ? "Browser HTTP exchange observed; endpoint access does not prove wallet storage or protocol validity."
         : internal ? "Browser HAR cannot establish internal run operations or wallet-local storage."
         : "No matching browser HTTP exchange observed; this may be server-side, out of window, or absent. This is not a failed-step verdict." };

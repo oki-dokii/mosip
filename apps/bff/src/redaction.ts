@@ -4,11 +4,32 @@ const SECRET_FIELDS = new Set([
   "access_token", "refresh_token", "c_nonce", "nonce", "state", "pre_authorized_code", "client_assertion", "challenge",
   "code_verifier", "authorization", "proxy_authorization", "cookie", "set_cookie", "d", "individualid", "individual_id", "otp", "proof", "vp_token",
   "tx_code", "id_token", "credential", "client_secret", "private_key", "private_key_jwk", "x_api_key", "x_csrf_token", "x_xsrf_token",
+  "user_pin", "password", "passwd", "api_key", "secret", "token", "assertion", "transaction_id", "jsessionid", "session_id",
+  "access_token_hint", "refresh_token_hint", "refresh_token_id", "session_token", "auth_token", "bearer_token", "refresh_secret",
 ]);
 const PRIVATE_JWK = new Set(["d", "p", "q", "dp", "dq", "qi", "oth", "k"]);
 const COMPACT_SECRET_FIELDS = new Set([...SECRET_FIELDS].map((key) => key.replace(/_/g, "")));
 const ERROR_CODES = new Set(["invalid_request", "invalid_grant", "invalid_token", "invalid_proof", "access_denied", "CAPTURE_INVALID_HAR", "CAPTURE_TOO_LARGE", "CAPTURE_RUN_MISMATCH"]);
 const masterKey = randomBytes(32);
+const SAFE_PARAMS: Record<string, ReadonlySet<string>> = {
+  response_type: new Set(["code", "token", "id_token", "vp_token"]),
+  grant_type: new Set(["authorization_code", "urn:ietf:params:oauth:grant-type:pre-authorized_code", "refresh_token", "client_credentials"]),
+  scope: new Set(["openid", "profile", "email", "offline_access"]),
+  client_id: new Set(["mock-verifier", "playground"]),
+};
+export const publicParameter = (name: string, value: string) => SAFE_PARAMS[normalizedKey(name)]?.has(value) ? value : null;
+const safeParamName = (name: string) => /^[a-z][a-z0-9_-]{0,63}$/i.test(name) ? name : "[field]";
+function containsJwt(value: string) {
+  const candidates = value.match(/(?<![A-Za-z0-9_-])[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}(?![A-Za-z0-9_-])/g) ?? [];
+  return candidates.some((candidate) => {
+    try {
+      const [head, body] = candidate.split(".");
+      const h = JSON.parse(Buffer.from(head!, "base64url").toString("utf8"));
+      const p = JSON.parse(Buffer.from(body!, "base64url").toString("utf8"));
+      return h && typeof h === "object" && !Array.isArray(h) && (typeof h.alg === "string" || typeof h.typ === "string") && p && typeof p === "object" && !Array.isArray(p);
+    } catch { return false; }
+  });
+}
 export const normalizedKey = (key: string) => key.normalize("NFKC").replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, "").replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase().replace(/[.-]/g, "_");
 export const runCorrelationKey = (runId: string) => createHmac("sha256", masterKey).update(runId).digest();
 
@@ -21,15 +42,20 @@ export function maskedValue(value: unknown, path: string, key?: Uint8Array): str
 
 export function createRedactor(correlationKey?: Uint8Array) {
   return (value: unknown, path = "$", redactions: string[] = []): { value: unknown; redactions: string[] } => {
-    const seen = new WeakSet<object>();
+    const ancestors = new WeakSet<object>();
     let budget = 2048;
     const mask = (item: unknown, itemPath: string) => { redactions.push(itemPath); return maskedValue(item, itemPath, correlationKey); };
     function walk(item: unknown, itemPath: string, depth: number): unknown {
       if (depth > 12 || budget-- <= 0) return mask(item, itemPath);
       if (item && typeof item === "object") {
-        if (seen.has(item)) return mask(item, itemPath);
-        seen.add(item);
-        if (Array.isArray(item)) return item.slice(0, 64).map((child, i) => walk(child, `${itemPath}[${i}]`, depth + 1));
+        if (ancestors.has(item)) return mask(item, itemPath);
+        ancestors.add(item);
+        if (Array.isArray(item)) {
+          const result = item.slice(0, 64).map((child, i) => walk(child, `${itemPath}[${i}]`, depth + 1));
+          if (item.length > 64) redactions.push(`${itemPath}.[truncated:${item.length - 64}]`);
+          ancestors.delete(item);
+          return result;
+        }
         const input = item as Record<string, unknown>;
         const output: Record<string, unknown> = Object.create(null);
         const kty = input.kty;
@@ -44,11 +70,13 @@ export function createRedactor(correlationKey?: Uint8Array) {
           if (/[^\x20-\x7E]/.test(rawKey) || COMPACT_SECRET_FIELDS.has(compactKey) || secretCode || (jwk && PRIVATE_JWK.has(compactKey)) || (compactKey === "request" && typeof child === "string")) output[rawKey] = mask(child, nextPath);
           else output[rawKey] = walk(child, nextPath, depth + 1);
         }
+        if (Object.keys(input).length > 128) redactions.push(`${itemPath}.[truncated:${Object.keys(input).length - 128}]`);
+        ancestors.delete(item);
         return output;
       }
       if (typeof item !== "string" || item === "[REDACTED]" || /^\[REDACTED hmac:[a-f0-9]{16}\]$/.test(item)) return item;
       if (Buffer.byteLength(item) > 131_072) return mask(item, itemPath);
-      if (/^[A-Za-z0-9_+\/-]{64,}={0,2}$/.test(item) || /\bBearer\s+[^\s]+/i.test(item) || /\b[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/.test(item) || /-----BEGIN (?:[A-Z ]*PRIVATE KEY)-----/.test(item)) return mask(item, itemPath);
+      if (/^[A-Za-z0-9_+\/-]{64,}={0,2}$/.test(item) || /\bBearer\s+[^\s]+/i.test(item) || containsJwt(item) || /-----BEGIN (?:[A-Z ]*PRIVATE KEY)-----/.test(item)) return mask(item, itemPath);
       if (/^\s*[\[{]/.test(item)) {
         try { return JSON.stringify(walk(JSON.parse(item), itemPath, depth + 1)); } catch { return mask(item, itemPath); }
       }
@@ -60,9 +88,10 @@ export function createRedactor(correlationKey?: Uint8Array) {
           url.search = "";
           for (const [name, content] of params) {
             const p = `${itemPath}.${name}`;
+            const publicName = safeParamName(name);
             if (/^\s*[\[{]/.test(content) && ["credential_offer", "presentation_definition", "dcql_query"].includes(name)) {
-              try { url.searchParams.append(name, JSON.stringify(walk(JSON.parse(content), p, depth + 1))); } catch { url.searchParams.append(name, mask(content, p)); }
-            } else url.searchParams.append(name, mask(content, p));
+              try { url.searchParams.append(publicName, JSON.stringify(walk(JSON.parse(content), p, depth + 1))); } catch { url.searchParams.append(publicName, mask(content, p)); }
+            } else url.searchParams.append(publicName, publicParameter(name, content) ?? mask(content, p));
           }
           url.pathname = url.pathname.split("/").map((segment) => segment.length >= 32 ? mask(segment, `${itemPath}.path`) : segment).join("/");
           if (url.hash) { redactions.push(`${itemPath}.fragment`); url.hash = ""; }
@@ -71,7 +100,7 @@ export function createRedactor(correlationKey?: Uint8Array) {
       }
       if (/^[\w.%~-]+=/.test(item)) {
         const params = new URLSearchParams(item);
-        return [...params].map(([name, content]) => `${encodeURIComponent(name)}=${encodeURIComponent(mask(content, `${itemPath}.${name}`))}`).join("&");
+        return [...params].map(([name, content]) => `${encodeURIComponent(safeParamName(name))}=${encodeURIComponent(publicParameter(name, content) ?? mask(content, `${itemPath}.${name}`))}`).join("&");
       }
       return item;
     }

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timezone": "Asia/Kolkata",
+  "evidenceTier": "synthetic_capture_checks",
+  "sourceCommitBeforeChanges": "523bf2b5ee768f13f05aaf6a42b6eab3237d268f",
+  "testedWorkingTree": true,
+  "checks": [
+    {
+      "command": "CAPTURE_POSTGRES_TEST_URL=<local-test-database> pnpm test",
+      "status": "passed",
+      "passed": 123,
+      "skipped": 0,
+      "breakdown": {
+        "node_scripts_and_spikes": 15,
+        "bff": 102,
+        "shared": 3,
+        "mock_issuer": 2,
+        "mock_verifier": 1
+      }
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed"
+    },
+    {
+      "command": "pnpm audit:secrets",
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    }
+  ],
+  "observations": [
+    "Driver redactor independently tested against 16 newly listed plausible secret fields and variants.",
+    "Truncation and withheld/unsupported counts verified with synthetic large and unknown-format inputs.",
+    "Split CLI created two importable owner-only files for 101 synthetic protocol entries and removed a partial file on collision.",
+    "Public competitor comparison documents and links removed from the repository working tree."
+  ],
+  "limits": [
+    "Local PostgreSQL checks require an opt-in test database; hosted CI does not run them yet.",
+    "UI renderer for public projection and coverage remains Person 2 work.",
+    "CBOR/mDoc content is counted as unsupported, not decoded.",
+    "No real Inji Web/mobile presentation or proxy forwarding was observed."
+  ]
+}

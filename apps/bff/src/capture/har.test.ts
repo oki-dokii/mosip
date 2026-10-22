@@ -128,6 +128,21 @@ describe("passive HAR capture", () => {
     expect(JSON.stringify(result)).not.toContain("CANARY_");
   });
 
+  it("preserves separate unknown field shapes, counts truncation and exposes safe protocol enums only", () => {
+    const record = fixture();
+    const body = { FIRST_SECRET_FIELD: "CANARY_FIRST", SECOND_SECRET_FIELD: "CANARY_SECOND",
+      array: Array.from({ length: 40 }, (_, i) => `CANARY_ARRAY_${i}`),
+      wide: Object.fromEntries(Array.from({ length: 70 }, (_, i) => [`private${i}`, "CANARY_WIDE"])) };
+    const result = prepareHarImport(wrap(record.run.id, [entry("https://issuer.example/credential?response_type=code&client_id=mock-verifier&state=CANARY_STATE", "application/json", JSON.stringify(body))]), record, origins);
+    const shape = (result.exchanges[0]?.request as { body: Record<string, unknown> }).body;
+    expect(shape["[field:1]"]).toBeTruthy();
+    expect(shape["[field:2]"]).toBeTruthy();
+    expect(result.exchanges[0]?.url).toContain("response_type=code&client_id=mock-verifier&state=[REDACTED]");
+    expect(result.exchanges[0]?.redactions).toContain("$.request.body.[field:3].[truncated:8]");
+    expect(result.coverage.find((item) => item.stepKey === "ISSUE_CREDENTIAL")?.projection.truncatedItems).toBeGreaterThan(0);
+    expect(JSON.stringify(result)).not.toContain("CANARY_");
+  });
+
   it("keeps malformed JSON body content out of imported exchanges", () => {
     const record = fixture();
     const badBody = `{ "credential": "${secret}"`;

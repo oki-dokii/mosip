@@ -17,11 +17,43 @@ describe("redact", () => {
   });
 
   it("masks bearer values, compact JWTs, private PEMs, and request objects safely", () => {
-    const result = redact({ note: "Bearer token-value", jwt: "abcdefghijk.abcdefghijk.abcdefghijk",
+    const jwt = `${Buffer.from(JSON.stringify({ alg: "EdDSA" })).toString("base64url")}.${Buffer.from(JSON.stringify({ iss: "synthetic" })).toString("base64url")}.abcdefghijk`;
+    const result = redact({ note: "Bearer token-value", jwt,
       pem: "-----BEGIN PRIVATE KEY-----\nsynthetic\n-----END PRIVATE KEY-----", request: { method: "POST" },
       requestObject: "visible" });
     expect(result.value).toEqual({ note: "[REDACTED]", jwt: "[REDACTED]", pem: "[REDACTED]", request: { method: "POST" }, requestObject: "visible" });
   });
+});
+
+it("covers independently specified driver secret names and plausible variants", () => {
+  // Keep this list independent of the implementation's SECRET_FIELDS constant.
+  const names = ["user_pin", "password", "api_key", "secret", "token", "assertion", "transaction_id", "jsessionid",
+    "session_id", "access_token_hint", "refresh_token_hint", "refresh_token_id", "session_token", "auth_token", "bearer_token", "refresh_secret"];
+  for (const name of names) {
+    const value = `SYNTHETIC_DRIVER_VALUE_${name}`;
+    const result = redact({ data: { [name]: value } });
+    expect(JSON.stringify(result), name).not.toContain(value);
+    expect(result.redactions).toContain(`$.data.${name}`);
+  }
+});
+
+it("records truncation and preserves repeated non-cyclic subobjects", () => {
+  const shared = { access_token: "CANARY_SHARED" };
+  const result = redact({ first: shared, second: shared, list: Array.from({ length: 70 }, () => "safe"),
+    wide: Object.fromEntries(Array.from({ length: 130 }, (_, i) => [`field${i}`, "safe"])) });
+  expect(result.value).toMatchObject({ first: { access_token: "[REDACTED]" }, second: { access_token: "[REDACTED]" } });
+  expect(result.redactions).toContain("$.list.[truncated:6]");
+  expect(result.redactions).toContain("$.wide.[truncated:2]");
+});
+
+it("keeps public protocol enums while masking unknown parameter values and domain-like strings remain legible", () => {
+  const domain = "credential-issuer.mosip-collab.example-domain";
+  const result = redact({ domain,
+    url: "https://issuer.example/authorize?response_type=code&grant_type=authorization_code&scope=openid&client_id=mock-verifier&state=CANARY_STATE&client_id=CANARY_CLIENT",
+    form: "response_type=code&grant_type=authorization_code&scope=openid&client_id=mock-verifier&otp=CANARY_OTP" });
+  expect(result.value).toMatchObject({ domain });
+  expect(JSON.stringify(result)).toContain("response_type=code");
+  expect(JSON.stringify(result)).not.toContain("CANARY_");
 });
 
 describe("redaction v2", () => {

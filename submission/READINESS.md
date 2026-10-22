@@ -35,7 +35,7 @@ This folder is a separate submission handoff. It does not change application cod
 | License and credits | Partial | [MPL-2.0](../LICENSE) and [direct dependency credits](../ATTRIBUTIONS.md) added; confirm team agreement and complete transitive/asset notice audit |
 | Fresh live report and matrix | Prepared for one combination | [2026-10-21 evidence](evidence/README.md) contains exported mock X.509 issuer → Reference Wallet → Collab Verify positive/negative runs; all-Inji wallet proof remains open |
 | Interoperability gaps | Drafted | [GAPS.md](../GAPS.md) separates observed findings from upstream issues, none filed yet |
-| Competitive catch-up | Prepared | [CATCH_UP.md](../CATCH_UP.md) prioritizes local Inji integration, CI, and independent reproduction; rival README claims are not counted as our evidence |
+| Remaining integration plan | Prepared | [Four-person plan](../NEXT_STEPS_4_PERSON_PLAN.md) prioritizes local Inji integration, CI and independently reproduced findings |
 
 ## Release gates to verify before claiming completion
 

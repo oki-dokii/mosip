@@ -49,7 +49,12 @@ async function main() {
   for (const path of paths) {
     for (const finding of scanFilename(path)) findings.push({ path, ...finding });
     if (!shouldScanContents(path)) continue;
-    const bytes = await readFile(resolve(root, path));
+    // git ls-files includes tracked paths deleted in the current working tree.
+    const bytes = await readFile(resolve(root, path)).catch((error) => {
+      if (error?.code === "ENOENT") return null;
+      throw error;
+    });
+    if (!bytes) continue;
     if (bytes.includes(0)) continue;
     for (const finding of scanText(bytes.toString("utf8"))) findings.push({ path, ...finding });
   }

@@ -15,12 +15,41 @@ async function files() {
   const dir = await mkdtemp(join(tmpdir(), "capture-cli-")); directories.push(dir);
   return { input: join(dir, "input.json"), output: join(dir, "output.json") };
 }
-function cli(input: string, output: string) {
-  return exec(process.execPath, ["--import", "tsx", "src/capture/filter.ts", input, output, runId], {
+function cli(input: string, output: string, split = false) {
+  return exec(process.execPath, ["--import", "tsx", "src/capture/filter.ts", input, output, runId, ...(split ? ["--split"] : [])], {
     cwd, timeout: 10_000, maxBuffer: 32_768,
     env: { ...process.env, CAPTURE_ORIGINS_JSON: JSON.stringify({ "https://issuer.example": "certify" }) },
   });
 }
+
+it("CLI --split creates import-sized owner-only chunks without raw values", async () => {
+  const { input, output } = await files();
+  const entries = Array.from({ length: 101 }, (_, i) => ({ ...harEntry({ access_token: "CANARY_SPLIT" }), startedDateTime: new Date(i * 1000).toISOString() }));
+  await writeFile(input, JSON.stringify({ log: { entries } }));
+  const { stdout } = await cli(input, output, true);
+  expect(JSON.parse(stdout)).toMatchObject({ outputEntries: 101, chunks: 2 });
+  for (const [index, count] of [[1, 100], [2, 1]]) {
+    const path = output.replace(".json", `.part-${String(index).padStart(3, "0")}.json`);
+    const content = await readFile(path, "utf8");
+    expect(JSON.parse(content).har.log.entries).toHaveLength(count!);
+    expect(content).not.toContain("CANARY_");
+    expect((await stat(path)).mode & 0o777).toBe(0o600);
+  }
+}, 20_000);
+
+it("split export removes newly created parts if a later output already exists", async () => {
+  const { input, output } = await files();
+  const entries = Array.from({ length: 101 }, (_, i) => ({ ...harEntry({ token: "CANARY_SPLIT" }), startedDateTime: new Date(i * 1000).toISOString() }));
+  await writeFile(input, JSON.stringify({ log: { entries } }));
+  const first = output.replace(".json", ".part-001.json");
+  const second = output.replace(".json", ".part-002.json");
+  await writeFile(second, "pre-existing");
+  const error = await cli(input, output, true).catch((failure: unknown) => failure) as { code: number; stderr: string };
+  expect(error.code).toBe(1);
+  expect(error.stderr).not.toContain("CANARY_");
+  await expect(stat(first)).rejects.toMatchObject({ code: "ENOENT" });
+  expect(await readFile(second, "utf8")).toBe("pre-existing");
+}, 20_000);
 afterEach(async () => { await Promise.all(directories.splice(0).map((dir) => rm(dir, { recursive: true, force: true }))); });
 
 it("CLI filters real-shaped asset-heavy HAR, unknown timings and bad entries with counted reasons", async () => {

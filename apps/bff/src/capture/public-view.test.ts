@@ -54,4 +54,15 @@ describe("public protocol projection before storage", () => {
     expect(JSON.stringify(summaries({ status: bad, error: bad }))).not.toContain("CANARY_INVALID");
   });
 
+  it("counts withheld credential names, unsupported mDoc and clipped arrays without exposing names", () => {
+    const projection = summaries({ credential: { type: ["VerifiableCredential", "FarmerCredential", "CANARY_SECRET_TYPE"],
+      credentialSubject: { portrait: "CANARY_PORTRAIT", farmer_id: "CANARY_FARMER" } },
+      format: "mso_mdoc", credentials: Array.from({ length: 40 }, () => ({ type: ["VerifiableCredential"] })) });
+    expect(projection.withheldNames).toBeGreaterThanOrEqual(3);
+    expect(projection.truncatedItems).toBeGreaterThanOrEqual(24);
+    expect(projection.unsupportedKinds).toBeGreaterThanOrEqual(1);
+    expect(JSON.stringify(projection)).not.toContain("CANARY_");
+    expect(publicViewForHarPart({ content: { mimeType: "application/cbor", text: "CANARY_CBOR" } }, origins).unsupportedKinds).toBe(1);
+  });
+
 });

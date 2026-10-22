@@ -21,3 +21,5 @@ This pair proves the tested mock issuer / Reference Wallet / Inji Verify behavio
 [Person 1 hardening check record](2026-10-22-person1-hardening-checks.json) records 116 passing tests with both PostgreSQL checks enabled, plus typecheck, build and secret audit. It covers the requested items 1–10; the four mock presentation probes remain a Person 3 handoff. Socket emission assertions use a test double, and the generated JSON-LD credential is a sanitization specimen, not a signature-validation result.
 
 [October 21 run shape comparison](2026-10-22-capture-shape-diff.json) was generated from committed reports with `scripts/evidence-tools.mjs`. It shows differing result/submission shapes between the valid and bad-signature scenarios. It is not a new Collab run or an upstream regression claim. See [CAPTURE.md](../../CAPTURE.md) for commands, comparison limits and private issue-draft export.
+
+[Reviewer follow-up check record](2026-10-22-reviewer-followup-checks.json) covers the additional redaction and projection tests, split filter, documentation cleanup, and remaining UI handoff. It is synthetic local proof, not real-wallet acceptance evidence.

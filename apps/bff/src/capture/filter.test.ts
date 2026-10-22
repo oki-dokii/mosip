@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { filterHar } from "./filter.js";
+import { filterHar, filterHarChunks } from "./filter.js";
 import { prepareHarImport } from "./har.js";
 import { createSteps } from "../orchestrator.js";
 import type { RunSummary } from "@playground/shared";
@@ -26,5 +26,17 @@ describe("local safe HAR filter", () => {
     const entry = fixture.har.log.entries[1];
     const entries = Array.from({ length: 101 }, (_, i) => ({ ...entry, startedDateTime: new Date(i).toISOString() }));
     expect(() => filterHar({ log: { entries } }, fixture.runId, origins)).toThrow(/SPLIT_REQUIRED/);
+    const chunks = filterHarChunks({ log: { entries } }, fixture.runId, origins);
+    expect(chunks.map((part) => part.report.outputEntries)).toEqual([100, 1]);
+    expect(chunks.map((part) => part.report.chunkIndex)).toEqual([1, 2]);
+    expect(chunks[0]?.report.skippedReasons).toEqual(chunks[1]?.report.skippedReasons);
+    expect(JSON.stringify(chunks)).not.toContain("CANARY_");
+    const run = { id: fixture.runId, status: "passed" } as RunSummary;
+    const record = { run, steps: createSteps(run.id), exchanges: [] as ReturnType<typeof prepareHarImport>["exchanges"] };
+    for (const part of chunks) {
+      const prepared = prepareHarImport(part, record, origins);
+      record.exchanges.push(...prepared.exchanges);
+    }
+    expect(record.exchanges).toHaveLength(101);
   });
 });
