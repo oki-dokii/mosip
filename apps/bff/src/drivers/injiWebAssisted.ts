@@ -57,7 +57,7 @@ export class InjiWebAssistedDriver implements WalletDriver {
         try { unsubscribe?.(); } catch { /* Never expose source cleanup errors. */ }
         if (error) reject(error); else resolve(observation!);
       };
-      const abort = () => finish(new AssistedWaitError("cancelled", checkpoint));
+      const abort = () => finish(signal.reason instanceof AssistedWaitError ? signal.reason : new AssistedWaitError("cancelled", checkpoint));
       const receive = (observation: AssistedObservation) => {
         if (signal.aborted) { abort(); return; }
         if (Date.now() >= deadline) { finish(new AssistedWaitError("timeout", checkpoint)); return; }

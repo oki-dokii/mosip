@@ -1,3 +1,4 @@
+import { SupportedMatrix } from "./SupportedMatrix";
 import { useMemo, useState } from "react";
 import type { RunSummary } from "@playground/shared";
 import { evidenceLabels, evidenceTier } from "@playground/shared/evidence";
@@ -54,6 +55,7 @@ export function RunArchive({ history, matrix, active, onActiveChange, onSelectRu
         <select aria-label="Filter verifier version" className={selectClass} value={verifierVersion} onChange={(event) => setVerifierVersion(event.target.value)}><option value="">All verifier versions</option>{versions.verifier.map((version) => <option key={version} value={version}>{version}</option>)}</select>
         <span className="ml-auto self-center text-xs text-slate-500">{rows.length} runs</span>
       </div>
+      {active === "matrix" && <SupportedMatrix />}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1050px] text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500"><tr><th className="px-6 py-3">Run</th><th className="px-4 py-3">Journey</th><th className="px-4 py-3">Format</th><th className="px-4 py-3">Versions</th><th className="px-4 py-3">Fault</th><th className="px-4 py-3">Outcome</th><th className="px-4 py-3">Evidence</th><th className="px-6 py-3">Created</th></tr></thead>

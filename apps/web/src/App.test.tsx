@@ -7,6 +7,7 @@ import { api } from "./lib/api";
 import { AssistedJourney } from "./lib/assistedJourney";
 
 vi.mock("./lib/api", () => ({ api: {
+  assistedCapabilities: vi.fn(async () => ({ liveAvailable: false })),
   metadata: vi.fn(async () => ({
     issuers: [{ id: "inji_certify", name: "Inji Certify", kind: "inji" }],
     wallets: [{ id: "reference_wallet", name: "Reference Wallet", kind: "reference" }, { id: "inji_web_assisted", name: "Inji Web", kind: "inji" }],

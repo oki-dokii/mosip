@@ -10,3 +10,5 @@ All artifacts here are synthetic or independent-mock evidence. **No live Inji We
 The Chromium smoke also completes an SD-JWT positive control with independent local mock issuer/verifier services and Reference Wallet, checks API/DOM for synthetic canary absence, and exercises keyboard fixture actions. The imported fixture includes a synthetic JSON-LD credential variant solely to exercise public projection; it does not describe the mock run's issued credential or prove wallet interoperability.
 
 Reproduce with `pnpm --filter @playground/web test:browser` after installing Chromium. The command refreshes the screenshots and scoped axe reports. Main test artifacts stay in `/tmp/person2-playwright-results`, outside the repository. Screenshot layout was inspected; a countdown reset issue found during inspection was fixed and regression-tested.
+
+5. `connected-assisted.png` and `connected-accessibility.json`: the backend-assisted fixture after cancellation, with scoped axe checks. A separate browser test completes the API-backed driver, then cancels a fresh run and verifies server-provided `not_tested` matrix cells. No live wallet proof is claimed.

@@ -105,6 +105,10 @@ async function createJwt(privateJwk: JWK, payload: JsonObject, header: JsonObjec
 async function loadConfig(context: DriverContext): Promise<CollabConfig> {
   const existing = context.state.get(STATE.config);
   if (existing) return existing as CollabConfig;
+  if (context.config.wallet === "inji_web_assisted" && context.config.format === "ldp_vc") {
+    const config: CollabConfig = { authBaseUrl: "", certifyBaseUrl: process.env.CERTIFY_BASE_URL ?? "", verifyBaseUrl: process.env.VERIFY_BASE_URL ?? "", postmanEnvironmentPath: "", mockOtp: "", clientId: "", redirectUri: "", individualId: "", clientPrivateJwk: {}, credentialConfigurationId: process.env.CREDENTIAL_CONFIGURATION_ID ?? "FarmerCredential_VCDM2.0", credentialScope: "", credentialFormat: "ldp_vc" };
+    context.state.set(STATE.config, config); return config;
+  }
   if (context.config.wallet !== "reference_wallet" || ((context.config.issuer === "mock_issuer" || context.config.verifier === "mock_verifier") && context.config.format !== "vc_sd_jwt")) {
     throw new Error("Collab mode supports the Reference Wallet; mock roles support SD-JWT VC only");
   }
@@ -198,10 +202,10 @@ async function request(context: DriverContext, url: string, options: RequestInit
   const cookie = context.state.get(STATE.cookie);
   if (typeof cookie === "string" && cookie) headers.set("cookie", cookie);
   const startedAt = performance.now();
-  const response = await fetch(url, { ...fetchOptions, headers, signal: AbortSignal.timeout(20_000) });
+  const response = await fetch(url, { ...fetchOptions, headers, signal: context.signal ? AbortSignal.any([context.signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000) });
   const durationMs = Math.round(performance.now() - startedAt);
   const setCookies = response.headers.getSetCookie?.() ?? [];
-  if (setCookies.length) context.state.set(STATE.cookie, setCookies.map((item) => item.split(";", 1)[0]).join("; "));
+  if (setCookies.length && context.config.wallet !== "inji_web_assisted") context.state.set(STATE.cookie, setCookies.map((item) => item.split(";", 1)[0]).join("; "));
   const text = await response.text();
   let body: any;
   try { body = text ? JSON.parse(text) : null; } catch { body = text; }
@@ -571,7 +575,7 @@ class CollabVerifierDriver implements VerifierDriver {
     const config = await loadConfig(context);
     const url = `${config.verifyBaseUrl}/v2/vp-request`;
     const body = {
-      clientId: "decentralized_identifier:did:web:injiverify.collab.mosip.net:v1:verify",
+      clientId: process.env.VERIFY_CLIENT_ID ?? "decentralized_identifier:did:web:injiverify.collab.mosip.net:v1:verify",
       nonce: `playground-${config.credentialFormat === "dc+sd-jwt" ? "sdjwt" : "jsonld"}-${Date.now()}`,
       dcqlQuery: { credentials: [{ id: "credential", format: config.credentialFormat, meta: config.credentialFormat === "dc+sd-jwt"
         ? { vct_values: [config.credentialConfigurationId] }
@@ -585,6 +589,7 @@ class CollabVerifierDriver implements VerifierDriver {
     const requestObject = await request(context, created.body.requestUri, { headers: { accept: "application/oauth-authz-req+jwt" } });
     const requestClaims = decodeJwtPayload(requestObject.body);
     context.state.set(STATE.verifyTransactionId, created.body.transactionId);
+    context.state.set("assisted.presentationUrl", `openid4vp://authorize?request_uri=${encodeURIComponent(created.body.requestUri)}`);
     context.state.set(STATE.verifyRequestId, created.body.requestId);
     context.state.set(STATE.requestClaims, requestClaims);
     return {

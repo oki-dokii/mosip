@@ -8,7 +8,7 @@ import { coverage, publicView } from "../lib/captureEvidence";
 
 const totals = { withheldNames: 2, truncatedItems: 3, unsupportedKinds: 1 };
 const view = { schemaVersion: 1, authenticity: "not_verified", items: [{ kind: "verifiable_credential", summary: { types: ["FarmerCredential"] } }], ...totals };
-vi.mock("../lib/api", () => ({ api: { importCapture: vi.fn() } }));
+vi.mock("../lib/api", () => ({ api: { importCapture: vi.fn(), captureCoverage: vi.fn(async () => ({})) } }));
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 it("renders public names, authenticity, counters, capture reason and unknown timing", () => {
   render(<PublicEvidence label="Request" value={{ publicView: view, capture: { schemaVersion: 1, ruleId: "certify-credential", why: "Explicit credential endpoint", redactionCount: 4, timingKnown: false } }} />);

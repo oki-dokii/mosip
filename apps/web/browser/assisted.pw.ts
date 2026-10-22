@@ -62,3 +62,28 @@ test("independent mock happy path and synthetic capture remain safe in browser/A
   await page.getByRole("region", { name: "Response public evidence" }).screenshot({ path: new URL("public-evidence.png", evidence).pathname });
   await page.getByRole("region", { name: "Browser capture coverage" }).screenshot({ path: new URL("capture-coverage.png", evidence).pathname });
 });
+
+test("connected assisted API journey completes, cancels and reloads coverage", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "W3C VC JSON-LD" }).click();
+  await page.locator("label").filter({ has: page.getByRole("radio", { name: /Inji Web/ }) }).click();
+  const panel = page.getByRole("region", { name: "Connected assisted journey" });
+  await panel.getByRole("button", { name: "Start connected fixture" }).click();
+  await panel.getByRole("button", { name: "Inject fixture issuance", exact: true }).click();
+  await panel.getByRole("button", { name: "Inject fixture storage confirmation" }).click();
+  await panel.getByRole("button", { name: "Inject fixture presentation", exact: true }).click();
+  await expect(panel).toContainText("Verifier outcome: valid");
+  await page.reload();
+  await page.getByRole("button", { name: /Open run / }).first().click();
+  await expect(panel).toContainText("Verifier outcome: valid");
+  await panel.getByRole("button", { name: "Start connected fixture" }).click();
+  await panel.getByRole("button", { name: "Cancel backend-assisted run" }).click();
+  await expect(panel).toContainText("cancelled");
+  await page.getByRole("button", { name: "Latest matrix" }).click();
+  await expect(page.getByRole("region", { name: "Supported combinations" })).toContainText("not_tested");
+  await page.addScriptTag({ path: require.resolve("axe-core/axe.min.js") });
+  const result = await page.evaluate(async () => (window as any).axe.run(document.querySelector('[aria-label="Connected assisted journey"]'), { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21aa"] } }));
+  expect(result.violations).toEqual([]);
+  await writeFile(new URL("connected-accessibility.json", evidence), JSON.stringify({ scope: "Connected assisted journey", violations: result.violations, passes: result.passes.map((item: any) => item.id) }, null, 2));
+  await panel.screenshot({ path: new URL("connected-assisted.png", evidence).pathname });
+});

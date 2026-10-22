@@ -8,6 +8,7 @@ import { RoleSelector } from "./components/RoleSelector";
 import { RunTimeline } from "./components/RunTimeline";
 import { RunArchive } from "./components/RunArchive";
 import { SequenceView } from "./components/SequenceView";
+import { ConnectedAssisted } from "./components/ConnectedAssisted";
 import { CaptureCoverage } from "./components/CaptureCoverage";
 import { api } from "./lib/api";
 import { AssistedJourneyPanel } from "./components/AssistedJourneyPanel";
@@ -71,7 +72,7 @@ export default function App() {
     setExchanges(nextExchanges.items);
     setSelectedStepId((current) => current ?? nextExchanges.items.at(-1)?.stepId ?? nextSteps.items[0]?.id ?? null);
     setSelectedExchangeId((current) => current ?? nextExchanges.items.at(-1)?.id ?? null);
-    if (["passed", "failed", "errored"].includes(nextRun.status) && archivedRunId.current !== nextRun.id) {
+    if (["passed", "failed", "errored", "cancelled"].includes(nextRun.status) && archivedRunId.current !== nextRun.id) {
       archivedRunId.current = nextRun.id;
       void refreshArchive();
     }
@@ -147,12 +148,13 @@ export default function App() {
     setSelectedStepId(exchange.stepId);
     setSelectedExchangeId(exchange.id);
   }, []);
-  const runFinished = run && ["passed", "failed", "errored"].includes(run.status);
+  const runFinished = run && ["passed", "failed", "errored", "cancelled"].includes(run.status);
   const actualLabel = run?.actualOutcome ? `${run.actualOutcome.charAt(0).toUpperCase()}${run.actualOutcome.slice(1)}` : "Unknown";
   const runMessage = !runFinished
     ? "Run in progress…"
     : run.status === "errored"
       ? "Error — the flow could not complete"
+      : run.status === "cancelled" ? "Cancelled — no verifier verdict established"
       : run.status === "passed"
         ? `✓ ${actualLabel} — expected result matched`
         : `Mismatch — expected ${run.expectedOutcome}, received ${run.actualOutcome}`;
@@ -217,7 +219,8 @@ export default function App() {
         </section>
 
         {startError && <p role="alert" className="mt-4 text-red-800">{startError}</p>}
-        {config.wallet === "inji_web_assisted" && <p className="mt-4 text-sm text-amber-900">Live assisted start is blocked pending a dedicated test account and backend integration. The fixture journey is available for supported configurations.</p>}
+        {config.wallet === "inji_web_assisted" && <p className="mt-4 text-sm text-amber-900">Live assisted start requires a configured deployment and dedicated account. The backend-assisted journey below supports connected fixtures and configured live runs.</p>}
+        {((config.wallet === "inji_web_assisted" && !assistedUnavailable(config)) || run?.config.wallet === "inji_web_assisted") && <ConnectedAssisted config={run?.config.wallet === "inji_web_assisted" ? run.config : config} resumeId={run?.config.wallet === "inji_web_assisted" ? run.id : null} onRun={setRunId} />}
         {assisted && <AssistedJourneyPanel key={assisted.journey.runId} fixture={assisted} />}
         <section className="mt-7 rounded-3xl border border-slate-200 bg-white shadow-card">
           <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 px-6 py-5 lg:px-8">
@@ -230,11 +233,11 @@ export default function App() {
                 <div className={`mb-4 rounded-xl border px-4 py-3 text-sm font-semibold ${run?.status === "passed" ? "border-green-200 bg-green-50 text-ok" : runFinished ? "border-red-200 bg-red-50 text-fail" : "border-blue-200 bg-blue-50 text-issuer"}`} aria-live="polite">{runMessage}</div>
                 {run && <p className="mb-4 text-xs font-semibold text-slate-600">Evidence: {evidenceLabels[evidenceTier(run)]}</p>}
                 {typeof verifierDetail === "string" && <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">Verifier detail: {verifierDetail}</p>}
-                {runFinished && run?.status !== "errored" && <button disabled={busy} onClick={() => void replayRun()} className="mb-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:border-slate-500 disabled:opacity-60">Replay with selected fault</button>}
+                {runFinished && run?.config.wallet !== "inji_web_assisted" && run?.status !== "errored" && run?.status !== "cancelled" && <button disabled={busy} onClick={() => void replayRun()} className="mb-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:border-slate-500 disabled:opacity-60">Replay with selected fault</button>}
                 {runFinished && run && <div className="mb-4 grid grid-cols-2 gap-2 text-center text-xs font-bold"><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=md`}>Report · Markdown</a><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=json`}>Report · JSON</a></div>}
                 <RunTimeline steps={steps} selectedStepId={selectedStepId} onSelect={selectStep} />
               </div>
-              <div><CaptureCoverage key={runId} runId={runId} canImport={Boolean(runFinished)} onImported={() => void refresh(runId)} /><SequenceView runId={runId} exchanges={exchanges} selectedExchangeId={selectedExchangeId} onSelect={selectExchange} /><Inspector exchange={selectedExchange} /></div>
+              <div><CaptureCoverage key={runId} runId={runId} canImport={Boolean(runFinished) || run?.config.wallet === "inji_web_assisted"} onImported={() => void refresh(runId)} /><SequenceView runId={runId} exchanges={exchanges} selectedExchangeId={selectedExchangeId} onSelect={selectExchange} /><Inspector exchange={selectedExchange} /></div>
             </div>
           )}
         </section>

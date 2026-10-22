@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { coverage, object, type Coverage } from "../lib/captureEvidence";
 import { ProjectionCounts } from "./PublicEvidence";
@@ -8,6 +8,7 @@ export function CaptureCoverage({ runId, onImported, canImport = true }: { runId
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  useEffect(() => { let stopped = false; void api.captureCoverage(runId).then(value => { if (!stopped) setRows(coverage(object(value)?.coverage)); }).catch(() => {}); return () => { stopped = true; }; }, [runId]);
   async function upload() {
     const file = input.current?.files?.[0];
     if (busy || !canImport) return;
@@ -33,7 +34,7 @@ export function CaptureCoverage({ runId, onImported, canImport = true }: { runId
     <label className="block text-sm">Synthetic capture JSON <input ref={input} type="file" accept=".json,.har,application/json" disabled={busy || !canImport} /></label>
     <button type="button" disabled={busy || !canImport} onClick={() => void upload()} className="rounded-lg border border-slate-400 bg-white px-3 py-2 font-semibold disabled:opacity-60">{busy ? "Importing…" : "Import synthetic capture"}</button>
     {message && <p role="status">{message}</p>}
-    {!rows ? <p className="text-sm">Coverage unavailable: import a synthetic capture to obtain the server's coverage summary. Coverage is not currently returned on reload or history retrieval.</p> : <>
+    {!rows ? <p className="text-sm">Coverage unavailable: the server coverage response could not be loaded.</p> : <>
       {totals && <ProjectionCounts totals={totals} />}
       <ul className="space-y-2">{rows.map((row, index) => <li key={index} className={`rounded border p-2 text-sm ${row.state === "captured" ? "border-blue-300 bg-blue-50" : "border-slate-300 bg-white"}`}>
         <strong>{row.stepKey}: {row.state}</strong> · {row.count} exchanges<p>{row.reason}</p><ProjectionCounts totals={row.projection} />

@@ -1,3 +1,5 @@
+import { withExchangeLock } from "./exchangeLock.js";
+import { AssistedWaitError } from "./drivers/injiWebAssisted.js";
 import { randomUUID } from "node:crypto";
 import type { Exchange, RunStep } from "@playground/shared";
 import type { Server } from "socket.io";
@@ -55,11 +57,14 @@ export async function runDemo(
   repository: RunRepository,
   stepDelayMs = 110,
   selectedDrivers?: DriverSet,
+  signal?: AbortSignal,
+  stepTimeoutMs?: number,
+  onStep?: () => void,
 ) {
   const record = await repository.get(runId);
   if (!record) return;
   const drivers = selectedDrivers ?? resolveDrivers(record.run.config);
-  const context: DriverContext = { config: record.run.config, state: new Map() };
+  const context: DriverContext = { config: record.run.config, state: new Map(), ...(signal ? { signal } : {}) };
   const room = `run:${runId}`;
   const namespace = io.of("/runs");
   record.run.status = "running";
@@ -72,13 +77,20 @@ export async function runDemo(
 
   try {
     for (const step of record.steps) {
+      if (signal?.aborted) throw (signal.reason instanceof AssistedWaitError ? signal.reason : new AssistedWaitError("cancelled", "run"));
       activeStep = step;
+      onStep?.();
       step.status = "running";
       await repository.updateStep(step);
       namespace.to(room).emit("step:started", step);
       await wait(stepDelayMs);
-      const result = await executeStep(step, context, drivers);
+      let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
+      let abortListener: (() => void) | undefined;
+      const result = await Promise.race([executeStep(step, context, drivers), ...(stepTimeoutMs ? [new Promise<never>((_, reject) => { deadlineTimer = setTimeout(() => reject(new AssistedWaitError("timeout", step.stepKey)), stepTimeoutMs); })] : []), ...(signal ? [new Promise<never>((_, reject) => { abortListener = () => reject(signal.reason instanceof AssistedWaitError ? signal.reason : new AssistedWaitError("cancelled", step.stepKey)); signal.addEventListener("abort", abortListener, { once: true }); if (signal.aborted) abortListener(); })] : [])]).finally(() => { if (deadlineTimer) clearTimeout(deadlineTimer); if (signal && abortListener) signal.removeEventListener("abort", abortListener); });
+      if (signal?.aborted) throw new AssistedWaitError("cancelled", step.stepKey);
       for (const driverExchange of result.exchanges ?? []) {
+        await withExchangeLock(repository, runId, async () => {
+        exchangeSequence = Math.max(exchangeSequence, ...(await repository.get(runId))!.exchanges.map(item => item.seq));
         const exchange = sanitizeExchange(driverExchange, exchangeSequence + 1);
         const stored: Exchange = { ...exchange, id: randomUUID(), runId, stepId: step.id };
         await repository.addExchange(stored);
@@ -94,7 +106,9 @@ export async function runDemo(
           status: stored.status,
           durationMs: stored.durationMs,
         });
+        });
       }
+      if (record.run.config.wallet === "inji_web_assisted" && step.stepKey === "PRESENT_RESULT" && !["valid", "invalid"].includes(String(result.summary?.outcome))) throw new AssistedWaitError("observation_error", "verifier result missing");
       if (result.summary?.outcome === "invalid") actualOutcome = "invalid";
       step.status = "succeeded";
       step.summary = result.summary ?? { completed: true };
@@ -104,15 +118,15 @@ export async function runDemo(
 
     record.run.status = actualOutcome === record.run.expectedOutcome ? "passed" : "failed";
     record.run.actualOutcome = actualOutcome;
-  } catch {
+  } catch (error) {
     if (activeStep) {
       activeStep.status = "failed";
-      activeStep.summary = { error: "DRIVER_EXECUTION_FAILED" };
+      activeStep.summary = { error: error instanceof AssistedWaitError ? `ASSISTED_${error.reason.toUpperCase()}` : "DRIVER_EXECUTION_FAILED" };
       await repository.updateStep(activeStep);
       namespace.to(room).emit("step:finished", activeStep);
     }
-    record.run.status = "errored";
-    record.run.actualOutcome = "error";
+    record.run.status = error instanceof AssistedWaitError && error.reason === "cancelled" ? "cancelled" : "errored";
+    record.run.actualOutcome = record.run.status === "cancelled" ? null : "error";
   } finally {
     record.run.finishedAt = new Date().toISOString();
     await repository.updateRun(record.run);

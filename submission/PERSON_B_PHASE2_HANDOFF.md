@@ -1,47 +1,44 @@
-# Person B / Person 2 — Phase 2 handoff
+# Person B / Person 2 — Phase 2 implementation and validation
 
-Branch: `codex/person-b-phase-1`. This deliverable completes the independently available capture UI and QA work. Live assisted integration and A1 remain blocked; do not describe Phase 2 as fully signed off.
+Branch: `codex/person-b-phase-1`. Updated 23 October 2026 after the user authorized backend integration beyond the original Person 2 file boundary.
 
 ## Implemented
 
-- Inspector renders validated v1 public protocol summaries for request/response, `not_verified`, projection counters, capture rule/reason, redaction counts and unknown timing. Empty unsupported projections explain `Format not decoded`. Existing sanitized JSON is a collapsible detail view; no browser credential/token decoder was added.
-- A run's capture panel uploads a bounded synthetic JSON envelope to the existing capture endpoint. It checks the explicit run ID, clears the file input, handles rejection without echoing bodies, and uses the server's returned coverage/projection totals. No coverage states are inferred in the browser. Coverage is session-only because no read contract exists; reload/history explicitly says unavailable.
-- Coverage distinguishes observed traffic, missing traffic and non-observable internal operations using text and neutral styling for gaps. It never marks wallet storage or validity from endpoint access.
-- Capture import refreshes exchanges through the existing API. Stale responses from another selected run are ignored. History has keyboard-operable run-opening buttons.
-- Added public-view/coverage component tests and a Playwright browser command for the independent mock journey, synthetic capture import/API/DOM checks, keyboard-assisted fixture journey, axe and color-contrast checks, and screenshots. Tests/configuration are under `apps/web`; Person 4 can wire the command into CI.
-- Prepared the dedicated-account A1 checklist in `submission/A1_WEB_EVIDENCE.md`.
+- Safe public summaries, capture metadata, projection totals, unknown-format explanations and sanitized JSON details.
+- Backend-assisted start/status/cancel and observation APIs with a run-scoped instance of `InjiWebAssistedDriver`. Fixture runs use the same backend lifecycle and repository as live runs; fixture issuance/presentation injection is rejected for live sessions. Storage confirmation references the issuance exchange and records fixture versus wallet-confirmation provenance.
+- Active-run HAR ingress is permitted only for managed assisted sessions. Existing bounds, origin allowlists, tagging and pre-persistence redaction remain in force. Standard active runs still reject imports. Capture snapshots feed the waiting driver through a subscription; no HTTP endpoint is treated as proof of storage.
+- Orchestrator cancellation and per-step deadlines preserve `ASSISTED_CANCELLED` / `ASSISTED_TIMEOUT` / observation-error reasons, clear timers/listeners, and abort live HTTP calls. Explicit verifier outcome is mandatory; the old default-valid behavior cannot complete an assisted run. Driver and user-confirmation state retain no credential/login material.
+- Authoritative GET coverage supports reload/history. UI exposes backend fixture/live controls, polls run status, shows server deadline, allows cancellation and keeps fixture and unverified-wallet evidence distinct.
+- `/api/v1/matrix/cells` supplies the supported positive-control grid with explicit `not_tested`, timestamps and evidence tiers. The browser renders it without inventing combinations. Existing matrix exports remain compatible.
+- Keyboard and scoped axe/contrast checks, independent-mock browser smoke, connected backend-assisted completion/cancellation smoke, screenshots, and the dedicated-account A1 checklist.
 
-## Integration dependencies that still prevent live completion
+## API contract
 
-| Owner | Required change / dependency | Current evidence |
-|---|---|---|
-| Integrator | Register assisted driver with run/step IDs, observation source and abort signal | Registry still resolves existing fixture/Collab drivers; UI intentionally never calls these as a live assisted wallet |
-| Integrator | Assisted start, status and cancellation routes; preserve timeout/cancel reasons | No cancellation endpoint; generic orchestrator collapses thrown errors |
-| Person 1 + integrator | Active-run observation ingress and authoritative coverage read contract | Current HAR endpoint rejects pending/running runs (`CAPTURE_RUN_ACTIVE`), so it cannot unblock a wallet driver waiting inside an active run; coverage is import-response-only |
-| Person 1 + integrator | Storage-confirmation provenance and normalized verifier-result input | Browser capture cannot establish persistent wallet storage; decoded metadata is not proof validity |
-| Person 4 | Canonical pinned Web/Mimoto, Certify, Verify endpoints and dedicated account | Not supplied; live A1 remains blocked |
-| Integrator | Explicit matrix `not_tested` response contract | Current matrix returns `RunSummary[]`; no unsupported inferred grid was added |
+- `GET /api/v1/assisted/capabilities`: fixture and configured-live availability.
+- `POST /api/v1/assisted/runs`: `{config, mode: "fixture" | "live", timeoutMs?}`; returns `{runId}`. JSON-LD, Certify, Inji Web, Verify, no tamper and no scenario preset are required.
+- `GET /api/v1/assisted/runs/:id`: existing run/steps, transient action links and current deadline. Links never enter persisted exchange evidence.
+- `POST /api/v1/assisted/runs/:id/cancel`: idempotent cancellation; late observations cannot reactivate a terminal run.
+- `POST /api/v1/assisted/runs/:id/observations`: `{kind: "issuance" | "storage" | "presentation"}`. Issuance/presentation injections are fixture-only. Storage confirmation is explicit human confirmation, not an inference from capture.
+- `POST /api/v1/runs/:id/capture/har`: existing synthetic/redacted capture contract, now supports managed active assisted runs.
+- `GET /api/v1/runs/:id/capture/coverage`: authoritative coverage from persisted redacted browser exchanges.
+- `GET /api/v1/matrix/cells`: supported combinations with explicit untested cells.
 
-These seams are recorded rather than implemented in another owner's files. No capture internals, shared schemas, orchestration, matrix backend, mocks, Compose or CI files were edited. The injectable assisted driver and fixture state machine retain their Phase 1 tests. No raw wallet credentials are accepted by them.
+## Run the connected fixture
 
-## Reproduce QA
+Start the normal playground. Select JSON-LD, Inji Certify, Inji Web Assisted, Inji Verify and no fault. In **Backend-assisted journey**, choose **Start connected fixture**. Inject fixture issuance, confirm fixture storage, inject presentation and wait for the fixture verifier's normalized result. The timeline/history show this backend run with fixture evidence. Cancel and restart to exercise cleanup. The older browser-only rehearsal remains available separately.
 
-Run `pnpm install --frozen-lockfile`, `pnpm --filter @playground/web exec playwright install chromium`, then `pnpm --filter @playground/web test:browser`. The browser config starts isolated local mock issuer/verifier, in-memory BFF and Vite on ports 4101/4102/4000/5173; it refuses to reuse existing servers. Stop existing services first. Browser artifacts go to `/tmp/person2-playwright-results`; curated synthetic screenshots and axe results go to `submission/evidence/person2/`. Do not run against real accounts.
+## Live deployment prerequisites — A1 remains blocked
 
-The browser smoke uses local independent mock services with Reference Wallet for the automated positive control. The assisted journey is explicitly fixture evidence, and the imported HAR is synthetic. This is not a real Inji Web run. `pnpm test`, `pnpm typecheck`, `pnpm build` and `pnpm audit:secrets` remain the general checks; database-specific tests retain their existing opt-in requirement.
+Set `ASSISTED_LIVE_ENABLED=true` only after the dedicated account and pinned services exist. Supply HTTPS `ASSISTED_WALLET_URL`, `ASSISTED_OFFER_URL`, `CERTIFY_BASE_URL`, `VERIFY_BASE_URL`, plus deployment-specific `VERIFY_CLIENT_ID` and optional `CREDENTIAL_CONFIGURATION_ID`. These are endpoint/profile settings, not login secrets. Inji Web/Mimoto retains credentials, cookies, OTPs and wallet state; the assisted backend does not use the Reference Wallet's Postman credentials or holder key.
 
-## Proposed integrator contract (not an implemented API)
+The live request link comes from the configured Verify request. The existing capture origin allowlist must match the canonical deployment. The current ingress is bounded HAR import, not an autonomous network sniffer; feed observed sanitized traffic while the run is active. Storage confirmation is a user assertion and still needs the manual persistence check and sanitized evidence in `A1_WEB_EVIDENCE.md`. A1 is signed off only after a real wallet stores and presents to Verify with `valid`. No such account/deployment was provided in this task, so live interoperability is unverified.
 
-The start seam should return the existing run ID and step IDs plus transient `walletUrl`, `offerUrl`, `presentationUrl` and server deadline. Redacted exchanges continue through the existing exchange API/socket channel with their original browser actors. The source needs an authoritative snapshot plus subscription so reconnects can replay/deduplicate evidence. Store explicit storage confirmation with its issuance exchange ID and provenance separately from capture. A normalized verifier result must correlate to the same transaction; never infer it from `passed` on a generic fixture run or a direct-post HTTP 200.
+## QA
 
-Use an idempotent cancel operation wired to the per-run abort signal; late events must not reactivate cancelled/timed-out runs. Existing `RunStatus.cancelled` and step summary reason codes can represent this without changing the frozen Exchange schema. Timeout should remain an execution/observation error with its reason, not `invalid`. Coverage needs an authoritative read response for reload/history. Until those owner-applied seams exist, the live-start gate must remain closed.
+Run `pnpm install --frozen-lockfile`, install Chromium with `pnpm --filter @playground/web exec playwright install chromium`, then `pnpm --filter @playground/web test:browser`. The test config starts independent local mocks, in-memory BFF and Vite on 4101/4102/4000/5173; stop existing servers first. Three browser tests cover fixture UX, independent mocks + synthetic capture, and connected backend-assisted completion/cancellation/matrix display. Browser artifacts go to `/tmp/person2-playwright-results`; reviewed synthetic screenshots and scoped axe results are under `submission/evidence/person2/`.
 
-## Recorded validation, 23 October 2026
+Exchange sequence allocation is serialized across capture imports, orchestration and fixture observations to preserve the database unique-sequence contract. Managed sessions are process-local; after a backend restart an interrupted persisted assisted run is reported as `ASSISTED_INTERRUPTED`, rather than silently resumed.
 
-- `pnpm test`: passed (47 web tests, 115 BFF tests, shared/mock/script suites; two database-dependent BFF tests skipped).
-- `pnpm --filter @playground/web test:browser`: two Chromium tests passed against independent local mocks plus the assisted fixture and synthetic capture variant.
-- Scoped axe/contrast scans: zero violations for the assisted panel and added capture/public-evidence sections. Keyboard wallet-action navigation and fixture completion passed.
-- `pnpm typecheck`, `pnpm build`, `pnpm audit:secrets`, `git diff --check`: passed.
-- Screenshots inspected and captioned in `submission/evidence/person2/README.md`; the countdown refresh fix also has a component regression assertion.
+General checks: `pnpm test`, `pnpm typecheck`, `pnpm build`, `pnpm audit:secrets`, `git diff --check`. Database-specific capture tests retain their existing opt-in requirement. These checks establish the integrated fixture implementation; they do not establish real A1 acceptance.
 
-These results establish the available UI/capture/fixture slice. They do not close active-run capture integration, API cancellation, A1 or the pending matrix contract.
+Validated on 23 October: the full unit/API suite, typecheck, production build and secret audit pass; two database-dependent tests remain skipped. All three Chromium browser checks pass, including reconnect through history after reload, connected completion/cancellation and the server matrix. Scoped axe/contrast checks report zero violations. The legacy generic start/replay path rejects assisted wallets, preventing automated-wallet relabeling.

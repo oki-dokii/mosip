@@ -33,3 +33,11 @@ describe("interoperability matrix", () => {
     expect(latestMatrix([fixture, live]).map((item) => item.evidenceTier)).toEqual(["fixture", "reference_wallet"]);
   });
 });
+
+it("reports an explicit server-owned untested grid with no invented run evidence", async () => {
+  const { matrixCells } = await import("./matrix.js");
+  const cells = matrixCells([]);
+  expect(cells.length).toBe(6);
+  expect(cells.every(cell => cell.status === "not_tested" && cell.runId === null && cell.testedAt === null)).toBe(true);
+  expect(cells.filter(cell => cell.config.wallet === "inji_web_assisted").map(cell => cell.config.format)).toEqual(["ldp_vc"]);
+});

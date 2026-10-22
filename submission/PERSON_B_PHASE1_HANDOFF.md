@@ -1,5 +1,7 @@
 # Person B / Person 2 — assisted journey, Phase 1
 
+The integration-seam notes below describe the Phase 1 checkpoint. Backend integration has since been implemented; see `PERSON_B_PHASE2_HANDOFF.md` for the current APIs and live deployment prerequisites.
+
 Branch: `codex/person-b-phase-1`. Scope: fixture-driven assisted JSON-LD journey and injectable wallet driver. No live wallet acceptance is claimed.
 
 ## Try the fixture journey
