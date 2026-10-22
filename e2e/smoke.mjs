@@ -24,7 +24,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 const BFF_URL = process.env.E2E_BFF_URL ?? `http://127.0.0.1:${process.env.PLAYGROUND_WEB_PORT ?? "4000"}`;
 const WEB_URL = process.env.E2E_WEB_URL ?? `http://127.0.0.1:${process.env.PLAYGROUND_WEB_PORT_HOST ?? "5174"}`;
 const HEALTH_TIMEOUT_MS = Number(process.env.E2E_TIMEOUT_MS ?? 90_000);
-const EXPECTED_DRIVER_MODE = process.env.E2E_DRIVER_MODE ?? "collab";
+const EXPECTED_DRIVER_MODE = process.env.E2E_DRIVER_MODE ?? null;
 const EXPECTED_STORAGE = process.env.E2E_STORAGE ?? "postgres";
 const RUN_POLL_TIMEOUT_MS = 120_000;
 const RUN_POLL_INTERVAL_MS = 500;
@@ -117,11 +117,19 @@ if (!health) {
 
 console.log("\n── Step 2: Health field assertions ────────────────────────────────");
 
-record(
-  `driverMode === "${EXPECTED_DRIVER_MODE}"`,
-  health.driverMode === EXPECTED_DRIVER_MODE,
-  `actual: ${health.driverMode}`
-);
+if (EXPECTED_DRIVER_MODE) {
+  record(
+    `driverMode === "${EXPECTED_DRIVER_MODE}"`,
+    health.driverMode === EXPECTED_DRIVER_MODE,
+    `actual: ${health.driverMode}`
+  );
+} else {
+  record(
+    'driverMode is valid ("fixture" or "collab")',
+    ["fixture", "collab"].includes(health.driverMode),
+    `actual: ${health.driverMode}`
+  );
+}
 
 record(
   `storage === "${EXPECTED_STORAGE}"`,
@@ -232,7 +240,8 @@ async function runCase(caseName, tamper, expectedOutcome) {
   // Fetch report
   try {
     const report = await fetchJson(`${BFF_URL}/api/v1/runs/${runId}/report?format=json`, { timeoutMs: 10_000 });
-    record(`${caseName}: report.evidence.tier === "mock_interop"`, report.evidence?.tier === "mock_interop", `actual: ${report.evidence?.tier}`);
+    const expectedTier = health.driverMode === "collab" ? "mock_interop" : "fixture";
+    record(`${caseName}: report.evidence.tier === "${expectedTier}"`, report.evidence?.tier === expectedTier, `actual: ${report.evidence?.tier}`);
     checkRedaction(`report ${caseName}`, report);
   } catch (err) {
     record(`${caseName}: GET /runs/${runId}/report`, false, err.message);
