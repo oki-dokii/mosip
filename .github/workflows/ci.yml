@@ -1,62 +1,145 @@
-name: Playground checks
+name: Playground CI
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Triggers
+# ──────────────────────────────────────────────────────────────────────────────
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - "person4/**"
   pull_request:
   workflow_dispatch:
-  schedule:
-    - cron: '15 2 * * *'
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Permissions — least privilege; widened per job only when needed
+# ──────────────────────────────────────────────────────────────────────────────
 permissions:
   contents: read
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Concurrency — cancel superseded runs on the same ref
+# ──────────────────────────────────────────────────────────────────────────────
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  checks:
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Job 1: verify — install, typecheck, test, build, audit:secrets
+  # ────────────────────────────────────────────────────────────────────────────
+  verify:
+    name: Verify (typecheck / test / build / audit)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Pin to SHA for supply-chain safety.
+      # actions/checkout v4.2.2 — update SHA when upgrading.
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # actions/setup-node v4.4.0
+      - name: Set up Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: '22'
+          node-version: "20"
+
+      # actions/cache v4.2.3
+      - name: Cache pnpm store
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e9821 # v4.2.3
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
       - name: Enable pinned pnpm
         run: |
           corepack enable
           corepack prepare pnpm@11.25.0 --activate
-      - name: Install
+
+      - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
+
       - name: Typecheck
         run: pnpm typecheck
+
       - name: Unit and contract tests
         run: pnpm test
+
       - name: Build
         run: pnpm build
 
-  docker-matrix:
+      - name: Secret audit
+        run: pnpm audit:secrets
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Job 2: compose-smoke — build the Compose stack, run e2e smoke, always clean up
+  # ────────────────────────────────────────────────────────────────────────────
+  compose-smoke:
+    name: Compose smoke (mock/fixture)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: verify
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Node 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: '22'
-      - name: Enable pinned pnpm
+          node-version: "20"
+
+      - name: Set OCI build labels
         run: |
-          corepack enable
-          corepack prepare pnpm@11.25.0 --activate
-      - name: Synthetic container matrix
+          echo "GIT_REVISION=${{ github.sha }}" >> "$GITHUB_ENV"
+          echo "BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+
+      - name: Build and start Compose stack (core + mocks)
         env:
-          MATRIX_ARTIFACT_PATH: artifacts/mock-matrix.json
-        run: pnpm demo:docker
-      - name: Upload sanitized mock matrix
+          PLAYGROUND_DRIVER_MODE: collab
+          MOCK_ISSUER_BASE_URL: http://mock-issuer:4101
+          MOCK_VERIFIER_BASE_URL: http://mock-verifier:4102
+        run: |
+          docker compose --profile core --profile mocks up --build -d --wait
+
+      - name: Show container status
+        run: docker compose --profile core --profile mocks ps
+
+      - name: Run e2e smoke
+        env:
+          E2E_BFF_URL: http://127.0.0.1:4000
+          E2E_WEB_URL: http://127.0.0.1:5174
+          E2E_DRIVER_MODE: collab
+          E2E_STORAGE: postgres
+          E2E_TIMEOUT_MS: "60000"
+        run: node e2e/smoke.mjs
+
+      - name: Upload mock matrix artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: synthetic-mock-matrix
+          name: synthetic-mock-matrix-${{ github.run_number }}
           path: artifacts/mock-matrix.json
           if-no-files-found: ignore
-      - name: Container logs on failure
+
+      - name: Collect container logs (always)
+        if: always()
+        run: |
+          docker compose --profile core --profile mocks logs --no-color --tail=200 \
+            > /tmp/compose-logs.txt 2>&1 || true
+
+      - name: Upload container logs on failure
         if: failure()
-        run: docker compose --profile core --profile mocks logs --no-color --tail=120
-      - name: Stop containers
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: compose-logs-${{ github.run_number }}
+          path: /tmp/compose-logs.txt
+          if-no-files-found: ignore
+
+      - name: Stop and remove containers and volumes (always)
         if: always()
         run: docker compose --profile core --profile mocks down -v
