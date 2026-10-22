@@ -2,12 +2,16 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
 import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-key-2020";
-import { importJWK, importX509, jwtVerify, SignJWT, type JWK } from "jose";
+import { importJWK, SignJWT, type JWK } from "jose";
 import jsonld from "jsonld";
 import jsigs from "jsonld-signatures";
 import type { RunConfig } from "@playground/shared";
 import type { DriverContext, DriverExchange, DriverResult, DriverSet, IssuerDriver, VerifierDriver, WalletDriver } from "./types.js";
 import { applyCredentialTamper, presentationNonce } from "../tamper/index.js";
+import { issueCredential as issueSignedMockCredential } from "@playground/mock-issuer/credential";
+import { loadIssuerSigner } from "@playground/mock-issuer/signing";
+import { verifyPresentation } from "@playground/mock-verifier";
+import { mockPolicy, safeFailure, signedVariant } from "../protocol.js";
 
 const { AuthenticationProofPurpose } = jsigs.purposes;
 
@@ -70,7 +74,7 @@ function positiveInteger(value: string | undefined, fallback: number) {
 
 function submissionErrorCode(body: JsonObject | undefined) {
   const candidate = body?.errorCode ?? body?.error;
-  return typeof candidate === "string" && /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(candidate)
+  return typeof candidate === "string" && ["invalid_request", "invalid_nonce", "invalid_state", "access_denied", "unsupported_response_type", "invalid_client", "invalid_vp_token"].includes(candidate)
     ? candidate : "VERIFIER_REJECTED_SUBMISSION";
 }
 
@@ -175,21 +179,21 @@ class MockIssuerDriver implements IssuerDriver {
   }
 }
 
-async function issueMockSdJwt(holderPublicJwk: JsonObject) {
-  const issuerKey = await Ed25519VerificationKey2020.generate();
-  const publicJwk = issuerKey.toJwk({ publicKey: true });
-  const privateJwk = issuerKey.toJwk({ publicKey: true, privateKey: true });
-  privateJwk.d = Buffer.from(privateJwk.d, "base64url").subarray(0, 32).toString("base64url");
-  const issuerDid = `did:jwk:${Buffer.from(JSON.stringify(publicJwk)).toString("base64url")}`;
-  const disclosure = Buffer.from(JSON.stringify([randomBytes(16).toString("base64url"), "given_name", "Test"])).toString("base64url");
-  const digest = createHash("sha256").update(disclosure).digest("base64url");
-  const now = Math.floor(Date.now() / 1000);
-  const key = await importJWK(privateJwk, "EdDSA");
-  const jwt = await new SignJWT({
-    iss: issuerDid, vct: "MockVerifiableCredential_SD_JWT", cnf: { jwk: holderPublicJwk },
-    _sd_alg: "sha-256", _sd: [digest], iat: now, nbf: now - 5, exp: now + 3600,
-  }).setProtectedHeader({ alg: "EdDSA", typ: "vc+sd-jwt", kid: `${issuerDid}#0` }).sign(key);
-  return `${jwt}~${disclosure}~`;
+async function issueMockSdJwt(holderPublicJwk: JWK, context: DriverContext) {
+  const signer = await loadIssuerSigner({ issuerUrl: "http://mock-issuer.test" });
+  return issueSignedMockCredential({ signer, holderPublicJwk, variant: signedVariant(context.config) ?? "valid", now: Math.floor(Date.now() / 1000), twoClaims: true });
+}
+
+function issuerRepresentation(credential: string): "x509" | "did:jwk" | "unreported" {
+  const jwt = credential.split("~")[0]!;
+  const header = JSON.parse(Buffer.from(jwt.split(".")[0]!, "base64url").toString("utf8"));
+  return Array.isArray(header.x5c) && header.x5c.length ? "x509" : decodeJwtPayload(jwt).iss?.startsWith("did:jwk:") ? "did:jwk" : "unreported";
+}
+function mockResult(body: JsonObject, boundary: "result" | "direct_post" = "result"): JsonObject {
+  const diagnostic = safeFailure(body?.failure, boundary);
+  if (body?.diagnosticsVersion !== 1 || (body?.outcome !== "valid" && body?.outcome !== "invalid")) return { outcome: "error", error: "MALFORMED_VERIFIER_RESULT" };
+  if (body.outcome === "invalid" && !diagnostic || body.outcome === "valid" && (body.issuerSignatureValid !== true || body.holderProofValid !== true)) return { outcome: "error", error: "MALFORMED_VERIFIER_RESULT" };
+  return { outcome: body.outcome, diagnosticsVersion: 1, ...(diagnostic ? { failure: diagnostic } : {}), ...(body.outcome === "valid" ? { issuerSignatureValid: true, holderProofValid: true, certificateTrustChecked: false } : {}) };
 }
 
 async function request(context: DriverContext, url: string, options: RequestInit & { allowStatuses?: number[] } = {}): Promise<HttpResult> {
@@ -206,10 +210,7 @@ async function request(context: DriverContext, url: string, options: RequestInit
   let body: any;
   try { body = text ? JSON.parse(text) : null; } catch { body = text; }
   if (!response.ok && !allowStatuses.includes(response.status)) {
-    const safeError = body && typeof body === "object"
-      ? { error: body.error, errorCode: body.errorCode, error_description: body.error_description, errorMessage: body.errorMessage }
-      : {};
-    throw new Error(`${fetchOptions.method ?? "GET"} ${url} returned ${response.status}: ${JSON.stringify(safeError)}`);
+    throw new Error(`Upstream request failed with HTTP ${response.status}`);
   }
   return { status: response.status, body, durationMs };
 }
@@ -266,7 +267,7 @@ class CollabWalletDriver implements WalletDriver {
       const baseUrl = process.env.MOCK_ISSUER_BASE_URL;
       if (baseUrl) {
         const url = `${baseUrl}/token`;
-        const token = await request(context, url, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:pre-authorized_code", "pre-authorized_code": "public-test-code" }) });
+        const token = await request(context, url, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:pre-authorized_code", "pre-authorized_code": "public-test-code", ...(signedVariant(context.config) ? { mock_case: signedVariant(context.config)! } : {}) }) });
         if (!token.body?.access_token || !token.body?.c_nonce) throw new Error("External mock issuer omitted token or nonce");
         context.state.set(STATE.accessToken, token.body.access_token);
         context.state.set(STATE.credentialNonce, token.body.c_nonce);
@@ -362,13 +363,13 @@ class CollabWalletDriver implements WalletDriver {
         const issued = await request(context, url, { method: "POST", headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json" }, body: JSON.stringify({ credential_configuration_id: config.credentialConfigurationId, proofs: { jwt: [proof] } }) });
         if (!issued.body?.credential) throw new Error("External mock issuer did not return a credential");
         context.state.set(STATE.credential, issued.body.credential);
-        return { exchanges: [exchange(this.id, "mock_issuer", "POST", url, issued, { credential_configuration_id: config.credentialConfigurationId, proof }, { credentialReturned: true, format: issued.body.format })], summary: { credentialReceived: true, format: "dc+sd-jwt", source: "external_non_inji_mock" } };
+        return { exchanges: [exchange(this.id, "mock_issuer", "POST", url, issued, { credential_configuration_id: config.credentialConfigurationId, proof }, { credentialReturned: true, format: issued.body.format })], summary: { credentialReceived: true, format: "dc+sd-jwt", source: "external_non_inji_mock", issuerRepresentation: issuerRepresentation(issued.body.credential) } };
       }
-      const credential = await issueMockSdJwt(holderPublicJwk);
+      const credential = await issueMockSdJwt(holderPublicJwk as JWK, context);
       context.state.set(STATE.credential, credential);
       return {
         exchanges: [exchange(this.id, "mock_issuer", "POST", "mock://issuer/credential", { status: 200, body: {}, durationMs: 0 }, { credential_configuration_id: config.credentialConfigurationId, proof_type: "jwt" }, { credentialReturned: true, format: "dc+sd-jwt" })],
-        summary: { credentialReceived: true, format: "dc+sd-jwt", source: "local_non_inji_mock" },
+        summary: { credentialReceived: true, format: "dc+sd-jwt", source: "local_non_inji_mock", issuerRepresentation: issuerRepresentation(credential) },
       };
     }
     const accessToken = stateValue<string>(context, STATE.accessToken);
@@ -397,7 +398,7 @@ class CollabWalletDriver implements WalletDriver {
     const header = sdJwt ? JSON.parse(Buffer.from(sdJwt.split(".")[0] ?? "", "base64url").toString("utf8")) : null;
     const claims = sdJwt ? decodeJwtPayload(sdJwt) : null;
     return { exchanges: attempts, summary: { credentialReceived: true, nonceRefreshRequired: refreshed, format: config.credentialFormat,
-      ...(sdJwt ? { issuer: claims?.iss, signingAlgorithm: header?.alg, keyId: header?.kid } : {}),
+      ...(sdJwt ? { issuerRepresentation: issuerRepresentation(credential), signingAlgorithm: header?.alg } : {}),
     } };
   }
 
@@ -407,6 +408,7 @@ class CollabWalletDriver implements WalletDriver {
   }
 
   async present(context: DriverContext): Promise<DriverResult> {
+    if ((context.config.tamper === "expired" || context.config.tamper === "wrong_type") && (context.config.issuer !== "mock_issuer" || context.config.format !== "vc_sd_jwt")) throw new Error("Semantic faults require controlled signed SD-JWT issuance");
     const config = await loadConfig(context);
     const issuedCredential = stateValue<any>(context, STATE.credential);
     const requestClaims = stateValue<JsonObject>(context, STATE.requestClaims);
@@ -423,7 +425,7 @@ class CollabWalletDriver implements WalletDriver {
       }
       holderKeyMatchesCredential = boundPublicJwk?.kty === holderPublicJwk.kty && boundPublicJwk?.crv === holderPublicJwk.crv && boundPublicJwk?.x === holderPublicJwk.x;
       if (!holderKeyMatchesCredential) throw new Error("Issued SD-JWT is not bound to the holder key");
-      const credential = context.config.tamper
+      const credential = context.config.tamper && !signedVariant(context.config)
         ? applyCredentialTamper(issuedCredential, context.config.tamper, context.config.format) as string
         : issuedCredential;
       const keyBindingJwt = await createJwt(holderPrivateJwk, { aud: requestClaims.client_id, nonce: presentationNonce(requestClaims.nonce, context.config.tamper), sd_hash: sha256Base64url(credential) }, { alg: "EdDSA", typ: "kb+jwt" });
@@ -449,17 +451,19 @@ class CollabWalletDriver implements WalletDriver {
     if (context.config.verifier === "mock_verifier") {
       const baseUrl = process.env.MOCK_VERIFIER_BASE_URL;
       if (baseUrl) {
-        const result = await request(context, requestClaims.response_uri, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: form });
+        const result = await request(context, requestClaims.response_uri, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: form, allowStatuses: [400, 500, 502, 503] });
+        const diagnostic = safeFailure(result.body?.failure, "direct_post");
+        if (result.status === 400) context.state.set(STATE.verifySubmissionRejection, { status: 400, errorCode: "invalid_request", ...(diagnostic ? { failure: diagnostic, diagnosticsVersion: 1 } : {}) });
         return { exchanges: [exchange(this.id, "mock_verifier", "POST", requestClaims.response_uri, result, {
           format: config.credentialFormat, holderProofType: "kb+jwt", holderKeyMatchesCredential, tamper: context.config.tamper,
-        }, { accepted: result.body?.accepted === true })], summary: { holderKeyMatchesCredential, submissionAccepted: result.body?.accepted === true } };
+        }, { accepted: result.body?.accepted === true, ...(diagnostic ? { failure: diagnostic, diagnosticsVersion: 1 } : {}) })], summary: { holderKeyMatchesCredential, submissionAccepted: result.body?.accepted === true, ...(result.status >= 500 || result.status !== 400 && result.body?.accepted !== true ? { outcome: "error", error: "VERIFIER_SUBMISSION_FAILED" } : {}) } };
       }
       context.state.set(STATE.mockVpToken, vpToken);
       return { exchanges: [exchange(this.id, "mock_verifier", "POST", "mock://verifier/direct-post", { status: 200, body: {}, durationMs: 0 }, {
         format: config.credentialFormat, holderProofType: "kb+jwt", holderKeyMatchesCredential, tamper: context.config.tamper,
       }, { accepted: true })], summary: { holderKeyMatchesCredential, submissionAccepted: true } };
     }
-    const result = await request(context, requestClaims.response_uri, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: form, allowStatuses: [400] });
+    const result = await request(context, requestClaims.response_uri, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: form, allowStatuses: [400, 500, 502, 503] });
     const rejection = result.status === 400 ? { status: result.status, errorCode: submissionErrorCode(result.body) } : null;
     if (rejection) context.state.set(STATE.verifySubmissionRejection, rejection);
     return {
@@ -469,98 +473,74 @@ class CollabWalletDriver implements WalletDriver {
         holderKeyMatchesCredential,
         tamper: context.config.tamper,
       }, { accepted: result.status < 300, ...(rejection ? { errorCode: rejection.errorCode } : {}) })],
-      summary: { holderKeyMatchesCredential, submissionAccepted: result.status < 300 },
+      summary: { holderKeyMatchesCredential, submissionAccepted: result.status < 300, ...(result.status >= 500 ? { outcome: "error", error: "VERIFIER_SUBMISSION_FAILED" } : {}) },
     };
   }
 }
 
-async function verifyMockPresentation(token: string, requestClaims: JsonObject) {
-  const pieces = token.split("~");
-  const issuerJwt = pieces[0] ?? "";
-  const bindingJwt = pieces.at(-1) ?? "";
-  const header = JSON.parse(Buffer.from(issuerJwt.split(".")[0] ?? "", "base64url").toString("utf8"));
-  const claims = decodeJwtPayload(issuerJwt);
-  let issuerKey: Awaited<ReturnType<typeof importJWK>>;
-  if (Array.isArray(header.x5c) && typeof header.x5c[0] === "string") {
-    const certificate = `-----BEGIN CERTIFICATE-----\n${header.x5c[0]}\n-----END CERTIFICATE-----`;
-    issuerKey = await importX509(certificate, header.alg);
-  } else if (typeof claims.iss === "string" && claims.iss.startsWith("did:jwk:")) {
-    const jwk = JSON.parse(Buffer.from(claims.iss.slice("did:jwk:".length), "base64url").toString("utf8"));
-    issuerKey = await importJWK(jwk, header.alg);
-  } else {
-    throw new Error("No supported issuer public key in the SD-JWT");
-  }
-  const verified = await jwtVerify(issuerJwt, issuerKey, { algorithms: [header.alg] });
-  if (verified.payload.vct !== "MockVerifiableCredential_SD_JWT") throw new Error("Credential type does not match the request");
-  const confirmation = verified.payload.cnf && typeof verified.payload.cnf === "object" ? verified.payload.cnf as JsonObject : {};
-  let holderJwk = confirmation.jwk;
-  if (!holderJwk && typeof confirmation.kid === "string" && confirmation.kid.startsWith("did:jwk:")) {
-    holderJwk = JSON.parse(Buffer.from(confirmation.kid.slice("did:jwk:".length).split("#", 1)[0] ?? "", "base64url").toString("utf8"));
-  }
-  if (!holderJwk) throw new Error("Credential is missing holder binding");
-  const credential = token.slice(0, token.length - bindingJwt.length);
-  const holderKey = await importJWK(holderJwk, "EdDSA");
-  const binding = await jwtVerify(bindingJwt, holderKey, { algorithms: ["EdDSA"], audience: requestClaims.client_id });
-  if (binding.payload.nonce !== requestClaims.nonce) throw new Error("Presentation nonce does not match");
-  if (binding.payload.sd_hash !== sha256Base64url(credential)) throw new Error("SD-JWT key binding hash does not match");
-  const digests: string[] = [];
-  const collectDigests = (value: unknown) => {
-    if (!value || typeof value !== "object") return;
-    if (Array.isArray(value)) { value.forEach(collectDigests); return; }
-    const object = value as JsonObject;
-    if (Array.isArray(object._sd)) digests.push(...object._sd.filter((item: unknown) => typeof item === "string"));
-    Object.values(object).forEach(collectDigests);
-  };
-  collectDigests(verified.payload);
-  for (const disclosure of pieces.slice(1, -1).filter(Boolean)) {
-    if (!digests.includes(sha256Base64url(disclosure))) throw new Error("SD-JWT disclosure digest does not match");
-  }
-  return { issuerSignatureValid: true, holderProofValid: true, disclosedClaims: pieces.slice(1, -1).filter(Boolean).length, certificateTrustChecked: false };
-}
 
 class MockVerifierDriver implements VerifierDriver {
   readonly id = "mock_verifier" as const;
 
   async createRequest(context: DriverContext): Promise<DriverResult> {
     if (context.config.format !== "vc_sd_jwt") throw new Error("Mock verifier currently supports SD-JWT VC only");
+    const policy = mockPolicy(context.config);
     const baseUrl = process.env.MOCK_VERIFIER_BASE_URL;
     if (baseUrl) {
       const url = `${baseUrl}/vp-request`;
-      const result = await request(context, url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "dc+sd-jwt" }) });
-      if (!result.body?.requestId || !result.body?.claims?.response_uri) throw new Error("External mock verifier omitted its request state");
+      const body = { format: "dc+sd-jwt", ...(policy.profile === "mock-sdjwt-flat-v1" ? policy : {}) };
+      const result = await request(context, url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+      if (!result.body?.requestId || !result.body?.claims?.response_uri || (policy.profile === "mock-sdjwt-flat-v1" && (result.body?.policy?.profile !== policy.profile || JSON.stringify(result.body?.policy?.requiredClaims) !== JSON.stringify(policy.requiredClaims)))) throw new Error("External mock verifier omitted the requested policy or state");
       context.state.set(STATE.mockVerifierRequestId, result.body.requestId);
       context.state.set(STATE.requestClaims, result.body.claims);
-      return { exchanges: [exchange("playground", this.id, "POST", url, result, { format: "dc+sd-jwt" }, { requestCreated: true, responseMode: "direct_post" })], summary: { signedRequestReceived: false, queryLanguage: "DCQL", source: "external_non_inji_mock" } };
+      return { exchanges: [exchange("playground", this.id, "POST", url, result, body, { requestCreated: true, responseMode: "direct_post", protocolProfile: policy.profile })], summary: { signedRequestReceived: false, protocolProfile: policy.profile, source: "external_non_inji_mock" } };
     }
     const requestClaims = { client_id: "mock-verifier", nonce: randomUUID(), state: randomUUID(), response_uri: "mock://verifier/direct-post" };
     context.state.set(STATE.requestClaims, requestClaims);
-    return { exchanges: [exchange("playground", this.id, "POST", "mock://verifier/vp-request", { status: 201, body: {}, durationMs: 0 }, { format: "dc+sd-jwt" }, { requestCreated: true, responseMode: "direct_post" })], summary: { signedRequestReceived: false, queryLanguage: "DCQL", source: "local_non_inji_mock" } };
+    return { exchanges: [exchange("playground", this.id, "POST", "mock://verifier/vp-request", { status: 201, body: {}, durationMs: 0 }, { format: "dc+sd-jwt" }, { requestCreated: true, responseMode: "direct_post" })], summary: { signedRequestReceived: false, protocolProfile: policy.profile, source: "local_non_inji_mock" } };
   }
 
   async pollStatus(context: DriverContext): Promise<DriverResult> {
+    if (context.state.has(STATE.verifySubmissionRejection)) return { summary: { status: "SUBMISSION_REJECTED", attempts: 0 } };
     const baseUrl = process.env.MOCK_VERIFIER_BASE_URL;
     if (baseUrl) {
       const url = `${baseUrl}/status/${encodeURIComponent(stateValue<string>(context, STATE.mockVerifierRequestId))}`;
-      const result = await request(context, url);
-      return { exchanges: [exchange("playground", this.id, "GET", url, result, {}, { status: result.body?.status })], summary: { status: result.body?.status, attempts: 1 } };
+      const exchanges: DriverExchange[] = [], deadline = Date.now() + positiveInteger(process.env.VERIFY_POLL_TIMEOUT_MS, 120_000);
+      do {
+        const result = await request(context, url, { allowStatuses: [400, 404, 410, 500, 502, 503] });
+        const status = ["PENDING", "VP_SUBMITTED", "ERROR", "EXPIRED"].includes(result.body?.status) ? result.body.status : "UNAVAILABLE";
+        exchanges.push(exchange("playground", this.id, "GET", url, result, {}, { status }));
+        if (result.status === 200 && status === "VP_SUBMITTED") return { exchanges, summary: { status, attempts: exchanges.length } };
+        if (result.status !== 200 || status !== "PENDING") return { exchanges, summary: { outcome: "error", error: "VERIFIER_NOT_SUBMITTED" } };
+        if (Date.now() >= deadline) break;
+        await wait(Math.min(Math.max(positiveInteger(process.env.VERIFY_POLL_INTERVAL_MS, 50), 1), Math.max(deadline - Date.now(), 0)));
+      } while (Date.now() <= deadline);
+      return { exchanges, summary: { outcome: "error", error: "VERIFIER_SUBMISSION_TIMEOUT" } };
     }
-    const submitted = Boolean(context.state.get(STATE.mockVpToken));
-    return { exchanges: [exchange("playground", this.id, "GET", "mock://verifier/status", { status: 200, body: {}, durationMs: 0 }, {}, { status: submitted ? "VP_SUBMITTED" : "PENDING" })], summary: { status: submitted ? "VP_SUBMITTED" : "PENDING", attempts: 1 } };
+    if (!context.state.has(STATE.mockVpToken)) throw new Error("Presentation was not submitted");
+    return { exchanges: [exchange("playground", this.id, "GET", "mock://verifier/status", { status: 200, body: {}, durationMs: 0 }, {}, { status: "VP_SUBMITTED" })], summary: { status: "VP_SUBMITTED", attempts: 1 } };
   }
 
   async getResult(context: DriverContext): Promise<DriverResult> {
+    const policy = mockPolicy(context.config);
+    const rejection = context.state.get(STATE.verifySubmissionRejection) as JsonObject | undefined;
+    if (rejection) return { summary: { outcome: "invalid", diagnosticsVersion: rejection.diagnosticsVersion, failure: safeFailure(rejection.failure, "direct_post"), resultSource: "direct_post_rejection", protocolProfile: policy.profile } };
     const baseUrl = process.env.MOCK_VERIFIER_BASE_URL;
     if (baseUrl) {
       const url = `${baseUrl}/result/${encodeURIComponent(stateValue<string>(context, STATE.mockVerifierRequestId))}`;
-      const result = await request(context, url);
-      return { exchanges: [exchange("playground", this.id, "GET", url, result, {}, result.body)], summary: result.body };
+      const exchanges: DriverExchange[] = [], deadline = Date.now() + positiveInteger(process.env.VERIFY_POLL_TIMEOUT_MS, 120_000);
+      do {
+        const result = await request(context, url, { allowStatuses: [202, 400, 404, 409, 410, 500, 502, 503] });
+        const summary = result.status === 202 ? { status: "VERIFYING" } : result.status === 200 ? mockResult(result.body) : { outcome: "error", error: "VERIFIER_RESULT_UNAVAILABLE" };
+        exchanges.push(exchange("playground", this.id, "GET", url, result, {}, summary));
+        if (result.status !== 202) return { exchanges, summary: { ...summary, protocolProfile: policy.profile } };
+        if (Date.now() >= deadline) break;
+        await wait(Math.min(Math.max(positiveInteger(process.env.VERIFY_POLL_INTERVAL_MS, 50), 1), Math.max(deadline - Date.now(), 0)));
+      } while (Date.now() <= deadline);
+      return { exchanges, summary: { outcome: "error", error: "VERIFIER_RESULT_TIMEOUT", protocolProfile: policy.profile } };
     }
-    const token = stateValue<string>(context, STATE.mockVpToken);
-    const requestClaims = stateValue<JsonObject>(context, STATE.requestClaims);
-    let result: Record<string, unknown>;
-    try { result = { ...await verifyMockPresentation(token, requestClaims), outcome: "valid" }; }
-    catch (error) { result = { outcome: "invalid", failureDetail: error instanceof Error ? error.message : "Verification failed" }; }
-    return { exchanges: [exchange("playground", this.id, "POST", "mock://verifier/vp-results", { status: 200, body: {}, durationMs: 0 }, { includeClaims: false }, result)], summary: result };
+    const result = await verifyPresentation(stateValue<string>(context, STATE.mockVpToken), stateValue<{ client_id: string; nonce: string }>(context, STATE.requestClaims), policy);
+    return { exchanges: [exchange("playground", this.id, "POST", "mock://verifier/vp-results", { status: 200, body: {}, durationMs: 0 }, { includeClaims: false }, result)], summary: { ...result, protocolProfile: policy.profile } };
   }
 }
 
@@ -629,7 +609,7 @@ class CollabVerifierDriver implements VerifierDriver {
   async getResult(context: DriverContext): Promise<DriverResult> {
     const rejection = context.state.get(STATE.verifySubmissionRejection) as { status: number; errorCode: string } | undefined;
     if (rejection) {
-      return { summary: { outcome: "invalid", failureDetail: rejection.errorCode, submissionHttpStatus: rejection.status, resultSource: "direct_post_rejection" } };
+      return { summary: { outcome: "invalid", failureDetail: rejection.errorCode, submissionHttpStatus: rejection.status, resultSource: "direct_post_rejection", protocolProfile: "collab-dcql" } };
     }
     const config = await loadConfig(context);
     const transactionId = stateValue<string>(context, STATE.verifyTransactionId);
@@ -637,22 +617,25 @@ class CollabVerifierDriver implements VerifierDriver {
     const body = { includeClaims: false, skipStatusChecks: true };
     const result = await request(context, url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), allowStatuses: [400, 404, 500] });
     const credentialResult = result.body?.credentialResults?.[0];
-    const valid = result.status < 300 && result.body?.allChecksSuccessful === true;
+    if (result.status !== 200 || typeof result.body?.allChecksSuccessful !== "boolean") {
+      const summary = { outcome: "error", error: "VERIFIER_RESULT_UNAVAILABLE", protocolProfile: "collab-dcql" };
+      return { exchanges: [exchange("playground", this.id, "POST", url, result, { includeClaims: false }, summary)], summary };
+    }
+    const valid = result.body.allChecksSuccessful === true;
     return {
       exchanges: [exchange("playground", this.id, "POST", url, result, body, {
         allChecksSuccessful: result.body?.allChecksSuccessful,
         credentialChecksSuccessful: credentialResult?.allChecksSuccessful,
         credentialProofValid: credentialResult?.schemaAndSignatureCheck?.valid,
         holderProofValid: credentialResult?.holderProofCheck?.valid,
-        errorCode: result.body?.errorCode,
-        errorMessage: result.body?.errorMessage,
+        ...(valid ? {} : { errorCode: submissionErrorCode(result.body) }),
       })],
-      summary: { outcome: valid ? "valid" : "invalid", allChecksSuccessful: result.body?.allChecksSuccessful === true,
+      summary: { outcome: valid ? "valid" : "invalid", protocolProfile: "collab-dcql", allChecksSuccessful: result.body?.allChecksSuccessful === true,
         ...(valid ? {} : { failureDetail: credentialResult?.schemaAndSignatureCheck?.valid === false
           ? "Verifier rejected the credential schema or issuer signature"
           : credentialResult?.holderProofCheck?.valid === false
             ? "Verifier rejected the holder proof"
-            : result.body?.errorCode ?? "Verifier returned an invalid result" }),
+            : "Verifier returned an invalid result" }),
       },
     };
   }

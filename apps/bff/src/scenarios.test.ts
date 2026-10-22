@@ -8,10 +8,10 @@ import { listScenarios, scenarioMismatch } from "./scenarios.js";
 describe("scenario catalog", () => {
   it("defines one-variable cases with stable IDs and expected outcomes", () => {
     const scenarios = listScenarios("fixture");
-    expect(scenarios).toHaveLength(4);
+    expect(scenarios).toHaveLength(10);
     expect(new Set(scenarios.map((item) => item.id)).size).toBe(scenarios.length);
     expect(scenarios.every((item) => item.config.scenarioId === item.id)).toBe(true);
-    expect(scenarios.map((item) => item.expectedOutcome)).toEqual(["valid", "valid", "valid", "invalid"]);
+    expect(scenarios.slice(0, 4).map((item) => item.expectedOutcome)).toEqual(["valid", "valid", "valid", "invalid"]);
     expect(scenarios.every((item) => item.available)).toBe(true);
   });
 
@@ -25,9 +25,10 @@ describe("scenario catalog", () => {
 
   it("marks live cases unavailable until their required environment is configured", () => {
     const missing = listScenarios("collab", {});
-    expect(missing.every((item) => !item.available)).toBe(true);
+    expect(missing.slice(0, 4).every((item) => !item.available)).toBe(true);
+    expect(missing.slice(4).every((item) => item.available)).toBe(true);
     const ready = listScenarios("collab", {
-      OFFICIAL_POSTMAN_ENV_PATH: "/synthetic/postman.json", MOCK_OTP: "synthetic-otp", MOCK_ISSUER_BASE_URL: "http://127.0.0.1:4101",
+      OFFICIAL_POSTMAN_ENV_PATH: "/synthetic/postman.json", MOCK_OTP: "synthetic-otp", MOCK_ISSUER_BASE_URL: "http://127.0.0.1:4101", MOCK_ISSUER_ENABLE_TEST_CASES: "true",
     });
     expect(ready.every((item) => item.available)).toBe(true);
   });
@@ -45,7 +46,7 @@ describe("scenario catalog", () => {
       const catalog = await fetch(`${base}/api/v1/scenarios`);
       expect(catalog.status).toBe(200);
       const body = await catalog.json() as { items: ReturnType<typeof listScenarios> };
-      expect(body.items).toHaveLength(4);
+      expect(body.items).toHaveLength(10);
       const changed = { ...body.items[0]!.config, format: "ldp_vc" };
       const response = await fetch(`${base}/api/v1/runs`, {
         method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(changed),

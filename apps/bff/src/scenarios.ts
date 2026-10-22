@@ -32,21 +32,31 @@ const seeds: ScenarioSeed[] = [
   {
     id: "f1571de0-0000-4000-8000-000000000004",
     name: "Certify → Reference Wallet → Verify · bad signature",
-    description: "Change only the presentation signature and expect verifier rejection.",
+    description: "Corrupt the issuer credential signature and expect verifier rejection.",
     category: "negative",
     config: { issuer: "inji_certify", wallet: "reference_wallet", verifier: "inji_verify", format: "vc_sd_jwt", flow: "cross_device", tamper: "bad_signature", scenarioId: "f1571de0-0000-4000-8000-000000000004" },
     expectedOutcome: "invalid",
   },
 ];
 
+const mockFaults = [null, "bad_signature", "expired", "wrong_type", "missing_disclosure", "replay_nonce"] as const;
+for (const [index, tamper] of mockFaults.entries()) {
+  const id = `f1571de0-0000-4000-8000-${String(index + 5).padStart(12, "0")}`;
+  seeds.push({ id, name: `Mock protocol · ${tamper === "replay_nonce" ? "nonce mismatch" : tamper ?? "valid control"}`,
+    description: "Controlled mock SD-JWT issuance and verification with an exact rejection reason; nonce mismatch is distinct from byte-for-byte replay.",
+    category: tamper ? "negative" : "external_mock",
+    config: { issuer: "mock_issuer", wallet: "reference_wallet", verifier: "mock_verifier", format: "vc_sd_jwt", flow: "cross_device", tamper, scenarioId: id },
+    expectedOutcome: tamper ? "invalid" : "valid" });
+}
+
 for (const seed of seeds) runConfigSchema.parse(seed.config);
 
 export function listScenarios(mode: DriverMode, environment: NodeJS.ProcessEnv = process.env): ScenarioDefinition[] {
   return seeds.map((seed) => {
-    const unavailableReason = unsupportedReason(seed.config, mode)
+    const unavailableReason = unsupportedReason(seed.config, mode, environment)
       ?? (mode === "collab" && seed.config.issuer === "inji_certify" && (!environment.OFFICIAL_POSTMAN_ENV_PATH || !environment.MOCK_OTP)
         ? "Certify scenarios need OFFICIAL_POSTMAN_ENV_PATH and MOCK_OTP." : null)
-      ?? (mode === "collab" && seed.config.issuer === "mock_issuer" && !environment.MOCK_ISSUER_BASE_URL
+      ?? (mode === "collab" && seed.config.issuer === "mock_issuer" && seed.config.verifier === "inji_verify" && !environment.MOCK_ISSUER_BASE_URL
         ? "The external mock issuer is not configured; start pnpm dev:x509-mock." : null);
     return { ...seed, available: unavailableReason === null, unavailableReason };
   });

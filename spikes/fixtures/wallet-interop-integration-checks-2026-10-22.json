@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "timestamp": "2026-10-22T11:11:35.994119+00:00",
+  "branch": "person3/protocol_correctness",
+  "sourceCommitBeforeChanges": "5a5e83b10bbb3dfdf45e226955f00f17c4c6b2e7",
+  "dirtyWorkingTree": true,
+  "evidenceTier": "protocol_integration_checks",
+  "checks": [
+    {
+      "command": "pnpm test (CAPTURE_POSTGRES_TEST_URL configured for local migrated PostgreSQL)",
+      "status": "passed",
+      "passed": 266,
+      "skipped": 0,
+      "breakdown": {
+        "node_scripts_and_spikes": 36,
+        "shared": 3,
+        "mock_issuer": 11,
+        "mock_verifier": 71,
+        "bff": 145
+      },
+      "databaseCoverage": [
+        "capture redaction persisted rows",
+        "credential leakage across API/database/events",
+        "six protocol evaluations/reports/matrix identities after reconnect"
+      ]
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed"
+    },
+    {
+      "command": "pnpm audit:secrets",
+      "status": "passed",
+      "note": "Final scan including new live and BFF evidence artifacts; 183 tracked/non-ignored filenames checked."
+    },
+    {
+      "command": "node spikes/wallet-interop-local.mjs --out NEWPATH",
+      "status": "passed",
+      "cases": 12,
+      "correctRejections": 11,
+      "correctAcceptances": 1,
+      "artifact": "spikes/fixtures/wallet-interop-2026-10-22.json"
+    },
+    {
+      "command": "MATRIX_ARTIFACT_PATH=NEWPATH pnpm demo:docker",
+      "status": "passed",
+      "observed": "DEMO PASS",
+      "artifact": "spikes/fixtures/wallet-interop-bff-2026-10-22.json",
+      "cases": [
+        {
+          "runId": "63665287-5de5-41f0-8e8c-9bad53849fde",
+          "scenarioId": "f1571de0-0000-4000-8000-000000000005",
+          "fault": null,
+          "outcome": "valid",
+          "evaluation": "correct_acceptance",
+          "expectedCode": null,
+          "observedCode": null,
+          "steps": 10,
+          "exchanges": 7
+        },
+        {
+          "runId": "7414c77e-e8c9-4d46-b607-ac6a69e9a54e",
+          "scenarioId": "f1571de0-0000-4000-8000-000000000006",
+          "fault": "bad_signature",
+          "outcome": "invalid",
+          "evaluation": "correct_rejection",
+          "expectedCode": "ISSUER_SIGNATURE_INVALID",
+          "observedCode": "ISSUER_SIGNATURE_INVALID",
+          "steps": 10,
+          "exchanges": 7
+        },
+        {
+          "runId": "9fd63f79-99ba-4716-b994-9866bf200835",
+          "scenarioId": "f1571de0-0000-4000-8000-000000000007",
+          "fault": "expired",
+          "outcome": "invalid",
+          "evaluation": "correct_rejection",
+          "expectedCode": "CREDENTIAL_EXPIRED",
+          "observedCode": "CREDENTIAL_EXPIRED",
+          "steps": 10,
+          "exchanges": 7
+        },
+        {
+          "runId": "5bec166d-1d57-42ff-af99-bfe994eca251",
+          "scenarioId": "f1571de0-0000-4000-8000-000000000008",
+          "fault": "wrong_type",
+          "outcome": "invalid",
+          "evaluation": "correct_rejection",
+          "expectedCode": "CREDENTIAL_TYPE_MISMATCH",
+          "observedCode": "CREDENTIAL_TYPE_MISMATCH",
+          "steps": 10,
+          "exchanges": 7
+        },
+        {
+          "runId": "736f032b-e1b9-458a-a341-fce619322bfb",
+          "scenarioId": "f1571de0-0000-4000-8000-000000000009",
+          "fault": "missing_disclosure",
+          "outcome": "invalid",
+          "evaluation": "correct_rejection",
+          "expectedCode": "REQUIRED_DISCLOSURE_MISSING",
+          "observedCode": "REQUIRED_DISCLOSURE_MISSING",
+          "steps": 10,
+          "exchanges": 7
+        },
+        {
+          "runId": "8d72f454-745f-4652-84d3-23ffce3a2268",
+          "scenarioId": "f1571de0-0000-4000-8000-000000000010",
+          "fault": "replay_nonce",
+          "outcome": "invalid",
+          "evaluation": "correct_rejection",
+          "expectedCode": "NONCE_MISMATCH",
+          "observedCode": "NONCE_MISMATCH",
+          "steps": 10,
+          "exchanges": 7
+        }
+      ]
+    },
+    {
+      "command": "node spikes/wallet-interop-collab.mjs --target collab --out NEWPATH",
+      "status": "completed_investigation",
+      "artifact": "spikes/fixtures/wallet-interop-live-2026-10-22.json",
+      "notes": "X509 accepted; did:jwk rejected; signature and nonce rejected with generic diagnostics; both pre-authorized grants credential HTTP401; deployments unreported."
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    }
+  ],
+  "limits": [
+    "Changes are uncommitted and deployment versions are not attested.",
+    "Real mobile wallet execution remains excluded; browser E2E not performed.",
+    "Flat synthetic mock profile is not general SD-JWT/PE conformance or certificate-chain trust validation.",
+    "Live request JWT signature authentication remains an existing project limitation.",
+    "Collab generic negative reasons stay inconclusive; pre-authorized 401 and release/configuration attribution require deployment-owner information.",
+    "Default pnpm test without CAPTURE_POSTGRES_TEST_URL passes263/skips3.",
+    "Docker demo is left running at localhost:5174 with synthetic persisted runs."
+  ]
+}

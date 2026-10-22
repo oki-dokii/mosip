@@ -1,5 +1,6 @@
 import type { RunRecord } from "./store.js";
 import { evidenceLabels, evidenceTier, type EvidenceTier } from "@playground/shared";
+import { protocolMetadata } from "./protocol.js";
 
 export interface RunReport {
   run: RunRecord["run"];
@@ -10,7 +11,7 @@ export interface RunReport {
 
 export function buildReport(record: RunRecord): RunReport {
   const tier = evidenceTier(record.run);
-  return { run: record.run, steps: record.steps, exchanges: record.exchanges, evidence: { tier, label: evidenceLabels[tier] } };
+  return { run: { ...record.run, ...protocolMetadata(record.steps) }, steps: record.steps, exchanges: record.exchanges, evidence: { tier, label: evidenceLabels[tier] } };
 }
 
 function fencedJson(value: unknown) {
@@ -25,6 +26,14 @@ export function renderMarkdown(report: RunReport) {
     `- Status: **${run.status}**`,
     `- Expected outcome: **${run.expectedOutcome}**`,
     `- Actual outcome: **${run.actualOutcome ?? "pending"}**`,
+    `- Reason evaluation: **${run.evaluation?.verdict ?? "not_recorded"}**`,
+    `- Protocol profile: \`${run.protocolProfile ?? "unreported"}\``,
+    `- Issuer representation: \`${run.issuerRepresentation ?? "unreported"}\``,
+    `- Scenario: \`${run.config.scenarioId ?? "custom"}\``,
+    ...(run.evaluation ? [
+      `- Expected rejection: \`${run.evaluation.expected.code ?? "none"}\` at \`${run.evaluation.expected.step}\``,
+      `- Observed rejection: \`${run.evaluation.observed.code ?? "unknown"}\` at \`${run.evaluation.observed.step ?? "unknown"}\``,
+    ] : []),
     `- Evidence: **${evidence.label}**`,
     `- Issuer: \`${run.config.issuer}\``,
     `- Wallet: \`${run.config.wallet}\``,

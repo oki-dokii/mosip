@@ -1,5 +1,6 @@
 import type { RunConfig } from "@playground/shared";
 import type { DriverContext, DriverResult, DriverSet, IssuerDriver, VerifierDriver, WalletDriver } from "./types.js";
+import { expectedFailure } from "../protocol.js";
 
 function format(context: DriverContext) {
   return context.config.format === "ldp_vc" ? "ldp_vc" : "dc+sd-jwt";
@@ -138,7 +139,7 @@ class FixtureVerifierDriver implements VerifierDriver {
         request: { includeClaims: false, skipStatusChecks: true },
         response: { allChecksSuccessful: !invalid, credentialProofValid: !invalid, holderProofValid: !invalid },
       }],
-      summary: { outcome: invalid ? "invalid" : "valid" },
+      summary: { outcome: invalid ? "invalid" : "valid", protocolProfile: "fixture-v1", diagnosticsVersion: 1, ...(invalid ? { failure: expectedFailure(_context.config) } : {}) },
     };
   }
 }

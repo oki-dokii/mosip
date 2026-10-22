@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "timestamp": "2026-10-22T10:33:49.865894+00:00",
+  "evidenceTier": "local_mock_protocol_checks",
+  "sourceCommitBeforeChanges": "5a5e83b10bbb3dfdf45e226955f00f17c4c6b2e7",
+  "testedWorkingTree": true,
+  "branch": "person3/protocol_correctness",
+  "checks": [
+    {
+      "command": "pnpm test",
+      "status": "passed",
+      "passed": 221,
+      "skipped": 2,
+      "breakdown": {
+        "node_scripts_and_spikes": 36,
+        "shared": 3,
+        "mock_issuer": 11,
+        "mock_verifier": 71,
+        "bff": 100
+      },
+      "note": "Two opt-in PostgreSQL capture tests skipped because CAPTURE_POSTGRES_TEST_URL was not configured. Web has no browser tests."
+    },
+    {
+      "command": "pnpm typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "pnpm build",
+      "status": "passed"
+    },
+    {
+      "command": "pnpm audit:secrets",
+      "status": "passed"
+    },
+    {
+      "command": "node spikes/wallet-interop-local.mjs --out <new-local-path>",
+      "status": "passed",
+      "cases": 12,
+      "correctRejections": 11,
+      "correctAcceptances": 1,
+      "artifact": "spikes/fixtures/wallet-interop-2026-10-22.json"
+    },
+    {
+      "command": "pnpm demo:docker",
+      "status": "passed",
+      "observed": "DEMO PASS",
+      "cases": [
+        {
+          "scenario": "baseline",
+          "outcome": "valid",
+          "steps": 10,
+          "exchanges": 7,
+          "tier": "mock_interop",
+          "runId": "47dc7c21-3367-4350-a725-5b2517d77316"
+        },
+        {
+          "scenario": "bad_signature",
+          "outcome": "invalid",
+          "steps": 10,
+          "exchanges": 7,
+          "tier": "mock_interop",
+          "runId": "bf4aa63d-b394-45ff-8139-e979d67217d2"
+        }
+      ]
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    }
+  ],
+  "limits": [
+    "Working-tree results; source changes are uncommitted and target build versions are not attested.",
+    "No live Collab protocol run or real mobile wallet journey performed.",
+    "BFF negative-case routing, detailed verdict evaluation, in-process parity and scenario/profile matrix identity remain integrator tasks.",
+    "The strict flat mock profile does not implement general recursive SD-JWT, Presentation Exchange or certificate-chain trust.",
+    "Two PostgreSQL capture checks were not enabled; browser E2E and native wallet acceptance remain unproven.",
+    "The Docker demo remains running on localhost:5174 with synthetic persisted runs."
+  ]
+}

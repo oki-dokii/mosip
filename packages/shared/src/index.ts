@@ -21,6 +21,18 @@ export type RunConfig = z.infer<typeof runConfigSchema>;
 export type RunStatus = "pending" | "running" | "passed" | "failed" | "errored" | "cancelled";
 export type StepStatus = "pending" | "running" | "succeeded" | "failed" | "skipped";
 
+export interface ProtocolFailure {
+  boundary: "direct_post" | "result";
+  stage: string;
+  code: string;
+}
+export interface ProtocolEvaluation {
+  schemaVersion: 1;
+  verdict: "correct_acceptance" | "correct_rejection" | "unexpected_rejection" | "wrongly_accepted" | "wrong_step" | "wrong_reason" | "inconclusive";
+  expected: { outcome: "valid" | "invalid" | "expired"; boundary: "result"; step: "PRESENT_RESULT"; stage?: string; code?: string };
+  observed: { outcome: "valid" | "invalid" | "expired" | "error" | null; boundary: "result" | "direct_post" | null; step: string | null; stage: string | null; code: string | null };
+}
+
 export interface RunSummary {
   id: string;
   parentRunId: string | null;
@@ -34,6 +46,9 @@ export interface RunSummary {
   createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;
+  protocolProfile?: "fixture-v1" | "mock-sdjwt-flat-v1" | "legacy-mock-v1" | "collab-dcql";
+  issuerRepresentation?: "did:jwk" | "x509" | "unreported";
+  evaluation?: ProtocolEvaluation;
 }
 
 export { evidenceTier, evidenceLabels } from "./evidence.js";

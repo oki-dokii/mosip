@@ -45,7 +45,7 @@ The question for every run is **which exact combination was tested, what happene
 | Scenario and role selection | Choose an issuer, wallet, verifier, format, and optional fault; named presets change one variable at a time. | Unsupported live combinations are disabled or rejected. |
 | Timeline and updates | The BFF runs ten named steps; Socket.IO sends progress summaries with polling recovery. | Results reflect the selected driver mode. |
 | Inspector and sequence | Inspect sanitized exchanges, play a sequence, and export Mermaid source. | Some browser/native boundaries cannot be observed. |
-| Negative cases | Replay expired, bad-signature, wrong-type, missing-disclosure, or replayed-nonce faults where supported. | Some faults still need more isolated tests; see [remaining work](NEXT_STEPS_4_PERSON_PLAN.md). |
+| Negative cases | Replay expired, bad-signature, wrong-type, missing-disclosure, or replayed-nonce faults where supported. | Controlled mock SD-JWT faults require exact rejection reasons; genuine replay and holder faults are covered separately by the Person 3 harness. |
 | History and exports | Filter runs; download JSON/Markdown reports and JSON/CSV/Markdown matrix exports. | Matrix results are separated by evidence tier. |
 | Independent roles | Standalone mock issuer and verifier can be selected for supported SD-JWT tests. | Mock cryptographic checks do not establish production trust. |
 | Passive capture | Import bounded, allowlisted synthetic browser HAR traffic after a run. | Gaps remain for server-to-server and native-wallet traffic. |
@@ -176,7 +176,7 @@ For the **one-command container demo** with the web app, BFF, PostgreSQL, and se
 pnpm demo:docker
 ```
 
-Open **http://localhost:5174**. The command builds and health-checks the services, then runs two cross-container synthetic SD-JWT cases (valid baseline and corrupted signature) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. Local smoke and [hosted CI](https://github.com/oki-dokii/mosip/actions/runs/39632729703) passed on 2026-10-21; independent clean-machine verification remains open.
+Open **http://localhost:5174**. The command builds and health-checks the services, then runs six cross-container synthetic SD-JWT presets (valid control, corrupted signature, signed expiry, signed wrong type, missing required disclosure and nonce mismatch) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. Local smoke and [hosted CI](https://github.com/oki-dokii/mosip/actions/runs/39632729703) passed on 2026-10-21; independent clean-machine verification remains open.
 
 ## Integration modes
 
@@ -261,7 +261,7 @@ pnpm build
 pnpm audit:secrets
 ```
 
-At the **2026-10-22** checkpoint, **46 automated tests**, strict typechecks, and the production build passed. The tests cover contract fixtures, schemas, BFF behavior, capture/redaction, scenarios, mock services, and the secret-audit script. `pnpm audit:secrets` passed separately; it checks sensitive filenames and documentation/evidence **text** without printing matched values. It does not inspect image or other binary contents and is not a substitute for write-time redaction. The web package has no automated browser test yet; a build pass does not replace an end-to-end UI check. These commands do **not** perform a fresh Collab run. The [test evidence](submission/TEST_EVIDENCE.md) has the breakdown and claim limits.
+At the final Person 3 **2026-10-22** checkpoint, **266 automated tests** passed with PostgreSQL checks enabled, alongside strict typechecks and the production build. Without `CAPTURE_POSTGRES_TEST_URL`, 263 pass and three database checks are skipped. The tests cover contract fixtures, schemas, BFF behavior, capture/redaction, scenarios, mock services, and the secret-audit script. `pnpm audit:secrets` passed separately; it checks sensitive filenames and documentation/evidence **text** without printing matched values. It does not inspect image or other binary contents and is not a substitute for write-time redaction. The web package has no automated browser test yet; a build pass does not replace an end-to-end UI check. These commands do **not** perform a fresh Collab run. Separate [Person 3 live investigations](submission/PERSON3_LIVE_INVESTIGATION.md) and [the completed protocol handoff](PERSON3_PROTOCOL_HANDOFF.md) record the new local and Collab evidence. `pnpm demo:docker` now checks six controlled protocol presets through PostgreSQL. The [test evidence](submission/TEST_EVIDENCE.md) has the breakdown and claim limits.
 
 Fresh synthetic X.509 mock-issuer → Reference Wallet → Collab Verify positive and bad-signature reports were exported on 2026-10-21 at commit `ec1cbbd`; see the [standalone evidence and matrix](submission/evidence/README.md). They are `mock_interop` evidence, not all-Inji wallet evidence. For a live synthetic contract probe, use `pnpm spike:contracts` only after configuring the official public test environment in [Phase 0–1](PHASE0_1.md). The committed fixtures let ordinary tests run offline.
 
