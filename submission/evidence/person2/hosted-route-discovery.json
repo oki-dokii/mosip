@@ -1,0 +1,34 @@
+{
+  "evidenceKind": "observed_browser_route_metadata",
+  "observedDate": "2026-10-23",
+  "routes": [
+    {
+      "method": "POST",
+      "origin": "https://injiweb.collab.mosip.net",
+      "path": "/v1/mimoto/wallets/{id}/credentials",
+      "ruleId": null
+    },
+    {
+      "method": "POST",
+      "origin": "https://injiverify.collab.mosip.net",
+      "path": "/v1/verify/v2/vp-session-request",
+      "ruleId": null
+    },
+    {
+      "method": "POST",
+      "origin": "https://injiweb.collab.mosip.net",
+      "path": "/v1/mimoto/wallets/{id}/presentations",
+      "ruleId": null
+    },
+    {
+      "method": "POST",
+      "origin": "https://injiverify.collab.mosip.net",
+      "path": "/v1/verify/vp-session-results",
+      "ruleId": null
+    }
+  ],
+  "verifyDirectPostObserved": false,
+  "publicCredentialTypeUris": [
+    "https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json#RegistrationReceiptCredential"
+  ]
+}
