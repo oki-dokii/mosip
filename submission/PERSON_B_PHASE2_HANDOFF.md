@@ -60,3 +60,11 @@ https://injiweb.collab.mosip.net/user/authorize?client_id=decentralized_identifi
 ```
 
 The manual flow completed matching, consent, sharing and visible Verify acceptance using the Land Registry Registration Receipt. The verifier must request only Land Registry: explicitly uncheck the default MOSIP ID and verify checkbox states. Inji Web displayed Trusted after the user-approved trust change. The exact issuance endpoint/configuration ID, protocol profile and compatibility with backend-created requests still require capture integration validation. The successful UI result is not a normalized managed-run result and does not change evidence tiers.
+
+## Person 1 capture handoff integration — 23 October 2026
+
+Merged `origin/main` through `55f77ff` into the Person 2 branch, preserving manual hosted Valid evidence from `1537c55`. Person 1's authoritative [capture handoff](../PERSON2_LIVE_CAPTURE_HANDOFF.md) provides the frozen examples, importer attribution and remaining bridge requirements. The form-state fix is included; no capture internals were changed by Person 2.
+
+Driver-specific synthetic integration tests now pass both JSON and form-encoded presentation entries through the real importer, persist its assigned exchanges, and consume them with the assisted driver. They require separate storage confirmation, reject unrelated request state, and check that persisted records contain neither the synthetic state nor credential canary. Presentation completion leaves the verifier result pending and the run outcome unset. This is a same-process synthetic consumer check, not a live browser bridge or hosted acceptance run.
+
+Next dependency from Person 1: a reviewed same-process pre-storage capture bridge (without exporting the HMAC key or uploading raw real-session HAR), plus confirmation of observability and rule mapping for the hosted issuance/direct-post routes. Mimoto download alone cannot satisfy the current Certify issuance predicate; any owner-approved adjustment must preserve truthful evidence labeling. After that, Person 2 can run the managed live journey and record normalized outcome/run/exchange IDs for integrator review.
