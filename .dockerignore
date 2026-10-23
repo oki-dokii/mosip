@@ -39,10 +39,13 @@ Thumbs.db
 .idea/
 .vscode/
 
-# ── spike fixtures and submission docs (not needed at build time) ─────────────
-# spikes/ source is excluded; individual .mjs files are not needed in images.
+# ── spike fixtures and submission docs ────────────────────────────────────────
+# The web build imports only the public, sanitized gap index. Keep all other
+# submission evidence and documents outside the Docker build context.
 spikes/
-submission/
+submission/**
+!submission/
+!submission/gaps.json
 
 # ── local evidence files ─────────────────────────────────────────────────────
 artifacts/
