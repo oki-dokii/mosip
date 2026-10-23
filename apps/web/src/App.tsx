@@ -7,6 +7,7 @@ import { Inspector } from "./components/Inspector";
 import { RoleSelector } from "./components/RoleSelector";
 import { RunTimeline } from "./components/RunTimeline";
 import { RunArchive } from "./components/RunArchive";
+import { GapExplorer } from "./components/GapExplorer";
 import { SequenceView } from "./components/SequenceView";
 import { ConnectedAssisted } from "./components/ConnectedAssisted";
 import { CaptureCoverage } from "./components/CaptureCoverage";
@@ -31,7 +32,7 @@ const tamperOptions: Array<{ value: RunConfig["tamper"]; label: string }> = [
   { value: "expired", label: "Expired credential" },
   { value: "wrong_type", label: "Wrong credential type" },
   { value: "missing_disclosure", label: "Missing disclosure" },
-  { value: "replay_nonce", label: "Replayed nonce" },
+  { value: "replay_nonce", label: "Nonce mismatch" },
 ];
 
 export default function App() {
@@ -136,8 +137,10 @@ export default function App() {
   const format = metadata?.formats.find((item) => item.id === config.format);
   const unsupportedReason = assistedUnavailable(config) ?? (config.wallet === "inji_web_assisted" ? null : driverMode === "collab" && (config.issuer === "mock_issuer" || config.verifier === "mock_verifier") && config.format !== "vc_sd_jwt"
         ? "Local non-Inji mock roles currently support SD-JWT VC only."
-        : driverMode === "collab" && config.verifier === "mock_verifier" && config.tamper === "missing_disclosure"
-          ? "The mock verifier has no required-disclosure policy for this credential."
+        : driverMode === "collab" && (config.tamper === "expired" || config.tamper === "wrong_type") && (config.issuer !== "mock_issuer" || config.format !== "vc_sd_jwt")
+          ? "Expiry and type tests require the controlled SD-JWT mock issuer."
+        : driverMode === "collab" && config.tamper === "missing_disclosure" && (config.issuer !== "mock_issuer" || config.verifier !== "mock_verifier")
+          ? "Missing-disclosure tests require the controlled mock issuer and verifier policy."
         : null);
   const selectedExchange = useMemo(() => exchanges.find((item) => item.id === selectedExchangeId) ?? exchanges.find((item) => item.stepId === selectedStepId) ?? exchanges.at(-1) ?? null, [exchanges, selectedExchangeId, selectedStepId]);
   const selectStep = useCallback((stepId: string) => {
@@ -157,7 +160,7 @@ export default function App() {
       : run.status === "cancelled" ? "Cancelled — no verifier verdict established"
       : run.status === "passed"
         ? `✓ ${actualLabel} — expected result matched`
-        : `Mismatch — expected ${run.expectedOutcome}, received ${run.actualOutcome}`;
+        : run.evaluation ? `Validation: ${run.evaluation.verdict.replaceAll("_", " ")}` : `Mismatch — expected ${run.expectedOutcome}, received ${run.actualOutcome}`;
   const verifierDetail = steps.find((step) => step.stepKey === "PRESENT_RESULT")?.summary?.failureDetail;
   const selectedScenario = scenarios.find((item) => item.id === config.scenarioId);
   const scenarioGaps = [...new Set(scenarios.flatMap((item) => item.unavailableReason ? [item.unavailableReason] : []))];
@@ -232,6 +235,7 @@ export default function App() {
               <div>
                 <div className={`mb-4 rounded-xl border px-4 py-3 text-sm font-semibold ${run?.status === "passed" ? "border-green-200 bg-green-50 text-ok" : runFinished ? "border-red-200 bg-red-50 text-fail" : "border-blue-200 bg-blue-50 text-issuer"}`} aria-live="polite">{runMessage}</div>
                 {run && <p className="mb-4 text-xs font-semibold text-slate-600">Evidence: {evidenceLabels[evidenceTier(run)]}</p>}
+                {run?.evaluation && <p className="mb-4 text-xs text-slate-700">Validation: {run.evaluation.verdict.replaceAll("_", " ")}{run.evaluation.observed.code ? ` · ${run.evaluation.observed.code}` : ""}</p>}
                 {typeof verifierDetail === "string" && <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">Verifier detail: {verifierDetail}</p>}
                 {runFinished && run?.config.wallet !== "inji_web_assisted" && run?.status !== "errored" && run?.status !== "cancelled" && <button disabled={busy} onClick={() => void replayRun()} className="mb-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:border-slate-500 disabled:opacity-60">Replay with selected fault</button>}
                 {runFinished && run && <div className="mb-4 grid grid-cols-2 gap-2 text-center text-xs font-bold"><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=md`}>Report · Markdown</a><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=json`}>Report · JSON</a></div>}
@@ -242,6 +246,7 @@ export default function App() {
           )}
         </section>
         <RunArchive history={history} matrix={matrix} active={archiveView} onActiveChange={setArchiveView} onSelectRun={selectArchivedRun} />
+        <GapExplorer />
       </main>
     </div>
   );

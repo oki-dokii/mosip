@@ -119,3 +119,35 @@ describe("walking-skeleton orchestration", () => {
       .toMatchObject({ tamper: "bad_signature" });
   });
 });
+
+describe("terminal verdict integrity", () => {
+  async function execute(summary: Record<string, unknown>, failedStatus = false) {
+    const repository = new MemoryRunRepository(), id = randomUUID();
+    const config: RunSummary["config"] = { issuer: "mock_issuer", wallet: "reference_wallet", verifier: "mock_verifier", format: "vc_sd_jwt", flow: "cross_device", tamper: "expired", scenarioId: null };
+    const run: RunSummary = { id, parentRunId: null, config, status: "pending", expectedOutcome: "invalid", actualOutcome: null, proofType: "kb+jwt", algorithm: "EdDSA", createdAt: new Date().toISOString(), startedAt: null, finishedAt: null };
+    await repository.create({ run, steps: createSteps(id), exchanges: [] });
+    const drivers = createFixtureDrivers(config);
+    if (failedStatus) drivers.verifier.pollStatus = async () => ({ summary });
+    else drivers.verifier.getResult = async () => ({ summary });
+    const io = { of: () => ({ to: () => ({ emit: () => undefined }) }) } as unknown as Server;
+    try { await runDemo(id, io, repository, 0, drivers); } catch { /* inspect persisted terminal state */ }
+    return (await repository.get(id))!;
+  }
+  it.each([{}, { outcome: "error" }, { outcome: "pending" }, { outcome: true }])("never passes a missing/error/malformed terminal outcome %#", async (summary) => {
+    const record = await execute(summary);
+    expect(record.run.status).toBe("errored"); expect(record.run.actualOutcome).toBe("error"); expect(record.run.evaluation?.verdict).toBe("inconclusive");
+  });
+  it("fails a negative that is rejected for the wrong reason", async () => {
+    const record = await execute({ outcome: "invalid", diagnosticsVersion: 1, failure: { boundary: "result", stage: "issuer_signature", code: "ISSUER_SIGNATURE_INVALID" } });
+    expect(record.run.status).toBe("failed"); expect(record.run.evaluation?.verdict).toBe("wrong_reason");
+  });
+  it("retains a coarse rejection as inconclusive", async () => {
+    const record = await execute({ outcome: "invalid" });
+    expect(record.run.status).toBe("failed"); expect(record.run.evaluation?.verdict).toBe("inconclusive");
+  });
+  it("stops on a status transport failure before a later valid result can mask it", async () => {
+    const record = await execute({ outcome: "error" }, true);
+    expect(record.run.status).toBe("errored");
+    expect(record.steps.find((step) => step.stepKey === "PRESENT_RESULT")?.status).toBe("pending");
+  });
+});

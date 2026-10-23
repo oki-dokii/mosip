@@ -3,6 +3,7 @@ import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const evidence = new URL("../../../submission/evidence/person2/", import.meta.url);
+const bffUrl = `http://127.0.0.1:${process.env.PLAYGROUND_BROWSER_BFF_PORT ?? "4000"}`;
 
 test("assisted fixture supports keyboard completion and accessibility", async ({ page }) => {
   await page.goto("/");
@@ -47,7 +48,7 @@ test("independent mock happy path and synthetic capture remain safe in browser/A
   await page.getByRole("button", { name: "Import synthetic capture" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Synthetic capture imported" })).toBeVisible();
   await expect(page.getByText("STORE: not_observable")).toBeVisible();
-  const exchanges = await (await request.get("http://127.0.0.1:4000/api/v1/runs/" + runId + "/exchanges")).json();
+  const exchanges = await (await request.get(`${bffUrl}/api/v1/runs/${runId}/exchanges`)).json();
   expect(JSON.stringify(exchanges)).not.toContain("CANARY");
   const observed = exchanges.items.find((exchange: any) => exchange.request?.capture?.ruleId === "certify-credential");
   expect(observed).toBeTruthy();

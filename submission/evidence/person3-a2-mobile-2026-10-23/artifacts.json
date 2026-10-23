@@ -1,0 +1,30 @@
+[
+  {
+    "file": "01-wallet-downloaded-card.jpg",
+    "sha256": "99797678a0f40e30cff04de8cb55165b4b67f0e6125e176b720c5d9efcbf0378",
+    "description": "Wallet reports download success and lists Playground SD-JWT Identity as Valid; device displayed 18:40.",
+    "provenance": "User-supplied screenshot in guided conversation, copied without pixel edits.",
+    "review": "Visible content reviewed in conversation; no identity values, App ID, offer/presentation QR, tokens, raw credential strings or authentication codes visible; no EXIF/XMP marker found."
+  },
+  {
+    "file": "02-initial-invalid-offer-screen.jpg",
+    "sha256": "1700e7e268322ef9e189577c8baf204b08a4c8bf880f5686cf5d66e57c10ff02",
+    "description": "Intermediate invalid request link screen; subsequent fresh-request retry through Share succeeded. Scanner mode/URI of the failed scan were not independently captured.",
+    "provenance": "User-supplied screenshot in guided conversation, copied without pixel edits.",
+    "review": "Visible content reviewed in conversation; no identity values, App ID, offer/presentation QR, tokens, raw credential strings or authentication codes visible; no EXIF/XMP marker found."
+  },
+  {
+    "file": "03-wallet-presentation-consent.jpg",
+    "sha256": "5e1b5dfeea15f51bab5e2e47bcd9572bf553dbdc3e97448f1b8fc9598247607c",
+    "description": "Wallet Requested Cards screen matches the stored SD-JWT and displays the Collab verifier DID as Trusted; device displayed 18:48.",
+    "provenance": "User-supplied screenshot in guided conversation, copied without pixel edits.",
+    "review": "Visible content reviewed in conversation; no identity values, App ID, offer/presentation QR, tokens, raw credential strings or authentication codes visible; no EXIF/XMP marker found."
+  },
+  {
+    "file": "04-wallet-share-success.jpg",
+    "sha256": "d7863a89a0770d0a03b9a23718a840dcd56b2c59f225409a6c327b7d7bf8a7fd",
+    "description": "Wallet reports ID shared successfully; UI human-readable verifier label is Unknown Verifier; device displayed 18:48.",
+    "provenance": "User-supplied screenshot in guided conversation, copied without pixel edits.",
+    "review": "Visible content reviewed in conversation; no identity values, App ID, offer/presentation QR, tokens, raw credential strings or authentication codes visible; no EXIF/XMP marker found."
+  }
+]

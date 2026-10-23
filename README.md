@@ -1,8 +1,17 @@
 # Inji Interoperability Playground
 
+[![Playground CI](https://github.com/oki-dokii/mosip/actions/workflows/ci.yml/badge.svg)](https://github.com/oki-dokii/mosip/actions/workflows/ci.yml)
+
 **Find where a verifiable credential journey succeeds or fails.** Choose an issuer, wallet, verifier, and credential format; run an issue → hold → present → verify journey; then inspect its step timeline, sanitized protocol exchanges, sequence view, and downloadable result report.
 
 This is a **test playground**, not a production identity provider or wallet. It uses synthetic identities. Its automated wallet is the project's **Reference Wallet**. A Reference Wallet success does not prove that Inji Web or Inji Wallet mobile stored and presented the credential. The [evidence guide](SCENARIOS_AND_EVIDENCE.md) and [submission checklist](submission/READINESS.md) make that distinction explicit.
+
+The web app includes an evidence-linked gap explorer. The [feature parity roadmap](FEATURE_PARITY_ROADMAP.md) identifies meaningful additions to pursue after the current validated flows, with explicit proof required for every live claim.
+For a single-developer finish, use the [ordered remaining-work handoff](SINGLE_OWNER_HANDOFF.md).
+
+For the implemented official local-Certify mobile setup, use `pnpm mobile:inji` and follow [the mobile runbook](deploy/MOBILE_INJI.md). Its official-Certify → Reference Wallet → Collab Verify control passed; it does not establish phone acceptance.
+
+Latest mobile checkpoint (23 October): **A2 passed for the recorded hybrid profile**—official local Certify → actual Android Inji Wallet → Collab Verify, with user-confirmed reopen persistence and a correlated `valid` result. See [the mobile evidence and limitations](submission/evidence/person3-a2-mobile-2026-10-23/README.md). Installed-binary attestation and the running Collab release remain unverified; A1 is still separate.
 
 ## Contents
 
@@ -45,10 +54,10 @@ The question for every run is **which exact combination was tested, what happene
 | Scenario and role selection | Choose an issuer, wallet, verifier, format, and optional fault; named presets change one variable at a time. | Unsupported live combinations are disabled or rejected. |
 | Timeline and updates | The BFF runs ten named steps; Socket.IO sends progress summaries with polling recovery. | Results reflect the selected driver mode. |
 | Inspector and sequence | Inspect sanitized exchanges, play a sequence, and export Mermaid source. | Some browser/native boundaries cannot be observed. |
-| Negative cases | Replay expired, bad-signature, wrong-type, missing-disclosure, or replayed-nonce faults where supported. | Some faults still need more isolated tests; see [remaining work](NEXT_STEPS_4_PERSON_PLAN.md). |
+| Negative cases | Replay expired, bad-signature, wrong-type, missing-disclosure, or replayed-nonce faults where supported. | Controlled mock SD-JWT faults require exact rejection reasons; genuine replay and holder faults are covered separately by the Person 3 harness. |
 | History and exports | Filter runs; download JSON/Markdown reports and JSON/CSV/Markdown matrix exports. | Matrix results are separated by evidence tier. |
 | Independent roles | Standalone mock issuer and verifier can be selected for supported SD-JWT tests. | Mock cryptographic checks do not establish production trust. |
-| Passive capture | Import bounded, allowlisted synthetic browser HAR traffic after a run. | Gaps remain for server-to-server and native-wallet traffic. |
+| Passive capture | Import bounded, allowlisted synthetic browser HAR traffic after a normal run or during a managed assisted run. | Gaps remain for server-to-server and native-wallet traffic. |
 
 ### Tested combinations
 
@@ -58,7 +67,8 @@ The question for every run is **which exact combination was tested, what happene
 | X.509 mock issuer | Reference Wallet | Inji Verify | SD-JWT | Prior Collab run returned `valid`; the self-signed test certificate does not prove root trust. |
 | Inji Certify | Reference Wallet | Standalone mock verifier | SD-JWT | Positive and bad-signature paths recorded. |
 | Standalone mock issuer | Reference Wallet | Standalone mock verifier | SD-JWT | Cross-service mock path recorded. |
-| Inji Certify | Inji Web or Inji Wallet mobile | Inji Verify | JSON-LD, SD-JWT | **Not yet accepted:** real-wallet store-and-present evidence is missing. |
+| Official local Inji Certify | Actual Inji Wallet Android | Collab Inji Verify | SD-JWT | **Observed A2 pass:** stored card, user-confirmed reopen persistence, same-wallet share and correlated valid proof result; [evidence/limits](submission/evidence/person3-a2-mobile-2026-10-23/README.md). |
+| Inji Certify | Inji Web or suitable Inji mobile wallet | Inji Verify | JSON-LD | **A1 not yet accepted:** its real-wallet store-and-present evidence is missing. |
 
 The detailed recorded outcomes and limitations are in [Phase 3](PHASE3.md). These are prior results, not a fresh live run performed by reading this README. A new mobile app is **not required**; real-wallet validation should use an existing, pinned Inji Wallet build.
 
@@ -176,7 +186,7 @@ For the **one-command container demo** with the web app, BFF, PostgreSQL, and se
 pnpm demo:docker
 ```
 
-Open **http://localhost:5174**. The command builds and health-checks the services, then runs two cross-container synthetic SD-JWT cases (valid baseline and corrupted signature) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. Local smoke and [hosted CI](https://github.com/oki-dokii/mosip/actions/runs/39632729703) passed on 2026-10-21; independent clean-machine verification remains open.
+Open **http://localhost:5174**. The command builds and health-checks the services, then runs six cross-container synthetic SD-JWT presets (valid control, corrupted signature, signed expiry, signed wrong type, missing required disclosure and nonce mismatch) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) passed the six-case Docker matrix and browser checks; an independent-machine rehearsal remains open.
 
 ## Integration modes
 
@@ -185,7 +195,7 @@ Open **http://localhost:5174**. The command builds and health-checks the service
 | Fixture | Default or `PLAYGROUND_DRIVER_MODE=fixture` | None | Product UI and run lifecycle work. |
 | Collab with Reference Wallet | `PLAYGROUND_DRIVER_MODE=collab` | Public test environment config and reachable Collab services | Exact live role combination shown in report. |
 | Collab with separate mock roles | Collab mode plus `MOCK_ISSUER_BASE_URL` and/or `MOCK_VERIFIER_BASE_URL` | Running local mock services; Certify tests also need its test config | Cross-service mock interoperability for supported SD-JWT cases. |
-| Assisted real Inji wallet | Not a completed automated mode | Persistent test wallet, supported version, observed presentation | Pending A1/A2 evidence. |
+| Assisted real Inji wallet | Not a completed automated mode | Persistent test wallet, supported version, observed presentation | A2 has separate manual mobile evidence; A1 remains pending. |
 
 For live Certify → Reference Wallet → Verify, obtain the **official public test-client environment** described in [Phase 0–1](PHASE0_1.md), keep it outside the repository, and set:
 
@@ -261,7 +271,9 @@ pnpm build
 pnpm audit:secrets
 ```
 
-At the **2026-10-22** checkpoint, **46 automated tests**, strict typechecks, and the production build passed. The tests cover contract fixtures, schemas, BFF behavior, capture/redaction, scenarios, mock services, and the secret-audit script. `pnpm audit:secrets` passed separately; it checks sensitive filenames and documentation/evidence **text** without printing matched values. It does not inspect image or other binary contents and is not a substitute for write-time redaction. The web package has no automated browser test yet; a build pass does not replace an end-to-end UI check. These commands do **not** perform a fresh Collab run. The [test evidence](submission/TEST_EVIDENCE.md) has the breakdown and claim limits.
+On the **2026-10-23** `main` checkpoint (`b0f132d`), **339 ordinary automated tests passed** and three opt-in PostgreSQL tests skipped. All three opt-in checks later passed against a disposable local PostgreSQL 16 database, for **342 passing tests with none skipped**. Typecheck, production build, secret audit, three Chromium browser checks and the six-case Docker matrix passed in [CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583). The browser checks cover the assisted fixture, independent mock/capture journey, keyboard navigation and scoped axe accessibility. A [fresh checkout rehearsal](submission/CLEAN_CHECKOUT_REHEARSAL.md) repeated install, tests and build on this Mac; independent-machine setup remains open. These checks do **not** perform a fresh Collab or real Inji-wallet run. The [test evidence](submission/TEST_EVIDENCE.md) and [aggregate report](submission/evidence/2026-10-23-aggregate-interop.md) give the evidence boundaries.
+
+For the browser checks, install Chromium once with `pnpm --filter @playground/web exec playwright install chromium`, then run `pnpm --filter @playground/web test:browser`. The Playwright configuration starts its own local mocks, in-memory BFF and Vite. Override `PLAYGROUND_BROWSER_ISSUER_PORT`, `PLAYGROUND_BROWSER_VERIFIER_PORT`, `PLAYGROUND_BROWSER_BFF_PORT` and `PLAYGROUND_BROWSER_WEB_PORT` if the default ports are occupied. Tests use synthetic data only.
 
 Fresh synthetic X.509 mock-issuer → Reference Wallet → Collab Verify positive and bad-signature reports were exported on 2026-10-21 at commit `ec1cbbd`; see the [standalone evidence and matrix](submission/evidence/README.md). They are `mock_interop` evidence, not all-Inji wallet evidence. For a live synthetic contract probe, use `pnpm spike:contracts` only after configuring the official public test environment in [Phase 0–1](PHASE0_1.md). The committed fixtures let ordinary tests run offline.
 
@@ -299,8 +311,8 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 | Gate | Needed evidence | Why it matters |
 |---|---|---|
 | A1: real-wallet JSON-LD | A dedicated logged-in Inji Web or suitable mobile wallet stores and presents to Inji Verify; capture the result. | A Reference Wallet pass does not establish Inji-wallet interoperability. |
-| A2: real-wallet SD-JWT | Test a pinned capable Inji Wallet mobile build and record issuance, holder binding, presentation, and Verify outcome. | The tested Inji Web path does not complete SD-JWT presentation. |
+| A2: real-wallet SD-JWT | Recorded functional pass with actual Android wallet, reopened storage and valid credential/holder proof result. | Hybrid profile only; installed-binary attestation and Collab release remain unverified. |
 | A6: packaging | Playground core + mocks now build, pass health checks, run migrations, and complete a mock smoke through `pnpm demo:docker`. | A separate clean-machine rehearsal and local Inji stack remain open. |
-| Capture and browser QA | Assisted-wallet observation without rewriting signed messages, browser smoke, and accessibility review. | Adapter logs cannot prove every browser/native boundary or user-facing behavior. |
+| Capture and browser QA | Live assisted-wallet observation without rewriting signed messages. | Three synthetic browser/axe checks pass; they cannot prove the real wallet's browser/native boundaries. |
 
 Ownership and next steps are in the [four-person plan](NEXT_STEPS_4_PERSON_PLAN.md). Until these gates have evidence, reports should state exactly which implementation was tested instead of claiming a completed all-Inji flow.

@@ -7,6 +7,7 @@ import { resolveDrivers } from "./drivers/registry.js";
 import type { DriverContext, DriverResult, DriverSet } from "./drivers/types.js";
 import { redact } from "./redaction.js";
 import type { RunRepository } from "./store.js";
+import { evaluateProtocol, protocolMetadata } from "./protocol.js";
 
 const STEP_DEFINITIONS = [
   ["INIT", "Initialize run"],
@@ -72,7 +73,8 @@ export async function runDemo(
   await repository.updateRun(record.run);
   namespace.to(room).emit("run:created", { runId, config: record.run.config });
   let exchangeSequence = record.exchanges.length;
-  let actualOutcome: "valid" | "invalid" = "valid";
+  let actualOutcome: "valid" | "invalid" | "expired" | null = null;
+  let verificationSummary: Record<string, unknown> | undefined;
   let activeStep: RunStep | undefined;
 
   try {
@@ -109,24 +111,40 @@ export async function runDemo(
         });
       }
       if (record.run.config.wallet === "inji_web_assisted" && step.stepKey === "PRESENT_RESULT" && !["valid", "invalid"].includes(String(result.summary?.outcome))) throw new AssistedWaitError("observation_error", "verifier result missing");
-      if (result.summary?.outcome === "invalid") actualOutcome = "invalid";
-      step.status = "succeeded";
       step.summary = result.summary ?? { completed: true };
+      if (result.summary?.outcome === "error") throw new Error("Driver reported an execution error");
+      if (step.stepKey === "PRESENT_RESULT") {
+        verificationSummary = result.summary;
+        const outcome = result.summary?.outcome;
+        if (outcome !== "valid" && outcome !== "invalid" && outcome !== "expired") throw new Error("Verifier did not provide a terminal verdict");
+        actualOutcome = outcome;
+      }
+      if (step.stepKey === "REPORT") {
+        if (actualOutcome === null) throw new Error("Missing verifier verdict");
+        step.summary = { protocolEvaluation: evaluateProtocol(record.run.config, record.run.expectedOutcome, actualOutcome, verificationSummary) };
+      }
+      step.status = "succeeded";
       await repository.updateStep(step);
       namespace.to(room).emit("step:finished", step);
     }
 
-    record.run.status = actualOutcome === record.run.expectedOutcome ? "passed" : "failed";
+    Object.assign(record.run, protocolMetadata(record.steps));
+    record.run.status = ["correct_acceptance", "correct_rejection"].includes(record.run.evaluation?.verdict ?? "") ? "passed" : "failed";
     record.run.actualOutcome = actualOutcome;
   } catch (error) {
     if (activeStep) {
       activeStep.status = "failed";
-      activeStep.summary = { error: error instanceof AssistedWaitError ? `ASSISTED_${error.reason.toUpperCase()}` : "DRIVER_EXECUTION_FAILED" };
+      activeStep.summary = {
+        ...activeStep.summary,
+        error: error instanceof AssistedWaitError ? `ASSISTED_${error.reason.toUpperCase()}` : "DRIVER_EXECUTION_FAILED",
+        protocolEvaluation: evaluateProtocol(record.run.config, record.run.expectedOutcome, "error", verificationSummary, activeStep.stepKey),
+      };
       await repository.updateStep(activeStep);
       namespace.to(room).emit("step:finished", activeStep);
     }
     record.run.status = error instanceof AssistedWaitError && error.reason === "cancelled" ? "cancelled" : "errored";
     record.run.actualOutcome = record.run.status === "cancelled" ? null : "error";
+    Object.assign(record.run, protocolMetadata(record.steps));
   } finally {
     record.run.finishedAt = new Date().toISOString();
     await repository.updateRun(record.run);

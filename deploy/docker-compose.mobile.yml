@@ -1,0 +1,40 @@
+# Dedicated official Certify instance for the Android SD-JWT acceptance attempt.
+# Generated properties, database bootstrap and keystores live outside Git.
+services:
+  mobile-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${MOBILE_DB_PASSWORD:?Run pnpm mobile:inji first}
+    volumes:
+      - mobile-postgres:/var/lib/postgresql/data
+      - ${MOBILE_RUNTIME_DIR:?}/database-init.sql:/docker-entrypoint-initdb.d/01-certify.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d inji_certify]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 256m
+  mobile-certify:
+    image: injistack/inji-certify-with-plugins:1.0.0-alpha.1@sha256:1579b2449f1a7213fe25de1f6a1509b5636f1fedf0d7f5c4cfd07b9f0fc5b346
+    platform: linux/amd64
+    user: root
+    environment:
+      active_profile_env: default
+      SPRING_CONFIG_NAME: certify
+      SPRING_CONFIG_LOCATION: /home/mosip/config/
+      enable_certify_artifactory: "false"
+      download_hsm_client: "false"
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx768m -XX:MaxMetaspaceSize=256m
+    volumes:
+      - ${MOBILE_RUNTIME_DIR:?}/certify-default.properties:/home/mosip/config/certify-default.properties:ro
+      - ${MOBILE_RUNTIME_DIR:?}/keys:/home/mosip/CERTIFY_PKCS12
+      - ${MOBILE_RUNTIME_DIR:?}/verifier.p12:/home/mosip/verifier.p12:ro
+    ports:
+      - 127.0.0.1:18090:8090
+    depends_on:
+      mobile-db:
+        condition: service_healthy
+    mem_limit: 1400m
+volumes:
+  mobile-postgres:

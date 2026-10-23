@@ -54,6 +54,34 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-043 · Record manual Android acceptance separately from automated run records
+- **Date:** 2026-10-23   **Status:** Accepted and observed
+- **Context:** The actual Android wallet issued/stored/presented the synthetic SD-JWT and the correlated Verify result was valid; the user also confirmed persistence after reopening. This evidence does not originate from a BFF wallet driver.
+- **Decision:** Save a manual acceptance sidecar with reviewed screenshots, artifact hashes, user-confirmed persistence, exact source/deployment provenance and the correlated bounded verifier result. Project it separately in the aggregate report, preserving the earlier failed attempts and automated controls.
+- **Alternatives considered:** Fabricate a BFF run/matrix row (false provenance); infer acceptance from wallet share success alone (does not establish Verify validity); relabel the automated control as mobile (does not establish actual wallet use).
+- **Why this one:** The recorded chain distinguishes independently read server proof flags from screenshots and user confirmations, while keeping raw credentials/session values out of exports.
+- **Trade-off accepted:** Manual correlation/storage confirmation, no installed-binary/signing attestation, unreported Collab release and no isolated native claim-policy or production trust-chain claim.
+- **Affects:** A2 report/acceptance gates, manual mobile evidence, aggregate evidence projection, Person 3/4 handoffs and readiness documentation.
+
+### D-042 · Controlled official Certify mobile issuance without Collab client administration
+- **Date:** 2026-10-23   **Status:** Implemented; real mobile acceptance pending
+- **Context:** The real Android offer reached eSignet but its client ID was rejected. The selected Collab pre-authorized endpoint separately returned credential HTTP 401. The user authorized implementing the remaining setup directly on main.
+- **Decision:** Add a dedicated digest-pinned official Certify instance using its embedded PKCS12 keymanager, built-in pre-authorized token service and data provider, private runtime state, restricted HTTPS gateway and loopback QR console. Reuse Collab Verify with its version honestly unreported. Require an independent holder-bound issuance/presentation control before creating a phone offer.
+- **Alternatives considered:** Register on Collab (no deployment administration available); put another confidential client into the mobile app (wrong client/token boundary); substitute our mock issuer (would not prove A2); require the full Web/Mimoto/identity stack (unnecessary for supported pre-authorized mobile issuance).
+- **Why this one:** Pinned release source supports embedded keys and the chosen grant. A real official-Certify control can establish token/nonce/proof/issuance/verification independently while the phone retains its own holder key.
+- **Trade-off accepted:** Hybrid deployment, temporary tunnel hostname, synthetic pre-authorized identity, no certificate-chain trust claim and no signed-request authentication claim. A2 still requires actual phone storage/presentation; local Verify/A1 remain separate work.
+- **Affects:** `deploy/docker-compose.mobile.yml`, `scripts/mobile-inji.mjs`, `deploy/MOBILE_INJI.md`, root QR dependency and Person 4/A2 handoff.
+
+### D-041 · Evaluate controlled protocol faults by reason through a shared verifier core
+- **Date:** 2026-10-22   **Status:** Accepted and implemented
+- **Context:** Payload edits invalidated issuer signatures before expiry/type checks; broad invalid outcomes and missing result defaults could produce false passes. The user authorized completing Person 3 integration across shared files.
+- **Decision:** Sign grant-bound semantic variants in the controlled mock issuer; use the same pure verifier in HTTP and in-process drivers; require versioned boundary/stage/code matches for expected rejections. Persist optional evaluation/profile/issuer representation in existing step JSON, reconstruct run metadata on read, and include those identities in matrix grouping. Add six controlled mock presets and preserve the original four.
+- **Alternatives considered:** Duplicate verifier logic (diverges); post-sign payload edits (test wrong boundary); pass any rejection (masks unrelated failure); schema migration (unnecessary for additive step metadata).
+- **Why this one:** Tests demonstrate intended rejection reasons, explicit missing/error verdict handling, polling, old-record compatibility and matrix separation. Docker smoke exercises actual HTTP roles and PostgreSQL reports.
+- **Trade-off accepted:** Flat synthetic mock profile only; generic Collab rejections stay inconclusive for precise fault expectations. Genuine replay/wrong-holder probes remain in the independent harness. X.509 signature validation does not establish trust-chain policy; request JWT authentication remains a tracked limitation.
+- **Revisit if:** A new profile, recursive disclosures, authenticated request processing or a durable mobile wallet driver is introduced.
+- **Affects:** `apps/mock-issuer`, `apps/mock-verifier`, BFF drivers/orchestrator/protocol/store/scenarios/report/matrix, `packages/shared`, web evaluation display, `docker-compose.yml`, Person 3 handoff/evidence. `jsonc-parser@3.3.1` (MIT) provides bounded duplicate-aware parsing.
+
 ### D-040 · Allow a canonical public-URL proxy only for a controlled local stack
 - **Date:** 2026-10-22   **Status:** Design accepted; deployment pending
 - **Decision:** Retain passive HAR for Collab. A future local proxy may be the canonical service origin configured before issuance; it must not rewrite signed identifiers or protocol payloads. D-039 does not reject this architecture.

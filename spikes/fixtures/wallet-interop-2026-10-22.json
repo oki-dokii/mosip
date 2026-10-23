@@ -1,0 +1,797 @@
+{
+  "schemaVersion": 1,
+  "evidenceTier": "local_mock_protocol",
+  "timestamp": "2026-10-22T10:30:10.953Z",
+  "sourceCommit": "5a5e83b10bbb3dfdf45e226955f00f17c4c6b2e7",
+  "dirtyWorkingTree": true,
+  "versions": {
+    "issuer": "unreported",
+    "verifier": "unreported",
+    "labelSource": "target_builds_not_attested"
+  },
+  "profile": "mock-sdjwt-flat-v1",
+  "results": [
+    {
+      "caseId": "p3.signature.issuer",
+      "profile": "mock-sdjwt-flat-v1",
+      "applicationStep": null,
+      "control": {
+        "caseId": "p3.signature.issuer.control",
+        "observed": {
+          "httpStatus": 200,
+          "boundary": "result",
+          "outcome": "valid",
+          "diagnosticsVersion": 1,
+          "code": null,
+          "stage": null,
+          "controlPassed": true,
+          "constructionPassed": true,
+          "error": null
+        },
+        "construction": {
+          "issuerSignatureAsExpected": true,
+          "holderSignatureAsExpected": true,
+          "credentialTypeAsExpected": true,
+          "validityAsExpected": true,
+          "holderBindingAsExpected": true,
+          "bindingHashValid": true,
+          "disclosureCommitmentsValid": true,
+          "requiredClaimAsExpected": true,
+          "optionalClaimAsExpected": true,
+          "audienceAsExpected": true,
+          "nonceAsExpected": true
+        },
+        "verdict": "correct_acceptance"
+      },
+      "construction": {
+        "issuerSignatureAsExpected": true,
+        "holderSignatureAsExpected": true,
+        "credentialTypeAsExpected": true,
+        "validityAsExpected": true,
+        "holderBindingAsExpected": true,
+        "bindingHashValid": true,
+        "disclosureCommitmentsValid": true,
+        "requiredClaimAsExpected": true,
+        "optionalClaimAsExpected": true,
+        "audienceAsExpected": true,
+        "nonceAsExpected": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "boundary": "result",
+        "stage": "issuer_signature",
+        "code": "ISSUER_SIGNATURE_INVALID"
+      },
+      "observed": {
+        "httpStatus": 200,
+        "boundary": "result",
+        "outcome": "invalid",
+        "diagnosticsVersion": 1,
+        "code": "ISSUER_SIGNATURE_INVALID",
+        "stage": "issuer_signature",
+        "controlPassed": true,
+        "constructionPassed": true,
+        "error": null
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 94
+    },
+    {
+      "caseId": "p3.credential.expired",
+      "profile": "mock-sdjwt-flat-v1",
+      "applicationStep": null,
+      "control": {
+        "caseId": "p3.credential.expired.control",
+        "observed": {
+          "httpStatus": 200,
+          "boundary": "result",
+          "outcome": "valid",
+          "diagnosticsVersion": 1,
+          "code": null,
+          "stage": null,
+          "controlPassed": true,
+          "constructionPassed": true,
+          "error": null
+        },
+        "construction": {
+          "issuerSignatureAsExpected": true,
+          "holderSignatureAsExpected": true,
+          "credentialTypeAsExpected": true,
+          "validityAsExpected": true,
+          "holderBindingAsExpected": true,
+          "bindingHashValid": true,
+          "disclosureCommitmentsValid": true,
+          "requiredClaimAsExpected": true,
+          "optionalClaimAsExpected": true,
+          "audienceAsExpected": true,
+          "nonceAsExpected": true
+        },
+        "verdict": "correct_acceptance"
+      },
+      "construction": {
+        "issuerSignatureAsExpected": true,
+        "holderSignatureAsExpected": true,
+        "credentialTypeAsExpected": true,
+        "validityAsExpected": true,
+        "holderBindingAsExpected": true,
+        "bindingHashValid": true,
+        "disclosureCommitmentsValid": true,
+        "requiredClaimAsExpected": true,
+        "optionalClaimAsExpected": true,
+        "audienceAsExpected": true,
+        "nonceAsExpected": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "boundary": "result",
+        "stage": "credential_time",
+        "code": "CREDENTIAL_EXPIRED"
+      },
+      "observed": {
+        "httpStatus": 200,
+        "boundary": "result",
+        "outcome": "invalid",
+        "diagnosticsVersion": 1,
+        "code": "CREDENTIAL_EXPIRED",
+        "stage": "credential_time",
+        "controlPassed": true,
+        "constructionPassed": true,
+        "error": null
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 55
+    },
+    {
+      "caseId": "p3.credential.type",
+      "profile": "mock-sdjwt-flat-v1",
+      "applicationStep": null,
+      "control": {
+        "caseId": "p3.credential.type.control",
+        "observed": {
+          "httpStatus": 200,
+          "boundary": "result",
+          "outcome": "valid",
+          "diagnosticsVersion": 1,
+          "code": null,
+          "stage": null,
+          "controlPassed": true,
+          "constructionPassed": true,
+          "error": null
+        },
+        "construction": {
+          "issuerSignatureAsExpected": true,
+          "holderSignatureAsExpected": true,
+          "credentialTypeAsExpected": true,
+          "validityAsExpected": true,
+          "holderBindingAsExpected": true,
+          "bindingHashValid": true,
+          "disclosureCommitmentsValid": true,
+          "requiredClaimAsExpected": true,
+          "optionalClaimAsExpected": true,
+          "audienceAsExpected": true,
+          "nonceAsExpected": true
+        },
+        "verdict": "correct_acceptance"
+      },
+      "construction": {
+        "issuerSignatureAsExpected": true,
+        "holderSignatureAsExpected": true,
+        "credentialTypeAsExpected": true,
+        "validityAsExpected": true,
+        "holderBindingAsExpected": true,
+        "bindingHashValid": true,
+        "disclosureCommitmentsValid": true,
+        "requiredClaimAsExpected": true,
+        "optionalClaimAsExpected": true,
+        "audienceAsExpected": true,
+        "nonceAsExpected": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "boundary": "result",
+        "stage": "credential_type",
+        "code": "CREDENTIAL_TYPE_MISMATCH"
+      },
+      "observed": {
+        "httpStatus": 200,
+        "boundary": "result",
+        "outcome": "invalid",
+        "diagnosticsVersion": 1,
+        "code": "CREDENTIAL_TYPE_MISMATCH",
+        "stage": "credential_type",
+        "controlPassed": true,
+        "constructionPassed": true,
+        "error": null
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 54
+    },
+    {
+      "caseId": "p3.holder.wrong_key",
+      "profile": "mock-sdjwt-flat-v1",
+      "applicationStep": null,
+      "control": {
+        "caseId": "p3.holder.wrong_key.control",
+        "observed": {
+          "httpStatus": 200,
+          "boundary": "result",
+          "outcome": "valid",
+          "diagnosticsVersion": 1,
+          "code": null,
+          "stage": null,
+          "controlPassed": true,
+          "constructionPassed": true,
+          "error": null
+        },
+        "construction": {
+          "issuerSignatureAsExpected": true,
+          "holderSignatureAsExpected": true,
+          "credentialTypeAsExpected": true,
+          "validityAsExpected": true,
+          "holderBindingAsExpected": true,
+          "bindingHashValid": true,
+          "disclosureCommitmentsValid": true,
+          "requiredClaimAsExpected": true,
+          "optionalClaimAsExpected": true,
+          "audienceAsExpected": true,
+          "nonceAsExpected": true
+        },
+        "verdict": "correct_acceptance"
+      },
+      "construction": {
+        "issuerSignatureAsExpected": true,
+        "holderSignatureAsExpected": true,
+        "credentialTypeAsExpected": true,
+        "validityAsExpected": true,
+        "holderBindingAsExpected": true,
+        "bindingHashValid": true,
+        "disclosureCommitmentsValid": true,
+        "requiredClaimAsExpected": true,
+        "optionalClaimAsExpected": true,
+        "audienceAsExpected": true,
+        "nonceAsExpected": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "boundary": "result",
+        "stage": "holder_proof",
+        "code": "HOLDER_PROOF_INVALID"
+      },
+      "observed": {
+        "httpStatus": 200,
+        "boundary": "result",
+        "outcome": "invalid",
+        "diagnosticsVersion": 1,
+        "code": "HOLDER_PROOF_INVALID",
+        "stage": "holder_proof",
+        "controlPassed": true,
+        "constructionPassed": true,
+        "error": null
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 55
+    },
+    {
+      "caseId": "p3.holder.missing_binding",
+      "profile": "mock-sdjwt-flat-v1",
+      "applicationStep": null,
+      "control": {
+        "caseId": "p3.holder.missing_binding.control",
+        "observed": {
+          "httpStatus": 200,
+          "boundary": "result",
+          "outcome": "valid",
+          "diagnosticsVersion": 1,
+          "code": null,
+          "stage": null,
+          "controlPassed": true,
+          "constructionPassed": true,
+          "error": null
+        },
+        "construction": {
+          "issuerSignatureAsExpected": true,
+          "holderSignatureAsExpected": true,
+          "credentialTypeAsExpected": true,
+          "validityAsExpected": true,
+          "holderBindingAsExpected": true,
+          "bindingHashValid": true,
+          "disclosureCommitmentsValid": true,
+          "requiredClaimAsExpected": true,
+          "optionalClaimAsExpected": true,
+          "audienceAsExpected": true,
+          "nonceAsExpected": true
+        },
+        "verdict": "correct_acceptance"
+      },
+      "construction": {
+        "issuerSignatureAsExpected": true,
+        "holderSignatureAsExpected": true,
+        "credentialTypeAsExpected": true,
+        "validityAsExpected": true,
+        "holderBindingAsExpected": true,
+        "bindingHashValid": true,
+        "disclosureCommitmentsValid": true,
+        "requiredClaimAsExpected": true,
+        "optionalClaimAsExpected": true,
+        "audienceAsExpected": true,
+        "nonceAsExpected": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "boundary": "result",
+        "stage": "holder_binding",
+        "code": "HOLDER_BINDING_MISSING"
+      },
+      "observed": {
+        "httpStatus": 200,
+        "boundary": "result",
+        "outcome": "invalid",
+        "diagnosticsVersion": 1,
+        "code": "HOLDER_BINDING_MISSING",
+        "stage": "holder_binding",
+        "controlPassed": true,
+        "constructionPassed": true,
+        "error": null
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 59
+    },
+    {
+      "caseId": "p3.binding.audience",
+      "profile": "mock-sdjwt-flat-v1",
+      "applicationStep": null,
+      "control": {
+        "caseId": "p3.binding.audience.control",
+        "observed": {
+          "httpStatus": 200,
+          "boundary": "result",
+          "outcome": "valid",
+          "diagnosticsVersion": 1,
+          "code": null,
+          "stage": null,
+          "controlPassed": true,
+          "constructionPassed": true,
+          "error": null
+        },
+        "construction": {
+          "issuerSignatureAsExpected": true,
+          "holderSignatureAsExpected": true,
+          "credentialTypeAsExpected": true,
+          "validityAsExpected": true,
+          "holderBindingAsExpected": true,
+          "bindingHashValid": true,
+          "disclosureCommitmentsValid": true,
+          "requiredClaimAsExpected": true,
+          "optionalClaimAsExpected": true,
+          "audienceAsExpected": true,
+          "nonceAsExpected": true
+        },
+        "verdict": "correct_acceptance"
+      },
+      "construction": {
+        "issuerSignatureAsExpected": true,
+        "holderSignatureAsExpected": true,
+        "credentialTypeAsExpected": true,
+        "validityAsExpected": true,
+        "holderBindingAsExpected": true,
+        "bindingHashValid": true,
+        "disclosureCommitmentsValid": true,
+        "requiredClaimAsExpected": true,
+        "optionalClaimAsExpected": true,
+        "audienceAsExpected": true,
+        "nonceAsExpected": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "boundary": "result",
+        "stage": "audience",
+        "code": "AUDIENCE_MISMATCH"
+      },
+      "observed": {
+        "httpStatus": 200,
+        "boundary": "result",
+        "outcome": "invalid",
+        "diagnosticsVersion": 1,
+        "code": "AUDIENCE_MISMATCH",
+        "stage": "audience",
+        "controlPassed": true,
+        "constructionPassed": true,
+        "error": null
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 68
+    },
+    {
+      "caseId": "p3.binding.nonce",
+      "profile": "mock-sdjwt-flat-v1",
+      "applicationStep": null,
+      "control": {
+        "caseId": "p3.binding.nonce.control",
+        "observed": {
+          "httpStatus": 200,
+          "boundary": "result",
+          "outcome": "valid",
+          "diagnosticsVersion": 1,
+          "code": null,
+          "stage": null,
+          "controlPassed": true,
+          "constructionPassed": true,
+          "error": null
+        },
+        "construction": {
+          "issuerSignatureAsExpected": true,
+          "holderSignatureAsExpected": true,
+          "credentialTypeAsExpected": true,
+          "validityAsExpected": true,
+          "holderBindingAsExpected": true,
+          "bindingHashValid": true,
+          "disclosureCommitmentsValid": true,
+          "requiredClaimAsExpected": true,
+          "optionalClaimAsExpected": true,
+          "audienceAsExpected": true,
+          "nonceAsExpected": true
+        },
+        "verdict": "correct_acceptance"
+      },
+      "construction": {
+        "issuerSignatureAsExpected": true,
+        "holderSignatureAsExpected": true,
+        "credentialTypeAsExpected": true,
+        "validityAsExpected": true,
+        "holderBindingAsExpected": true,
+        "bindingHashValid": true,
+        "disclosureCommitmentsValid": true,
+        "requiredClaimAsExpected": true,
+        "optionalClaimAsExpected": true,
+        "audienceAsExpected": true,
+        "nonceAsExpected": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "boundary": "result",
+        "stage": "nonce",
+        "code": "NONCE_MISMATCH"
+      },
+      "observed": {
+        "httpStatus": 200,
+        "boundary": "result",
+        "outcome": "invalid",
+        "diagnosticsVersion": 1,
+        "code": "NONCE_MISMATCH",
+        "stage": "nonce",
+        "controlPassed": true,
+        "constructionPassed": true,
+        "error": null
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 65
+    },
+    {
+      "caseId": "p3.replay.fresh_challenge",
+      "profile": "mock-sdjwt-flat-v1",
+      "applicationStep": null,
+      "control": {
+        "caseId": "p3.replay.fresh_challenge.control",
+        "observed": {
+          "httpStatus": 200,
+          "boundary": "result",
+          "outcome": "valid",
+          "diagnosticsVersion": 1,
+          "code": null,
+          "stage": null,
+          "controlPassed": true,
+          "constructionPassed": true,
+          "error": null
+        },
+        "construction": {
+          "issuerSignatureAsExpected": true,
+          "holderSignatureAsExpected": true,
+          "credentialTypeAsExpected": true,
+          "validityAsExpected": true,
+          "holderBindingAsExpected": true,
+          "bindingHashValid": true,
+          "disclosureCommitmentsValid": true,
+          "requiredClaimAsExpected": true,
+          "optionalClaimAsExpected": true,
+          "audienceAsExpected": true,
+          "nonceAsExpected": true
+        },
+        "verdict": "correct_acceptance"
+      },
+      "construction": {
+        "issuerSignatureAsExpected": true,
+        "holderSignatureAsExpected": true,
+        "credentialTypeAsExpected": true,
+        "validityAsExpected": true,
+        "holderBindingAsExpected": true,
+        "bindingHashValid": true,
+        "disclosureCommitmentsValid": true,
+        "requiredClaimAsExpected": true,
+        "optionalClaimAsExpected": true,
+        "audienceAsExpected": true,
+        "nonceAsExpected": true,
+        "freshChallengeNonceDiffers": true,
+        "byteForBytePresentationPreserved": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "boundary": "result",
+        "stage": "nonce",
+        "code": "NONCE_MISMATCH"
+      },
+      "observed": {
+        "httpStatus": 200,
+        "boundary": "result",
+        "outcome": "invalid",
+        "diagnosticsVersion": 1,
+        "code": "NONCE_MISMATCH",
+        "stage": "nonce",
+        "controlPassed": true,
+        "constructionPassed": true,
+        "error": null
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 57
+    },
+    {
+      "caseId": "p3.replay.consumed_state",
+      "profile": "mock-sdjwt-flat-v1",
+      "applicationStep": null,
+      "control": {
+        "caseId": "p3.replay.consumed_state.control",
+        "observed": {
+          "httpStatus": 200,
+          "boundary": "result",
+          "outcome": "valid",
+          "diagnosticsVersion": 1,
+          "code": null,
+          "stage": null,
+          "controlPassed": true,
+          "constructionPassed": true,
+          "error": null
+        },
+        "construction": {
+          "issuerSignatureAsExpected": true,
+          "holderSignatureAsExpected": true,
+          "credentialTypeAsExpected": true,
+          "validityAsExpected": true,
+          "holderBindingAsExpected": true,
+          "bindingHashValid": true,
+          "disclosureCommitmentsValid": true,
+          "requiredClaimAsExpected": true,
+          "optionalClaimAsExpected": true,
+          "audienceAsExpected": true,
+          "nonceAsExpected": true
+        },
+        "verdict": "correct_acceptance"
+      },
+      "construction": {
+        "issuerSignatureAsExpected": true,
+        "holderSignatureAsExpected": true,
+        "credentialTypeAsExpected": true,
+        "validityAsExpected": true,
+        "holderBindingAsExpected": true,
+        "bindingHashValid": true,
+        "disclosureCommitmentsValid": true,
+        "requiredClaimAsExpected": true,
+        "optionalClaimAsExpected": true,
+        "audienceAsExpected": true,
+        "nonceAsExpected": true,
+        "previouslyAcceptedPresentationReused": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "boundary": "direct_post",
+        "stage": "state",
+        "code": "INVALID_STATE"
+      },
+      "observed": {
+        "httpStatus": 400,
+        "boundary": "direct_post",
+        "outcome": "invalid",
+        "diagnosticsVersion": 1,
+        "code": "INVALID_STATE",
+        "stage": "state",
+        "controlPassed": true,
+        "constructionPassed": true,
+        "error": null
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 38
+    },
+    {
+      "caseId": "p3.disclosure.required",
+      "profile": "mock-sdjwt-flat-v1",
+      "applicationStep": null,
+      "control": {
+        "caseId": "p3.disclosure.required.control",
+        "observed": {
+          "httpStatus": 200,
+          "boundary": "result",
+          "outcome": "valid",
+          "diagnosticsVersion": 1,
+          "code": null,
+          "stage": null,
+          "controlPassed": true,
+          "constructionPassed": true,
+          "error": null
+        },
+        "construction": {
+          "issuerSignatureAsExpected": true,
+          "holderSignatureAsExpected": true,
+          "credentialTypeAsExpected": true,
+          "validityAsExpected": true,
+          "holderBindingAsExpected": true,
+          "bindingHashValid": true,
+          "disclosureCommitmentsValid": true,
+          "requiredClaimAsExpected": true,
+          "optionalClaimAsExpected": true,
+          "audienceAsExpected": true,
+          "nonceAsExpected": true
+        },
+        "verdict": "correct_acceptance"
+      },
+      "construction": {
+        "issuerSignatureAsExpected": true,
+        "holderSignatureAsExpected": true,
+        "credentialTypeAsExpected": true,
+        "validityAsExpected": true,
+        "holderBindingAsExpected": true,
+        "bindingHashValid": true,
+        "disclosureCommitmentsValid": true,
+        "requiredClaimAsExpected": true,
+        "optionalClaimAsExpected": true,
+        "audienceAsExpected": true,
+        "nonceAsExpected": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "boundary": "result",
+        "stage": "required_claims",
+        "code": "REQUIRED_DISCLOSURE_MISSING"
+      },
+      "observed": {
+        "httpStatus": 200,
+        "boundary": "result",
+        "outcome": "invalid",
+        "diagnosticsVersion": 1,
+        "code": "REQUIRED_DISCLOSURE_MISSING",
+        "stage": "required_claims",
+        "controlPassed": true,
+        "constructionPassed": true,
+        "error": null
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 64
+    },
+    {
+      "caseId": "p3.disclosure.optional",
+      "profile": "mock-sdjwt-flat-v1",
+      "applicationStep": null,
+      "control": {
+        "caseId": "p3.disclosure.optional.control",
+        "observed": {
+          "httpStatus": 200,
+          "boundary": "result",
+          "outcome": "valid",
+          "diagnosticsVersion": 1,
+          "code": null,
+          "stage": null,
+          "controlPassed": true,
+          "constructionPassed": true,
+          "error": null
+        },
+        "construction": {
+          "issuerSignatureAsExpected": true,
+          "holderSignatureAsExpected": true,
+          "credentialTypeAsExpected": true,
+          "validityAsExpected": true,
+          "holderBindingAsExpected": true,
+          "bindingHashValid": true,
+          "disclosureCommitmentsValid": true,
+          "requiredClaimAsExpected": true,
+          "optionalClaimAsExpected": true,
+          "audienceAsExpected": true,
+          "nonceAsExpected": true
+        },
+        "verdict": "correct_acceptance"
+      },
+      "construction": {
+        "issuerSignatureAsExpected": true,
+        "holderSignatureAsExpected": true,
+        "credentialTypeAsExpected": true,
+        "validityAsExpected": true,
+        "holderBindingAsExpected": true,
+        "bindingHashValid": true,
+        "disclosureCommitmentsValid": true,
+        "requiredClaimAsExpected": true,
+        "optionalClaimAsExpected": true,
+        "audienceAsExpected": true,
+        "nonceAsExpected": true
+      },
+      "expected": {
+        "outcome": "valid",
+        "boundary": "result"
+      },
+      "observed": {
+        "httpStatus": 200,
+        "boundary": "result",
+        "outcome": "valid",
+        "diagnosticsVersion": 1,
+        "code": null,
+        "stage": null,
+        "controlPassed": true,
+        "constructionPassed": true,
+        "error": null
+      },
+      "verdict": "correct_acceptance",
+      "durationMs": 53
+    },
+    {
+      "caseId": "p3.profile.presentation_submission",
+      "profile": "mock-sdjwt-flat-v1",
+      "applicationStep": null,
+      "control": {
+        "caseId": "p3.profile.presentation_submission.control",
+        "observed": {
+          "httpStatus": 200,
+          "boundary": "result",
+          "outcome": "valid",
+          "diagnosticsVersion": 1,
+          "code": null,
+          "stage": null,
+          "controlPassed": true,
+          "constructionPassed": true,
+          "error": null
+        },
+        "construction": {
+          "issuerSignatureAsExpected": true,
+          "holderSignatureAsExpected": true,
+          "credentialTypeAsExpected": true,
+          "validityAsExpected": true,
+          "holderBindingAsExpected": true,
+          "bindingHashValid": true,
+          "disclosureCommitmentsValid": true,
+          "requiredClaimAsExpected": true,
+          "optionalClaimAsExpected": true,
+          "audienceAsExpected": true,
+          "nonceAsExpected": true
+        },
+        "verdict": "correct_acceptance"
+      },
+      "construction": {
+        "issuerSignatureAsExpected": true,
+        "holderSignatureAsExpected": true,
+        "credentialTypeAsExpected": true,
+        "validityAsExpected": true,
+        "holderBindingAsExpected": true,
+        "bindingHashValid": true,
+        "disclosureCommitmentsValid": true,
+        "requiredClaimAsExpected": true,
+        "optionalClaimAsExpected": true,
+        "audienceAsExpected": true,
+        "nonceAsExpected": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "boundary": "direct_post",
+        "stage": "profile",
+        "code": "UNSUPPORTED_PRESENTATION_SUBMISSION"
+      },
+      "observed": {
+        "httpStatus": 400,
+        "boundary": "direct_post",
+        "outcome": "invalid",
+        "diagnosticsVersion": 1,
+        "code": "UNSUPPORTED_PRESENTATION_SUBMISSION",
+        "stage": "profile",
+        "controlPassed": true,
+        "constructionPassed": true,
+        "error": null
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 32
+    }
+  ],
+  "exitCode": 0
+}

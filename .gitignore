@@ -2,6 +2,7 @@ node_modules/
 .pnpm-store/
 dist/
 coverage/
+.mobile-inji/
 *.tsbuildinfo
 .env
 .env.*

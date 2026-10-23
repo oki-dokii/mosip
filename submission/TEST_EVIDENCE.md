@@ -1,41 +1,38 @@
 # Test cases and evidence snapshot
 
-Snapshot: 2026-10-21, source commit `5a40ad3` before submission-only documents. Results below were rerun against that working tree with `pnpm test`, `pnpm typecheck`, and `pnpm build`; all commands exited successfully. They are automated regression evidence, not a fresh live Collab run.
+Snapshot: 23 October 2026, merged `main` checkpoint `b0f132d`. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) passed frozen install, typecheck, unit/contract tests, production build, secret audit, three Chromium browser checks and a PostgreSQL-backed six-case Docker mock matrix. The same source passed locally and in a fresh same-host clone. None of these commands performed a fresh Collab or real Inji-wallet journey.
 
 | Test area | Result | What it establishes |
+|---|---:|---|
+| Script and contract checks | 36 passed | Committed contracts, protocol evaluation helpers, evidence tools and secret-audit behavior |
+| Shared schemas | 3 passed | Configuration and evidence contracts |
+| Mock issuer | 11 passed | Synthetic issuance, signed fault variants and HTTP boundaries |
+| Mock verifier | 71 passed | Verification, required disclosure, negative reasons and HTTP boundaries |
+| Web unit/component | 50 passed | Assisted state machine, safe evidence UI, matrix and cancellation behavior |
+| BFF | 168 passed by default; 171 passed with PostgreSQL configured | Orchestration, capture/redaction, assisted APIs, reports and protocol evaluation; three persistence checks are opt-in |
+| Chromium browser | 3 passed locally and in hosted CI | Assisted fixture, independent mock/capture flow, keyboard navigation and scoped axe/contrast checks |
+| Typecheck, build, secret audit | Passed locally and in CI | Source compiles/builds; text and tracked-file secret scanner found no match |
+| Docker Compose smoke | Passed in CI | Core + mocks started, PostgreSQL migrations completed, HTTP smoke and six exact-reason mock cases worked |
+
+**Total:** the ordinary suite passed 339 tests and skipped three opt-in PostgreSQL checks. On 23 October, those three checks were run against a disposable PostgreSQL 16 container with all four migrations applied: **342 tests passed, none skipped**. The container was stopped and removed afterward. The browser count is separate from 342. Its synthetic fixtures and scoped axe results do not certify the whole product. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) uploaded a [clean six-case matrix](evidence/2026-10-23-ci-mock-matrix.json) and browser evidence. The older [local protocol checkpoint](../spikes/fixtures/wallet-interop-integration-checks-2026-10-22.json) remains useful but recorded a dirty working tree.
+
+## Functional evidence and limits
+
+| Case | Source | Conclusion |
 |---|---|---|
-| Phase 1 contract fixture tests | 3 passed | Pinned sanitized contracts and previous JSON-LD/SD-JWT Reference Wallet evidence remain readable |
-| Shared schema/evidence tests | 3 passed | Config defaults, fault enums, and provenance tiers |
-| BFF tests | 34 passed | Driver selection, orchestration, capture redaction/API, scenario validation/API, reports, matrix, tampering, persistence contract |
-| Mock issuer tests | 2 passed | Test issuer HTTP behavior and signing path |
-| Mock verifier tests | 1 passed | Test verifier HTTP behavior |
-| Web automated tests | None configured | Build/typecheck passed; browser happy-path test is still needed |
-| Typecheck | Passed | All five workspace packages |
-| Production build | Passed | All five workspace packages |
+| Fixture issue → hold → present → verify | Unit/browser checks | Simulated flow works; no live interoperability claim |
+| Certify → Reference Wallet → Verify, JSON-LD and SD-JWT | Earlier sanitized [Phase 2](../PHASE2.md) and [spike fixtures](../spikes/fixtures/) | Recorded prior Reference Wallet behavior; full fresh run records are unavailable |
+| Mock X.509 issuer → Reference Wallet → public Collab Verify | [21 October sanitized reports](evidence/README.md) | Valid and bad-signature outcomes observed; self-signed certificate does not prove production trust |
+| Mock issuer → Reference Wallet → mock verifier | [23 October hosted six-case matrix](evidence/2026-10-23-ci-mock-matrix.json) | Clean-checkout Docker mock protocol outcomes with exact reasons; still no real Inji wallet |
+| HAR import and secret handling | Capture/redaction tests, audit, browser mock test | Synthetic canaries absent from stored/API/socket/browser projections; passive capture has unobservable boundaries |
+| A1: actual Inji Web JSON-LD wallet | [A1 evidence](A1_WEB_EVIDENCE.md) | **Blocked**: no persistent account and authenticated Web/Mimoto target |
+| A2: actual Inji mobile SD-JWT wallet | [Mobile acceptance evidence](evidence/person3-a2-mobile-2026-10-23/README.md) | **Passed observed hybrid chain**: actual Android issuance/storage/share, user-confirmed reopening and correlated valid credential/holder proof result; installed binary and Collab release not independently attested |
+| A6: playground + mocks packaging | [CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) and [deployment guide](../DEPLOYMENT.md) | Hosted clean-checkout six-case Docker matrix passed; separate-machine human rehearsal and real local Inji profile remain open |
 
-Total automated test cases reported by the current commands: **43 passed**. The spike tests assert committed fixtures; they do not contact Collab during `pnpm test`.
+The [standalone aggregate report](evidence/2026-10-23-aggregate-interop.md) groups the committed run records and marks missing full-record cells `not_tested`. A passing mock or Reference Wallet result never closes A1/A2. All public fixtures use synthetic identities; keep actual `.env`, OTPs, private keys, full VCs, raw HAR and student IDs outside Git.
 
-## Functional evidence to present accurately
+To repeat the ordinary checks, run `CI=true pnpm install --frozen-lockfile`, then `CI=true pnpm test`, `CI=true pnpm typecheck`, `CI=true pnpm build`, and `CI=true pnpm audit:secrets`. The browser suite additionally needs Playwright Chromium and starts four local services; see [README](../README.md#tests-and-evidence). To repeat the 342-test run, create a disposable PostgreSQL database, apply `pnpm db:deploy` with its `DATABASE_URL`, then set `CAPTURE_POSTGRES_TEST_URL` to that same database when running `pnpm test`. Never target a production or shared database: the tests create and delete synthetic run rows.
 
-| Case | Evidence | Current conclusion |
-|---|---|---|
-| Fixture issue → hold → present → verify | Fixture driver tests and local UI | Simulated flow works; no live interoperability claim |
-| Certify → Reference Wallet → Verify, JSON-LD and SD-JWT | Prior sanitized Collab spike fixtures in `spikes/fixtures/` and [PHASE3.md](../PHASE3.md) | Reference Wallet interoperability passed at the recorded checkpoint; rerun for final demo if environment permits |
-| Mock issuer → Reference Wallet → Inji Verify | [PHASE3.md](../PHASE3.md) | X.509 mock issuer passed at the recorded checkpoint; self-signed test certificate does not prove production trust |
-| Malformed/cross-run/oversized HAR import | `apps/bff/src/capture/har.test.ts` | Rejected or redacted before stored inspector output |
-| JSON-LD with real Inji Web/mobile wallet (A1) | No dedicated persistent Web account | **Not passed / externally blocked** |
-| SD-JWT with real Inji mobile wallet (A2) | No pinned app/device result committed | **Not passed / needs validation** |
-| One-command playground + mocks Compose (A6 slice) | [DEPLOYMENT.md](../DEPLOYMENT.md): 2026-10-21 local `pnpm demo:docker` printed `DEMO PASS`; the subsequent two-cell baseline/bad-signature matrix had 10 steps, 7 exchanges, and `mock_interop` provenance per cell. An earlier fixture run survived BFF restart. [Hosted CI](https://github.com/oki-dokii/mosip/actions/runs/39632729703) passed checks and Docker matrix | **Local and hosted smoke passed**; clean-machine rehearsal and local Inji stack remain |
+## Actual Android A2 acceptance — 23 October 2026
 
-## Safe synthetic inputs
-
-- `spikes/fixtures/collab-contracts-2026-10-20.json` — sanitized metadata/contract snapshot.
-- `spikes/fixtures/collab-reference-wallet-jsonld-2026-10-20.json` and `spikes/fixtures/collab-reference-wallet-sdjwt-2026-10-20.json` — sanitized outcome snapshots; no complete credentials.
-- BFF and mock test files construct synthetic requests and keys in memory; see `apps/bff/src/capture/har.test.ts`, `apps/mock-issuer/src/server.test.ts`, and `apps/mock-verifier/src/server.test.ts`.
-- `.env.example` describes configuration names and placeholders. Do not submit an actual `.env`, Postman client configuration, OTP, bearer token, private key, real student identity, or raw HAR.
-
-Before the final pitch, record the exact commit, environment, component versions, and timestamp for any new live result. Export a sanitized run report and verifier result; do not change a blocked case to “passed” based on fixture or Reference Wallet evidence.
-
-**Later fresh live evidence:** [2026-10-21 mock X.509 positive/negative reports and matrix](evidence/README.md) were exported from new synthetic runs against public Collab Verify at commit `ec1cbbd`. They are `mock_interop` evidence, separate from the test-suite snapshot above and from A1/A2.
-
-**2026-10-22 local check:** `pnpm test` passed 46 cases after one Collab submission-rejection test and two secret-audit tests were added. `pnpm audit:secrets` passed on the current tracked/non-ignored filenames and documentation/evidence text. The scanner reports only paths, line numbers, and rule names; it does not inspect binary contents or replace the capture/redaction work outlined in [CAPTURE_CONTRACT_PROPOSAL.md](../CAPTURE_CONTRACT_PROPOSAL.md). No fresh live Collab run was performed for this check.
+[Manual mobile evidence](evidence/person3-a2-mobile-2026-10-23/README.md) records the real Inji Wallet journey and correlated Verify result, separate from the automated control and unit-test counts. No new test suite was run for this evidence update. The same-wallet functional chain passes for the recorded hybrid profile; installed APK/signing identity, exact Collab release and native internal traffic remain unverified/unobserved.

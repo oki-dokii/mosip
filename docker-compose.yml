@@ -1,49 +1,117 @@
+# Compose file for the Inji Interoperability Playground.
+#
+# Profiles:
+#   core  – postgres, migrate (one-shot), bff, web
+#   mocks – mock-issuer, mock-verifier
+#
+# Quick start (fixture mode, with mocks):
+#   docker compose --profile core --profile mocks up --build -d
+#
+# Core only (fixture mode, no mock services):
+#   docker compose --profile core up --build -d
+#
+# Environment variable overrides (set in shell or .env file):
+#   PLAYGROUND_POSTGRES_PORT  host port for PostgreSQL   (default 55433)
+#   PLAYGROUND_WEB_PORT       host port for the web app  (default 5174)
+#   PLAYGROUND_DRIVER_MODE    fixture | collab            (default fixture)
+#   MOCK_ISSUER_BASE_URL      BFF → mock issuer URL       (set by demo script)
+#   MOCK_VERIFIER_BASE_URL    BFF → mock verifier URL     (set by demo script)
+#
+# Build args passed at build time for OCI labels (CI sets these):
+#   GIT_REVISION  git commit SHA
+#   BUILD_DATE    ISO-8601 timestamp
+
+x-build-args: &build-args
+  GIT_REVISION: ${GIT_REVISION:-unknown}
+  BUILD_DATE: ${BUILD_DATE:-unknown}
+
 services:
+
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
   postgres:
+    profiles: [core]
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: playground
       POSTGRES_USER: playground
+      # Development-only default. Override with POSTGRES_PASSWORD in production.
       POSTGRES_PASSWORD: playground
     ports:
+      # Bind to loopback only. Override port with PLAYGROUND_POSTGRES_PORT.
       - "127.0.0.1:${PLAYGROUND_POSTGRES_PORT:-55433}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U playground -d playground"]
       interval: 5s
       timeout: 3s
       retries: 10
+      start_period: 10s
     volumes:
       - playground-postgres:/var/lib/postgresql/data
+    restart: unless-stopped
 
+  # ── Migration one-shot ─────────────────────────────────────────────────────
+  # Runs `prisma migrate deploy` and exits 0. Idempotent; safe to re-run.
+  # The BFF depends on this completing before it starts.
+  migrate:
+    profiles: [core]
+    build:
+      context: .
+      target: migrate
+      args:
+        <<: *build-args
+    environment:
+      DATABASE_URL: postgresql://playground:playground@postgres:5432/playground?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # ── BFF (Express API + orchestrator) ───────────────────────────────────────
   bff:
     profiles: [core]
     build:
       context: .
       target: bff
+      args:
+        <<: *build-args
     environment:
       DATABASE_URL: postgresql://playground:playground@postgres:5432/playground?schema=public
       PORT: 4000
       WEB_ORIGIN: http://localhost:${PLAYGROUND_WEB_PORT:-5174}
+      # Default: fixture mode (no external mock services required).
       PLAYGROUND_DRIVER_MODE: ${PLAYGROUND_DRIVER_MODE:-fixture}
+      # Set by demo-docker.sh / CI when mocks profile is active.
       MOCK_ISSUER_BASE_URL: ${MOCK_ISSUER_BASE_URL:-}
       MOCK_VERIFIER_BASE_URL: ${MOCK_VERIFIER_BASE_URL:-}
+      MOCK_ISSUER_ENABLE_TEST_CASES: ${MOCK_ISSUER_ENABLE_TEST_CASES:-false}
       VERIFY_BASE_URL: ${VERIFY_BASE_URL:-https://injiverify.collab.mosip.net/v1/verify}
     ports:
       - "127.0.0.1:4000:4000"
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test:
+        - "CMD"
+        - "node"
+        - "-e"
+        - "fetch('http://127.0.0.1:4000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
       interval: 5s
-      timeout: 3s
+      timeout: 5s
       retries: 20
+      start_period: 15s
+    restart: unless-stopped
 
+  # ── Web / nginx (React SPA + reverse proxy) ────────────────────────────────
   web:
     profiles: [core]
     build:
       context: .
       target: web
+      args:
+        <<: *build-args
     ports:
       - "127.0.0.1:${PLAYGROUND_WEB_PORT:-5174}:80"
     depends_on:
@@ -54,38 +122,69 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+      start_period: 5s
+    restart: unless-stopped
 
+  # ── Mock issuer (synthetic OpenID4VCI SD-JWT issuer) ───────────────────────
   mock-issuer:
     profiles: [mocks]
     build:
       context: .
       target: mock-issuer
+      args:
+        <<: *build-args
     environment:
       MOCK_ISSUER_HOST: 0.0.0.0
+      # Compose DNS name – the BFF resolves this inside the Compose network.
       MOCK_ISSUER_PUBLIC_URL: http://mock-issuer:4101
+      MOCK_ISSUER_ENABLE_TEST_CASES: ${MOCK_ISSUER_ENABLE_TEST_CASES:-false}
+    # Not published to the host; reachable only on the Compose network.
+    expose:
+      - "4101"
     networks:
       - default
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4101/.well-known/openid-credential-issuer').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test:
+        - "CMD"
+        - "node"
+        - "-e"
+        - "fetch('http://127.0.0.1:4101/.well-known/openid-credential-issuer').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
       interval: 5s
-      timeout: 3s
+      timeout: 5s
       retries: 10
+      start_period: 10s
+    restart: unless-stopped
 
+  # ── Mock verifier (synthetic OpenID4VP SD-JWT verifier) ────────────────────
   mock-verifier:
     profiles: [mocks]
     build:
       context: .
       target: mock-verifier
+      args:
+        <<: *build-args
     environment:
       MOCK_VERIFIER_HOST: 0.0.0.0
       MOCK_VERIFIER_PUBLIC_URL: http://mock-verifier:4102
+    expose:
+      - "4102"
     networks:
       - default
     healthcheck:
-      test: ["CMD", "node", "-e", "const s=require('net').connect(4102,'127.0.0.1');s.on('connect',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1))"]
+      # TCP connect check: the mock-verifier has no HTTP health route.
+      # import('net') works in both CJS and ESM Node contexts.
+      test:
+        - "CMD"
+        - "node"
+        - "-e"
+        - "import('node:net').then(({default:n})=>{const s=n.connect(4102,'127.0.0.1');s.on('connect',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1))})"
       interval: 5s
-      timeout: 3s
+      timeout: 5s
       retries: 10
+      start_period: 10s
+    restart: unless-stopped
 
 volumes:
   playground-postgres:
+    # Named volume persists run history across container restarts.
+    # Use `docker compose ... down -v` to delete it (DATA LOSS WARNING).

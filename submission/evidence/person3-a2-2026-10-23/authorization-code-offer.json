@@ -1,0 +1,9 @@
+{
+  "credential_issuer": "https://injicertify-mock.collab.mosip.net",
+  "credential_configuration_ids": [
+    "MockVerifiableCredential_SD_JWT"
+  ],
+  "grants": {
+    "authorization_code": {}
+  }
+}

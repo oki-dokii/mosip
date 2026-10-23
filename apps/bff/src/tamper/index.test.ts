@@ -19,17 +19,9 @@ describe("tamper engine", () => {
       .toEqual([jwt({ vct: "Example" }), "second", ""]);
   });
 
-  it("rewrites the SD-JWT expiry into the past", () => {
-    const changed = applyCredentialTamper(`${jwt({ exp: 4_102_444_800 })}~disclosure~`, "expired", "vc_sd_jwt") as string;
-    const payload = JSON.parse(Buffer.from(changed.split("~")[0]!.split(".")[1]!, "base64url").toString("utf8"));
-    expect(payload.exp).toBe(1);
-  });
-
-  it("does not mutate the original JSON-LD credential", () => {
-    const original = { type: ["VerifiableCredential", "FarmerCredential"], credentialSubject: { id: "did:jwk:test" } };
-    const changed = applyCredentialTamper(original, "wrong_type", "ldp_vc") as typeof original;
-    expect(changed.type).toEqual(["VerifiableCredential", "UnexpectedCredential"]);
-    expect(original.type).toEqual(["VerifiableCredential", "FarmerCredential"]);
+  it.each(["expired", "wrong_type"] as const)("refuses unsigned %s payload mutations", (kind) => {
+    expect(() => applyCredentialTamper(`${jwt({ exp: 4_102_444_800 })}~disclosure~`, kind, "vc_sd_jwt")).toThrow("signed at issuance");
+    expect(() => applyCredentialTamper({ type: ["VerifiableCredential"] }, kind, "ldp_vc")).toThrow("signed at issuance");
   });
 
   it("uses a mismatched nonce for replay simulation", () => {

@@ -265,3 +265,27 @@ When you change code:
 | 2026-10-21 | Added a standalone OpenID4VP mock verifier, opt-in HTTP adapter, and reliable signature fault mutation | implementation |
 | 2026-10-21 | Added fixed scenario presets, preset validation, and evidence-tier report and matrix labels; recorded the existing passive HAR capture path | implementation |
 | 2026-10-21 | Added containerized playground/mocks startup, nginx proxy, migrations-before-listen, and one-command mock smoke | implementation |
+
+## Person 3 controlled protocol execution — implemented 22 October 2026
+
+`POST /api/v1/runs` → capability/scenario guard → orchestrator → controlled issuer test selector → runtime signed credential → Reference Wallet presentation → shared verifier core (in-process or HTTP).
+
+HTTP issuer: factory-owned grant → proof checks → `credential.ts` signs the selected variant. HTTP verifier: immutable policy → strict envelope parse → synchronous challenge consumption → one verification promise → cached result. The BFF preserves direct-post rejections, polls 202 results with a deadline, and treats missing/malformed/service-error verdicts as execution errors.
+
+`protocol.ts` evaluates explicit terminal outcome plus boundary/stage/code → REPORT step JSON → repository read reconstructs optional metadata → JSON/Markdown reports, UI and matrix. Matrix identity includes scenario ID, protocol profile and issuer representation. Historical records retain absent metadata.
+
+`spikes/wallet-interop-local.mjs` → twelve independent controlled HTTP probes with positive controls and construction assertions → bounded local artifact. `spikes/wallet-interop-collab.mjs --target collab --out NEWPATH` → fixed public endpoints and synthetic temporary issuer → four live presentation observations, two pre-authorized grant reproductions and version discovery → redacted artifact. Neither path establishes real mobile wallet acceptance.
+
+`pnpm demo:docker` → enable controlled mock variants for the demo → build/start local stack → six API-created runs → PostgreSQL reads → exact reason/report/matrix assertions. The opt-in `MATRIX_ARTIFACT_PATH` export uses a new owner-only file and refuses overwrite.
+
+## Controlled Android mobile setup — implemented 23 October 2026
+
+`pnpm mobile:inji` → private OS runtime directory → pinned upstream configuration/schema → own synthetic credential seed and generated stores → dedicated PostgreSQL + official Certify → temporary HTTPS gateway.
+
+Before phone offers: fresh pre-authorized code → local official token endpoint → fresh nonce → ephemeral Reference Wallet proof → real Certify SD-JWT → independent issuer-signature/holder-binding check → fresh Collab Verify request/presentation → bounded valid result. The safe control summary is separate from A2.
+
+Mac-local console → fresh offer QR → actual Inji Wallet scans/stores → fresh presentation QR → same phone approves → bounded result read. Public gateway routes never expose console/offer creation/admin APIs. Credentials/codes remain in memory; runtime passwords, stores and private logs are outside Git. `pnpm mobile:inji stop` stops only the dedicated project/tunnel and preserves data.
+
+## Recorded actual Android acceptance — 23 October 2026
+
+The actual wallet completed issuance, storage, native matching/consent and submission; the user confirmed the card remained after reopening. The helper read its existing manually generated presentation transaction and returned valid with credential/holder proof flags true. `submission/evidence/person3-a2-mobile-2026-10-23/` stores only reviewed screenshots, safe result flags and manual provenance; it does not create a BFF run or overwrite the independent Reference Wallet control. `scripts/build-aggregate-report.mjs` projects this sidecar as a separate mobile section.

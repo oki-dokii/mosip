@@ -1,0 +1,1588 @@
+{
+  "schemaVersion": 1,
+  "timestamp": "2026-10-22T10:58:26.684Z",
+  "evidenceTier": "mock_interop_live_investigation",
+  "sourceCommit": "5a5e83b10bbb3dfdf45e226955f00f17c4c6b2e7",
+  "dirtyWorkingTree": true,
+  "deploymentVersions": {
+    "certify": "unreported",
+    "verify": "unreported"
+  },
+  "versionDiscovery": {
+    "certify": [
+      {
+        "path": "/actuator/info",
+        "httpStatus": 403,
+        "deploymentVersion": "unreported",
+        "apiDescriptionAvailable": false
+      },
+      {
+        "path": "/v3/api-docs",
+        "httpStatus": 404,
+        "deploymentVersion": "unreported",
+        "apiDescriptionAvailable": false
+      }
+    ],
+    "verify": [
+      {
+        "path": "/actuator/info",
+        "httpStatus": 403,
+        "deploymentVersion": "unreported",
+        "apiDescriptionAvailable": false
+      },
+      {
+        "path": "/v3/api-docs",
+        "httpStatus": 200,
+        "deploymentVersion": "unreported",
+        "apiDescriptionAvailable": true
+      }
+    ]
+  },
+  "runs": [
+    {
+      "label": "x509_control",
+      "report": {
+        "run": {
+          "id": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+          "parentRunId": null,
+          "config": {
+            "issuer": "mock_issuer",
+            "wallet": "reference_wallet",
+            "verifier": "inji_verify",
+            "format": "vc_sd_jwt",
+            "flow": "cross_device",
+            "tamper": null,
+            "scenarioId": null
+          },
+          "status": "passed",
+          "expectedOutcome": "valid",
+          "actualOutcome": "valid",
+          "proofType": "kb+jwt",
+          "algorithm": "EdDSA",
+          "serviceVersions": {
+            "issuer": "person3-x509-working-tree",
+            "wallet": "reference-wallet/0.1.0",
+            "verifier": "unreported"
+          },
+          "createdAt": "2026-10-22T10:58:30.172Z",
+          "startedAt": "2026-10-22T10:58:30.172Z",
+          "finishedAt": "2026-10-22T10:58:34.523Z",
+          "issuerRepresentation": "x509",
+          "protocolProfile": "collab-dcql",
+          "evaluation": {
+            "schemaVersion": 1,
+            "verdict": "correct_acceptance",
+            "expected": {
+              "outcome": "valid",
+              "boundary": "result",
+              "step": "PRESENT_RESULT"
+            },
+            "observed": {
+              "outcome": "valid",
+              "boundary": "result",
+              "step": "PRESENT_RESULT",
+              "stage": null,
+              "code": null
+            }
+          }
+        },
+        "steps": [
+          {
+            "id": "a158a0f7-075d-402c-b8ab-9832c6e1ff1d",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "seq": 1,
+            "stepKey": "INIT",
+            "title": "Initialize run",
+            "status": "succeeded",
+            "summary": {
+              "completed": true
+            }
+          },
+          {
+            "id": "72f53105-2496-43ef-9eb0-99bfdad4b8d5",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "seq": 2,
+            "stepKey": "ISSUE_OFFER",
+            "title": "Discover issuer and create offer",
+            "status": "succeeded",
+            "summary": {
+              "credentialConfigurationId": "MockVerifiableCredential_SD_JWT",
+              "format": "dc+sd-jwt",
+              "source": "external_non_inji_mock"
+            }
+          },
+          {
+            "id": "0dadb279-2d27-4e67-81dd-f9ee88aebf18",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "seq": 3,
+            "stepKey": "ISSUE_TOKEN",
+            "title": "Authorize wallet and exchange token",
+            "status": "succeeded",
+            "summary": {
+              "authorized": true,
+              "source": "external_non_inji_mock"
+            }
+          },
+          {
+            "id": "b9952bac-3836-4d18-913d-1266540fee5c",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "seq": 4,
+            "stepKey": "ISSUE_CREDENTIAL",
+            "title": "Issue holder-bound credential",
+            "status": "succeeded",
+            "summary": {
+              "credentialReceived": true,
+              "format": "dc+sd-jwt",
+              "source": "external_non_inji_mock",
+              "issuerRepresentation": "x509"
+            }
+          },
+          {
+            "id": "7d72a988-c438-45e0-a42f-b52e66937495",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "seq": 5,
+            "stepKey": "STORE",
+            "title": "Store credential for this run",
+            "status": "succeeded",
+            "summary": {
+              "storedForRun": true
+            }
+          },
+          {
+            "id": "a87faa7a-34f1-4c83-a7d8-61ae44ad4799",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "seq": 6,
+            "stepKey": "PRESENT_REQUEST",
+            "title": "Create signed presentation request",
+            "status": "succeeded",
+            "summary": {
+              "signedRequestReceived": true,
+              "queryLanguage": "DCQL"
+            }
+          },
+          {
+            "id": "c1a6b986-410f-4075-a605-0db41d79d318",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "seq": 7,
+            "stepKey": "PRESENT_SUBMIT",
+            "title": "Submit holder-bound presentation",
+            "status": "succeeded",
+            "summary": {
+              "holderKeyMatchesCredential": true,
+              "submissionAccepted": true
+            }
+          },
+          {
+            "id": "194a2445-227b-4b90-a192-90f1432d2571",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "seq": 8,
+            "stepKey": "PRESENT_STATUS",
+            "title": "Wait for verifier submission status",
+            "status": "succeeded",
+            "summary": {
+              "status": "VP_SUBMITTED",
+              "attempts": 1
+            }
+          },
+          {
+            "id": "6f5474d5-b3b6-4624-85a0-f990281e0e5b",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "seq": 9,
+            "stepKey": "PRESENT_RESULT",
+            "title": "Verify credential and holder proof",
+            "status": "succeeded",
+            "summary": {
+              "outcome": "valid",
+              "protocolProfile": "collab-dcql",
+              "allChecksSuccessful": true
+            }
+          },
+          {
+            "id": "e9932b7f-353e-4cc1-be4d-a72ac0bc411f",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "seq": 10,
+            "stepKey": "REPORT",
+            "title": "Build run result",
+            "status": "succeeded",
+            "summary": {
+              "protocolEvaluation": {
+                "schemaVersion": 1,
+                "verdict": "correct_acceptance",
+                "expected": {
+                  "outcome": "valid",
+                  "boundary": "result",
+                  "step": "PRESENT_RESULT"
+                },
+                "observed": {
+                  "outcome": "valid",
+                  "boundary": "result",
+                  "step": "PRESENT_RESULT",
+                  "stage": null,
+                  "code": null
+                }
+              }
+            }
+          }
+        ],
+        "exchanges": [
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "mock_issuer",
+            "method": "GET",
+            "url": "http://127.0.0.1:62300/.well-known/openid-credential-issuer",
+            "status": 200,
+            "durationMs": 5,
+            "request": {},
+            "response": {
+              "credential_issuer": "http://127.0.0.1:62300/",
+              "credential_configuration_id": "MockVerifiableCredential_SD_JWT",
+              "format": "dc+sd-jwt"
+            },
+            "seq": 1,
+            "redactions": [],
+            "id": "bbaf2935-bf5b-441b-965e-74c114cfee60",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "stepId": "72f53105-2496-43ef-9eb0-99bfdad4b8d5"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "mock_issuer",
+            "method": "POST",
+            "url": "http://127.0.0.1:62300/token",
+            "status": 200,
+            "durationMs": 2,
+            "request": {
+              "grant_type": "pre-authorized_code"
+            },
+            "response": {
+              "token_type": "Bearer",
+              "access_token": "[REDACTED]",
+              "c_nonce": "[REDACTED]"
+            },
+            "seq": 2,
+            "redactions": [
+              "$.access_token",
+              "$.c_nonce"
+            ],
+            "id": "727a5deb-466a-4110-a216-9bb1d24a1d95",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "stepId": "0dadb279-2d27-4e67-81dd-f9ee88aebf18"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "mock_issuer",
+            "method": "POST",
+            "url": "http://127.0.0.1:62300/credential",
+            "status": 200,
+            "durationMs": 3,
+            "request": {
+              "credential_configuration_id": "MockVerifiableCredential_SD_JWT",
+              "proof": "[REDACTED]"
+            },
+            "response": {
+              "credentialReturned": true,
+              "format": "dc+sd-jwt"
+            },
+            "seq": 3,
+            "redactions": [
+              "$.proof"
+            ],
+            "id": "c3949831-490f-4e5d-a790-fbf47386848b",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "stepId": "b9952bac-3836-4d18-913d-1266540fee5c"
+          },
+          {
+            "actorFrom": "playground",
+            "actorTo": "inji_verify",
+            "method": "POST",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-request",
+            "status": 201,
+            "durationMs": 3272,
+            "request": {
+              "clientId": "decentralized_identifier:did:web:injiverify.collab.mosip.net:v1:verify",
+              "nonce": "[REDACTED]",
+              "dcqlQuery": {
+                "credentials": [
+                  {
+                    "id": "credential",
+                    "format": "dc+sd-jwt",
+                    "meta": {
+                      "vct_values": [
+                        "MockVerifiableCredential_SD_JWT"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "responseCodeValidationRequired": false
+            },
+            "response": {
+              "requestUriIssued": true,
+              "requestIdIssued": true,
+              "transactionIdIssued": true
+            },
+            "seq": 4,
+            "redactions": [
+              "$.nonce"
+            ],
+            "id": "e6e635cb-d2e0-46ad-bf25-5bf942b3a908",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "stepId": "a87faa7a-34f1-4c83-a7d8-61ae44ad4799"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "inji_verify",
+            "method": "GET",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-request/req_32278513-8d36-4635-8c68-665f82c6db41",
+            "status": 200,
+            "durationMs": 628,
+            "request": {
+              "accept": "application/oauth-authz-req+jwt"
+            },
+            "response": {
+              "signedRequestReceived": true,
+              "responseMode": "direct_post"
+            },
+            "seq": 5,
+            "redactions": [],
+            "id": "2349bc7a-1fd7-445e-9116-ffb7339a0e8e",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "stepId": "a87faa7a-34f1-4c83-a7d8-61ae44ad4799"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "inji_verify",
+            "method": "POST",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-submission/direct-post",
+            "status": 200,
+            "durationMs": 133,
+            "request": {
+              "format": "dc+sd-jwt",
+              "holderProofType": "kb+jwt",
+              "holderKeyMatchesCredential": true,
+              "tamper": null
+            },
+            "response": {
+              "accepted": true
+            },
+            "seq": 6,
+            "redactions": [],
+            "id": "2d7f4864-c39a-47f1-8399-4d0e6ca16cae",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "stepId": "c1a6b986-410f-4075-a605-0db41d79d318"
+          },
+          {
+            "actorFrom": "playground",
+            "actorTo": "inji_verify",
+            "method": "GET",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/vp-request/req_32278513-8d36-4635-8c68-665f82c6db41/status",
+            "status": 200,
+            "durationMs": 107,
+            "request": {},
+            "response": {
+              "status": "VP_SUBMITTED"
+            },
+            "seq": 7,
+            "redactions": [],
+            "id": "caed1663-e664-42af-9b4d-160d14d8ae65",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "stepId": "194a2445-227b-4b90-a192-90f1432d2571"
+          },
+          {
+            "actorFrom": "playground",
+            "actorTo": "inji_verify",
+            "method": "POST",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-results/txn_9b782298-fc8d-4030-a0ad-48b5fe73b725",
+            "status": 200,
+            "durationMs": 172,
+            "request": {
+              "includeClaims": false,
+              "skipStatusChecks": true
+            },
+            "response": {
+              "allChecksSuccessful": true,
+              "credentialChecksSuccessful": true,
+              "credentialProofValid": true,
+              "holderProofValid": true
+            },
+            "seq": 8,
+            "redactions": [],
+            "id": "b4ffab77-40b5-480a-aac4-cdf62c31e80d",
+            "runId": "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+            "stepId": "6f5474d5-b3b6-4624-85a0-f990281e0e5b"
+          }
+        ],
+        "evidence": {
+          "tier": "mock_interop",
+          "label": "Mock interoperability with Reference Wallet"
+        }
+      }
+    },
+    {
+      "label": "x509_bad_signature",
+      "report": {
+        "run": {
+          "id": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+          "parentRunId": null,
+          "config": {
+            "issuer": "mock_issuer",
+            "wallet": "reference_wallet",
+            "verifier": "inji_verify",
+            "format": "vc_sd_jwt",
+            "flow": "cross_device",
+            "tamper": "bad_signature",
+            "scenarioId": null
+          },
+          "status": "failed",
+          "expectedOutcome": "invalid",
+          "actualOutcome": "invalid",
+          "proofType": "kb+jwt",
+          "algorithm": "EdDSA",
+          "serviceVersions": {
+            "issuer": "person3-x509-working-tree",
+            "wallet": "reference-wallet/0.1.0",
+            "verifier": "unreported"
+          },
+          "createdAt": "2026-10-22T10:58:34.525Z",
+          "startedAt": "2026-10-22T10:58:34.525Z",
+          "finishedAt": "2026-10-22T10:58:35.594Z",
+          "issuerRepresentation": "x509",
+          "protocolProfile": "collab-dcql",
+          "evaluation": {
+            "schemaVersion": 1,
+            "verdict": "inconclusive",
+            "expected": {
+              "outcome": "invalid",
+              "boundary": "result",
+              "step": "PRESENT_RESULT",
+              "stage": "issuer_signature",
+              "code": "ISSUER_SIGNATURE_INVALID"
+            },
+            "observed": {
+              "outcome": "invalid",
+              "boundary": "result",
+              "step": "PRESENT_RESULT",
+              "stage": null,
+              "code": null
+            }
+          }
+        },
+        "steps": [
+          {
+            "id": "565ac111-e2b7-4783-b476-df1812cae15d",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "seq": 1,
+            "stepKey": "INIT",
+            "title": "Initialize run",
+            "status": "succeeded",
+            "summary": {
+              "completed": true
+            }
+          },
+          {
+            "id": "fefdda29-0189-41f9-af10-87845ea577cd",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "seq": 2,
+            "stepKey": "ISSUE_OFFER",
+            "title": "Discover issuer and create offer",
+            "status": "succeeded",
+            "summary": {
+              "credentialConfigurationId": "MockVerifiableCredential_SD_JWT",
+              "format": "dc+sd-jwt",
+              "source": "external_non_inji_mock"
+            }
+          },
+          {
+            "id": "48b04501-ead6-43b1-a7dd-2df3709e6409",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "seq": 3,
+            "stepKey": "ISSUE_TOKEN",
+            "title": "Authorize wallet and exchange token",
+            "status": "succeeded",
+            "summary": {
+              "authorized": true,
+              "source": "external_non_inji_mock"
+            }
+          },
+          {
+            "id": "5d51e60d-1fa4-429a-9133-b5ec48f0d718",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "seq": 4,
+            "stepKey": "ISSUE_CREDENTIAL",
+            "title": "Issue holder-bound credential",
+            "status": "succeeded",
+            "summary": {
+              "credentialReceived": true,
+              "format": "dc+sd-jwt",
+              "source": "external_non_inji_mock",
+              "issuerRepresentation": "x509"
+            }
+          },
+          {
+            "id": "883a38b3-5432-434e-a214-ae5e96835a5a",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "seq": 5,
+            "stepKey": "STORE",
+            "title": "Store credential for this run",
+            "status": "succeeded",
+            "summary": {
+              "storedForRun": true
+            }
+          },
+          {
+            "id": "98cf995a-c47c-40db-9ce0-dfa17b1606ea",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "seq": 6,
+            "stepKey": "PRESENT_REQUEST",
+            "title": "Create signed presentation request",
+            "status": "succeeded",
+            "summary": {
+              "signedRequestReceived": true,
+              "queryLanguage": "DCQL"
+            }
+          },
+          {
+            "id": "d9167ede-0125-48f2-ba6b-e26c9c97af9f",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "seq": 7,
+            "stepKey": "PRESENT_SUBMIT",
+            "title": "Submit holder-bound presentation",
+            "status": "succeeded",
+            "summary": {
+              "holderKeyMatchesCredential": true,
+              "submissionAccepted": true
+            }
+          },
+          {
+            "id": "33f1c660-b2f7-4efa-b745-8af1c207cd93",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "seq": 8,
+            "stepKey": "PRESENT_STATUS",
+            "title": "Wait for verifier submission status",
+            "status": "succeeded",
+            "summary": {
+              "status": "VP_SUBMITTED",
+              "attempts": 1
+            }
+          },
+          {
+            "id": "af89cd16-536d-4f91-9a5c-303a91ed1588",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "seq": 9,
+            "stepKey": "PRESENT_RESULT",
+            "title": "Verify credential and holder proof",
+            "status": "succeeded",
+            "summary": {
+              "outcome": "invalid",
+              "protocolProfile": "collab-dcql",
+              "allChecksSuccessful": false,
+              "failureDetail": "Verifier rejected the credential schema or issuer signature"
+            }
+          },
+          {
+            "id": "dc7690f4-1947-45a6-9bdc-ade35e3e700f",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "seq": 10,
+            "stepKey": "REPORT",
+            "title": "Build run result",
+            "status": "succeeded",
+            "summary": {
+              "protocolEvaluation": {
+                "schemaVersion": 1,
+                "verdict": "inconclusive",
+                "expected": {
+                  "outcome": "invalid",
+                  "boundary": "result",
+                  "step": "PRESENT_RESULT",
+                  "stage": "issuer_signature",
+                  "code": "ISSUER_SIGNATURE_INVALID"
+                },
+                "observed": {
+                  "outcome": "invalid",
+                  "boundary": "result",
+                  "step": "PRESENT_RESULT",
+                  "stage": null,
+                  "code": null
+                }
+              }
+            }
+          }
+        ],
+        "exchanges": [
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "mock_issuer",
+            "method": "GET",
+            "url": "http://127.0.0.1:62303/.well-known/openid-credential-issuer",
+            "status": 200,
+            "durationMs": 4,
+            "request": {},
+            "response": {
+              "credential_issuer": "http://127.0.0.1:62303/",
+              "credential_configuration_id": "MockVerifiableCredential_SD_JWT",
+              "format": "dc+sd-jwt"
+            },
+            "seq": 1,
+            "redactions": [],
+            "id": "a554e5fd-da85-4022-aa3e-3b8b6d8133e3",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "stepId": "fefdda29-0189-41f9-af10-87845ea577cd"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "mock_issuer",
+            "method": "POST",
+            "url": "http://127.0.0.1:62303/token",
+            "status": 200,
+            "durationMs": 2,
+            "request": {
+              "grant_type": "pre-authorized_code"
+            },
+            "response": {
+              "token_type": "Bearer",
+              "access_token": "[REDACTED]",
+              "c_nonce": "[REDACTED]"
+            },
+            "seq": 2,
+            "redactions": [
+              "$.access_token",
+              "$.c_nonce"
+            ],
+            "id": "d3f913fe-ad10-474f-bd2a-4a5fda67fd02",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "stepId": "48b04501-ead6-43b1-a7dd-2df3709e6409"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "mock_issuer",
+            "method": "POST",
+            "url": "http://127.0.0.1:62303/credential",
+            "status": 200,
+            "durationMs": 6,
+            "request": {
+              "credential_configuration_id": "MockVerifiableCredential_SD_JWT",
+              "proof": "[REDACTED]"
+            },
+            "response": {
+              "credentialReturned": true,
+              "format": "dc+sd-jwt"
+            },
+            "seq": 3,
+            "redactions": [
+              "$.proof"
+            ],
+            "id": "4ec14b4d-af84-4270-a001-dd9843842117",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "stepId": "5d51e60d-1fa4-429a-9133-b5ec48f0d718"
+          },
+          {
+            "actorFrom": "playground",
+            "actorTo": "inji_verify",
+            "method": "POST",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-request",
+            "status": 201,
+            "durationMs": 126,
+            "request": {
+              "clientId": "decentralized_identifier:did:web:injiverify.collab.mosip.net:v1:verify",
+              "nonce": "[REDACTED]",
+              "dcqlQuery": {
+                "credentials": [
+                  {
+                    "id": "credential",
+                    "format": "dc+sd-jwt",
+                    "meta": {
+                      "vct_values": [
+                        "MockVerifiableCredential_SD_JWT"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "responseCodeValidationRequired": false
+            },
+            "response": {
+              "requestUriIssued": true,
+              "requestIdIssued": true,
+              "transactionIdIssued": true
+            },
+            "seq": 4,
+            "redactions": [
+              "$.nonce"
+            ],
+            "id": "90e033c3-102f-48c0-a6b7-1e1cf0ef1be9",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "stepId": "98cf995a-c47c-40db-9ce0-dfa17b1606ea"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "inji_verify",
+            "method": "GET",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-request/req_55d5dc50-4c17-4419-bcbf-18f62d3c06ee",
+            "status": 200,
+            "durationMs": 87,
+            "request": {
+              "accept": "application/oauth-authz-req+jwt"
+            },
+            "response": {
+              "signedRequestReceived": true,
+              "responseMode": "direct_post"
+            },
+            "seq": 5,
+            "redactions": [],
+            "id": "d3bed4c7-7061-47d8-8982-e452812b8f02",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "stepId": "98cf995a-c47c-40db-9ce0-dfa17b1606ea"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "inji_verify",
+            "method": "POST",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-submission/direct-post",
+            "status": 200,
+            "durationMs": 467,
+            "request": {
+              "format": "dc+sd-jwt",
+              "holderProofType": "kb+jwt",
+              "holderKeyMatchesCredential": true,
+              "tamper": "bad_signature"
+            },
+            "response": {
+              "accepted": true
+            },
+            "seq": 6,
+            "redactions": [],
+            "id": "7245d836-34a5-4254-80e6-3f3292f23ca2",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "stepId": "d9167ede-0125-48f2-ba6b-e26c9c97af9f"
+          },
+          {
+            "actorFrom": "playground",
+            "actorTo": "inji_verify",
+            "method": "GET",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/vp-request/req_55d5dc50-4c17-4419-bcbf-18f62d3c06ee/status",
+            "status": 200,
+            "durationMs": 178,
+            "request": {},
+            "response": {
+              "status": "VP_SUBMITTED"
+            },
+            "seq": 7,
+            "redactions": [],
+            "id": "6e80ced8-ed51-43a3-bf2d-ff140da9a5ae",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "stepId": "33f1c660-b2f7-4efa-b745-8af1c207cd93"
+          },
+          {
+            "actorFrom": "playground",
+            "actorTo": "inji_verify",
+            "method": "POST",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-results/txn_cb63ec51-9579-4fb7-bf97-4d68237bc2c0",
+            "status": 200,
+            "durationMs": 180,
+            "request": {
+              "includeClaims": false,
+              "skipStatusChecks": true
+            },
+            "response": {
+              "allChecksSuccessful": false,
+              "credentialChecksSuccessful": false,
+              "credentialProofValid": false,
+              "errorCode": "VERIFIER_REJECTED_SUBMISSION"
+            },
+            "seq": 8,
+            "redactions": [],
+            "id": "5c6c9046-b247-4c31-9bc6-e1a8a46dd4bf",
+            "runId": "e4a31d34-5a41-46fb-b96a-df14d366508b",
+            "stepId": "af89cd16-536d-4f91-9a5c-303a91ed1588"
+          }
+        ],
+        "evidence": {
+          "tier": "mock_interop",
+          "label": "Mock interoperability with Reference Wallet"
+        }
+      }
+    },
+    {
+      "label": "x509_nonce_mismatch",
+      "report": {
+        "run": {
+          "id": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+          "parentRunId": null,
+          "config": {
+            "issuer": "mock_issuer",
+            "wallet": "reference_wallet",
+            "verifier": "inji_verify",
+            "format": "vc_sd_jwt",
+            "flow": "cross_device",
+            "tamper": "replay_nonce",
+            "scenarioId": null
+          },
+          "status": "failed",
+          "expectedOutcome": "invalid",
+          "actualOutcome": "invalid",
+          "proofType": "kb+jwt",
+          "algorithm": "EdDSA",
+          "serviceVersions": {
+            "issuer": "person3-x509-working-tree",
+            "wallet": "reference-wallet/0.1.0",
+            "verifier": "unreported"
+          },
+          "createdAt": "2026-10-22T10:58:35.596Z",
+          "startedAt": "2026-10-22T10:58:35.596Z",
+          "finishedAt": "2026-10-22T10:58:36.199Z",
+          "issuerRepresentation": "x509",
+          "protocolProfile": "collab-dcql",
+          "evaluation": {
+            "schemaVersion": 1,
+            "verdict": "inconclusive",
+            "expected": {
+              "outcome": "invalid",
+              "boundary": "result",
+              "step": "PRESENT_RESULT",
+              "stage": "nonce",
+              "code": "NONCE_MISMATCH"
+            },
+            "observed": {
+              "outcome": "invalid",
+              "boundary": "direct_post",
+              "step": "PRESENT_SUBMIT",
+              "stage": null,
+              "code": null
+            }
+          }
+        },
+        "steps": [
+          {
+            "id": "e8e68382-d135-426a-8c65-4bef778fa731",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "seq": 1,
+            "stepKey": "INIT",
+            "title": "Initialize run",
+            "status": "succeeded",
+            "summary": {
+              "completed": true
+            }
+          },
+          {
+            "id": "4b9e0d70-450c-48d9-8621-4aec5583e720",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "seq": 2,
+            "stepKey": "ISSUE_OFFER",
+            "title": "Discover issuer and create offer",
+            "status": "succeeded",
+            "summary": {
+              "credentialConfigurationId": "MockVerifiableCredential_SD_JWT",
+              "format": "dc+sd-jwt",
+              "source": "external_non_inji_mock"
+            }
+          },
+          {
+            "id": "0dc06860-4ceb-41ea-88b6-76bb7d380881",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "seq": 3,
+            "stepKey": "ISSUE_TOKEN",
+            "title": "Authorize wallet and exchange token",
+            "status": "succeeded",
+            "summary": {
+              "authorized": true,
+              "source": "external_non_inji_mock"
+            }
+          },
+          {
+            "id": "8b6fd714-eb6e-482d-86fc-da3ab2dba34f",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "seq": 4,
+            "stepKey": "ISSUE_CREDENTIAL",
+            "title": "Issue holder-bound credential",
+            "status": "succeeded",
+            "summary": {
+              "credentialReceived": true,
+              "format": "dc+sd-jwt",
+              "source": "external_non_inji_mock",
+              "issuerRepresentation": "x509"
+            }
+          },
+          {
+            "id": "1e4ce419-bdb0-43de-aa79-85b547e6c146",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "seq": 5,
+            "stepKey": "STORE",
+            "title": "Store credential for this run",
+            "status": "succeeded",
+            "summary": {
+              "storedForRun": true
+            }
+          },
+          {
+            "id": "e1e2fc83-9a0c-402f-82d2-90245537c987",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "seq": 6,
+            "stepKey": "PRESENT_REQUEST",
+            "title": "Create signed presentation request",
+            "status": "succeeded",
+            "summary": {
+              "signedRequestReceived": true,
+              "queryLanguage": "DCQL"
+            }
+          },
+          {
+            "id": "6d5f0692-1bd3-471c-bc4f-1c7099b570a3",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "seq": 7,
+            "stepKey": "PRESENT_SUBMIT",
+            "title": "Submit holder-bound presentation",
+            "status": "succeeded",
+            "summary": {
+              "holderKeyMatchesCredential": true,
+              "submissionAccepted": false
+            }
+          },
+          {
+            "id": "ed27c0b5-56c6-4535-ac16-2984ce11dab9",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "seq": 8,
+            "stepKey": "PRESENT_STATUS",
+            "title": "Wait for verifier submission status",
+            "status": "succeeded",
+            "summary": {
+              "status": "SUBMISSION_REJECTED",
+              "submissionHttpStatus": 400,
+              "errorCode": "invalid_request",
+              "attempts": 0
+            }
+          },
+          {
+            "id": "9296f37b-0aaf-439a-b6ff-5e7d5345b693",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "seq": 9,
+            "stepKey": "PRESENT_RESULT",
+            "title": "Verify credential and holder proof",
+            "status": "succeeded",
+            "summary": {
+              "outcome": "invalid",
+              "failureDetail": "invalid_request",
+              "submissionHttpStatus": 400,
+              "resultSource": "direct_post_rejection",
+              "protocolProfile": "collab-dcql"
+            }
+          },
+          {
+            "id": "34a4dffe-e503-4153-bdbb-3155d2710e20",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "seq": 10,
+            "stepKey": "REPORT",
+            "title": "Build run result",
+            "status": "succeeded",
+            "summary": {
+              "protocolEvaluation": {
+                "schemaVersion": 1,
+                "verdict": "inconclusive",
+                "expected": {
+                  "outcome": "invalid",
+                  "boundary": "result",
+                  "step": "PRESENT_RESULT",
+                  "stage": "nonce",
+                  "code": "NONCE_MISMATCH"
+                },
+                "observed": {
+                  "outcome": "invalid",
+                  "boundary": "direct_post",
+                  "step": "PRESENT_SUBMIT",
+                  "stage": null,
+                  "code": null
+                }
+              }
+            }
+          }
+        ],
+        "exchanges": [
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "mock_issuer",
+            "method": "GET",
+            "url": "http://127.0.0.1:62306/.well-known/openid-credential-issuer",
+            "status": 200,
+            "durationMs": 1,
+            "request": {},
+            "response": {
+              "credential_issuer": "http://127.0.0.1:62306/",
+              "credential_configuration_id": "MockVerifiableCredential_SD_JWT",
+              "format": "dc+sd-jwt"
+            },
+            "seq": 1,
+            "redactions": [],
+            "id": "e3c4b75c-f44e-4df4-94fe-10aa21a15cde",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "stepId": "4b9e0d70-450c-48d9-8621-4aec5583e720"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "mock_issuer",
+            "method": "POST",
+            "url": "http://127.0.0.1:62306/token",
+            "status": 200,
+            "durationMs": 1,
+            "request": {
+              "grant_type": "pre-authorized_code"
+            },
+            "response": {
+              "token_type": "Bearer",
+              "access_token": "[REDACTED]",
+              "c_nonce": "[REDACTED]"
+            },
+            "seq": 2,
+            "redactions": [
+              "$.access_token",
+              "$.c_nonce"
+            ],
+            "id": "7eaaa1a5-a14e-4712-879f-9c6e617a6969",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "stepId": "0dc06860-4ceb-41ea-88b6-76bb7d380881"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "mock_issuer",
+            "method": "POST",
+            "url": "http://127.0.0.1:62306/credential",
+            "status": 200,
+            "durationMs": 1,
+            "request": {
+              "credential_configuration_id": "MockVerifiableCredential_SD_JWT",
+              "proof": "[REDACTED]"
+            },
+            "response": {
+              "credentialReturned": true,
+              "format": "dc+sd-jwt"
+            },
+            "seq": 3,
+            "redactions": [
+              "$.proof"
+            ],
+            "id": "de7da16c-2796-4a6e-a090-4e28e1299705",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "stepId": "8b6fd714-eb6e-482d-86fc-da3ab2dba34f"
+          },
+          {
+            "actorFrom": "playground",
+            "actorTo": "inji_verify",
+            "method": "POST",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-request",
+            "status": 201,
+            "durationMs": 144,
+            "request": {
+              "clientId": "decentralized_identifier:did:web:injiverify.collab.mosip.net:v1:verify",
+              "nonce": "[REDACTED]",
+              "dcqlQuery": {
+                "credentials": [
+                  {
+                    "id": "credential",
+                    "format": "dc+sd-jwt",
+                    "meta": {
+                      "vct_values": [
+                        "MockVerifiableCredential_SD_JWT"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "responseCodeValidationRequired": false
+            },
+            "response": {
+              "requestUriIssued": true,
+              "requestIdIssued": true,
+              "transactionIdIssued": true
+            },
+            "seq": 4,
+            "redactions": [
+              "$.nonce"
+            ],
+            "id": "cda29e45-7fa7-48d3-b9bd-48b20038890f",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "stepId": "e1e2fc83-9a0c-402f-82d2-90245537c987"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "inji_verify",
+            "method": "GET",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-request/req_daeca699-93e6-4941-acfa-aac32b48a1f1",
+            "status": 200,
+            "durationMs": 337,
+            "request": {
+              "accept": "application/oauth-authz-req+jwt"
+            },
+            "response": {
+              "signedRequestReceived": true,
+              "responseMode": "direct_post"
+            },
+            "seq": 5,
+            "redactions": [],
+            "id": "7ad025bc-fed1-41f8-a135-a40c9082a439",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "stepId": "e1e2fc83-9a0c-402f-82d2-90245537c987"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "inji_verify",
+            "method": "POST",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-submission/direct-post",
+            "status": 400,
+            "durationMs": 102,
+            "request": {
+              "format": "dc+sd-jwt",
+              "holderProofType": "kb+jwt",
+              "holderKeyMatchesCredential": true,
+              "tamper": "replay_nonce"
+            },
+            "response": {
+              "accepted": false,
+              "errorCode": "invalid_request"
+            },
+            "seq": 6,
+            "redactions": [],
+            "id": "3e5b7f1c-c8ce-4784-b24b-766ce1daf5c2",
+            "runId": "471f87a5-462c-4281-b07c-ff4d3cba6b6d",
+            "stepId": "6d5f0692-1bd3-471c-bc4f-1c7099b570a3"
+          }
+        ],
+        "evidence": {
+          "tier": "mock_interop",
+          "label": "Mock interoperability with Reference Wallet"
+        }
+      }
+    },
+    {
+      "label": "did_jwk_control",
+      "report": {
+        "run": {
+          "id": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+          "parentRunId": null,
+          "config": {
+            "issuer": "mock_issuer",
+            "wallet": "reference_wallet",
+            "verifier": "inji_verify",
+            "format": "vc_sd_jwt",
+            "flow": "cross_device",
+            "tamper": null,
+            "scenarioId": null
+          },
+          "status": "failed",
+          "expectedOutcome": "valid",
+          "actualOutcome": "invalid",
+          "proofType": "kb+jwt",
+          "algorithm": "EdDSA",
+          "serviceVersions": {
+            "issuer": "person3-did-jwk-working-tree",
+            "wallet": "reference-wallet/0.1.0",
+            "verifier": "unreported"
+          },
+          "createdAt": "2026-10-22T10:58:36.201Z",
+          "startedAt": "2026-10-22T10:58:36.201Z",
+          "finishedAt": "2026-10-22T10:58:36.859Z",
+          "issuerRepresentation": "did:jwk",
+          "protocolProfile": "collab-dcql",
+          "evaluation": {
+            "schemaVersion": 1,
+            "verdict": "unexpected_rejection",
+            "expected": {
+              "outcome": "valid",
+              "boundary": "result",
+              "step": "PRESENT_RESULT"
+            },
+            "observed": {
+              "outcome": "invalid",
+              "boundary": "result",
+              "step": "PRESENT_RESULT",
+              "stage": null,
+              "code": null
+            }
+          }
+        },
+        "steps": [
+          {
+            "id": "87a8c5c9-f99d-4990-b6a9-638f7ac73a99",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "seq": 1,
+            "stepKey": "INIT",
+            "title": "Initialize run",
+            "status": "succeeded",
+            "summary": {
+              "completed": true
+            }
+          },
+          {
+            "id": "f3f2ce80-4ed5-40fd-a86e-325e0b6331d8",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "seq": 2,
+            "stepKey": "ISSUE_OFFER",
+            "title": "Discover issuer and create offer",
+            "status": "succeeded",
+            "summary": {
+              "credentialConfigurationId": "MockVerifiableCredential_SD_JWT",
+              "format": "dc+sd-jwt",
+              "source": "external_non_inji_mock"
+            }
+          },
+          {
+            "id": "bd583121-fc2f-4535-b1a5-d835b416e1c9",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "seq": 3,
+            "stepKey": "ISSUE_TOKEN",
+            "title": "Authorize wallet and exchange token",
+            "status": "succeeded",
+            "summary": {
+              "authorized": true,
+              "source": "external_non_inji_mock"
+            }
+          },
+          {
+            "id": "c930cbf4-e14c-42d2-9bc8-7927512a1815",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "seq": 4,
+            "stepKey": "ISSUE_CREDENTIAL",
+            "title": "Issue holder-bound credential",
+            "status": "succeeded",
+            "summary": {
+              "credentialReceived": true,
+              "format": "dc+sd-jwt",
+              "source": "external_non_inji_mock",
+              "issuerRepresentation": "did:jwk"
+            }
+          },
+          {
+            "id": "3e191637-cfcf-47c6-9850-5d21bb5c55b0",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "seq": 5,
+            "stepKey": "STORE",
+            "title": "Store credential for this run",
+            "status": "succeeded",
+            "summary": {
+              "storedForRun": true
+            }
+          },
+          {
+            "id": "2c84839c-3c00-4213-9c41-78b1ca580e7b",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "seq": 6,
+            "stepKey": "PRESENT_REQUEST",
+            "title": "Create signed presentation request",
+            "status": "succeeded",
+            "summary": {
+              "signedRequestReceived": true,
+              "queryLanguage": "DCQL"
+            }
+          },
+          {
+            "id": "f5f50eb5-3d69-4f40-b165-64151f6923b1",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "seq": 7,
+            "stepKey": "PRESENT_SUBMIT",
+            "title": "Submit holder-bound presentation",
+            "status": "succeeded",
+            "summary": {
+              "holderKeyMatchesCredential": true,
+              "submissionAccepted": true
+            }
+          },
+          {
+            "id": "cf022b9c-8b7a-4e9f-9f65-d774a28c06ca",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "seq": 8,
+            "stepKey": "PRESENT_STATUS",
+            "title": "Wait for verifier submission status",
+            "status": "succeeded",
+            "summary": {
+              "status": "VP_SUBMITTED",
+              "attempts": 1
+            }
+          },
+          {
+            "id": "b0837072-7f7b-434b-8989-7f5158007c29",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "seq": 9,
+            "stepKey": "PRESENT_RESULT",
+            "title": "Verify credential and holder proof",
+            "status": "succeeded",
+            "summary": {
+              "outcome": "invalid",
+              "protocolProfile": "collab-dcql",
+              "allChecksSuccessful": false,
+              "failureDetail": "Verifier rejected the credential schema or issuer signature"
+            }
+          },
+          {
+            "id": "10095c49-4376-4c92-9178-ec923485e6c1",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "seq": 10,
+            "stepKey": "REPORT",
+            "title": "Build run result",
+            "status": "succeeded",
+            "summary": {
+              "protocolEvaluation": {
+                "schemaVersion": 1,
+                "verdict": "unexpected_rejection",
+                "expected": {
+                  "outcome": "valid",
+                  "boundary": "result",
+                  "step": "PRESENT_RESULT"
+                },
+                "observed": {
+                  "outcome": "invalid",
+                  "boundary": "result",
+                  "step": "PRESENT_RESULT",
+                  "stage": null,
+                  "code": null
+                }
+              }
+            }
+          }
+        ],
+        "exchanges": [
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "mock_issuer",
+            "method": "GET",
+            "url": "http://127.0.0.1:62308/.well-known/openid-credential-issuer",
+            "status": 200,
+            "durationMs": 2,
+            "request": {},
+            "response": {
+              "credential_issuer": "http://127.0.0.1:62308/",
+              "credential_configuration_id": "MockVerifiableCredential_SD_JWT",
+              "format": "dc+sd-jwt"
+            },
+            "seq": 1,
+            "redactions": [],
+            "id": "ed780f1b-bf12-488c-ad53-9ea8a1289634",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "stepId": "f3f2ce80-4ed5-40fd-a86e-325e0b6331d8"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "mock_issuer",
+            "method": "POST",
+            "url": "http://127.0.0.1:62308/token",
+            "status": 200,
+            "durationMs": 2,
+            "request": {
+              "grant_type": "pre-authorized_code"
+            },
+            "response": {
+              "token_type": "Bearer",
+              "access_token": "[REDACTED]",
+              "c_nonce": "[REDACTED]"
+            },
+            "seq": 2,
+            "redactions": [
+              "$.access_token",
+              "$.c_nonce"
+            ],
+            "id": "226065cb-2681-4576-8a3a-43ab8827b3fc",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "stepId": "bd583121-fc2f-4535-b1a5-d835b416e1c9"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "mock_issuer",
+            "method": "POST",
+            "url": "http://127.0.0.1:62308/credential",
+            "status": 200,
+            "durationMs": 4,
+            "request": {
+              "credential_configuration_id": "MockVerifiableCredential_SD_JWT",
+              "proof": "[REDACTED]"
+            },
+            "response": {
+              "credentialReturned": true,
+              "format": "dc+sd-jwt"
+            },
+            "seq": 3,
+            "redactions": [
+              "$.proof"
+            ],
+            "id": "563292ae-ca1f-4601-ac54-8c0d43f3c0e5",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "stepId": "c930cbf4-e14c-42d2-9bc8-7927512a1815"
+          },
+          {
+            "actorFrom": "playground",
+            "actorTo": "inji_verify",
+            "method": "POST",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-request",
+            "status": 201,
+            "durationMs": 74,
+            "request": {
+              "clientId": "decentralized_identifier:did:web:injiverify.collab.mosip.net:v1:verify",
+              "nonce": "[REDACTED]",
+              "dcqlQuery": {
+                "credentials": [
+                  {
+                    "id": "credential",
+                    "format": "dc+sd-jwt",
+                    "meta": {
+                      "vct_values": [
+                        "MockVerifiableCredential_SD_JWT"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "responseCodeValidationRequired": false
+            },
+            "response": {
+              "requestUriIssued": true,
+              "requestIdIssued": true,
+              "transactionIdIssued": true
+            },
+            "seq": 4,
+            "redactions": [
+              "$.nonce"
+            ],
+            "id": "d1096557-95d7-46e3-a4c5-e306059e1361",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "stepId": "2c84839c-3c00-4213-9c41-78b1ca580e7b"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "inji_verify",
+            "method": "GET",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-request/req_65a74139-3999-467c-9446-9089019d97e1",
+            "status": 200,
+            "durationMs": 94,
+            "request": {
+              "accept": "application/oauth-authz-req+jwt"
+            },
+            "response": {
+              "signedRequestReceived": true,
+              "responseMode": "direct_post"
+            },
+            "seq": 5,
+            "redactions": [],
+            "id": "daf6e210-69e7-45e3-b045-5cd341291976",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "stepId": "2c84839c-3c00-4213-9c41-78b1ca580e7b"
+          },
+          {
+            "actorFrom": "reference_wallet",
+            "actorTo": "inji_verify",
+            "method": "POST",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-submission/direct-post",
+            "status": 200,
+            "durationMs": 224,
+            "request": {
+              "format": "dc+sd-jwt",
+              "holderProofType": "kb+jwt",
+              "holderKeyMatchesCredential": true,
+              "tamper": null
+            },
+            "response": {
+              "accepted": true
+            },
+            "seq": 6,
+            "redactions": [],
+            "id": "0981c4dc-4aaa-47b3-a18f-22796f4bfa67",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "stepId": "f5f50eb5-3d69-4f40-b165-64151f6923b1"
+          },
+          {
+            "actorFrom": "playground",
+            "actorTo": "inji_verify",
+            "method": "GET",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/vp-request/req_65a74139-3999-467c-9446-9089019d97e1/status",
+            "status": 200,
+            "durationMs": 91,
+            "request": {},
+            "response": {
+              "status": "VP_SUBMITTED"
+            },
+            "seq": 7,
+            "redactions": [],
+            "id": "c9a86d1e-aa9c-48d5-b722-9f0bf95a02de",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "stepId": "cf022b9c-8b7a-4e9f-9f65-d774a28c06ca"
+          },
+          {
+            "actorFrom": "playground",
+            "actorTo": "inji_verify",
+            "method": "POST",
+            "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-results/txn_b99e9015-0dc3-415a-90ec-da4c1378d5fe",
+            "status": 200,
+            "durationMs": 147,
+            "request": {
+              "includeClaims": false,
+              "skipStatusChecks": true
+            },
+            "response": {
+              "allChecksSuccessful": false,
+              "credentialChecksSuccessful": false,
+              "credentialProofValid": false,
+              "errorCode": "VERIFIER_REJECTED_SUBMISSION"
+            },
+            "seq": 8,
+            "redactions": [],
+            "id": "1cd2443b-bfba-458b-8333-c276540b9bb5",
+            "runId": "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca",
+            "stepId": "b0837072-7f7b-434b-8989-7f5158007c29"
+          }
+        ],
+        "evidence": {
+          "tier": "mock_interop",
+          "label": "Mock interoperability with Reference Wallet"
+        }
+      }
+    }
+  ],
+  "preauthorized": [
+    {
+      "configurationId": "MockVerifiableCredential_SD_JWT",
+      "checkpoints": {
+        "metadata": 200,
+        "offerCreation": 200,
+        "offer": 200,
+        "token": 200,
+        "nonce": 200,
+        "credential": 401
+      },
+      "conclusion": "fresh_pre_authorized_token_rejected",
+      "offerUriIsAbsolute": false,
+      "offerOriginMatchesIssuer": true,
+      "offerResolution": "fixed_issuer_credential_offer_data_endpoint",
+      "tokenShape": {
+        "jwtDecoded": true,
+        "issuerConfigured": false,
+        "audienceConfigured": false,
+        "nonceClaimIncluded": false,
+        "clientIdClaimIncluded": false
+      },
+      "credentialReturned": false
+    },
+    {
+      "configurationId": "MockVerifiableCredential_VCDM2.0",
+      "checkpoints": {
+        "metadata": 200,
+        "offerCreation": 200,
+        "offer": 200,
+        "token": 200,
+        "nonce": 200,
+        "credential": 401
+      },
+      "conclusion": "fresh_pre_authorized_token_rejected",
+      "offerUriIsAbsolute": false,
+      "offerOriginMatchesIssuer": true,
+      "offerResolution": "fixed_issuer_credential_offer_data_endpoint",
+      "tokenShape": {
+        "jwtDecoded": true,
+        "issuerConfigured": false,
+        "audienceConfigured": false,
+        "nonceClaimIncluded": false,
+        "clientIdClaimIncluded": false
+      },
+      "credentialReturned": false
+    }
+  ],
+  "limits": [
+    "Synthetic Reference Wallet and mock issuer; no real Inji wallet acceptance.",
+    "Self-signed X.509 signature path does not establish certificate-chain trust.",
+    "Generic upstream rejection codes do not establish exact nonce/signature failure reasons.",
+    "Running deployment releases cannot be inferred from API generation or current upstream source."
+  ]
+}

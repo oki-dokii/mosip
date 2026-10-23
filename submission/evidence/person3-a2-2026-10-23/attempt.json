@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "attemptId": "A2-20261023-1726",
+  "date": "2026-10-23",
+  "evidenceTier": "manual_mobile_attempt",
+  "status": "blocked_during_authorization",
+  "sourceCommit": "39fceaf569188344453fb6ac2a754aa399a2c450",
+  "bffRunId": null,
+  "wallet": {
+    "name": "Inji Wallet",
+    "displayedVersion": "1.0.0-alpha.1",
+    "versionEvidence": "About screen viewed in the user conversation; full screenshot withheld because it contains an installation App ID.",
+    "platform": "Android (user reported)",
+    "deviceModel": "unreported",
+    "androidVersion": "unreported",
+    "buildNumber": "unreported",
+    "apkSha256": "unreported",
+    "signingIdentity": "unreported",
+    "sourceCommitAttested": false
+  },
+  "target": {
+    "registry": "https://api.collab.mosip.net",
+    "issuer": "https://injicertify-mock.collab.mosip.net",
+    "credentialConfigurationId": "MockVerifiableCredential_SD_JWT",
+    "credentialFormat": "dc+sd-jwt",
+    "authorizationServer": "https://esignet-mock.collab.mosip.net",
+    "deploymentVersions": "unreported"
+  },
+  "timeEvidence": {
+    "deviceDisplayedTime": "17:26",
+    "deviceTimezone": "unverified",
+    "note": "No UTC timestamp or native request correlation ID was captured."
+  },
+  "checkpoints": [
+    {
+      "step": "wallet_installation_and_onboarding",
+      "status": "observed"
+    },
+    {
+      "step": "issuer_catalog_display",
+      "status": "observed"
+    },
+    {
+      "step": "scan_authorization_code_offer",
+      "status": "observed_through_guided_user_attempt"
+    },
+    {
+      "step": "open_authorization_page",
+      "status": "observed"
+    },
+    {
+      "step": "client_validation",
+      "status": "rejected",
+      "message": "Client ID is invalid. Please try again."
+    },
+    {
+      "step": "user_authentication",
+      "status": "not_reached"
+    },
+    {
+      "step": "credential_issuance",
+      "status": "not_observed"
+    },
+    {
+      "step": "credential_storage",
+      "status": "not_observed"
+    },
+    {
+      "step": "same_wallet_presentation",
+      "status": "not_observed"
+    },
+    {
+      "step": "verifier_terminal_result",
+      "status": "not_observed"
+    }
+  ],
+  "diagnosis": {
+    "classification": "configuration_dependency_under_investigation",
+    "observed": "Authorization page rejects the client ID.",
+    "inference": "Release source defaults to clientId wallet and native oauthredirect for scanned offers; installed APK and actual sent parameters are not attested.",
+    "upstreamDefectConfirmed": false,
+    "upstreamIssueFiled": false
+  },
+  "artifacts": [
+    {
+      "file": "01-issuer-catalog-top.jpg",
+      "sha256": "710f1a9469707013ca017e6bf2991568a28131e786cd0707ec8b853dd43973a8",
+      "description": "Wallet issuer catalog, upper entries.",
+      "source": "User-supplied screenshot in guided conversation; copied without pixel edits.",
+      "review": "Visually reviewed in conversation: no credential, identity form, OTP, bearer token, installation App ID or complete session URL visible; no EXIF/XMP marker found."
+    },
+    {
+      "file": "02-issuer-catalog-bottom.jpg",
+      "sha256": "59df969ef2ec430a61a92bd2bf04d3df62aa8b07d1f92e4b213eecb71ec3c317",
+      "description": "Wallet issuer catalog, lower entries.",
+      "source": "User-supplied screenshot in guided conversation; copied without pixel edits.",
+      "review": "Visually reviewed in conversation: no credential, identity form, OTP, bearer token, installation App ID or complete session URL visible; no EXIF/XMP marker found."
+    },
+    {
+      "file": "03-registry-settings-dialog.jpg",
+      "sha256": "326a74432f7f6f9e8d184098778cde87906154e43752d7a8857d66f32d07dcc8",
+      "description": "Registry/eSignet editor inspected; eSignet field is horizontally clipped and its full value cannot be inferred from the image.",
+      "source": "User-supplied screenshot in guided conversation; copied without pixel edits.",
+      "review": "Visually reviewed in conversation: no credential, identity form, OTP, bearer token, installation App ID or complete session URL visible; no EXIF/XMP marker found."
+    },
+    {
+      "file": "04-sign-in-consent.jpg",
+      "sha256": "0839bb42aa0c4e1f8ebb73a3403fa4d3ed34adb70d52cbb805fabe30e8b82354",
+      "description": "Wallet requests permission to open mosip.net sign-in.",
+      "source": "User-supplied screenshot in guided conversation; copied without pixel edits.",
+      "review": "Visually reviewed in conversation: no credential, identity form, OTP, bearer token, installation App ID or complete session URL visible; no EXIF/XMP marker found."
+    },
+    {
+      "file": "05-invalid-client.jpg",
+      "sha256": "28fda1bd3038df2922a61fccba78d65162a06512a66e9b174f7a0962f45aaff7",
+      "description": "eSignet displays Client ID is invalid before authentication.",
+      "source": "User-supplied screenshot in guided conversation; copied without pixel edits.",
+      "review": "Visually reviewed in conversation: no credential, identity form, OTP, bearer token, installation App ID or complete session URL visible; no EXIF/XMP marker found."
+    },
+    {
+      "file": "authorization-code-offer.json",
+      "sha256": "0ab36e33492bac37f2a2699e9c82719f703a98898e33bd33493acd2538849b0f",
+      "description": "Public authorization-code offer used in the attempt; no pre-authorized code, token, identity or credential. HTML uses the colocated QR image."
+    },
+    {
+      "file": "authorization-code-offer.png",
+      "sha256": "fcf1313e2ea04b5e239ad8fb6164f21cfeb720581a16b3e5db466e42439c1a1a",
+      "description": "Public authorization-code offer used in the attempt; no pre-authorized code, token, identity or credential. HTML uses the colocated QR image."
+    },
+    {
+      "file": "authorization-code-offer.html",
+      "sha256": "66eee4a78f06269c5a3fcb72be076154e36d5789c08363ad58b1e2ee250c8b6c",
+      "description": "Public authorization-code offer used in the attempt; no pre-authorized code, token, identity or credential. HTML uses the colocated QR image."
+    }
+  ],
+  "limits": [
+    "Screenshots and user actions establish a partial mobile attempt, not cryptographic protocol conformance.",
+    "No native traffic or complete authorization URL was captured.",
+    "No real credential, OTP, confidential key or access token is included.",
+    "The public QR is reproducible offer data, not an issued or verified credential.",
+    "About screenshot and settings screenshot containing installation App ID are withheld."
+  ]
+}

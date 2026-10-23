@@ -1,14 +1,59 @@
+# ── version control ─────────────────────────────────────────────────────────
 .git
+.gitignore
+
+# ── secrets and credentials (never build into images) ───────────────────────
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.p8
+
+# ── Postman / API tool files ─────────────────────────────────────────────────
+*.postman_environment.json
+*.postman_collection.json
+postman/
+
+# ── HAR captures (may contain tokens, cookies, credentials) ─────────────────
+*.har
+*.har.json
+
+# ── build output and caches (rebuilt inside container) ───────────────────────
 **/node_modules
 **/dist
 **/.vite
 **/.turbo
-*.har
-*.pem
-*.key
-*.p12
-spikes/fixtures
-submission
+**/.cache
+**/coverage
+**/.nyc_output
+.pnpm-store
+
+# ── editor and OS artefacts ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# ── spike fixtures and submission docs ────────────────────────────────────────
+# The web build imports only the public, sanitized gap index. Keep all other
+# submission evidence and documents outside the Docker build context.
+spikes/
+submission/**
+!submission/
+!submission/gaps.json
+
+# ── local evidence files ─────────────────────────────────────────────────────
+artifacts/
+.mobile-inji/
+evidence/
+*.evidence.json
+
+# ── CI and rehearsal scratch files ───────────────────────────────────────────
+*.log
+tmp/
+e2e/
