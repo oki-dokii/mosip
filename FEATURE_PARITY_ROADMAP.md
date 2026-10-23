@@ -34,6 +34,8 @@ The competition scores functionality and deliverable quality at 40% each. A feat
 
 ## Independent ownership if four people work concurrently
 
+If one developer will own all remaining work instead, use the [single-owner handoff](SINGLE_OWNER_HANDOFF.md) and follow its dependency order.
+
 - **Infrastructure:** local pinned Inji services, synthetic identity/authentication, Compose health/smoke, clean-host proof. Own `deploy/` and coordinate service URLs.
 - **Wallet UX:** Web issue/store/present flow, browser recording and accessible evidence display. Own `apps/web/` and A1 evidence; consume the infrastructure endpoint contract.
 - **Protocol:** mobile A2 attempt, live matrix specs and independent version-pinned gap reproductions. Own mobile/probe evidence and `GAPS.md`; send shared-schema changes to the integrator.
