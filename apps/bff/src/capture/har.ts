@@ -124,7 +124,8 @@ function body(part: Record<string, unknown>, path: string, redactions: string[],
     for (const [rawKey, value] of params) {
       const key = safeKey(rawKey);
       const publicValue = key === "[field]" ? null : publicParameter(key, value);
-      result[key] = publicValue ?? "[REDACTED]";
+      // Match the verifier challenge only through a run-scoped in-process HMAC.
+      result[key] = publicValue ?? (key === "state" ? maskedValue(value, `${path}.${key}`, correlationKey) : "[REDACTED]");
       if (publicValue === null) redactions.push(`${path}.${key}`);
     }
     return result;

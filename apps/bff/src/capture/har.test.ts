@@ -10,7 +10,7 @@ import { createSteps } from "../orchestrator.js";
 import { MemoryRunRepository, PrismaRunRepository } from "../store.js";
 import { CaptureError, prepareHarImport } from "./har.js";
 import { credentialCanaries, harEntry } from "./fixtures/adversarial.js";
-import { runCorrelationKey } from "../redaction.js";
+import { maskedValue, runCorrelationKey } from "../redaction.js";
 
 const secret = "SECRET-SHOULD-NEVER-APPEAR";
 const fourServiceHar = JSON.parse(readFileSync(new URL("./fixtures/four-service.synthetic.har.json", import.meta.url), "utf8"));
@@ -88,6 +88,26 @@ describe("passive HAR capture", () => {
     expect(esignet?.request).toMatchObject({ body: { code: "[REDACTED]", otp: "[REDACTED]" } });
     expect(verify?.response).toMatchObject({ body: { presentation_definition: { id: "[REDACTED]" }, nonce: "[REDACTED]" } });
     expect(JSON.stringify(exchanges)).not.toMatch(canary);
+  });
+
+  it("uses the same run-scoped state marker for JSON and form direct-post bodies", () => {
+    const record = fixture();
+    const state = "synthetic-presentation-state-0123456789abcdef";
+    const present = (mimeType: string, text: string, startedDateTime: string) => ({
+      startedDateTime, time: 12,
+      request: { method: "POST", url: "https://verifier.example/direct-post", headers: [], postData: { mimeType, text } },
+      response: { status: 200, headers: [], content: { mimeType: "application/json", text: "{}" } },
+    });
+    const { exchanges } = prepareHarImport(wrap(record.run.id, [
+      present("application/json", JSON.stringify({ state, vp_token: "synthetic-vp-token" }), "2026-10-23T00:00:00.000Z"),
+      present("application/x-www-form-urlencoded", new URLSearchParams({ state, vp_token: "synthetic-vp-token" }).toString(), "2026-10-23T00:00:01.000Z"),
+    ]), record, origins);
+    const expected = maskedValue(state, "$.request.body.state", runCorrelationKey(record.run.id));
+    expect(exchanges).toHaveLength(2);
+    expect(exchanges.map((exchange) => (exchange.request as { body: { state: string } }).body.state)).toEqual([expected, expected]);
+    expect(JSON.stringify(exchanges)).not.toContain(state);
+    expect(JSON.stringify(exchanges)).not.toContain("synthetic-vp-token");
+    expect(maskedValue(state, "$.request.body.state", runCorrelationKey(randomUUID()))).not.toBe(expected);
   });
 
   it("maps four services into existing steps while removing secrets before storage", async () => {
