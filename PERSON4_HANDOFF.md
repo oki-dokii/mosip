@@ -1,9 +1,9 @@
 # Person 4 Workstream Handoff — Packaging, CI, and Release Verification
 
-**Branch**: `person4/packaging-ci`  
-**Base**: `origin/main` (`0e845dd`)  
-**Audience**: Integrator, Collaborators, Reviewers  
-**Status**: Completed and Verified; Ready for Integration  
+**Branch**: `person4/packaging-ci`\
+**Base**: `origin/main` (`0e845dd`)\
+**Audience**: Integrator, Collaborators, Reviewers\
+**Status**: Completed and Verified; Ready for Integration\
 
 ---
 

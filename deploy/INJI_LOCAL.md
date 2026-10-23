@@ -1,9 +1,9 @@
 # Pinned Local Inji Profile & Integration Provenance
 
-**Document**: `deploy/INJI_LOCAL.md`  
-**Date**: 2026-10-22  
-**Owner**: Person 4 (Packaging, CI, and Release Verification)  
-**Status**: Stage 1 & Stage 2 Documented / Blocked on Upstream MOSIP Infrastructure  
+**Document**: `deploy/INJI_LOCAL.md`\
+**Date**: 2026-10-22\
+**Owner**: Person 4 (Packaging, CI, and Release Verification)\
+**Status**: Stage 1 & Stage 2 Documented / Blocked on Upstream MOSIP Infrastructure\
 
 ---
 
@@ -121,10 +121,10 @@ When local or tunnelled endpoints are started, Person 2 consumes the following w
 | **Verify Target** | `http://localhost:8081` | `8081` | Not required | `VERIFY_BASE_URL` env var |
 
 ### Blocker Statement for Stage 2:
-> **STATUS**: **BLOCKED** (Missing OIDC Client Keystore & Test Account)  
+> **STATUS**: **BLOCKED** (Missing OIDC Client Keystore & Test Account)\
 > Stage 2 cannot be completed locally without:
 > 1. An OIDC client ID and corresponding private signing keystore registered in an active eSignet instance.
-> 2. A persistent test identity (individual ID / credentials) capable of completing the eSignet authentication challenge.  
+> 2. A persistent test identity (individual ID / credentials) capable of completing the eSignet authentication challenge.\
 > Containers alone do not remove this blocker. Person 2's assisted journey remains in fixture mode until a registered account/keystore is provisioned.
 
 ---

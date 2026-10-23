@@ -1,9 +1,9 @@
 # walt.id Issuer2 / Verifier2 vs. Inji Compatibility Comparison
 
-**Document**: `deploy/WALTID_COMPARISON.md`  
-**Date**: 2026-10-22  
-**Owner**: Person 4 (Packaging, CI, and Release Verification)  
-**Status**: Completed Documentation-Only Research  
+**Document**: `deploy/WALTID_COMPARISON.md`\
+**Date**: 2026-10-22\
+**Owner**: Person 4 (Packaging, CI, and Release Verification)\
+**Status**: Completed Documentation-Only Research\
 **Boundary**: No driver code created; no cross-vendor pass claimed.
 
 ---
