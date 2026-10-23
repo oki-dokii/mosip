@@ -85,8 +85,9 @@ export class InjiWebAssistedDriver implements WalletDriver {
     const fixture = request?.source === "fixture" && value.actorFrom === this.id && value.actorTo === actorTo;
     const browserSource = request?.source === "har_import" || request?.source === "live_bridge";
     const issuance = actorTo === "inji_certify" && ((value.actorTo === "certify" && request?.capture?.ruleId === "certify-credential") ||
-      (request?.source === "live_bridge" && value.actorTo === "mimoto" && request?.capture?.ruleId === "mimoto-download"));
-    const presentation = actorTo === "inji_verify" && value.actorTo === "verify" && request?.capture?.ruleId === "verify-submit";
+      (request?.source === "live_bridge" && value.actorTo === "mimoto" && ["mimoto-download", "mimoto-wallet-credential"].includes(String(request?.capture?.ruleId))));
+    const presentation = actorTo === "inji_verify" && ((value.actorTo === "verify" && request?.capture?.ruleId === "verify-submit") ||
+      (request?.source === "live_bridge" && value.actorTo === "mimoto" && request?.capture?.ruleId === "mimoto-wallet-presentation"));
     const capture = browserSource && value.actorFrom === "browser" && (issuance || presentation);
     return value.runId === this.options.runId && value.stepId === stepId && (fixture || capture) && value.method === "POST" && value.status >= 200 && value.status < 300;
   }
@@ -101,8 +102,8 @@ export class InjiWebAssistedDriver implements WalletDriver {
     if (observation.kind === "exchange") this.issued = { id: observation.exchange.id, seq: observation.exchange.seq };
     const route = observation.kind === "exchange" ? (observation.exchange.request as { capture?: { ruleId?: string } })?.capture?.ruleId : undefined;
     return { summary: { issuanceObserved: true, exchangeId: observation.kind === "exchange" ? observation.exchange.id : undefined,
-      issuanceTransport: route === "mimoto-download" ? "mimoto_browser_download" : "certify_browser_credential",
-      downstreamCertifyObserved: route !== "mimoto-download", storageConfirmed: false } };
+      issuanceTransport: route === "mimoto-wallet-credential" ? "mimoto_wallet_credential_post" : route === "mimoto-download" ? "mimoto_browser_download" : "certify_browser_credential",
+      downstreamCertifyObserved: !["mimoto-download", "mimoto-wallet-credential"].includes(String(route)), storageConfirmed: false } };
   }
   async store(context: DriverContext): Promise<DriverResult> {
     this.check(context);
@@ -117,6 +118,9 @@ export class InjiWebAssistedDriver implements WalletDriver {
     if (!this.stored || this.presented) throw new AssistedWaitError("observation_error", "presentation ordering");
     const observation = await this.wait("presentation", (value) => this.exchange(value, this.options.stepIds.PRESENT_SUBMIT, "inji_verify") && value.kind === "exchange" && value.exchange.seq > (this.issued?.seq ?? Infinity) && (this.options.presentationMatches?.(value.exchange) ?? true));
     this.presented = true;
-    return { summary: { presentationObserved: true, exchangeId: observation.kind === "exchange" ? observation.exchange.id : undefined, verifierResultPending: true } };
+    const route = observation.kind === "exchange" ? (observation.exchange.request as { capture?: { ruleId?: string } })?.capture?.ruleId : undefined;
+    return { summary: { presentationObserved: true, exchangeId: observation.kind === "exchange" ? observation.exchange.id : undefined,
+      presentationTransport: route === "mimoto-wallet-presentation" ? "mimoto_browser_presentation" : route === "verify-submit" ? "verify_browser_direct_post" : "fixture",
+      downstreamVerifyObserved: route === "verify-submit", verifierResultPending: true } };
   }
 }

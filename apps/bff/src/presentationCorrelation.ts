@@ -5,6 +5,16 @@ export function matchesPresentation(exchange: Exchange, expectedTag: string | un
   try { return request?.body?.state === expectedTag && new URL(exchange.url).origin === new URL(verifierBase).origin; } catch { return false; }
 }
 
+export function matchesMimotoPresentation(exchange: Exchange, expectedRequestUriTag: string | undefined, walletBase: string): boolean {
+  if (!expectedRequestUriTag || !/^\[REDACTED hmac:[a-f0-9]{16}\]$/.test(expectedRequestUriTag)) return false;
+  const request = exchange.request as { source?: unknown; capture?: { ruleId?: unknown; requestUriTag?: unknown; downstreamVerifyObserved?: unknown } } | null;
+  try {
+    return exchange.actorFrom === "browser" && exchange.actorTo === "mimoto" && request?.source === "live_bridge" &&
+      request.capture?.ruleId === "mimoto-wallet-presentation" && request.capture.requestUriTag === expectedRequestUriTag &&
+      request.capture.downstreamVerifyObserved === false && new URL(exchange.url).origin === new URL(walletBase).origin;
+  } catch { return false; }
+}
+
 // Deployment-specific Web launch route: never assume a native URI opens Inji Web.
 export function webPresentationLink(template: string | undefined, requestLink: string): string | null {
   if (!template || template.split("{request_uri}").length !== 2) return null;

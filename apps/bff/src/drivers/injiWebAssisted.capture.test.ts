@@ -5,7 +5,7 @@ import { prepareHarImport } from "../capture/har.js";
 import { collectLiveObservations } from "../capture/live-bridge-cli.js";
 import { prepareLiveObservation } from "../capture/live-bridge.js";
 import { createSteps } from "../orchestrator.js";
-import { matchesPresentation } from "../presentationCorrelation.js";
+import { matchesMimotoPresentation, matchesPresentation } from "../presentationCorrelation.js";
 import { maskedValue, runCorrelationKey } from "../redaction.js";
 import { MemoryRunRepository } from "../store.js";
 import { InjiWebAssistedDriver, type AssistedObservation } from "./injiWebAssisted.js";
@@ -77,3 +77,62 @@ it.each([
     }
   },
 );
+
+it("advances the hosted Mimoto path only for the matching verifier request URI", async () => {
+  const id = randomUUID();
+  const config: RunConfig = { issuer: "inji_certify", wallet: "inji_web_assisted", verifier: "inji_verify", format: "ldp_vc", flow: "cross_device", tamper: null, scenarioId: null };
+  const repository = new MemoryRunRepository();
+  const steps = createSteps(id);
+  await repository.create({ run: { id, parentRunId: null, config, status: "running", expectedOutcome: "valid", actualOutcome: null,
+    proofType: "Ed25519Signature2020", algorithm: "EdDSA", createdAt: new Date().toISOString(), startedAt: null, finishedAt: null }, steps, exchanges: [] });
+  const origins = new Map([["https://wallet.example", "mimoto"], ["https://verifier.example", "verify"]] as const);
+  const requestUri = "https://verifier.example/v1/verify/v2/vp-request/opaque-request-0123456789";
+  const expectedTag = maskedValue(requestUri, "$.request.capture.requestUri", runCorrelationKey(id));
+  const listeners = new Set<(observation: AssistedObservation) => void>();
+  let observations: AssistedObservation[] = [];
+  const abort = new AbortController();
+  const driver = new InjiWebAssistedDriver({ runId: id, stepIds: {
+    ISSUE_CREDENTIAL: steps.find(step => step.stepKey === "ISSUE_CREDENTIAL")!.id,
+    PRESENT_SUBMIT: steps.find(step => step.stepKey === "PRESENT_SUBMIT")!.id,
+  }, signal: abort.signal, source: {
+    snapshot: () => observations,
+    subscribe: listener => { listeners.add(listener); return () => listeners.delete(listener); },
+  }, presentationMatches: exchange => matchesMimotoPresentation(exchange, expectedTag, "https://wallet.example") });
+  const context = { config, state: new Map() };
+  let offset = 0;
+  const importHar = async (url: string, postData?: Record<string, string>) => {
+    const record = (await repository.get(id))!;
+    const har = { log: { entries: [{ startedDateTime: new Date(Date.now() + offset++).toISOString(), time: 1,
+      request: { method: "POST", url, headers: [], ...(postData ? { postData: { mimeType: "application/json", text: JSON.stringify(postData) } } : {}) },
+      response: { status: 200, headers: [], content: { mimeType: "application/json", text: "{}" } } }] } };
+    const collected = collectLiveObservations(har, origins);
+    expect(collected.observations).toHaveLength(1);
+    const exchange = prepareLiveObservation(collected.observations[0], record, origins);
+    await repository.addExchange(exchange);
+    observations = (await repository.get(id))!.exchanges.map(value => ({ kind: "exchange", exchange: value }));
+    for (const value of observations) for (const listener of [...listeners]) listener(value);
+    return exchange;
+  };
+  try {
+    const issuance = driver.requestCredential(context);
+    void issuance.catch(() => {});
+    const issued = await importHar("https://wallet.example/v1/mimoto/wallets/private-wallet-id/credentials", { credential: "CANARY_PRIVATE_VC" });
+    expect((await issuance).summary).toMatchObject({ issuanceTransport: "mimoto_wallet_credential_post", downstreamCertifyObserved: false });
+    observations.push({ kind: "storage_confirmation", runId: id, issuanceExchangeId: issued.id, source: "wallet_confirmation" });
+    await driver.store(context);
+    const presenting = driver.present(context);
+    void presenting.catch(() => {});
+    await importHar("https://verifier.example/v1/verify/vp-session-results");
+    await importHar("https://wallet.example/v1/mimoto/wallets/private-wallet-id/presentations", { requestUri: requestUri + "-wrong", vp_token: "CANARY_PRIVATE_VP" });
+    expect(listeners.size).toBe(1);
+    const matched = await importHar("https://wallet.example/v1/mimoto/wallets/private-wallet-id/presentations", { requestUri, vp_token: "CANARY_PRIVATE_VP" });
+    expect((await presenting).summary).toMatchObject({ exchangeId: matched.id, presentationTransport: "mimoto_browser_presentation",
+      downstreamVerifyObserved: false, verifierResultPending: true });
+    expect(listeners.size).toBe(0);
+    const saved = (await repository.get(id))!;
+    expect(saved.run.actualOutcome).toBeNull();
+    expect(JSON.stringify(saved)).not.toContain(requestUri);
+    expect(JSON.stringify(saved)).not.toContain("CANARY_PRIVATE");
+    expect(JSON.stringify(saved)).not.toContain("private-wallet-id");
+  } finally { abort.abort(); }
+});

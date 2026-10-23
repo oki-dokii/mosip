@@ -1,4 +1,4 @@
-import { matchesPresentation, webPresentationLink } from "./presentationCorrelation.js";
+import { matchesMimotoPresentation, matchesPresentation, webPresentationLink } from "./presentationCorrelation.js";
 import { maskedValue, runCorrelationKey } from "./redaction.js";
 import { withExchangeLock } from "./exchangeLock.js";
 import { randomUUID } from "node:crypto";
@@ -39,10 +39,12 @@ export class AssistedRuns {
       },
     };
     let presentationTag: string | undefined;
+    let presentationRequestUriTag: string | undefined;
     const drivers = mode === "fixture" ? createFixtureDrivers(config) : createCollabDrivers(config);
     drivers.wallet = new InjiWebAssistedDriver({ runId: id, stepIds: { ISSUE_CREDENTIAL: steps.find(s => s.stepKey === "ISSUE_CREDENTIAL")!.id, PRESENT_SUBMIT: steps.find(s => s.stepKey === "PRESENT_SUBMIT")!.id }, source, signal: session.abort.signal, timeoutMs, presentationMatches: exchange => {
       if (mode === "fixture") return true;
-      return matchesPresentation(exchange, presentationTag, process.env.VERIFY_BASE_URL ?? "");
+      return matchesPresentation(exchange, presentationTag, process.env.VERIFY_BASE_URL ?? "") ||
+        matchesMimotoPresentation(exchange, presentationRequestUriTag, process.env.ASSISTED_WALLET_URL ?? "");
     } });
     const createRequest = drivers.verifier.createRequest.bind(drivers.verifier);
     drivers.verifier.createRequest = async context => { const result = await createRequest(context);
@@ -55,6 +57,10 @@ export class AssistedRuns {
       const link = context.state.get("assisted.presentationUrl"); if (typeof link === "string" && mode === "live") {
         const launch = webPresentationLink(process.env.ASSISTED_PRESENTATION_URL_TEMPLATE, link);
         if (!launch) throw new AssistedWaitError("observation_error", "Web presentation launch unavailable");
+        const requestUri = new URL(launch).searchParams.get("request_uri");
+        if (!requestUri) throw new AssistedWaitError("observation_error", "Web presentation request reference unavailable");
+        presentationRequestUriTag = maskedValue(new URL(requestUri).href, "$.request.capture.requestUri", runCorrelationKey(id));
+        if (!presentationRequestUriTag.startsWith("[REDACTED hmac:")) throw new AssistedWaitError("observation_error", "Web presentation request correlation unavailable");
         session.actions.presentationUrl = launch;
       } return result; };
     void runDemo(id, this.io(), this.repository, 0, drivers, session.abort.signal, timeoutMs, () => { session.deadlineAt = Date.now() + timeoutMs; }).catch(() => {}).finally(() => { session.abort.abort(); this.sessions.delete(id); });

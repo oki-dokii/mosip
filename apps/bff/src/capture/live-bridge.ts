@@ -2,10 +2,11 @@ import { timingSafeEqual } from "node:crypto";
 import type { Exchange } from "@playground/shared";
 import { z } from "zod";
 import type { RunRecord } from "../store.js";
+import { maskedValue, runCorrelationKey } from "../redaction.js";
 import { captureOrigins, CaptureError, prepareHarImport, type CaptureOrigins } from "./har.js";
 import { tagCapture } from "./tagging.js";
 
-// A live collector sends only transport metadata and the verifier's opaque state.
+// A live collector sends only transport metadata and one opaque correlation scalar.
 // Never accept HAR, credentials, headers, response bodies or arbitrary payloads here.
 const observationSchema = z.object({
   observedAt: z.string().datetime({ offset: true }),
@@ -14,9 +15,11 @@ const observationSchema = z.object({
   url: z.string().url().max(2048),
   status: z.number().int().min(200).max(299),
   state: z.string().min(32).max(2048).optional(),
+  requestUri: z.string().url().min(32).max(2048).optional(),
+  requestUriSource: z.enum(["presentation_body", "presentation_query", "same_origin_referrer"]).optional(),
 }).strict();
 
-const liveRules = new Set(["certify-credential", "mimoto-download", "verify-submit"]);
+const liveRules = new Set(["certify-credential", "mimoto-download", "mimoto-wallet-credential", "mimoto-wallet-presentation", "verify-submit", "verify-session-request", "verify-session-results"]);
 
 export function validBridgeToken(provided: unknown, configured = process.env.CAPTURE_BRIDGE_TOKEN): boolean {
   if (typeof configured !== "string" || configured.length < 32 || typeof provided !== "string") return false;
@@ -38,7 +41,17 @@ export function prepareLiveObservation(input: unknown, record: RunRecord, origin
   if (!service) throw new CaptureError("CAPTURE_ORIGIN_NOT_ALLOWED", 422);
   const rule = tagCapture(service, observed.method, url.pathname);
   if (!rule || !liveRules.has(rule.id)) throw new CaptureError("CAPTURE_BRIDGE_UNTAGGED", 422);
-  if (rule.id === "verify-submit" ? !observed.state : observed.state !== undefined) throw new CaptureError("CAPTURE_BRIDGE_INVALID");
+  if (rule.id === "verify-submit" ? !observed.state || observed.requestUri !== undefined || observed.requestUriSource !== undefined
+    : observed.state !== undefined) throw new CaptureError("CAPTURE_BRIDGE_INVALID");
+  if (rule.id === "mimoto-wallet-presentation" ? !observed.requestUri || !observed.requestUriSource
+    : observed.requestUri !== undefined || observed.requestUriSource !== undefined) throw new CaptureError("CAPTURE_BRIDGE_INVALID");
+  let requestUri: URL | undefined;
+  if (observed.requestUri) {
+    try { requestUri = new URL(observed.requestUri); } catch { throw new CaptureError("CAPTURE_BRIDGE_INVALID"); }
+    if (requestUri.protocol !== "https:" || requestUri.username || requestUri.password || requestUri.hash || origins.get(requestUri.origin) !== "verify") {
+      throw new CaptureError("CAPTURE_BRIDGE_INVALID");
+    }
+  }
   const entry = {
     startedDateTime: observed.observedAt,
     time: observed.durationMs,
@@ -57,6 +70,10 @@ export function prepareLiveObservation(input: unknown, record: RunRecord, origin
   request.source = "live_bridge";
   response.source = "live_bridge";
   request.capture = { ...(request.capture as Record<string, unknown>), provenance: "operator_browser_har_metadata", payloadCaptured: false,
-    downstreamCertifyObserved: rule.id === "certify-credential" };
+    downstreamCertifyObserved: rule.id === "certify-credential",
+    downstreamVerifyObserved: rule.id === "verify-submit",
+    ...(requestUri ? { requestUriTag: maskedValue(requestUri.href, "$.request.capture.requestUri", runCorrelationKey(record.run.id)),
+      requestUriSource: observed.requestUriSource } : {}) };
+  if (requestUri) exchange.redactions.push("$.request.capture.requestUri");
   return exchange;
 }
