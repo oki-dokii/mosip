@@ -1,6 +1,6 @@
 # Interoperability findings and upstream issue candidates
 
-Updated 2026-10-22. This is a reproducible findings register, **not** a claim that upstream maintainers have confirmed defects. No upstream GitHub issue has been filed from this repository. Before filing, rerun against a pinned current release, check existing issues, and provide only sanitized evidence. The owning developer should file each accepted issue under their own GitHub identity and add its URL here.
+Reviewed 2026-10-23 against the merged `main` checkpoint `c4b00e3`. This is a reproducible findings register, **not** a claim that upstream maintainers have confirmed defects. No upstream GitHub issue has been filed from this repository. The review found no new version-pinned upstream defect to file: G-01 and G-04 still lack a reported Collab build/configuration, G-02 is a capability/account blocker, and G-03 is deployment-version discovery. Before filing, rerun against a pinned current release, check existing issues, and provide only sanitized evidence. The owning developer should file each accepted issue under their own GitHub identity and add its URL here.
 
 | ID | Observation | Evidence | Impact | Next check / likely upstream home | Status |
 |---|---|---|---|---|---|
@@ -15,7 +15,7 @@ For an upstream issue, include: exact product/build or `unreported`, environment
 
 On 2026-10-21, synthetic mock X.509 issuer → Reference Wallet → public Collab Inji Verify generated a **new** SD-JWT presentation with a nonce different from the signed request. Verify's direct-post endpoint returned HTTP 400 with `invalid_request`, and no result was available. The playground's status poll then marked the run `errored` rather than a matched `invalid`. See [sanitized report](submission/evidence/2026-10-21-nonce-mismatch.json), run `f8756c3d-1389-4196-85d8-8b1e2909cc1a`.
 
-This observation does **not** reproduce a claim that Verify accepts a wrong nonce. It also is not a genuine replay of a previously accepted byte-for-byte `vp_token`; our current `replay_nonce` fault is a nonce-mismatch probe. Before an upstream issue, implement that separate replay and pin the Verify build. The playground's early-rejection handling is a **local harness gap**: it should record a terminal verifier rejection without waiting for a submission status that will never appear.
+This observation does **not** reproduce a claim that Verify accepts a wrong nonce. It also is not a genuine replay of a previously accepted byte-for-byte `vp_token`; our current `replay_nonce` fault is a nonce-mismatch probe. Person 3 subsequently tested exact-byte replay in the local mock harness, but not against Collab. Before an upstream issue, repeat the replay against a version-pinned Verify build. The early-rejection handling was a **local harness gap at this historical run**; the merged BFF now records direct-post HTTP 400 without polling for a status that will never appear. The old report remains historical evidence and was not rewritten.
 
 ## Person 3 local protocol evidence — 22 October 2026
 

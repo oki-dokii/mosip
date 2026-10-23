@@ -69,6 +69,47 @@ jobs:
       - name: Secret audit
         run: pnpm audit:secrets
 
+  browser-smoke:
+    name: Browser smoke (Chromium / axe)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: verify
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install pinned pnpm
+        run: npm install -g pnpm@11.25.0
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build local service dependencies
+        run: pnpm --filter @playground/shared --filter @playground/mock-issuer --filter @playground/mock-verifier build
+
+      - name: Install Chromium
+        run: pnpm --filter @playground/web exec playwright install --with-deps chromium
+
+      - name: Run browser and accessibility checks
+        run: pnpm --filter @playground/web test:browser
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-evidence-${{ github.run_number }}
+          path: |
+            submission/evidence/person2/*.png
+            submission/evidence/person2/*accessibility.json
+            /tmp/person2-playwright-results
+          if-no-files-found: warn
+
   # ────────────────────────────────────────────────────────────────────────────
   # Job 2: compose-smoke — build the Compose stack, run e2e smoke, always clean up
   # ────────────────────────────────────────────────────────────────────────────
@@ -97,6 +138,7 @@ jobs:
           PLAYGROUND_DRIVER_MODE: collab
           MOCK_ISSUER_BASE_URL: http://mock-issuer:4101
           MOCK_VERIFIER_BASE_URL: http://mock-verifier:4102
+          MOCK_ISSUER_ENABLE_TEST_CASES: "true"
         run: |
           docker compose --profile core --profile mocks up --build -d --wait
 
@@ -111,6 +153,12 @@ jobs:
           E2E_STORAGE: postgres
           E2E_TIMEOUT_MS: "60000"
         run: node e2e/smoke.mjs
+
+      - name: Export six-case mock matrix
+        env:
+          MATRIX_ARTIFACT_PATH: artifacts/mock-matrix.json
+          MOCK_ISSUER_ENABLE_TEST_CASES: "true"
+        run: node scripts/compose-smoke.mjs
 
       - name: Upload mock matrix artifact
         if: always()
