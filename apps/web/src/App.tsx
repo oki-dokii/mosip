@@ -7,6 +7,7 @@ import { Inspector } from "./components/Inspector";
 import { RoleSelector } from "./components/RoleSelector";
 import { RunTimeline } from "./components/RunTimeline";
 import { RunArchive } from "./components/RunArchive";
+import { GapExplorer } from "./components/GapExplorer";
 import { SequenceView } from "./components/SequenceView";
 import { ConnectedAssisted } from "./components/ConnectedAssisted";
 import { CaptureCoverage } from "./components/CaptureCoverage";
@@ -245,6 +246,7 @@ export default function App() {
           )}
         </section>
         <RunArchive history={history} matrix={matrix} active={archiveView} onActiveChange={setArchiveView} onSelectRun={selectArchivedRun} />
+        <GapExplorer />
       </main>
     </div>
   );

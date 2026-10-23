@@ -6,6 +6,8 @@
 
 This is a **test playground**, not a production identity provider or wallet. It uses synthetic identities. Its automated wallet is the project's **Reference Wallet**. A Reference Wallet success does not prove that Inji Web or Inji Wallet mobile stored and presented the credential. The [evidence guide](SCENARIOS_AND_EVIDENCE.md) and [submission checklist](submission/READINESS.md) make that distinction explicit.
 
+The web app includes an evidence-linked gap explorer. The [feature parity roadmap](FEATURE_PARITY_ROADMAP.md) identifies meaningful additions to pursue after the current validated flows, with explicit proof required for every live claim.
+
 ## Contents
 
 - [Problem and solution](#problem-and-solution)
