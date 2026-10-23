@@ -9,6 +9,8 @@ This is a **test playground**, not a production identity provider or wallet. It 
 The web app includes an evidence-linked gap explorer. The [feature parity roadmap](FEATURE_PARITY_ROADMAP.md) identifies meaningful additions to pursue after the current validated flows, with explicit proof required for every live claim.
 For a single-developer finish, use the [ordered remaining-work handoff](SINGLE_OWNER_HANDOFF.md).
 
+Latest mobile checkpoint (23 October): Android Inji Wallet `1.0.0-alpha.1` reached eSignet but client validation failed before issuance. A2 remains blocked. See [the mobile evidence](submission/evidence/person3-a2-2026-10-23/README.md) and [Person 4 setup prerequisites](PERSON4_A2_PREREQUISITES.md).
+
 ## Contents
 
 - [Problem and solution](#problem-and-solution)
