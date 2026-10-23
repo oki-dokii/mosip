@@ -1,0 +1,95 @@
+name: Nightly mock regression
+
+# ──────────────────────────────────────────────────────────────────────────────
+# This is a MOCK-MODE regression check only.
+# It exercises the packaged Compose stack with synthetic mock services.
+# It does NOT start a local Inji stack.
+# It does NOT run Collab (live Inji Certify / Verify / Mimoto) flows.
+# A Collab nightly run requires the public test environment and secrets
+# and is a documented follow-up outside the scope of this task.
+# ──────────────────────────────────────────────────────────────────────────────
+on:
+  schedule:
+    # 02:00 UTC every day
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-mock-regression
+  cancel-in-progress: false
+
+jobs:
+
+  nightly-mock-smoke:
+    name: Nightly mock smoke (mock/fixture only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set OCI build labels
+        run: |
+          echo "GIT_REVISION=${{ github.sha }}" >> "$GITHUB_ENV"
+          echo "BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+
+      - name: Build and start Compose stack (core + mocks)
+        env:
+          PLAYGROUND_DRIVER_MODE: collab
+          MOCK_ISSUER_BASE_URL: http://mock-issuer:4101
+          MOCK_VERIFIER_BASE_URL: http://mock-verifier:4102
+          MOCK_ISSUER_ENABLE_TEST_CASES: "true"
+        run: |
+          docker compose --profile core --profile mocks up --build -d --wait
+
+      - name: Show container status
+        run: docker compose --profile core --profile mocks ps
+
+      - name: Run e2e smoke
+        env:
+          E2E_BFF_URL: http://127.0.0.1:4000
+          E2E_WEB_URL: http://127.0.0.1:5174
+          E2E_DRIVER_MODE: collab
+          E2E_STORAGE: postgres
+          E2E_TIMEOUT_MS: "60000"
+        run: node e2e/smoke.mjs
+
+      - name: Export six-case mock matrix
+        env:
+          MATRIX_ARTIFACT_PATH: artifacts/mock-matrix.json
+          MOCK_ISSUER_ENABLE_TEST_CASES: "true"
+        run: node scripts/compose-smoke.mjs
+
+      - name: Upload mock matrix artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-mock-matrix-${{ github.run_number }}
+          path: artifacts/mock-matrix.json
+          if-no-files-found: ignore
+
+      - name: Collect container logs (always)
+        if: always()
+        run: |
+          docker compose --profile core --profile mocks logs --no-color --tail=300 \
+            > /tmp/nightly-logs.txt 2>&1 || true
+
+      - name: Upload container logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-compose-logs-${{ github.run_number }}
+          path: /tmp/nightly-logs.txt
+
+      - name: Stop and remove containers and volumes (always)
+        if: always()
+        run: docker compose --profile core --profile mocks down -v

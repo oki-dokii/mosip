@@ -35,3 +35,15 @@ export function renderMatrixMarkdown(runs: RunSummary[]) {
   const rows = latestMatrix(runs).map((run) => `| ${run.config.issuer} | ${run.config.wallet} | ${run.config.verifier} | ${run.config.format} | ${run.config.tamper ?? "none"} | ${run.status} | ${run.expectedOutcome} | ${run.actualOutcome ?? "—"} | ${evidenceTier(run)} | \`${run.id}\` | ${run.config.scenarioId ?? "custom"} | ${run.protocolProfile ?? "unreported"} | ${run.issuerRepresentation ?? "unreported"} | ${run.evaluation?.verdict ?? "not_recorded"} | ${run.evaluation?.expected.code ?? ""} | ${run.evaluation?.observed.code ?? ""} |`);
   return ["# Interoperability matrix", "", header, separator, ...rows, ""].join("\n");
 }
+
+// Explicit supported positive-control grid; the browser never invents absent cells.
+export function matrixCells(runs: RunSummary[]) {
+  const supported = [
+    ...(["inji_certify", "mock_issuer"] as const).flatMap(issuer => (["inji_verify", "mock_verifier"] as const).flatMap(verifier => (["ldp_vc", "vc_sd_jwt"] as const).filter(format => format === "vc_sd_jwt" || (issuer === "inji_certify" && verifier === "inji_verify")).map(format => ({ issuer, verifier, wallet: "reference_wallet" as const, format })))),
+    { issuer: "inji_certify" as const, verifier: "inji_verify" as const, wallet: "inji_web_assisted" as const, format: "ldp_vc" as const },
+  ];
+  return supported.map(config => {
+    const run = runs.filter(run => !run.config.tamper && ["passed", "failed", "errored"].includes(run.status) && Object.entries(config).every(([key, value]) => run.config[key as keyof typeof config] === value)).sort((a,b) => b.createdAt.localeCompare(a.createdAt))[0];
+    return { config, status: run?.status ?? "not_tested", testedAt: run?.finishedAt ?? null, evidence: run ? evidenceTier(run) : "unverified", runId: run?.id ?? null };
+  });
+}

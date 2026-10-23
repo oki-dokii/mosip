@@ -9,6 +9,7 @@ export interface DriverResult {
 
 export interface DriverContext {
   readonly config: RunConfig;
+  readonly signal?: AbortSignal;
   readonly state: Map<string, unknown>;
 }
 

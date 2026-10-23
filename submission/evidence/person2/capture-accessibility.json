@@ -1,0 +1,21 @@
+{
+  "scope": "Capture coverage and public evidence including contrast",
+  "violations": [],
+  "passes": [
+    "aria-allowed-attr",
+    "aria-conditional-attr",
+    "aria-deprecated-role",
+    "aria-prohibited-attr",
+    "aria-required-attr",
+    "aria-roles",
+    "aria-valid-attr-value",
+    "aria-valid-attr",
+    "button-name",
+    "color-contrast",
+    "form-field-multiple-labels",
+    "label",
+    "list",
+    "listitem",
+    "nested-interactive"
+  ]
+}

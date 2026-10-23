@@ -139,14 +139,14 @@ function deterministicId(publicIdentity: unknown[]) {
   return `${digest.slice(0, 8)}-${digest.slice(8, 12)}-4${digest.slice(13, 16)}-a${digest.slice(17, 20)}-${digest.slice(20, 32)}`;
 }
 
-export function prepareHarImport(input: unknown, record: RunRecord, origins: CaptureOrigins = captureOrigins()) {
+export function prepareHarImport(input: unknown, record: RunRecord, origins: CaptureOrigins = captureOrigins(), allowActive = false) {
   if (!input || typeof input !== "object") throw new CaptureError("CAPTURE_INVALID_HAR");
   const wrapper = input as Record<string, unknown>;
   if (wrapper.runId !== record.run.id) throw new CaptureError("CAPTURE_RUN_MISMATCH", 409);
   const har = wrapper.har as Record<string, unknown> | undefined;
   const log = har?.log as Record<string, unknown> | undefined;
   if (!Array.isArray(log?.entries) || log.entries.length > 100) throw new CaptureError("CAPTURE_INVALID_HAR");
-  if (["pending", "running"].includes(record.run.status)) throw new CaptureError("CAPTURE_RUN_ACTIVE", 409);
+  if (!allowActive && ["pending", "running"].includes(record.run.status)) throw new CaptureError("CAPTURE_RUN_ACTIVE", 409);
   const stepByKey = new Map(record.steps.map((step) => [step.stepKey, step]));
   const existing = new Set(record.exchanges.map((exchange) => exchange.id));
   let seq = Math.max(0, ...record.exchanges.map((exchange) => exchange.seq));
