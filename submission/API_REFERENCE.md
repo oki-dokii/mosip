@@ -12,6 +12,7 @@ Local base URL: `http://localhost:4000/api/v1`. All routes below are implemented
 | GET | `/assisted/runs/:id` | — | `{ run, steps, actions, deadlineAt }`; action links are transient, not stored as exchanges |
 | POST | `/assisted/runs/:id/cancel` | — | `202` with assisted status, or `404` |
 | POST | `/assisted/runs/:id/observations` | `{ "kind": "issuance" \| "storage" \| "presentation" }` | `202 { accepted: true }`; `409` inactive or wrong stage. Issuance/presentation injection is fixture-only; live storage is a human confirmation, not independent proof. |
+| POST | `/assisted/runs/:id/capture/observation` | Local collector only: exact `POST` URL without query/fragment, 2xx status, timestamp, duration and optional raw `state` for Verify direct-post. Requires `x-capture-bridge-token` and an active live run. No HAR, headers, credentials or response bodies accepted. | `202 { accepted, duplicate, exchangeId, ruleId }`; stable codes-only error on rejection. Raw `state` is HMAC-tagged inside the BFF before storage. |
 | POST | `/runs` | `RunConfig` JSON | `202 { runId }`; `400` invalid config; `422` unavailable/edited scenario or unsupported combination |
 | GET | `/runs` | Optional issuer, wallet, verifier, format, status, tamper, issuerVersion, verifierVersion query filters | `{ items: RunSummary[] }` |
 | GET | `/runs/:id` | — | `RunSummary` or `404` |

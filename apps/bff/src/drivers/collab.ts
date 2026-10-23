@@ -554,12 +554,23 @@ class CollabVerifierDriver implements VerifierDriver {
   async createRequest(context: DriverContext): Promise<DriverResult> {
     const config = await loadConfig(context);
     const url = `${config.verifyBaseUrl}/v2/vp-request`;
+    const defaultLdpTypes = ["https://www.w3.org/ns/credentials#VerifiableCredential", "https://inji.github.io/inji-config/contexts/farmer-context.json#FarmerCredential"];
+    let ldpTypes = defaultLdpTypes;
+    if (context.config.wallet === "inji_web_assisted" && process.env.VERIFY_LDP_TYPE_VALUES_JSON) {
+      let configured: unknown;
+      try { configured = JSON.parse(process.env.VERIFY_LDP_TYPE_VALUES_JSON); } catch { throw new Error("VERIFY_LDP_TYPE_VALUES_INVALID"); }
+      if (!Array.isArray(configured) || configured.length < 1 || configured.length > 8 ||
+        !configured.every((value) => typeof value === "string" && value.length > 0 && value.length <= 512 && /^https:\/\//.test(value))) {
+        throw new Error("VERIFY_LDP_TYPE_VALUES_INVALID");
+      }
+      ldpTypes = configured;
+    }
     const body = {
       clientId: process.env.VERIFY_CLIENT_ID ?? "decentralized_identifier:did:web:injiverify.collab.mosip.net:v1:verify",
       nonce: `playground-${config.credentialFormat === "dc+sd-jwt" ? "sdjwt" : "jsonld"}-${Date.now()}`,
       dcqlQuery: { credentials: [{ id: "credential", format: config.credentialFormat, meta: config.credentialFormat === "dc+sd-jwt"
         ? { vct_values: [config.credentialConfigurationId] }
-        : { type_values: [["https://www.w3.org/ns/credentials#VerifiableCredential", "https://inji.github.io/inji-config/contexts/farmer-context.json#FarmerCredential"]] } }] },
+        : { type_values: [ldpTypes] } }] },
       responseCodeValidationRequired: false,
     };
     const created = await request(context, url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });

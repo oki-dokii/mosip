@@ -110,6 +110,11 @@ describe("Inji Web assisted wallet driver", () => {
     emit({ ...presentation, actorFrom: "browser", actorTo: "verify", request: { source: "har_import", capture: { ruleId: "verify-submit" } } });
     expect((await presenting).summary).toMatchObject({ presentationObserved: true, verifierResultPending: true });
   });
+  it("accepts a live Mimoto browser download as transport evidence with downstream Certify unobserved", async () => {
+    const pending = driver.requestCredential(context());
+    emit({ ...issue, actorFrom: "browser", actorTo: "mimoto", request: { source: "live_bridge", capture: { ruleId: "mimoto-download" } } });
+    expect((await pending).summary).toMatchObject({ issuanceObserved: true, issuanceTransport: "mimoto_browser_download", downstreamCertifyObserved: false });
+  });
 });
 
 it("does not advance presentation for unrelated same-run traffic", async () => {

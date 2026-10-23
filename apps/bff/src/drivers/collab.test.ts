@@ -42,9 +42,24 @@ afterEach(() => {
   vi.unstubAllGlobals();
   delete process.env.VERIFY_POLL_INTERVAL_MS;
   delete process.env.VERIFY_POLL_TIMEOUT_MS;
+  delete process.env.VERIFY_LDP_TYPE_VALUES_JSON;
 });
 
 describe("Collab verifier status polling", () => {
+  it("uses configured public JSON-LD types for an assisted Web request", async () => {
+    process.env.VERIFY_LDP_TYPE_VALUES_JSON = JSON.stringify(["https://www.w3.org/ns/credentials#VerifiableCredential", "https://example.org/land#RegistrationReceipt"]);
+    const run = context(); run.config.wallet = "inji_web_assisted";
+    const claims = Buffer.from(JSON.stringify({ state: "synthetic-state-0123456789abcdef0123456789", response_mode: "direct_post" })).toString("base64url");
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ requestUri: "https://verify.example/request/one", transactionId: "transaction", requestId: "request" }))
+      .mockResolvedValueOnce(new Response(`e30.${claims}.signature`, { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await createCollabDrivers().verifier.createRequest(run);
+    const firstCall = fetchMock.mock.calls[0] as unknown as [string, { body: string }];
+    const sent = JSON.parse(firstCall[1].body);
+    expect(sent.dcqlQuery.credentials[0].meta.type_values).toEqual([["https://www.w3.org/ns/credentials#VerifiableCredential", "https://example.org/land#RegistrationReceipt"]]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("finishes an HTTP 400 direct-post rejection without polling or requesting a missing result", async () => {
     const run = context();
     run.config.issuer = "mock_issuer";
