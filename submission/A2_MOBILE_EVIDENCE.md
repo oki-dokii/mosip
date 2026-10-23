@@ -1,6 +1,26 @@
 # A2 mobile-wallet investigation — Person 3
 
-Updated: 23 October 2026. Status: **controlled retry ready; real mobile acceptance still unobserved**. The prior Collab attempt remains blocked at client validation. A real Android wallet has now scanned an SD-JWT authorization-code offer and reached eSignet, which displayed “Client ID is invalid. Please try again.” No credential issuance, storage, presentation or final Verify acceptance has been observed. Local mock protocol evidence does not close A2.
+Updated: 23 October 2026. Status: **passed for the recorded synthetic Android SD-JWT journey**. Official local Inji Certify issued into the actual Inji Wallet, the user confirmed the card remained after closing/reopening, that wallet presented to Collab Inji Verify, and the correlated terminal result was `valid` with credential and holder proof flags true. Installed-binary/signing attestation and the running Collab Verify version remain unverified; this is an observed functional pass, not a general conformance or production-trust claim.
+
+## Successful Android journey — 23 October 2026
+
+Attempt `A2-20261023-1848` used Nothing Phone (2a), Android 16 (user reported), with wallet About version `1.0.0-alpha.1`. The Mac APK copy's hash/package/version details are recorded separately from installed-binary attestation. There is no BFF run ID for this manual attempt.
+
+| Checkpoint | Observed result / evidence |
+| --- | --- |
+| Official Certify issuance into actual wallet | Download-success banner and Playground SD-JWT Identity in card list, device display 18:40 |
+| Wallet persistence | User explicitly confirmed: Yes, I reopened it and the card remained |
+| Same-wallet matching/consent | Requested Cards screen identifies the Collab DID as Trusted and offers the stored credential, device display 18:48 |
+| Presentation | Actual wallet reports ID shared successfully, device display 18:48 |
+| Correlated Verify result | HTTP 200, `valid`, `credentialProofValid:true`, `holderProofValid:true`, read through the helper's existing manually created presentation transaction |
+
+[Mobile evidence bundle](evidence/person3-a2-mobile-2026-10-23/README.md) contains four reviewed screenshots, artifact hashes, [the full manual manifest](evidence/person3-a2-mobile-2026-10-23/attempt.json) and [the safe correlated result](evidence/person3-a2-mobile-2026-10-23/verifier-result.json). The automated control is separate; it did not generate the phone request/result used here.
+
+The intermediate invalid-link screen was followed by a successful fresh-request scan through Share. The earlier scanner mode/URI was not captured, so the cause was not independently isolated. The wallet success screen's Unknown Verifier display label is preserved as observed; the consent DID and correlated result are recorded independently. The request selected the SD-JWT type, without isolating native selective-claim policy. No raw credential, presentation, key, offer code, complete session URL or personal claim is exported.
+
+The issuer is the digest-pinned local official Certify runtime described in [the runbook](../deploy/MOBILE_INJI.md), using its own pre-authorized token service and generated PKCS12 keys; the verifier is public Collab Inji Verify with release `unreported`. This is a successful hybrid deployment. The original Collab authorization-code rejection and pre-authorized HTTP401 remain historical findings, not fixes established by this pass.
+
+## Earlier Collab attempt (retained history)
 
 Evidence bundle: [reviewed screenshots, public offer and manifest](evidence/person3-a2-2026-10-23/README.md). Setup owner handoff: [Person 4 prerequisites before the next phone attempt](../PERSON4_A2_PREREQUISITES.md).
 
@@ -31,7 +51,7 @@ The existing Collab pre-authorized credential-issuance HTTP 401 is separate hist
 
 ## Controlled setup implementation — 23 October 2026
 
-A new [official local-Certify route](../deploy/MOBILE_INJI.md) is implemented on main. It uses generated runtime keys and Certify's own pre-authorized token service, avoiding the unsupported Collab authorization-code client for the next attempt. Its automated Reference Wallet control is separate evidence and cannot establish native wallet storage or presentation. The actual phone must now execute a fresh offer and presentation through the local console; the failed Collab attempt above remains historical and unpassed.
+A new [official local-Certify route](../deploy/MOBILE_INJI.md) is implemented on main. It uses generated runtime keys and Certify's own pre-authorized token service, avoiding the unsupported Collab authorization-code client for the next attempt. Its automated Reference Wallet control is separate evidence and cannot establish native wallet storage or presentation. The actual phone subsequently completed that fresh offer and presentation, as recorded in the successful journey above; the failed Collab attempt remains historical and unpassed.
 
 [Controlled setup evidence](evidence/2026-10-23-person4-mobile-control.json) records official Certify issuance, independent issuer-signature/holder-binding checks and a fresh Collab Verify `valid` result with credential and holder proof checks true. This is explicitly Reference Wallet control evidence. The Mac APK copy was hashed and its manifest parsed; its SHA-256/package/version fields are in that artifact, without claiming it attests the installed binary.
 

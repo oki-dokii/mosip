@@ -11,7 +11,7 @@ For a single-developer finish, use the [ordered remaining-work handoff](SINGLE_O
 
 For the implemented official local-Certify mobile setup, use `pnpm mobile:inji` and follow [the mobile runbook](deploy/MOBILE_INJI.md). Its official-Certify → Reference Wallet → Collab Verify control passed; it does not establish phone acceptance.
 
-Latest mobile checkpoint (23 October): Android Inji Wallet `1.0.0-alpha.1` reached eSignet but client validation failed before issuance. A2 remains blocked. See [the mobile evidence](submission/evidence/person3-a2-2026-10-23/README.md) and [Person 4 setup prerequisites](PERSON4_A2_PREREQUISITES.md).
+Latest mobile checkpoint (23 October): **A2 passed for the recorded hybrid profile**—official local Certify → actual Android Inji Wallet → Collab Verify, with user-confirmed reopen persistence and a correlated `valid` result. See [the mobile evidence and limitations](submission/evidence/person3-a2-mobile-2026-10-23/README.md). Installed-binary attestation and the running Collab release remain unverified; A1 is still separate.
 
 ## Contents
 
@@ -67,7 +67,8 @@ The question for every run is **which exact combination was tested, what happene
 | X.509 mock issuer | Reference Wallet | Inji Verify | SD-JWT | Prior Collab run returned `valid`; the self-signed test certificate does not prove root trust. |
 | Inji Certify | Reference Wallet | Standalone mock verifier | SD-JWT | Positive and bad-signature paths recorded. |
 | Standalone mock issuer | Reference Wallet | Standalone mock verifier | SD-JWT | Cross-service mock path recorded. |
-| Inji Certify | Inji Web or Inji Wallet mobile | Inji Verify | JSON-LD, SD-JWT | **Not yet accepted:** real-wallet store-and-present evidence is missing. |
+| Official local Inji Certify | Actual Inji Wallet Android | Collab Inji Verify | SD-JWT | **Observed A2 pass:** stored card, user-confirmed reopen persistence, same-wallet share and correlated valid proof result; [evidence/limits](submission/evidence/person3-a2-mobile-2026-10-23/README.md). |
+| Inji Certify | Inji Web or suitable Inji mobile wallet | Inji Verify | JSON-LD | **A1 not yet accepted:** its real-wallet store-and-present evidence is missing. |
 
 The detailed recorded outcomes and limitations are in [Phase 3](PHASE3.md). These are prior results, not a fresh live run performed by reading this README. A new mobile app is **not required**; real-wallet validation should use an existing, pinned Inji Wallet build.
 
@@ -194,7 +195,7 @@ Open **http://localhost:5174**. The command builds and health-checks the service
 | Fixture | Default or `PLAYGROUND_DRIVER_MODE=fixture` | None | Product UI and run lifecycle work. |
 | Collab with Reference Wallet | `PLAYGROUND_DRIVER_MODE=collab` | Public test environment config and reachable Collab services | Exact live role combination shown in report. |
 | Collab with separate mock roles | Collab mode plus `MOCK_ISSUER_BASE_URL` and/or `MOCK_VERIFIER_BASE_URL` | Running local mock services; Certify tests also need its test config | Cross-service mock interoperability for supported SD-JWT cases. |
-| Assisted real Inji wallet | Not a completed automated mode | Persistent test wallet, supported version, observed presentation | Pending A1/A2 evidence. |
+| Assisted real Inji wallet | Not a completed automated mode | Persistent test wallet, supported version, observed presentation | A2 has separate manual mobile evidence; A1 remains pending. |
 
 For live Certify → Reference Wallet → Verify, obtain the **official public test-client environment** described in [Phase 0–1](PHASE0_1.md), keep it outside the repository, and set:
 
@@ -310,7 +311,7 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 | Gate | Needed evidence | Why it matters |
 |---|---|---|
 | A1: real-wallet JSON-LD | A dedicated logged-in Inji Web or suitable mobile wallet stores and presents to Inji Verify; capture the result. | A Reference Wallet pass does not establish Inji-wallet interoperability. |
-| A2: real-wallet SD-JWT | Test a pinned capable Inji Wallet mobile build and record issuance, holder binding, presentation, and Verify outcome. | The tested Inji Web path does not complete SD-JWT presentation. |
+| A2: real-wallet SD-JWT | Recorded functional pass with actual Android wallet, reopened storage and valid credential/holder proof result. | Hybrid profile only; installed-binary attestation and Collab release remain unverified. |
 | A6: packaging | Playground core + mocks now build, pass health checks, run migrations, and complete a mock smoke through `pnpm demo:docker`. | A separate clean-machine rehearsal and local Inji stack remain open. |
 | Capture and browser QA | Live assisted-wallet observation without rewriting signed messages. | Three synthetic browser/axe checks pass; they cannot prove the real wallet's browser/native boundaries. |
 

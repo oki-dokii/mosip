@@ -3,7 +3,7 @@
   "updated": "2026-10-23",
   "source": "GAPS.md",
   "owner": "Person 3",
-  "scope": "Completed local protocol implementation, public Collab investigations and a real Android partial attempt blocked at authorization; A2 remains unpassed.",
+  "scope": "Completed protocol implementation, Collab investigations and a recorded actual Android A2 functional pass for the official-local-Certify/Collab-Verify hybrid profile; original failures and attestation limits retained.",
   "findings": [
     {
       "id": "G-01",
@@ -85,7 +85,7 @@
     "correctRejections": 11,
     "correctAcceptances": 1,
     "scope": "Standalone synthetic twelve-case suite plus BFF integration for the five existing fault kinds and valid control; both in-process and external HTTP paths tested.",
-    "a2Status": "awaiting_controlled_mobile_retry",
+    "a2Status": "passed_observed_hybrid_profile",
     "mobileEvidence": "submission/A2_MOBILE_EVIDENCE.md",
     "upstreamClaim": "Fresh Collab observations are recorded separately; no new upstream defect claimed or issue filed.",
     "bffArtifact": "spikes/fixtures/wallet-interop-bff-2026-10-22.json",
@@ -113,13 +113,27 @@
     "upstreamDefectConfirmed": false
   },
   "mobileSetup": {
-    "status": "reference_control_valid_phone_unobserved",
+    "status": "reference_control_valid_and_actual_mobile_chain_passed",
     "command": "pnpm mobile:inji",
     "runbook": "deploy/MOBILE_INJI.md",
     "evidence": "submission/evidence/2026-10-23-person4-mobile-control.json",
     "issuer": "official_local_inji_certify",
     "verifier": "collab_inji_verify",
     "collabClientRegistrationChanged": false,
-    "a2Passed": false
+    "a2Passed": true
+  },
+  "mobileAcceptance": {
+    "attemptId": "A2-20261023-1848",
+    "status": "passed",
+    "profile": "official_local_certify_actual_android_wallet_collab_verify_sdjwt",
+    "evidence": "submission/evidence/person3-a2-mobile-2026-10-23/attempt.json",
+    "result": "submission/evidence/person3-a2-mobile-2026-10-23/verifier-result.json",
+    "storageReopen": "user_confirmed",
+    "verifierOutcome": "valid",
+    "credentialProofValid": true,
+    "holderProofValid": true,
+    "installedBinaryAttested": false,
+    "verifierVersion": "unreported",
+    "rawNativeTrafficCaptured": false
   }
 }

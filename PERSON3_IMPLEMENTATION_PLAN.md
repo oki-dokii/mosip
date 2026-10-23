@@ -2,7 +2,7 @@
 
 Revision 2 · 22 October 2026 · branch `person3/protocol_correctness`.
 
-Implemented on `person3/protocol_correctness`, including the BFF/shared/report/matrix integration authorized by the user. The standalone twelve-case suite and both in-process/HTTP BFF paths pass. See `PERSON3_PROTOCOL_HANDOFF.md` for final commands, evidence and limits. A real Android attempt on 23 October reached eSignet but was blocked at client validation; `submission/A2_MOBILE_EVIDENCE.md` records the attempt and `PERSON4_A2_PREREQUISITES.md` lists the setup needed before retrying.
+Implemented on `person3/protocol_correctness`, including the BFF/shared/report/matrix integration authorized by the user. The standalone twelve-case suite and both in-process/HTTP BFF paths pass. See `PERSON3_PROTOCOL_HANDOFF.md` for final commands, evidence and limits. A later real Android attempt on 23 October completed A2 using official local Certify and Collab Verify. `submission/A2_MOBILE_EVIDENCE.md` records both the earlier blocked Collab attempt and the successful same-wallet chain with scope/attestation limits.
 
 ## 1. Outcomes and scope
 
@@ -358,4 +358,4 @@ Final acceptance checklist:
 - [x] A2 has same-wallet evidence or an exact unresolved prerequisite; no synthetic pass substitutes for it.
 - [x] Final source, commands, versions, evidence and limitations are reviewable by another teammate.
 
-Final execution status: non-wallet implementation and investigations complete. Mobile execution remains blocked before execution, as documented; the A2 checklist item above is satisfied only by the exact-prerequisite report, not an acceptance pass. Current validation: `spikes/fixtures/wallet-interop-integration-checks-2026-10-22.json`; integration: `PERSON3_PROTOCOL_HANDOFF.md`. Historical review findings and the original delivery sequence above are retained as design history, not current outstanding tasks.
+Final execution status: non-wallet implementation and investigations complete; the recorded A2 mobile chain also passed on 23 October. Evidence includes native wallet screenshots, user-confirmed reopen persistence and a correlated valid credential/holder proof result. Installed-binary attestation and Collab release attribution remain unverified. Current validation: `spikes/fixtures/wallet-interop-integration-checks-2026-10-22.json`; integration: `PERSON3_PROTOCOL_HANDOFF.md`. Historical review findings and the original delivery sequence above are retained as design history, not current outstanding tasks.

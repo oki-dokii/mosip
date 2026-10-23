@@ -40,3 +40,7 @@ Inji Wallet displayed version `1.0.0-alpha.1` and scanned a public authorization
 ## Controlled mobile retry setup — 23 October 2026
 
 [Official local Certify control evidence](submission/evidence/2026-10-23-person4-mobile-control.json) now records a successful pre-authorized issuance with independently checked issuer signature and holder binding, followed by Collab Verify `valid`. The [mobile launcher/runbook](deploy/MOBILE_INJI.md) provides a fresh offer/request console for the actual phone. This does not fix the original Collab client registration or establish a mobile pass; A2 is awaiting that separate observed retry.
+
+## Actual Android A2 acceptance — 23 October 2026
+
+[The successful mobile bundle](submission/evidence/person3-a2-mobile-2026-10-23/README.md) now records the real Inji Wallet receiving/storing the local official Certify SD-JWT, user-confirmed close/reopen persistence, consent/share screenshots and the correlated Verify `valid` response with both proof flags true. A2 passes for this observed hybrid configuration. This supersedes the awaiting-phone status above without erasing the earlier Collab client failure, intermediate scanner error, unreported Verify release or installed-binary attestation limit. Native selective-claim policy and trust-chain conformance were not isolated by this case; no new upstream defect is claimed.

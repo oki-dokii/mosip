@@ -25,3 +25,7 @@ This pair proves the tested mock issuer / Reference Wallet / Inji Verify behavio
 [October 21 run shape comparison](2026-10-22-capture-shape-diff.json) was generated from committed reports with `scripts/evidence-tools.mjs`. It shows differing result/submission shapes between the valid and bad-signature scenarios. It is not a new Collab run or an upstream regression claim. See [CAPTURE.md](../../CAPTURE.md) for commands, comparison limits and private issue-draft export.
 
 [Reviewer follow-up check record](2026-10-22-reviewer-followup-checks.json) covers the additional redaction and projection tests, split filter, documentation cleanup, and remaining UI handoff. It is synthetic local proof, not real-wallet acceptance evidence.
+
+## Actual Android A2 acceptance — 23 October 2026
+
+[Manual mobile bundle](person3-a2-mobile-2026-10-23/README.md) records official local Certify issuance into actual Inji Wallet, user-confirmed persistence after reopening, native consent/share screens and the correlated valid Inji Verify result with both proof flags true. This is distinct from [the automated setup control](2026-10-23-person4-mobile-control.json) and [the earlier blocked Collab attempt](person3-a2-2026-10-23/README.md). The bundle documents APK/deployment attestation and native-observation limits.

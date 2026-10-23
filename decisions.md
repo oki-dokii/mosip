@@ -54,6 +54,15 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-043 · Record manual Android acceptance separately from automated run records
+- **Date:** 2026-10-23   **Status:** Accepted and observed
+- **Context:** The actual Android wallet issued/stored/presented the synthetic SD-JWT and the correlated Verify result was valid; the user also confirmed persistence after reopening. This evidence does not originate from a BFF wallet driver.
+- **Decision:** Save a manual acceptance sidecar with reviewed screenshots, artifact hashes, user-confirmed persistence, exact source/deployment provenance and the correlated bounded verifier result. Project it separately in the aggregate report, preserving the earlier failed attempts and automated controls.
+- **Alternatives considered:** Fabricate a BFF run/matrix row (false provenance); infer acceptance from wallet share success alone (does not establish Verify validity); relabel the automated control as mobile (does not establish actual wallet use).
+- **Why this one:** The recorded chain distinguishes independently read server proof flags from screenshots and user confirmations, while keeping raw credentials/session values out of exports.
+- **Trade-off accepted:** Manual correlation/storage confirmation, no installed-binary/signing attestation, unreported Collab release and no isolated native claim-policy or production trust-chain claim.
+- **Affects:** A2 report/acceptance gates, manual mobile evidence, aggregate evidence projection, Person 3/4 handoffs and readiness documentation.
+
 ### D-042 · Controlled official Certify mobile issuance without Collab client administration
 - **Date:** 2026-10-23   **Status:** Implemented; real mobile acceptance pending
 - **Context:** The real Android offer reached eSignet but its client ID was rejected. The selected Collab pre-authorized endpoint separately returned credential HTTP 401. The user authorized implementing the remaining setup directly on main.

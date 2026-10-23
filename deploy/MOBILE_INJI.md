@@ -78,3 +78,7 @@ Public source references: [official Compose setup](https://github.com/inji/inji-
 ## Evidence still needed
 
 User-reported device: Nothing Phone (2a), Android 16; APK filename label `inji_release-1.0.0-alpha.1(v30)`. The About screen previously displayed version `1.0.0-alpha.1`. Installed APK hash/signing identity/build number remain unattested. Record those where available, the actual phone checkpoints and the correlated Verify result in `submission/A2_MOBILE_EVIDENCE.md` and `WALLET_VALIDATION.md`. A successful automated control alone is not a mobile pass.
+
+## Recorded real-phone result — 23 October 2026
+
+The actual Nothing Phone (2a) journey subsequently passed: wallet download/card-list screenshot, user-confirmed close/reopen persistence, native matching/consent, native share success and the console's correlated `valid` result with both credential and holder proof flags true. See [the manual acceptance bundle](../submission/evidence/person3-a2-mobile-2026-10-23/README.md). The conservative automated console field is not itself a manual storage attestation; the sidecar record supplies that confirmation. This does not change the installed-binary/Collab-version/trust limitations above.

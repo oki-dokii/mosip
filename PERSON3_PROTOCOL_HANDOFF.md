@@ -1,6 +1,6 @@
 # Person 3 protocol implementation handoff
 
-Branch: `person3/protocol_correctness`. **Non-wallet implementation and live investigations complete.** Implementation and the original evidence were committed/pushed in `39fceaf`. On 23 October, a real Android attempt reached eSignet and was blocked by an invalid-client error before issuance. A2 is not passed. See `submission/A2_MOBILE_EVIDENCE.md` and `PERSON4_A2_PREREQUISITES.md`.
+Branch: `person3/protocol_correctness`. **Non-wallet implementation and live investigations complete.** Implementation and the original evidence were committed/pushed in `39fceaf`. On 23 October, the first Collab Android attempt failed client validation; a later official-local-Certify route completed A2 through the actual wallet with reopened storage and a correlated valid credential/holder proof result. See `submission/evidence/person3-a2-mobile-2026-10-23/README.md` for its scope/attestation limits. See `submission/A2_MOBILE_EVIDENCE.md` and `PERSON4_A2_PREREQUISITES.md`.
 
 ## What is implemented
 
@@ -63,13 +63,14 @@ HTTP 400 at direct-post retains the original submission boundary. Strict mock HT
 | `spikes/fixtures/wallet-interop-integration-checks-2026-10-22.json` | Final build/typecheck/test/audit and runtime validation record |
 | `submission/PERSON3_LIVE_INVESTIGATION.md` | Investigation interpretation, upstream source references and existing issue review |
 | `submission/evidence/person3-a2-2026-10-23/README.md` | Real Android partial attempt, five reviewed screenshots, public offer and checkpoint/hash manifest |
-| `PERSON4_A2_PREREQUISITES.md` | Infrastructure/client/catalog prerequisites and the remaining Person 3/user acceptance sequence |
+| `PERSON4_A2_PREREQUISITES.md` | Infrastructure/client/catalog setup history and the implemented mobile route |
+| `submission/evidence/person3-a2-mobile-2026-10-23/README.md` | Actual Android A2 acceptance chain, screenshots, user persistence confirmation and correlated Verify result |
 
 The earlier `wallet-interop-checks-2026-10-22.json` is retained as a historical standalone checkpoint; its pending-integration statements are superseded by this handoff.
 
 ## Limits and external dependencies
 
-- Real Inji Wallet storage/presentation is not performed. Browser E2E is not covered by the package suite.
+- Real Android storage/presentation was observed for the recorded A2 hybrid profile; reopen persistence was user-confirmed. Installed-binary attestation and running Collab Verify release remain unverified. The earlier test counts/browser coverage below are historical checkpoints.
 - Public Collab still does not attest its deployment versions. X.509 control passes; did:jwk rejects. Upstream merged DID support and older README wording do not identify the deployed code.
 - Collab rejects nonce mismatch at direct-post and bad signature at result, but generic diagnostics leave precise reason evaluations inconclusive. Both reduced pre-authorized flows reach credential HTTP 401. These external observations are documented, not silently marked resolved or filed as new defects.
 - Flat top-level synthetic SD-JWT only; no recursive disclosure, Presentation Exchange conformance or certificate-chain trust claim. Live request JWT signature authentication remains an existing project limitation.

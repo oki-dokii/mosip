@@ -285,3 +285,7 @@ HTTP issuer: factory-owned grant → proof checks → `credential.ts` signs the 
 Before phone offers: fresh pre-authorized code → local official token endpoint → fresh nonce → ephemeral Reference Wallet proof → real Certify SD-JWT → independent issuer-signature/holder-binding check → fresh Collab Verify request/presentation → bounded valid result. The safe control summary is separate from A2.
 
 Mac-local console → fresh offer QR → actual Inji Wallet scans/stores → fresh presentation QR → same phone approves → bounded result read. Public gateway routes never expose console/offer creation/admin APIs. Credentials/codes remain in memory; runtime passwords, stores and private logs are outside Git. `pnpm mobile:inji stop` stops only the dedicated project/tunnel and preserves data.
+
+## Recorded actual Android acceptance — 23 October 2026
+
+The actual wallet completed issuance, storage, native matching/consent and submission; the user confirmed the card remained after reopening. The helper read its existing manually generated presentation transaction and returned valid with credential/holder proof flags true. `submission/evidence/person3-a2-mobile-2026-10-23/` stores only reviewed screenshots, safe result flags and manual provenance; it does not create a BFF run or overwrite the independent Reference Wallet control. `scripts/build-aggregate-report.mjs` projects this sidecar as a separate mobile section.
