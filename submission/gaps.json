@@ -85,7 +85,7 @@
     "correctRejections": 11,
     "correctAcceptances": 1,
     "scope": "Standalone synthetic twelve-case suite plus BFF integration for the five existing fault kinds and valid control; both in-process and external HTTP paths tested.",
-    "a2Status": "blocked_during_authorization",
+    "a2Status": "awaiting_controlled_mobile_retry",
     "mobileEvidence": "submission/A2_MOBILE_EVIDENCE.md",
     "upstreamClaim": "Fresh Collab observations are recorded separately; no new upstream defect claimed or issue filed.",
     "bffArtifact": "spikes/fixtures/wallet-interop-bff-2026-10-22.json",
@@ -111,5 +111,15 @@
     "setupHandoff": "PERSON4_A2_PREREQUISITES.md",
     "diagnosis": "Source-default client mismatch inferred; actual request and registration not captured.",
     "upstreamDefectConfirmed": false
+  },
+  "mobileSetup": {
+    "status": "reference_control_valid_phone_unobserved",
+    "command": "pnpm mobile:inji",
+    "runbook": "deploy/MOBILE_INJI.md",
+    "evidence": "submission/evidence/2026-10-23-person4-mobile-control.json",
+    "issuer": "official_local_inji_certify",
+    "verifier": "collab_inji_verify",
+    "collabClientRegistrationChanged": false,
+    "a2Passed": false
   }
 }

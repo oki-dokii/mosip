@@ -36,3 +36,7 @@ Both Certify configurations again return HTTP 200 for offer creation/resolution,
 Inji Wallet displayed version `1.0.0-alpha.1` and scanned a public authorization-code offer for the Collab mock Certify SD-JWT configuration. The phone opened eSignet, which displayed **Client ID is invalid. Please try again.** before user authentication. Issuance, storage, presentation and final Verify result remain unobserved. This replaces the earlier no-device blocker with a concrete authorization/configuration dependency; it does not close A2.
 
 [Reviewed mobile evidence](submission/evidence/person3-a2-2026-10-23/README.md), [A2 diagnosis](submission/A2_MOBILE_EVIDENCE.md), and [Person 4 prerequisites](PERSON4_A2_PREREQUISITES.md) distinguish observed rejection from the inferred source-default client mismatch. No actual mobile request parameters or server registration records were captured; no upstream defect is asserted. The earlier pre-authorized HTTP 401 is a separate finding.
+
+## Controlled mobile retry setup — 23 October 2026
+
+[Official local Certify control evidence](submission/evidence/2026-10-23-person4-mobile-control.json) now records a successful pre-authorized issuance with independently checked issuer signature and holder binding, followed by Collab Verify `valid`. The [mobile launcher/runbook](deploy/MOBILE_INJI.md) provides a fresh offer/request console for the actual phone. This does not fix the original Collab client registration or establish a mobile pass; A2 is awaiting that separate observed retry.

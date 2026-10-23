@@ -7,11 +7,11 @@
     "postinstall": "pnpm --filter @playground/bff db:generate",
     "dev": "pnpm --parallel --filter @playground/bff --filter @playground/web --filter @playground/mock-issuer --filter @playground/mock-verifier dev",
     "dev:x509-mock": "bash scripts/dev-x509-mock.sh",
+    "mobile:inji": "node scripts/mobile-inji.mjs",
     "demo:docker": "bash scripts/demo-docker.sh",
     "e2e:smoke": "node e2e/smoke.mjs",
     "audit:secrets": "node scripts/audit-secrets.mjs",
     "capture:filter": "pnpm --filter @playground/bff exec tsx src/capture/filter.ts",
-
     "build": "pnpm -r build",
     "db:generate": "pnpm --filter @playground/bff db:generate",
     "db:migrate": "pnpm --filter @playground/bff db:migrate",
@@ -29,7 +29,8 @@
     "@digitalbazaar/ed25519-verification-key-2020": "4.2.0",
     "jose": "6.2.13",
     "jsonld": "9.0.0",
-    "jsonld-signatures": "11.6.0"
+    "jsonld-signatures": "11.6.0",
+    "qrcode": "1.5.4"
   },
   "devDependencies": {
     "typescript": "5.9.3"

@@ -355,3 +355,7 @@ Real-wallet gates:
 - **Collab nightly runs**: Require the public test environment credentials and are kept outside this repository.
 - **Production hardening**: TLS termination, authentication, rate limiting, and secrets management are not part of this deployment.
 - **Authentication**: The BFF API has no authentication. Do not expose this stack on a public interface with test credentials.
+
+## Real Android SD-JWT setup
+
+`pnpm mobile:inji` starts the separate controlled official-Certify mobile route and local QR console. See [mobile deployment](deploy/MOBILE_INJI.md) for its digest pin, runtime-only keys, HTTPS tunnel, supported pre-authorized flow, stop command and exact evidence limits. It does not start or change the normal core/mocks profiles, and it does not close A2 without an observed phone journey.

@@ -3,9 +3,13 @@
 **Document**: `deploy/INJI_LOCAL.md`\
 **Date**: 2026-10-22\
 **Owner**: Person 4 (Packaging, CI, and Release Verification)\
-**Status**: Stage 1 & Stage 2 Documented / Blocked on Upstream MOSIP Infrastructure\
+**Status**: Historical full-stack evaluation; a controlled official Certify mobile route is now implemented\
 
 ---
+
+## 23 October implementation update
+
+The blanket external-keymanager blocker below is superseded for the selected pinned Certify release: its official Compose configuration supports an embedded PKCS12 keymanager. The implemented [mobile route](MOBILE_INJI.md) uses that support and the built-in pre-authorized token service/data provider. Its Reference Wallet control issued and verified successfully; actual mobile acceptance remains unobserved. It uses Collab Verify with an unreported running release, rather than claiming a fully pinned local Verify/Mimoto/Web deployment. The older `docker-compose.inji.yml` remains a configuration-only historical profile and is not the mobile startup command.
 
 ## 1. Overview & Purpose
 
@@ -75,7 +79,7 @@ Stand up pinned Inji Certify and Inji Verify locally, execute a Certify -> Refer
 ### Evaluation & Blocker Findings:
 1. **Certify Architecture**:
    - Official Inji Certify is a Java/Spring Boot microservice implementing OpenID4VCI (draft 13).
-   - Inji Certify delegates signature generation, certificate handling, and key custody to the **MOSIP Keymanager** service. It does not contain an embedded software key generator for standalone operation.
+   - Inji Certify delegates signature generation, certificate handling, and key custody to the **MOSIP Keymanager** service. The earlier evaluation treated this as an external dependency. The selected alpha release supports an embedded PKCS12 setup, now implemented in the dedicated mobile route.
    - Issuance authentication requires an upstream OAuth 2.0 / OIDC provider (**eSignet**) to authenticate the holder identity (`individual_id`) before issuing credentials.
 2. **Playground Driver Inspection (`apps/bff/src/drivers/collab.ts`)**:
    - Inspection of `apps/bff/src/drivers/collab.ts` (lines 122-132) confirms that running Inji Certify requires `OFFICIAL_POSTMAN_ENV_PATH` and `MOCK_OTP`:
@@ -88,7 +92,7 @@ Stand up pinned Inji Certify and Inji Verify locally, execute a Certify -> Refer
      ```
    - The environment file must contain a pre-registered `clientId`, `privateKey_jwk` (with private key parameter `d`), and `individual_id`.
 3. **Local Status**:
-   - **BLOCKED**: Running Inji Certify locally in isolation without the entire MOSIP foundational cluster (Keymanager, Config Server, DB migrations, and eSignet) is impossible without pre-configured cryptographic keystores and database seeds.
+   - **BLOCKED**: This earlier full-stack evaluation did not provision the required schema/configuration. The dedicated mobile launcher now provisions Certify with generated embedded PKCS12 keys, its schema/seed and supported internal token service; it does not require external eSignet for the chosen synthetic pre-authorized grant.
    - In hosted Collab mode, the playground successfully uses the hosted Collab endpoints (`https://injicertify-mock.collab.mosip.net` and `https://injiverify.collab.mosip.net/v1/verify`).
    - Mock issuer and mock verifier provide the isolated, reproducible synthetic test path for development and CI.
 

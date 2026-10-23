@@ -1,6 +1,6 @@
 # A2 mobile-wallet investigation — Person 3
 
-Updated: 23 October 2026. Status: **blocked during mobile issuance authorization**. A real Android wallet has now scanned an SD-JWT authorization-code offer and reached eSignet, which displayed “Client ID is invalid. Please try again.” No credential issuance, storage, presentation or final Verify acceptance has been observed. Local mock protocol evidence does not close A2.
+Updated: 23 October 2026. Status: **controlled retry ready; real mobile acceptance still unobserved**. The prior Collab attempt remains blocked at client validation. A real Android wallet has now scanned an SD-JWT authorization-code offer and reached eSignet, which displayed “Client ID is invalid. Please try again.” No credential issuance, storage, presentation or final Verify acceptance has been observed. Local mock protocol evidence does not close A2.
 
 Evidence bundle: [reviewed screenshots, public offer and manifest](evidence/person3-a2-2026-10-23/README.md). Setup owner handoff: [Person 4 prerequisites before the next phone attempt](../PERSON4_A2_PREREQUISITES.md).
 
@@ -10,8 +10,8 @@ Attempt label: `A2-20261023-1726` (device screenshot displayed 17:26; device tim
 
 | Checkpoint | Observation |
 | --- | --- |
-| Device | User reports an Android phone; model, Android version and build number remain unreported. |
-| App | About screen displays `1.0.0-alpha.1`; APK hash and signing identity remain unverified. |
+| Device | User reports a Nothing Phone (2a), Android 16. Build number and APK/signing attestation remain unreported. |
+| App | About screen displays `1.0.0-alpha.1`; user reports APK filename `inji_release-1.0.0-alpha.1(v30)`. Filename is not installed-build attestation; APK hash and signing identity remain unverified. |
 | Registry | Settings displays `https://api.collab.mosip.net`. The registry/eSignet editor was inspected; no host change was instructed. |
 | Catalog | Screenshots show National ID, Insurance, Tax, Land, Driving Licence, GlobalID, IIIT Dharwad, Farmer and TruckPass. Public Collab metadata checks confirm the inspected first-party entries are JSON-LD or mDoc; the required mock SD-JWT configuration is absent from that catalog. IIIT configuration was unavailable during the check. |
 | Offer | Locally rendered public inline offer for `https://injicertify-mock.collab.mosip.net`, configuration `MockVerifiableCredential_SD_JWT`, grant `authorization_code`; no pre-authorized code, identity, bearer token or credential in the QR. |
@@ -28,6 +28,12 @@ Public issuer metadata on 23 October advertises authorization server `https://es
 Next attempt requires a supported native-wallet registration/configuration for the mock issuer: registered client and exact callback, matching SD-JWT scope/configuration, PKCE behavior, and an authorized token-exchange mechanism. The deployment/configuration owner should onboard the SD-JWT issuer in the wallet/Mimoto catalog with matching client configuration, or provide a supported wallet build and target configured for direct offer issuance. Confirm authorization, redirect and token exchange before retrying issuance. Do not transplant another client ID into the QR or put a confidential client key in the APK. If actual request parameters can be inspected, retain only client ID, callback and host locally for diagnosis; exclude session parameters from published evidence.
 
 The existing Collab pre-authorized credential-issuance HTTP 401 is separate historical evidence; switching to that flow is not an established fix.
+
+## Controlled setup implementation — 23 October 2026
+
+A new [official local-Certify route](../deploy/MOBILE_INJI.md) is implemented on main. It uses generated runtime keys and Certify's own pre-authorized token service, avoiding the unsupported Collab authorization-code client for the next attempt. Its automated Reference Wallet control is separate evidence and cannot establish native wallet storage or presentation. The actual phone must now execute a fresh offer and presentation through the local console; the failed Collab attempt above remains historical and unpassed.
+
+[Controlled setup evidence](evidence/2026-10-23-person4-mobile-control.json) records official Certify issuance, independent issuer-signature/holder-binding checks and a fresh Collab Verify `valid` result with credential and holder proof checks true. This is explicitly Reference Wallet control evidence. The Mac APK copy was hashed and its manifest parsed; its SHA-256/package/version fields are in that artifact, without claiming it attests the installed binary.
 
 ## Initial setup investigation — 22 October 2026 (historical)
 

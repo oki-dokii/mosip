@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-23",
+  "timestamp": "2026-10-23T12:59:59.426Z",
+  "evidenceTier": "official_certify_reference_wallet_control",
+  "sourceBaseCommit": "3e416e32792c7aef68b5b2395d485838cc329091",
+  "dirtyWorkingTree": true,
+  "branch": "main",
+  "status": "control_passed_mobile_not_observed",
+  "deployment": {
+    "schemaVersion": 1,
+    "issuer": "https://injured-sentences-forwarding-nec.trycloudflare.com",
+    "console": "http://127.0.0.1:8060",
+    "configurationId": "MockVerifiableCredential_SD_JWT",
+    "sourceCommit": "8fdf71656979a72fa8263766d4dec3cc25127b76",
+    "image": "injistack/inji-certify-with-plugins:1.0.0-alpha.1",
+    "imageDigest": "sha256:1579b2449f1a7213fe25de1f6a1509b5636f1fedf0d7f5c4cfd07b9f0fc5b346",
+    "verifier": "https://injiverify.collab.mosip.net/v1/verify",
+    "verifierVersion": "unreported",
+    "mobileAcceptance": "not_observed"
+  },
+  "control": {
+    "evidenceTier": "reference_wallet_control",
+    "issuer": "official_inji_certify",
+    "issuerVersion": "1.0.0-alpha.1",
+    "issuerSignatureValid": true,
+    "holderBindingObserved": true,
+    "certificateTrustChecked": false,
+    "verifier": "https://injiverify.collab.mosip.net/v1/verify",
+    "verifierVersion": "unreported",
+    "status": "valid",
+    "httpStatus": 200,
+    "credentialProofValid": true,
+    "holderProofValid": true,
+    "timestamp": "2026-10-23T12:59:59.426Z",
+    "mobileAcceptance": "not_observed"
+  },
+  "phone": {
+    "model": "Nothing Phone (2a)",
+    "androidVersion": "16",
+    "source": "User reported in guided conversation",
+    "walletAboutVersionObserved": "1.0.0-alpha.1",
+    "apkFilenameReported": "inji_release-1.0.0-alpha.1(v30)",
+    "installedBinaryAttested": false
+  },
+  "downloadedApkCopy": {
+    "filename": "Inji_Release-1.0.0-alpha.1(v30).apk",
+    "bytes": 192748496,
+    "sha256": "381e0b15400c9929392f91a4544036afcd09928d3c89c5471f34e19749045b78",
+    "binaryManifest": {
+      "package": "io.mosip.inji.collab",
+      "versionCode": 30,
+      "versionName": "1.0.0"
+    },
+    "matchesInstalledBinary": "unverified",
+    "signatureVerified": false,
+    "note": "Mac Downloads copy hashed and binary manifest parsed. About screen alpha label is recorded separately. The APK is not committed."
+  },
+  "checks": [
+    {
+      "command": "node --check scripts/mobile-inji.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    },
+    {
+      "command": "pnpm audit:secrets",
+      "status": "passed",
+      "scope": "Text/names, not binary image contents."
+    },
+    {
+      "operation": "official Certify pre-authorized code/token/nonce/holder proof/credential issuance",
+      "status": "passed",
+      "holderAlgorithm": "EdDSA",
+      "issuerAlgorithm": "RS256"
+    },
+    {
+      "operation": "independent issuer signature, credential type and holder key binding checks",
+      "status": "passed"
+    },
+    {
+      "operation": "fresh Collab Verify request, bound presentation and bounded result retrieval",
+      "status": "passed",
+      "outcome": "valid",
+      "credentialProofValid": true,
+      "holderProofValid": true
+    }
+  ],
+  "limits": [
+    "Actual phone issuance/storage/presentation not observed; A2 remains unpassed.",
+    "Collab OAuth client registration and prior Collab pre-authorized HTTP401 are not changed by this local route.",
+    "Collab Verify deployment version remains unreported.",
+    "Certificate-chain trust and signed Verify request authentication are not established.",
+    "Temporary HTTPS endpoint changes on a new launcher start; use fresh credentials/requests.",
+    "No automated unit/regression suites were added or run for this change; the runtime control is evidence of the provisioned flow only.",
+    "Runtime keys, passwords, raw credentials, pre-authorized codes and raw logs remain outside Git."
+  ]
+}

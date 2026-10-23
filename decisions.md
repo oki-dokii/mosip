@@ -54,6 +54,15 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-042 · Controlled official Certify mobile issuance without Collab client administration
+- **Date:** 2026-10-23   **Status:** Implemented; real mobile acceptance pending
+- **Context:** The real Android offer reached eSignet but its client ID was rejected. The selected Collab pre-authorized endpoint separately returned credential HTTP 401. The user authorized implementing the remaining setup directly on main.
+- **Decision:** Add a dedicated digest-pinned official Certify instance using its embedded PKCS12 keymanager, built-in pre-authorized token service and data provider, private runtime state, restricted HTTPS gateway and loopback QR console. Reuse Collab Verify with its version honestly unreported. Require an independent holder-bound issuance/presentation control before creating a phone offer.
+- **Alternatives considered:** Register on Collab (no deployment administration available); put another confidential client into the mobile app (wrong client/token boundary); substitute our mock issuer (would not prove A2); require the full Web/Mimoto/identity stack (unnecessary for supported pre-authorized mobile issuance).
+- **Why this one:** Pinned release source supports embedded keys and the chosen grant. A real official-Certify control can establish token/nonce/proof/issuance/verification independently while the phone retains its own holder key.
+- **Trade-off accepted:** Hybrid deployment, temporary tunnel hostname, synthetic pre-authorized identity, no certificate-chain trust claim and no signed-request authentication claim. A2 still requires actual phone storage/presentation; local Verify/A1 remain separate work.
+- **Affects:** `deploy/docker-compose.mobile.yml`, `scripts/mobile-inji.mjs`, `deploy/MOBILE_INJI.md`, root QR dependency and Person 4/A2 handoff.
+
 ### D-041 · Evaluate controlled protocol faults by reason through a shared verifier core
 - **Date:** 2026-10-22   **Status:** Accepted and implemented
 - **Context:** Payload edits invalidated issuer signatures before expiry/type checks; broad invalid outcomes and missing result defaults could produce false passes. The user authorized completing Person 3 integration across shared files.

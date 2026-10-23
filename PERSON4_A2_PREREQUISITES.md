@@ -2,6 +2,12 @@
 
 Updated: 23 October 2026. Branch: `person3/protocol_correctness`. **Person 3 implementation is complete; A2 acceptance remains blocked at OAuth authorization.** This is the infrastructure/configuration handoff to complete before asking the user to retry on the Android phone.
 
+## Implemented route after this handoff
+
+The controlled mobile launcher is now implemented on `main`: `pnpm mobile:inji`. See [the executable mobile runbook](deploy/MOBILE_INJI.md). It runs a digest-pinned official Certify instance with its own pre-authorized token service and generated keys, then checks a Reference Wallet issuance/presentation against Collab Verify before opening a local QR console. This is an alternative supported flow; it does not fix or administer Collab's rejected authorization-code client. The real-phone acceptance chain remains to be observed. The [runtime control record](submission/evidence/2026-10-23-person4-mobile-control.json) records actual issuance and Verify `valid`, with both credential/holder proof flags true.
+
+The checklists below retain the original authorization-code setup requirements for deployment owners. For the implemented pre-authorized route, external OAuth client registration, native OAuth callback and Mimoto catalog onboarding are not applicable; the token exchange is checked against the local official issuer. Collab Verify version attribution and APK attestation remain limitations.
+
 ## 1. Current evidence and the exact blocker
 
 The user installed Inji Wallet, whose About page displays `1.0.0-alpha.1`, on an Android phone. The configured registry is `https://api.collab.mosip.net`. The displayed catalog does not include the mock SD-JWT issuer used by our protocol work.

@@ -49,6 +49,7 @@ submission/**
 
 # ── local evidence files ─────────────────────────────────────────────────────
 artifacts/
+.mobile-inji/
 evidence/
 *.evidence.json
 
