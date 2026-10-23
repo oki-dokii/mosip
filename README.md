@@ -4,6 +4,8 @@
 
 This is a **test playground**, not a production identity provider or wallet. It uses synthetic identities. Its automated wallet is the project's **Reference Wallet**. A Reference Wallet success does not prove that Inji Web or Inji Wallet mobile stored and presented the credential. The [evidence guide](SCENARIOS_AND_EVIDENCE.md) and [submission checklist](submission/READINESS.md) make that distinction explicit.
 
+Latest mobile checkpoint (23 October): Android Inji Wallet `1.0.0-alpha.1` reached eSignet but client validation failed before issuance. A2 remains blocked. See [the mobile evidence](submission/evidence/person3-a2-2026-10-23/README.md) and [Person 4 setup prerequisites](PERSON4_A2_PREREQUISITES.md).
+
 ## Contents
 
 - [Problem and solution](#problem-and-solution)

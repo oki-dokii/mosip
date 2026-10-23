@@ -1,10 +1,39 @@
 # A2 mobile-wallet investigation — Person 3
 
-Date: 22 October 2026. Status: **blocked before execution**. No issuance, storage, wallet presentation or real Inji verifier result has been observed during this implementation. Local mock protocol evidence does not close A2.
+Updated: 23 October 2026. Status: **blocked during mobile issuance authorization**. A real Android wallet has now scanned an SD-JWT authorization-code offer and reached eSignet, which displayed “Client ID is invalid. Please try again.” No credential issuance, storage, presentation or final Verify acceptance has been observed. Local mock protocol evidence does not close A2.
+
+Evidence bundle: [reviewed screenshots, public offer and manifest](evidence/person3-a2-2026-10-23/README.md). Setup owner handoff: [Person 4 prerequisites before the next phone attempt](../PERSON4_A2_PREREQUISITES.md).
+
+## Real Android attempt — 23 October 2026
+
+Attempt label: `A2-20261023-1726` (device screenshot displayed 17:26; device timezone not independently checked). The user supplied screenshots during the guided attempt. Raw App IDs and complete authentication/session URLs are not reproduced here. No BFF run ID exists for this manual mobile attempt.
+
+| Checkpoint | Observation |
+| --- | --- |
+| Device | User reports an Android phone; model, Android version and build number remain unreported. |
+| App | About screen displays `1.0.0-alpha.1`; APK hash and signing identity remain unverified. |
+| Registry | Settings displays `https://api.collab.mosip.net`. The registry/eSignet editor was inspected; no host change was instructed. |
+| Catalog | Screenshots show National ID, Insurance, Tax, Land, Driving Licence, GlobalID, IIIT Dharwad, Farmer and TruckPass. Public Collab metadata checks confirm the inspected first-party entries are JSON-LD or mDoc; the required mock SD-JWT configuration is absent from that catalog. IIIT configuration was unavailable during the check. |
+| Offer | Locally rendered public inline offer for `https://injicertify-mock.collab.mosip.net`, configuration `MockVerifiableCredential_SD_JWT`, grant `authorization_code`; no pre-authorized code, identity, bearer token or credential in the QR. |
+| Wallet processing | After scanning, wallet displayed Authenticate and a prompt to use `mosip.net` for sign-in. User continued. |
+| Authorization | eSignet displayed **Client ID is invalid. Please try again.** before test identity authentication. |
+| Issuance/storage/presentation/result | Not reached. A2 remains unpassed. |
+
+### Diagnosis and concrete dependency
+
+The official [release source](https://github.com/inji/inji-wallet/blob/v1.0.0-alpha.1/shared/vciClient/VciClient.ts#L166) sets `clientId: wallet` and `redirectUri: io.mosip.residentapp.inji://oauthredirect` for credential-offer issuance. This explains a likely client-registration mismatch, but the installed binary has not been matched to that source and the actual authorization URL was not captured, so the precise sent client ID remains inferred. The screenshot establishes rejection, not the authorization server database contents.
+
+Public issuer metadata on 23 October advertises authorization server `https://esignet-mock.collab.mosip.net`; its OIDC discovery advertises `private_key_jwt` token authentication and no dynamic client-registration endpoint. Therefore fixing only the initial client lookup would not demonstrate a working token exchange. This is a mobile OAuth integration/configuration dependency, not a confirmed wallet or eSignet protocol defect.
+
+Next attempt requires a supported native-wallet registration/configuration for the mock issuer: registered client and exact callback, matching SD-JWT scope/configuration, PKCE behavior, and an authorized token-exchange mechanism. The deployment/configuration owner should onboard the SD-JWT issuer in the wallet/Mimoto catalog with matching client configuration, or provide a supported wallet build and target configured for direct offer issuance. Confirm authorization, redirect and token exchange before retrying issuance. Do not transplant another client ID into the QR or put a confidential client key in the APK. If actual request parameters can be inspected, retain only client ID, callback and host locally for diagnosis; exclude session parameters from published evidence.
+
+The existing Collab pre-authorized credential-issuance HTTP 401 is separate historical evidence; switching to that flow is not an established fix.
+
+## Initial setup investigation — 22 October 2026 (historical)
 
 ## Investigation performed
 
-The user has no wallet build/device prepared. The implementation therefore investigated official release/build sources and the local host rather than waiting for those details.
+At the 22 October checkpoint, the user had no wallet build/device prepared. The implementation therefore investigated official release/build sources and the local host rather than waiting for those details.
 
 | Check | Observation | Evidence / action |
 | --- | --- | --- |
@@ -20,9 +49,9 @@ The user has no wallet build/device prepared. The implementation therefore inves
 
 The v0.22.1 release-notes URL currently returned a page-not-found document during this investigation. The source tag and pinned guide remain the reliable versioned leads; no upstream defect is inferred.
 
-## Exact blocker and next execution path
+## Initial blocker and proposed execution path — 22 October 2026 (historical)
 
-The available host has no established Android/iOS runtime, the user has no prepared device, and no installed wallet artifact has been pinned. A2 cannot be executed through the BFF's Reference Wallet as a substitute. The next path is an official Android APK on a provisioned Android runtime, or a pinned source build, followed by an observed wallet journey.
+At that checkpoint the host had no established Android/iOS runtime, the user had no prepared device, and no installed wallet artifact had been pinned. The real Android attempt above supersedes the no-device blocker; APK attestation and the OAuth setup remain open. A2 cannot be executed through the BFF's Reference Wallet as a substitute. The next path is an official Android APK on a provisioned Android runtime, or a pinned source build, followed by an observed wallet journey.
 
 1. Provision an Android ARM64 emulator on this host or use an available Android device. Record platform/API, ABI, app install result and any device-security restrictions. A working emulator must be demonstrated before calling it available.
 2. Obtain the APK through the official guide's folder, verify package version/ABI/signing identity and compute SHA-256 outside Git. Treat it as alpha unless its installed metadata proves otherwise. Alternatively build the pinned stable source with its documented toolchain. Do not use third-party APK mirrors.
@@ -30,7 +59,7 @@ The available host has no established Android/iOS runtime, the user has no prepa
 4. Issue SD-JWT through Certify, observe it in the actual wallet, create a fresh Verify request and present from that wallet. Record checkpoints and final result from one correlated attempt.
 5. Export only sanitized screenshots and result summaries. Keep raw tokens, credentials, private keys, OTPs and captures outside Git. An inaccessible native boundary stays unobserved.
 
-## Acceptance checkpoints
+## Initial acceptance checkpoints — 22 October 2026 (historical)
 
 | Checkpoint | Status |
 | --- | --- |

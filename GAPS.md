@@ -1,6 +1,6 @@
 # Interoperability findings and upstream issue candidates
 
-Updated 2026-10-22. This is a reproducible findings register, **not** a claim that upstream maintainers have confirmed defects. No upstream GitHub issue has been filed from this repository. Before filing, rerun against a pinned current release, check existing issues, and provide only sanitized evidence. The owning developer should file each accepted issue under their own GitHub identity and add its URL here.
+Updated 2026-10-23. This is a reproducible findings register, **not** a claim that upstream maintainers have confirmed defects. No upstream GitHub issue has been filed from this repository. Before filing, rerun against a pinned current release, check existing issues, and provide only sanitized evidence. The owning developer should file each accepted issue under their own GitHub identity and add its URL here.
 
 | ID | Observation | Evidence | Impact | Next check / likely upstream home | Status |
 |---|---|---|---|---|---|
@@ -30,3 +30,9 @@ This is `local_mock_protocol` evidence for `mock-sdjwt-flat-v1`; it is not a new
 Both Certify configurations again return HTTP 200 for offer creation/resolution, token and nonce, then HTTP 401 for credential issuance. This is a reduced synthetic deployment observation, not an established protocol defect. Both service releases remain unreported after explicit version discovery. Current upstream source contains merged DID resolution changes despite older README profile text, so G-01 cannot be generalized to current library support or assigned a regression version. No upstream issue was filed.
 
 [BFF six-scenario evidence](spikes/fixtures/wallet-interop-bff-2026-10-22.json) records exact local reasons and separate scenario/profile/issuer matrix identities. [Final check record](spikes/fixtures/wallet-interop-integration-checks-2026-10-22.json) supersedes the earlier standalone validation checkpoint. Real mobile wallet acceptance remains excluded and blocked as recorded in the A2 report.
+
+## Real Android attempt — 23 October 2026
+
+Inji Wallet displayed version `1.0.0-alpha.1` and scanned a public authorization-code offer for the Collab mock Certify SD-JWT configuration. The phone opened eSignet, which displayed **Client ID is invalid. Please try again.** before user authentication. Issuance, storage, presentation and final Verify result remain unobserved. This replaces the earlier no-device blocker with a concrete authorization/configuration dependency; it does not close A2.
+
+[Reviewed mobile evidence](submission/evidence/person3-a2-2026-10-23/README.md), [A2 diagnosis](submission/A2_MOBILE_EVIDENCE.md), and [Person 4 prerequisites](PERSON4_A2_PREREQUISITES.md) distinguish observed rejection from the inferred source-default client mismatch. No actual mobile request parameters or server registration records were captured; no upstream defect is asserted. The earlier pre-authorized HTTP 401 is a separate finding.

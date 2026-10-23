@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-10-22",
+  "updated": "2026-10-23",
   "source": "GAPS.md",
   "owner": "Person 3",
-  "scope": "Synthetic local protocol implementation plus fresh public Collab investigation; real wallet execution remains excluded.",
+  "scope": "Completed local protocol implementation, public Collab investigations and a real Android partial attempt blocked at authorization; A2 remains unpassed.",
   "findings": [
     {
       "id": "G-01",
@@ -85,7 +85,7 @@
     "correctRejections": 11,
     "correctAcceptances": 1,
     "scope": "Standalone synthetic twelve-case suite plus BFF integration for the five existing fault kinds and valid control; both in-process and external HTTP paths tested.",
-    "a2Status": "blocked_before_execution",
+    "a2Status": "blocked_during_authorization",
     "mobileEvidence": "submission/A2_MOBILE_EVIDENCE.md",
     "upstreamClaim": "Fresh Collab observations are recorded separately; no new upstream defect claimed or issue filed.",
     "bffArtifact": "spikes/fixtures/wallet-interop-bff-2026-10-22.json",
@@ -97,5 +97,19 @@
     "nonceMismatch": "direct_post_http_400_preserved_no_status_timeout",
     "exactNegativeReason": "inconclusive_upstream_generic_diagnostic",
     "deploymentVersion": "unreported"
+  },
+  "mobileAttempt": {
+    "attemptId": "A2-20261023-1726",
+    "walletVersionDisplayed": "1.0.0-alpha.1",
+    "status": "blocked_during_authorization",
+    "observedError": "Client ID is invalid. Please try again.",
+    "credentialIssued": false,
+    "credentialStorageObserved": false,
+    "presentationObserved": false,
+    "verifierResultObserved": false,
+    "artifact": "submission/evidence/person3-a2-2026-10-23/attempt.json",
+    "setupHandoff": "PERSON4_A2_PREREQUISITES.md",
+    "diagnosis": "Source-default client mismatch inferred; actual request and registration not captured.",
+    "upstreamDefectConfirmed": false
   }
 }

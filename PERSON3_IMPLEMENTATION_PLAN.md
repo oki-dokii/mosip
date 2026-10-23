@@ -2,7 +2,7 @@
 
 Revision 2 · 22 October 2026 · branch `person3/protocol_correctness`.
 
-Implemented on `person3/protocol_correctness`, including the BFF/shared/report/matrix integration authorized by the user. The standalone twelve-case suite and both in-process/HTTP BFF paths pass. See `PERSON3_PROTOCOL_HANDOFF.md` for final commands, evidence and limits. Real mobile wallet execution remains excluded; `submission/A2_MOBILE_EVIDENCE.md` records the prerequisites.
+Implemented on `person3/protocol_correctness`, including the BFF/shared/report/matrix integration authorized by the user. The standalone twelve-case suite and both in-process/HTTP BFF paths pass. See `PERSON3_PROTOCOL_HANDOFF.md` for final commands, evidence and limits. A real Android attempt on 23 October reached eSignet but was blocked at client validation; `submission/A2_MOBILE_EVIDENCE.md` records the attempt and `PERSON4_A2_PREREQUISITES.md` lists the setup needed before retrying.
 
 ## 1. Outcomes and scope
 
