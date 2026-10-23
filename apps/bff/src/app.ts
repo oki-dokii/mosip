@@ -1,3 +1,6 @@
+import { withExchangeLock } from "./exchangeLock.js";
+import { AssistedRuns } from "./assisted.js";
+import { captureOrigins } from "./capture/har.js";
 import { randomUUID } from "node:crypto";
 import cors from "cors";
 import express from "express";
@@ -8,7 +11,7 @@ import { configuredDriverMode } from "./drivers/registry.js";
 import { createSteps, runDemo } from "./orchestrator.js";
 import { buildReport, renderMarkdown } from "./report.js";
 import { buildSequence } from "./sequence.js";
-import { latestMatrix, renderMatrixCsv, renderMatrixMarkdown } from "./matrix.js";
+import { matrixCells, latestMatrix, renderMatrixCsv, renderMatrixMarkdown } from "./matrix.js";
 import { filterRuns } from "./history.js";
 import { unsupportedReason } from "./capabilities.js";
 import { snapshotVersions } from "./versions.js";
@@ -68,9 +71,33 @@ function startRun(runId: string, getIo: () => Server, repository: RunRepository)
 export function buildApp(getIo: () => Server, repository: RunRepository) {
   const app = express();
   const importingRuns = new Set<string>();
+  const assisted = new AssistedRuns(repository, getIo);
   app.use(cors({ origin: process.env.WEB_ORIGIN ?? "http://localhost:5173" }));
   app.use("/api/v1/runs/:id/capture/har", captureIngress(), express.json({ limit: "2mb" }));
   app.use(express.json({ limit: "256kb" }));
+
+  app.get("/api/v1/assisted/capabilities", (_request, response) => response.json({ liveAvailable: assisted.available(), fixtureAvailable: true }));
+  app.post("/api/v1/assisted/runs", async (request, response, next) => {
+    const parsed = z.object({ config: runConfigSchema, mode: z.enum(["fixture", "live"]), timeoutMs: z.number().int().min(100).max(300000).optional() }).safeParse(request.body);
+    if (!parsed.success) return response.status(400).json({ code: "VALIDATION_FAILED" });
+    try { const runId = await assisted.start(parsed.data.config, parsed.data.mode, parsed.data.timeoutMs); return response.status(202).json({ runId }); }
+    catch (error) { if (error instanceof Error && error.message.startsWith("ASSISTED_")) return response.status(422).json({ code: error.message }); next(error); }
+  });
+  app.get("/api/v1/assisted/runs/:id", async (request, response, next) => {
+    try { const result = await assisted.status(request.params.id); return result ? response.json(result) : response.status(404).json({ code: "RUN_NOT_FOUND" }); } catch (error) { next(error); }
+  });
+  app.post("/api/v1/assisted/runs/:id/cancel", async (request, response, next) => {
+    try { const result = await assisted.cancel(request.params.id); return result ? response.status(202).json(result) : response.status(404).json({ code: "RUN_NOT_FOUND" }); } catch (error) { next(error); }
+  });
+  app.post("/api/v1/assisted/runs/:id/observations", async (request, response, next) => {
+    const parsed = z.object({ kind: z.enum(["issuance", "storage", "presentation"]) }).strict().safeParse(request.body);
+    if (!parsed.success) return response.status(400).json({ code: "VALIDATION_FAILED" });
+    try { await assisted.observe(request.params.id, parsed.data.kind); return response.status(202).json({ accepted: true }); }
+    catch (error) { if (error instanceof Error && error.message.startsWith("ASSISTED_")) return response.status(409).json({ code: error.message }); next(error); }
+  });
+  app.get("/api/v1/runs/:id/capture/coverage", async (request, response, next) => {
+    try { const record = await repository.get(request.params.id); return record ? response.json({ coverage: browserCoverage(record) }) : response.status(404).json({ code: "RUN_NOT_FOUND" }); } catch (error) { next(error); }
+  });
 
   app.get("/api/v1/health", (_request, response) => {
     response.json({
@@ -82,6 +109,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
 
   app.get("/api/v1/meta/implementations", (_request, response) => response.json(metadata));
   app.get("/api/v1/scenarios", (_request, response) => response.json({ items: listScenarios(configuredDriverMode()) }));
+  app.get("/api/v1/matrix/cells", async (_request, response, next) => { try { response.json({ items: matrixCells(await repository.list()) }); } catch (error) { next(error); } });
   app.get("/api/v1/matrix", async (_request, response, next) => {
     try {
       response.json({ items: latestMatrix(await repository.list()) });
@@ -135,6 +163,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
     if (selectedScenario && !selectedScenario.available) return response.status(422).json({ code: "SCENARIO_UNAVAILABLE", detail: selectedScenario.unavailableReason });
     const reason = unsupportedReason(parsed.data, configuredDriverMode());
     if (reason) return response.status(422).json({ code: "UNSUPPORTED_COMBINATION", detail: reason });
+    if (parsed.data.wallet === "inji_web_assisted") return response.status(422).json({ code: "USE_ASSISTED_API" });
     const run = createRun(parsed.data);
     try {
       await repository.create({ run, steps: createSteps(run.id), exchanges: [] });
@@ -154,6 +183,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
     try {
       const source = await repository.get(request.params.id);
       if (!source) return response.status(404).json({ code: "RUN_NOT_FOUND" });
+      if (source.run.config.wallet === "inji_web_assisted") return response.status(422).json({ code: "USE_ASSISTED_API" });
       if (source.run.status !== "passed" && source.run.status !== "failed") {
         return response.status(409).json({ code: "RUN_NOT_REPLAYABLE" });
       }
@@ -203,9 +233,10 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
     if (importingRuns.has(runId)) return response.status(409).json({ code: "CAPTURE_IMPORT_ACTIVE" });
     importingRuns.add(runId);
     try {
+      return await withExchangeLock(repository, runId, async () => {
       const record = await repository.get(runId);
       if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
-      const prepared = prepareHarImport(request.body, record);
+      const prepared = prepareHarImport(request.body, record, captureOrigins(), assisted.active(record.run.id));
       const imported = await repository.addExchanges(prepared.exchanges);
       const saved = await repository.get(runId);
       const storedIds = new Set(saved?.exchanges.map(({ id }) => id) ?? []);
@@ -217,6 +248,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
         });
       }
       return response.json({ imported, skipped: prepared.skipped + prepared.exchanges.length - imported, skippedReasons: { ...prepared.skippedReasons, ...(prepared.exchanges.length > imported ? { persistence_conflict: prepared.exchanges.length - imported } : {}) }, coverage: saved ? browserCoverage(saved) : prepared.coverage, gaps: prepared.gaps });
+      });
     } catch (error) {
       if (error instanceof CaptureError) return response.status(error.status).json({ code: error.code });
       next(error);

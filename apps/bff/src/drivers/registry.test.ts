@@ -36,3 +36,7 @@ describe("driver registry", () => {
     expect(() => configuredDriverMode()).toThrow("Unsupported PLAYGROUND_DRIVER_MODE");
   });
 });
+
+it("never resolves an assisted wallet to an automated fixture or Reference Wallet", () => {
+  for (const mode of ["fixture", "collab"] as const) expect(() => resolveDrivers({ ...config, wallet: "inji_web_assisted" }, mode)).toThrow("ASSISTED_REQUIRES_RUN_CONTEXT");
+});

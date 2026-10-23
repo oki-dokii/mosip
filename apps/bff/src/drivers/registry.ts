@@ -14,6 +14,7 @@ export function configuredDriverMode(): DriverMode {
 }
 
 export function resolveDrivers(config: RunConfig, mode = configuredDriverMode()): DriverSet {
+  if (config.wallet === "inji_web_assisted") throw new Error("ASSISTED_REQUIRES_RUN_CONTEXT");
   if (mode === "fixture") return createFixtureDrivers(config);
   return createCollabDrivers(config);
 }
