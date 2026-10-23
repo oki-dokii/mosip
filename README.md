@@ -50,7 +50,7 @@ The question for every run is **which exact combination was tested, what happene
 | Negative cases | Replay expired, bad-signature, wrong-type, missing-disclosure, or replayed-nonce faults where supported. | Controlled mock SD-JWT faults require exact rejection reasons; genuine replay and holder faults are covered separately by the Person 3 harness. |
 | History and exports | Filter runs; download JSON/Markdown reports and JSON/CSV/Markdown matrix exports. | Matrix results are separated by evidence tier. |
 | Independent roles | Standalone mock issuer and verifier can be selected for supported SD-JWT tests. | Mock cryptographic checks do not establish production trust. |
-| Passive capture | Import bounded, allowlisted synthetic browser HAR traffic after a run. | Gaps remain for server-to-server and native-wallet traffic. |
+| Passive capture | Import bounded, allowlisted synthetic browser HAR traffic after a normal run or during a managed assisted run. | Gaps remain for server-to-server and native-wallet traffic. |
 
 ### Tested combinations
 
@@ -178,7 +178,7 @@ For the **one-command container demo** with the web app, BFF, PostgreSQL, and se
 pnpm demo:docker
 ```
 
-Open **http://localhost:5174**. The command builds and health-checks the services, then runs six cross-container synthetic SD-JWT presets (valid control, corrupted signature, signed expiry, signed wrong type, missing required disclosure and nonce mismatch) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. The merged tree's [hosted CI](https://github.com/oki-dokii/mosip/actions/runs/39901216659) passed the Docker HTTP smoke; an independent-machine rehearsal remains open.
+Open **http://localhost:5174**. The command builds and health-checks the services, then runs six cross-container synthetic SD-JWT presets (valid control, corrupted signature, signed expiry, signed wrong type, missing required disclosure and nonce mismatch) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) passed the six-case Docker matrix and browser checks; an independent-machine rehearsal remains open.
 
 ## Integration modes
 
@@ -263,7 +263,7 @@ pnpm build
 pnpm audit:secrets
 ```
 
-On the merged **2026-10-23** `main` checkpoint (`c4b00e3`), **339 automated tests passed** and three opt-in PostgreSQL tests skipped. Typecheck, production build, secret audit and the hosted Docker smoke passed in [CI run 27](https://github.com/oki-dokii/mosip/actions/runs/39901216659). Three Chromium browser checks also passed locally, covering the assisted fixture, independent mock/capture journey, keyboard navigation and scoped axe accessibility. These checks do **not** perform a fresh Collab or real Inji-wallet run. `pnpm demo:docker` checks six controlled protocol presets through PostgreSQL. The [test evidence](submission/TEST_EVIDENCE.md) and [aggregate report](submission/evidence/2026-10-23-aggregate-interop.md) give the evidence boundaries.
+On the **2026-10-23** `main` checkpoint (`b0f132d`), **339 automated tests passed** and three opt-in PostgreSQL tests skipped. Typecheck, production build, secret audit, three Chromium browser checks and the six-case Docker matrix passed in [CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583). The browser checks cover the assisted fixture, independent mock/capture journey, keyboard navigation and scoped axe accessibility. A [fresh checkout rehearsal](submission/CLEAN_CHECKOUT_REHEARSAL.md) repeated install, tests and build on this Mac; independent-machine setup remains open. These checks do **not** perform a fresh Collab or real Inji-wallet run. The [test evidence](submission/TEST_EVIDENCE.md) and [aggregate report](submission/evidence/2026-10-23-aggregate-interop.md) give the evidence boundaries.
 
 For the browser checks, install Chromium once with `pnpm --filter @playground/web exec playwright install chromium`, then run `pnpm --filter @playground/web test:browser`. The Playwright configuration starts its own local mocks, in-memory BFF and Vite. Override `PLAYGROUND_BROWSER_ISSUER_PORT`, `PLAYGROUND_BROWSER_VERIFIER_PORT`, `PLAYGROUND_BROWSER_BFF_PORT` and `PLAYGROUND_BROWSER_WEB_PORT` if the default ports are occupied. Tests use synthetic data only.
 

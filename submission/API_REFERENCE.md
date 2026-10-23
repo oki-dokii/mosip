@@ -18,7 +18,7 @@ Local base URL: `http://localhost:4000/api/v1`. All routes below are implemented
 | GET | `/runs/:id/steps` | — | `{ items: RunStep[] }` |
 | GET | `/runs/:id/exchanges` | Optional `stepId` query | `{ items: Exchange[] }`, sanitized |
 | POST | `/runs/:id/replay` | `{ "tamper": null | faultKind }` | `202 { runId }`; fresh child run with cleared scenario ID |
-| POST | `/runs/:id/capture/har` | `{ "runId": "same UUID", "har": { "log": { "entries": [...] } } }` | Import counts, skip reasons, per-step coverage and capture gaps; synthetic test traffic only, after a finished run |
+| POST | `/runs/:id/capture/har` | `{ "runId": "same UUID", "har": { "log": { "entries": [...] } } }` | Import counts, skip reasons, per-step coverage and capture gaps; synthetic test traffic only, on a finished normal run or managed active assisted run |
 | GET | `/runs/:id/capture/coverage` | — | `{ coverage }` derived from saved sanitized browser exchanges; unavailable boundaries remain explicit |
 | GET | `/runs/:id/report?format=json\|md` | — | Downloadable report with evidence tier |
 | GET | `/runs/:id/sequence` | — | Mermaid source and exchange/step markers |

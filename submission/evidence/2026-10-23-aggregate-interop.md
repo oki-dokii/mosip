@@ -1,6 +1,6 @@
 # Aggregate interoperability evidence — 23 October 2026
 
-Compiled against merged `main` checkpoint `c4b00e3`. This report projects only metadata from committed sanitized run records; it does not execute a new wallet or Collab flow. Run IDs in the older memory-backed records are identifiers, not live web links. Open the linked record and search its run ID. Unknown deployment versions remain `unreported`.
+Compiled against merged `main` checkpoint `b0f132d`. This report projects only metadata from committed sanitized run records; it does not execute a new wallet or Collab flow. Run IDs in the older memory-backed records are identifiers, not live web links. Open the linked record and search its run ID. Unknown deployment versions remain `unreported`.
 
 ## Observed mock interoperability with public Collab Verify
 
@@ -13,18 +13,18 @@ Two synthetic X.509 mock issuer → Reference Wallet → public Inji Verify SD-J
 
 Known versions: issuer `mock-x509-1`, wallet `reference-wallet/0.1.0`, verifier `unreported`. Protocol profile and detailed rejection code were not recorded in these historical reports.
 
-## Observed local mock protocol matrix
+## Observed hosted CI mock protocol matrix
 
-Six synthetic Docker mock issuer → Reference Wallet → mock verifier SD-JWT runs from 22 October, recorded in [the source matrix](../../spikes/fixtures/wallet-interop-bff-2026-10-22.json). The source records commit `5a5e83b10bbb3dfdf45e226955f00f17c4c6b2e7` with `dirtyWorkingTree: true`; its exact code state is therefore not reproducible from that commit alone. Hosted CI on the merged tree separately passed the two-case Docker smoke in [run 27](https://github.com/oki-dokii/mosip/actions/runs/39901216659).
+Six synthetic Docker mock issuer → Reference Wallet → mock verifier SD-JWT runs from 23 October, recorded in [the source matrix](2026-10-23-ci-mock-matrix.json). The source records commit `b0f132d9beb8536cc81bc4d468ef6b970b34a876`, capture time `2026-10-23T04:58:07.335Z`, PostgreSQL storage and `dirtyWorkingTree: false`. All six passed with exact expected verdicts in [hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583). This clean CI evidence supersedes the earlier 22 October dirty-tree mock matrix for the submission report.
 
 | Run ID | Participants | Format / fault | Expected / actual | Reason evaluation | Failing step / code | Finished (UTC) | Evidence |
 |---|---|---|---|---|---|---|---|
-| `63665287-5de5-41f0-8e8c-9bad53849fde` | mock_issuer → reference_wallet → mock_verifier | vc_sd_jwt / none | valid / valid | correct_acceptance | PRESENT_RESULT / — | 2026-10-22T11:06:01.084Z | [record](../../spikes/fixtures/wallet-interop-bff-2026-10-22.json) |
-| `7414c77e-e8c9-4d46-b607-ac6a69e9a54e` | mock_issuer → reference_wallet → mock_verifier | vc_sd_jwt / bad_signature | invalid / invalid | correct_rejection | PRESENT_RESULT / ISSUER_SIGNATURE_INVALID | 2026-10-22T11:06:02.623Z | [record](../../spikes/fixtures/wallet-interop-bff-2026-10-22.json) |
-| `9fd63f79-99ba-4716-b994-9866bf200835` | mock_issuer → reference_wallet → mock_verifier | vc_sd_jwt / expired | invalid / invalid | correct_rejection | PRESENT_RESULT / CREDENTIAL_EXPIRED | 2026-10-22T11:06:04.213Z | [record](../../spikes/fixtures/wallet-interop-bff-2026-10-22.json) |
-| `5bec166d-1d57-42ff-af99-bfe994eca251` | mock_issuer → reference_wallet → mock_verifier | vc_sd_jwt / wrong_type | invalid / invalid | correct_rejection | PRESENT_RESULT / CREDENTIAL_TYPE_MISMATCH | 2026-10-22T11:06:05.793Z | [record](../../spikes/fixtures/wallet-interop-bff-2026-10-22.json) |
-| `736f032b-e1b9-458a-a341-fce619322bfb` | mock_issuer → reference_wallet → mock_verifier | vc_sd_jwt / missing_disclosure | invalid / invalid | correct_rejection | PRESENT_RESULT / REQUIRED_DISCLOSURE_MISSING | 2026-10-22T11:06:07.462Z | [record](../../spikes/fixtures/wallet-interop-bff-2026-10-22.json) |
-| `8d72f454-745f-4652-84d3-23ffce3a2268` | mock_issuer → reference_wallet → mock_verifier | vc_sd_jwt / replay_nonce | invalid / invalid | correct_rejection | PRESENT_RESULT / NONCE_MISMATCH | 2026-10-22T11:06:08.982Z | [record](../../spikes/fixtures/wallet-interop-bff-2026-10-22.json) |
+| `77a1f577-9b5c-4695-a6b6-4ac895f89fc6` | mock_issuer → reference_wallet → mock_verifier | vc_sd_jwt / none | valid / valid | correct_acceptance | PRESENT_RESULT / — | 2026-10-23T04:57:59.414Z | [record](2026-10-23-ci-mock-matrix.json) |
+| `3e59c414-58a4-4687-84b2-6e6fc2541927` | mock_issuer → reference_wallet → mock_verifier | vc_sd_jwt / bad_signature | invalid / invalid | correct_rejection | PRESENT_RESULT / ISSUER_SIGNATURE_INVALID | 2026-10-23T04:58:00.881Z | [record](2026-10-23-ci-mock-matrix.json) |
+| `bc667620-2c93-4096-abdc-54aed02d2dc8` | mock_issuer → reference_wallet → mock_verifier | vc_sd_jwt / expired | invalid / invalid | correct_rejection | PRESENT_RESULT / CREDENTIAL_EXPIRED | 2026-10-23T04:58:02.465Z | [record](2026-10-23-ci-mock-matrix.json) |
+| `f589abb7-3c41-404e-8d27-80ee86dda3fc` | mock_issuer → reference_wallet → mock_verifier | vc_sd_jwt / wrong_type | invalid / invalid | correct_rejection | PRESENT_RESULT / CREDENTIAL_TYPE_MISMATCH | 2026-10-23T04:58:03.990Z | [record](2026-10-23-ci-mock-matrix.json) |
+| `7c76f459-eb56-4cea-a095-2e774ca095c1` | mock_issuer → reference_wallet → mock_verifier | vc_sd_jwt / missing_disclosure | invalid / invalid | correct_rejection | PRESENT_RESULT / REQUIRED_DISCLOSURE_MISSING | 2026-10-23T04:58:05.467Z | [record](2026-10-23-ci-mock-matrix.json) |
+| `00a3e2d0-9807-454a-a0ae-a2f8df6d1d9a` | mock_issuer → reference_wallet → mock_verifier | vc_sd_jwt / replay_nonce | invalid / invalid | correct_rejection | PRESENT_RESULT / NONCE_MISMATCH | 2026-10-23T04:58:06.995Z | [record](2026-10-23-ci-mock-matrix.json) |
 
 Known versions: wallet `reference-wallet/0.1.0`, verifier `local-mock/1`; mock issuer build label was `unreported`. Profile `mock-sdjwt-flat-v1`, issuer representation `did:jwk`. The `replay_nonce` preset changes the nonce; a true byte replay is a separate local probe, not this matrix cell.
 
@@ -36,7 +36,7 @@ Known versions: wallet `reference-wallet/0.1.0`, verifier `local-mock/1`; mock i
 | Inji Certify | Reference Wallet | Inji Verify | SD-JWT | `not_tested` in this full-record export; earlier sanitized spike summaries exist |
 | Inji Certify | Reference Wallet | Mock verifier | SD-JWT | `not_tested` in this full-record export |
 | Mock issuer | Reference Wallet | Inji Verify | SD-JWT | observed above, 21 October |
-| Mock issuer | Reference Wallet | Mock verifier | SD-JWT | observed above, 22 October |
+| Mock issuer | Reference Wallet | Mock verifier | SD-JWT | observed above, 23 October |
 | Inji Certify | Inji Web assisted | Inji Verify | JSON-LD | `not_tested`; A1 blocked on account and authenticated Web/Mimoto deployment |
 | Inji Certify | Inji Wallet mobile | Inji Verify | SD-JWT | `not_tested`; A2 blocked on pinned installed app/device |
 

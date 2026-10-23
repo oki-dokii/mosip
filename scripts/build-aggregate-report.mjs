@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 const root = new URL("../", import.meta.url);
 const output = new URL("../submission/evidence/2026-10-23-aggregate-interop.md", import.meta.url);
-const localSource = "spikes/fixtures/wallet-interop-bff-2026-10-22.json";
+const localSource = "submission/evidence/2026-10-23-ci-mock-matrix.json";
 const liveSources = [
   "submission/evidence/2026-10-21-mock-x509-valid.json",
   "submission/evidence/2026-10-21-mock-x509-bad-signature.json",
@@ -25,19 +25,19 @@ function row(run, source) {
 
 const local = await load(localSource);
 const live = await Promise.all(liveSources.map(load));
-if (local.source !== "synthetic Docker mock matrix" || local.items.length !== 6 || local.reports.length !== 6 || live.some(item => item.evidence?.tier !== "mock_interop")) {
+if (local.source !== "synthetic Docker mock matrix" || local.dirtyWorkingTree !== false || local.items.length !== 6 || local.reports.length !== 6 || live.some(item => item.evidence?.tier !== "mock_interop")) {
   throw new Error("Expected committed sanitized run evidence is missing or changed");
 }
 for (const run of local.items) {
   if (!local.reports.some(report => report.run?.id === run.id) || run.status !== "passed") throw new Error("Local mock matrix and reports disagree");
 }
 
-const localLink = `../../${localSource}`;
+const localLink = localSource.slice("submission/evidence/".length);
 const liveLinks = liveSources.map(path => path.slice("submission/evidence/".length));
 const lines = [
   "# Aggregate interoperability evidence — 23 October 2026",
   "",
-  "Compiled against merged `main` checkpoint `c4b00e3`. This report projects only metadata from committed sanitized run records; it does not execute a new wallet or Collab flow. Run IDs in the older memory-backed records are identifiers, not live web links. Open the linked record and search its run ID. Unknown deployment versions remain `unreported`.",
+  "Compiled against merged `main` checkpoint `b0f132d`. This report projects only metadata from committed sanitized run records; it does not execute a new wallet or Collab flow. Run IDs in the older memory-backed records are identifiers, not live web links. Open the linked record and search its run ID. Unknown deployment versions remain `unreported`.",
   "",
   "## Observed mock interoperability with public Collab Verify",
   "",
@@ -49,9 +49,9 @@ const lines = [
   "",
   "Known versions: issuer `mock-x509-1`, wallet `reference-wallet/0.1.0`, verifier `unreported`. Protocol profile and detailed rejection code were not recorded in these historical reports.",
   "",
-  "## Observed local mock protocol matrix",
+  "## Observed hosted CI mock protocol matrix",
   "",
-  `Six synthetic Docker mock issuer → Reference Wallet → mock verifier SD-JWT runs from 22 October, recorded in [the source matrix](${localLink}). The source records commit \`${cell(local.sourceCommit)}\` with \`dirtyWorkingTree: true\`; its exact code state is therefore not reproducible from that commit alone. Hosted CI on the merged tree separately passed the two-case Docker smoke in [run 27](https://github.com/oki-dokii/mosip/actions/runs/39901216659).`,
+  `Six synthetic Docker mock issuer → Reference Wallet → mock verifier SD-JWT runs from 23 October, recorded in [the source matrix](${localLink}). The source records commit \`${cell(local.sourceCommit)}\`, capture time \`${cell(local.capturedAt)}\`, PostgreSQL storage and \`dirtyWorkingTree: false\`. All six passed with exact expected verdicts in [hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583). This clean CI evidence supersedes the earlier 22 October dirty-tree mock matrix for the submission report.`,
   "",
   "| Run ID | Participants | Format / fault | Expected / actual | Reason evaluation | Failing step / code | Finished (UTC) | Evidence |",
   "|---|---|---|---|---|---|---|---|",
@@ -67,7 +67,7 @@ const lines = [
   "| Inji Certify | Reference Wallet | Inji Verify | SD-JWT | `not_tested` in this full-record export; earlier sanitized spike summaries exist |",
   "| Inji Certify | Reference Wallet | Mock verifier | SD-JWT | `not_tested` in this full-record export |",
   "| Mock issuer | Reference Wallet | Inji Verify | SD-JWT | observed above, 21 October |",
-  "| Mock issuer | Reference Wallet | Mock verifier | SD-JWT | observed above, 22 October |",
+  "| Mock issuer | Reference Wallet | Mock verifier | SD-JWT | observed above, 23 October |",
   "| Inji Certify | Inji Web assisted | Inji Verify | JSON-LD | `not_tested`; A1 blocked on account and authenticated Web/Mimoto deployment |",
   "| Inji Certify | Inji Wallet mobile | Inji Verify | SD-JWT | `not_tested`; A2 blocked on pinned installed app/device |",
   "",

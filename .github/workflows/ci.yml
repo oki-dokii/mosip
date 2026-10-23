@@ -69,6 +69,9 @@ jobs:
       - name: Secret audit
         run: pnpm audit:secrets
 
+      - name: Aggregate report consistency
+        run: node scripts/build-aggregate-report.mjs --check
+
   browser-smoke:
     name: Browser smoke (Chromium / axe)
     runs-on: ubuntu-latest
