@@ -12,7 +12,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:validate": "prisma validate",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "pnpm --filter @playground/mock-issuer --filter @playground/mock-verifier build && vitest run"
   },
   "dependencies": {
     "@digitalbazaar/ed25519-signature-2020": "5.4.0",
@@ -25,7 +25,9 @@
     "jsonld": "9.0.0",
     "jsonld-signatures": "11.6.0",
     "socket.io": "4.8.1",
-    "zod": "3.25.76"
+    "zod": "3.25.76",
+    "@playground/mock-issuer": "workspace:*",
+    "@playground/mock-verifier": "workspace:*"
   },
   "devDependencies": {
     "@types/cors": "2.8.19",

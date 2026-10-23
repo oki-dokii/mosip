@@ -13,6 +13,7 @@ fi
 export PLAYGROUND_DRIVER_MODE=collab
 export MOCK_ISSUER_BASE_URL=http://mock-issuer:4101
 export MOCK_VERIFIER_BASE_URL=http://mock-verifier:4102
+export MOCK_ISSUER_ENABLE_TEST_CASES=true
 
 docker compose --profile core --profile mocks up -d --build --wait
 node scripts/compose-smoke.mjs

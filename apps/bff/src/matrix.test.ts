@@ -23,7 +23,7 @@ describe("interoperability matrix", () => {
     expect(markdown).toContain("| inji_certify | reference_wallet |");
     const table = markdown.split("\n").filter((line) => line.startsWith("|"));
     expect(table).toHaveLength(3);
-    expect(table.map((line) => line.split("|").length - 2)).toEqual([10, 10, 10]);
+    expect(table.map((line) => line.split("|").length - 2)).toEqual([16, 16, 16]);
   });
 
   it("keeps fixture and live evidence in separate latest-result rows", () => {
@@ -32,4 +32,13 @@ describe("interoperability matrix", () => {
     expect(latestMatrix([fixture, live]).map((item) => item.id)).toEqual(["fixture", "live"]);
     expect(latestMatrix([fixture, live]).map((item) => item.evidenceTier)).toEqual(["fixture", "reference_wallet"]);
   });
+  it("separates scenario, protocol profile and issuer representation", () => {
+    const base = run("base", "2026-01-01T00:00:00Z");
+    const x509 = { ...base, id: "x509", issuerRepresentation: "x509" as const };
+    const did = { ...base, id: "did", issuerRepresentation: "did:jwk" as const };
+    const policy = { ...did, id: "policy", protocolProfile: "mock-sdjwt-flat-v1" as const };
+    const scenario = { ...policy, id: "scenario", config: { ...policy.config, scenarioId: "f1571de0-0000-4000-8000-000000000005" } };
+    expect(latestMatrix([base, x509, did, policy, scenario])).toHaveLength(5);
+  });
+
 });

@@ -3,7 +3,7 @@
   "updated": "2026-10-22",
   "source": "GAPS.md",
   "owner": "Person 3",
-  "scope": "Snapshot of existing public observations; no unverified external findings claimed.",
+  "scope": "Synthetic local protocol implementation plus fresh public Collab investigation; real wallet execution remains excluded.",
   "findings": [
     {
       "id": "G-01",
@@ -12,17 +12,25 @@
       "productVersion": "unreported",
       "evidence": [
         "PHASE3.md",
-        "submission/evidence/2026-10-21-mock-x509-valid.json"
+        "submission/evidence/2026-10-21-mock-x509-valid.json",
+        "spikes/fixtures/wallet-interop-live-2026-10-22.json",
+        "submission/PERSON3_LIVE_INVESTIGATION.md"
       ],
       "runIds": [
         "27be569a-ff0a-4ef2-9595-3806adf47ad9",
-        "1328bfb9-d9cb-4390-8096-905c7fda2552"
+        "1328bfb9-d9cb-4390-8096-905c7fda2552",
+        "955906e8-ffbd-4221-8c45-f64f435ad9f6",
+        "c3877a80-7dae-4f0c-9985-1b9a8fd6d2ca"
       ],
       "matrixCells": [
         "mock_issuer|reference_wallet|inji_verify|vc_sd_jwt|cross_device|none|mock_interop"
       ],
-      "matrixDecision": "Related cell only: issuer representation is not a matrix-key axis. did:jwk mismatch and x5c success must not be collapsed into a universal issuer-method verdict.",
-      "upstreamIssue": null
+      "matrixDecision": "Current grouping separates issuerRepresentation and protocolProfile; historic keys remain historical. Collab did:jwk rejects while X.509 accepts. Upstream merged DID support cannot identify the unreported deployed build.",
+      "upstreamIssue": null,
+      "existingUpstreamChanges": [
+        "https://github.com/inji/vc-verifier/pull/290",
+        "https://github.com/inji/vc-verifier/pull/296"
+      ]
     },
     {
       "id": "G-02",
@@ -44,11 +52,12 @@
       "disclosure": "public_non_security_observation",
       "productVersion": "unreported",
       "evidence": [
-        "PHASE3.md"
+        "PHASE3.md",
+        "spikes/fixtures/wallet-interop-live-2026-10-22.json"
       ],
       "runIds": [],
       "matrixCells": [],
-      "matrixDecision": "Cross-cutting reproducibility limit; does not decide a verifier verdict.",
+      "matrixDecision": "Version discovery completed: actuator/info returned 403 for both services; Verify API description is reachable but does not attest a deployment release.",
       "upstreamIssue": null
     },
     {
@@ -58,12 +67,35 @@
       "productVersion": "unreported",
       "evidence": [
         "PHASE0_1.md",
-        "spikes/fixtures/collab-contracts-2026-10-20.json"
+        "spikes/fixtures/collab-contracts-2026-10-20.json",
+        "spikes/fixtures/wallet-interop-live-2026-10-22.json",
+        "submission/PERSON3_LIVE_INVESTIGATION.md"
       ],
       "runIds": [],
       "matrixCells": [],
-      "matrixDecision": "Grant/profile dimensions are not in the current matrix key. Pin deployment and reduce each grant before assigning a failure to a specific cell.",
+      "matrixDecision": "Both synthetic configurations reproduce offer/token/nonce HTTP 200 then credential HTTP 401. Deployment version and authorization configuration remain unreported; do not classify a new protocol defect.",
       "upstreamIssue": null
     }
-  ]
+  ],
+  "localProtocolEvidence": {
+    "profile": "mock-sdjwt-flat-v1",
+    "evidenceTier": "local_mock_protocol",
+    "artifact": "spikes/fixtures/wallet-interop-2026-10-22.json",
+    "cases": 12,
+    "correctRejections": 11,
+    "correctAcceptances": 1,
+    "scope": "Standalone synthetic twelve-case suite plus BFF integration for the five existing fault kinds and valid control; both in-process and external HTTP paths tested.",
+    "a2Status": "blocked_before_execution",
+    "mobileEvidence": "submission/A2_MOBILE_EVIDENCE.md",
+    "upstreamClaim": "Fresh Collab observations are recorded separately; no new upstream defect claimed or issue filed.",
+    "bffArtifact": "spikes/fixtures/wallet-interop-bff-2026-10-22.json",
+    "checks": "spikes/fixtures/wallet-interop-integration-checks-2026-10-22.json"
+  },
+  "liveInvestigation": {
+    "artifact": "spikes/fixtures/wallet-interop-live-2026-10-22.json",
+    "summary": "submission/PERSON3_LIVE_INVESTIGATION.md",
+    "nonceMismatch": "direct_post_http_400_preserved_no_status_timeout",
+    "exactNegativeReason": "inconclusive_upstream_generic_diagnostic",
+    "deploymentVersion": "unreported"
+  }
 }

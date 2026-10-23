@@ -54,6 +54,16 @@ Version 0.1 · started 2026-10-17
 
 ## Log
 
+### D-041 · Evaluate controlled protocol faults by reason through a shared verifier core
+- **Date:** 2026-10-22   **Status:** Accepted and implemented
+- **Context:** Payload edits invalidated issuer signatures before expiry/type checks; broad invalid outcomes and missing result defaults could produce false passes. The user authorized completing Person 3 integration across shared files.
+- **Decision:** Sign grant-bound semantic variants in the controlled mock issuer; use the same pure verifier in HTTP and in-process drivers; require versioned boundary/stage/code matches for expected rejections. Persist optional evaluation/profile/issuer representation in existing step JSON, reconstruct run metadata on read, and include those identities in matrix grouping. Add six controlled mock presets and preserve the original four.
+- **Alternatives considered:** Duplicate verifier logic (diverges); post-sign payload edits (test wrong boundary); pass any rejection (masks unrelated failure); schema migration (unnecessary for additive step metadata).
+- **Why this one:** Tests demonstrate intended rejection reasons, explicit missing/error verdict handling, polling, old-record compatibility and matrix separation. Docker smoke exercises actual HTTP roles and PostgreSQL reports.
+- **Trade-off accepted:** Flat synthetic mock profile only; generic Collab rejections stay inconclusive for precise fault expectations. Genuine replay/wrong-holder probes remain in the independent harness. X.509 signature validation does not establish trust-chain policy; request JWT authentication remains a tracked limitation.
+- **Revisit if:** A new profile, recursive disclosures, authenticated request processing or a durable mobile wallet driver is introduced.
+- **Affects:** `apps/mock-issuer`, `apps/mock-verifier`, BFF drivers/orchestrator/protocol/store/scenarios/report/matrix, `packages/shared`, web evaluation display, `docker-compose.yml`, Person 3 handoff/evidence. `jsonc-parser@3.3.1` (MIT) provides bounded duplicate-aware parsing.
+
 ### D-040 · Allow a canonical public-URL proxy only for a controlled local stack
 - **Date:** 2026-10-22   **Status:** Design accepted; deployment pending
 - **Decision:** Retain passive HAR for Collab. A future local proxy may be the canonical service origin configured before issuance; it must not rewrite signed identifiers or protocol payloads. D-039 does not reject this architecture.

@@ -13,6 +13,7 @@ The table records **direct runtime dependencies** and license identifiers from t
 | Socket.IO and Socket.IO Client | Live run progress | MIT |
 | Prisma Client | PostgreSQL access | Apache-2.0 |
 | jose | JWT and JWK operations | MIT |
+| jsonc-parser 3.3.1 | Bounded duplicate-aware mock protocol JSON parsing | MIT |
 | jsonld and jsonld-signatures | JSON-LD processing and proofs | BSD-3-Clause |
 | Zod | Shared runtime schemas | MIT |
 | Digital Bazaar Ed25519 Signature 2020 and Verification Key 2020 | JSON-LD proof support | BSD-3-Clause |

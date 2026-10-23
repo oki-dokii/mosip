@@ -24,6 +24,9 @@ This document tells a stranger how to start, stop, inspect, and reproduce the pl
 ## Quick start
 
 Requires Docker with Compose V2 (see [Prerequisites](#prerequisites)). From a fresh clone, no `.env` file needed:
+The one-command demo finds a working Docker context, builds the services, and runs six synthetic **mock issuer → Reference Wallet → mock verifier** SD-JWT presets. It checks a valid control and exact-reason rejections for corrupted signature, signed expiry/type, missing disclosure, and nonce mismatch. It prints `DEMO PASS` only after saving ten-step runs with exchanges and `mock_interop` provenance. The script enables test cases for the mock issuer and BFF; ordinary Compose defaults to false. `MATRIX_ARTIFACT_PATH` writes a sanitized report to a new owner-only file.
+
+For the independent mock services, set the BFF driver and local service URLs:
 
 ```bash
 export PLAYGROUND_DRIVER_MODE=collab
@@ -34,7 +37,7 @@ docker compose --profile core --profile mocks up --build -d --wait
 
 Open **http://localhost:5174** in a browser. The app starts in cross-container mock mode. All run data is stored in PostgreSQL inside the Compose network.
 
-Or use the one-command demo script (builds, starts, runs two synthetic SD-JWT cases, prints DEMO PASS):
+Or use the one-command demo script (builds, starts, runs six synthetic SD-JWT cases, prints DEMO PASS):
 
 ```bash
 pnpm install        # only needed once, for the demo script itself

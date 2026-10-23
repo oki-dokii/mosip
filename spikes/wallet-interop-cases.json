@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "profile": "mock-sdjwt-flat-v1",
+  "specificationReferences": ["https://www.rfc-editor.org/rfc/rfc9901.html#section-7.3", "https://www.rfc-editor.org/rfc/rfc8725.html#section-3.1"],
+  "cases": [
+    {"id":"p3.signature.issuer","fault":"bad_signature","expected":{"outcome":"invalid","boundary":"result","stage":"issuer_signature","code":"ISSUER_SIGNATURE_INVALID"}},
+    {"id":"p3.credential.expired","fault":"expired","expected":{"outcome":"invalid","boundary":"result","stage":"credential_time","code":"CREDENTIAL_EXPIRED"}},
+    {"id":"p3.credential.type","fault":"wrong_type","expected":{"outcome":"invalid","boundary":"result","stage":"credential_type","code":"CREDENTIAL_TYPE_MISMATCH"}},
+    {"id":"p3.holder.wrong_key","fault":"wrong_holder","expected":{"outcome":"invalid","boundary":"result","stage":"holder_proof","code":"HOLDER_PROOF_INVALID"}},
+    {"id":"p3.holder.missing_binding","fault":"missing_holder_binding","expected":{"outcome":"invalid","boundary":"result","stage":"holder_binding","code":"HOLDER_BINDING_MISSING"}},
+    {"id":"p3.binding.audience","fault":"wrong_audience","expected":{"outcome":"invalid","boundary":"result","stage":"audience","code":"AUDIENCE_MISMATCH"}},
+    {"id":"p3.binding.nonce","fault":"wrong_nonce","expected":{"outcome":"invalid","boundary":"result","stage":"nonce","code":"NONCE_MISMATCH"}},
+    {"id":"p3.replay.fresh_challenge","fault":"replay","expected":{"outcome":"invalid","boundary":"result","stage":"nonce","code":"NONCE_MISMATCH"}},
+    {"id":"p3.replay.consumed_state","fault":"used_state","expected":{"outcome":"invalid","boundary":"direct_post","stage":"state","code":"INVALID_STATE"}},
+    {"id":"p3.disclosure.required","fault":"missing_required","expected":{"outcome":"invalid","boundary":"result","stage":"required_claims","code":"REQUIRED_DISCLOSURE_MISSING"}},
+    {"id":"p3.disclosure.optional","fault":"missing_optional","expected":{"outcome":"valid","boundary":"result"}},
+    {"id":"p3.profile.presentation_submission","fault":"unsupported_parameter","expected":{"outcome":"invalid","boundary":"direct_post","stage":"profile","code":"UNSUPPORTED_PRESENTATION_SUBMISSION"}}
+  ]
+}

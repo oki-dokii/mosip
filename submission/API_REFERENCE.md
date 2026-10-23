@@ -16,7 +16,7 @@ Local base URL: `http://localhost:4000/api/v1`. All routes below are implemented
 | POST | `/runs/:id/capture/har` | `{ "runId": "same UUID", "har": { "log": { "entries": [...] } } }` | Import counts, skip reasons, per-step coverage and capture gaps; synthetic test traffic only, after a finished run |
 | GET | `/runs/:id/report?format=json\|md` | — | Downloadable report with evidence tier |
 | GET | `/runs/:id/sequence` | — | Mermaid source and exchange/step markers |
-| GET | `/matrix` | — | Latest run for each role/format/fault/**evidence-tier** combination |
+| GET | `/matrix` | — | Latest run for each role/format/fault/evidence-tier/scenario/profile/issuer-representation combination |
 | GET | `/matrix/export?format=json\|csv\|md` | — | Downloadable latest-result matrix |
 
 Example run body:
@@ -42,3 +42,9 @@ Socket.IO namespace `/runs` accepts `join(runId)` and sends `run:created`, `step
 The additive import response is `{ imported, skipped, skippedReasons, coverage, gaps }`. Each coverage item has `stepKey`, `state` (`captured`, `missing`, `not_observable`), `count`, and `reason`. Coverage describes browser observation and does not change a run result. Imported request/response envelopes include a versioned `publicView` with `authenticity: "not_verified"`; request metadata also records the tagging rule, reason, timing certainty and redaction count. No shared Exchange type or database migration was added.
 
 The endpoint requires `Content-Type: application/json`. Stable capture errors include `CAPTURE_JSON_REQUIRED` (415), `CAPTURE_RATE_LIMITED` (429 with `Retry-After`), malformed JSON/top-level HAR (400), active/cross-run imports (409), unapproved origins (422), and unsafe sizes (413). The per-process rate limit is ten attempts per minute per transport peer. See [the capture contract](../CAPTURE_CONTRACT_PROPOSAL.md) and [security boundaries](../SECURITY.md).
+
+### Protocol evaluation (additive)
+
+`RunSummary` may include `protocolProfile` (`fixture-v1`, `mock-sdjwt-flat-v1`, `legacy-mock-v1`, `collab-dcql`), `issuerRepresentation` (`did:jwk`, `x509`, `unreported`) and `evaluation` (schemaVersion 1). Evaluation includes expected and observed outcome, boundary, application step, stage and code. Verdicts are `correct_acceptance`, `correct_rejection`, `unexpected_rejection`, `wrongly_accepted`, `wrong_step`, `wrong_reason`, `inconclusive`. Only the first two pass a run. Unknown detailed reasons, service failures and missing verdicts cannot pass a negative scenario.
+
+Metadata is saved in existing step JSON and reconstructed on reads; no migration is required. Historical records can omit it. Matrix grouping includes scenario/profile/issuer representation; CSV/Markdown append evaluation columns. Ten presets are available, including six controlled mock cases. Signed expiry/type variants require a controlled mock issuer; for external mock services set `MOCK_ISSUER_ENABLE_TEST_CASES=true` on both issuer and BFF. Missing-disclosure isolation requires the strict mock pair. The `replay_nonce` API enum continues to mean nonce mismatch; genuine byte replay is a separate harness case.

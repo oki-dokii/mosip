@@ -16,8 +16,8 @@
     "db:generate": "pnpm --filter @playground/bff db:generate",
     "db:migrate": "pnpm --filter @playground/bff db:migrate",
     "db:deploy": "pnpm --filter @playground/bff db:deploy",
-    "typecheck": "pnpm --filter @playground/shared build && pnpm -r typecheck",
-    "test": "node --test spikes/*.test.mjs scripts/*.test.mjs && pnpm -r test",
+    "typecheck": "pnpm --filter @playground/shared --filter @playground/mock-issuer --filter @playground/mock-verifier build && pnpm -r typecheck",
+    "test": "pnpm --filter @playground/shared --filter @playground/mock-issuer --filter @playground/mock-verifier build && node --test spikes/*.test.mjs scripts/*.test.mjs && pnpm -r test",
     "spike:contracts": "node spikes/collab-contract-spike.mjs",
     "spike:wallet": "node spikes/collab-reference-wallet.mjs"
   },

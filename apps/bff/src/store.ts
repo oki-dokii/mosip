@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import type { Exchange, RunStep, RunSummary } from "@playground/shared";
+import { protocolMetadata } from "./protocol.js";
 
 export interface RunRecord {
   run: RunSummary;
@@ -30,12 +31,14 @@ export class MemoryRunRepository implements RunRepository {
   }
 
   async get(id: string) {
-    return this.runs.get(id);
+    const record = this.runs.get(id);
+    if (record) Object.assign(record.run, protocolMetadata(record.steps));
+    return record;
   }
 
   async list() {
     return [...this.runs.values()]
-      .map(({ run }) => run)
+      .map(({ run, steps }) => Object.assign(run, protocolMetadata(steps)))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
@@ -101,6 +104,7 @@ function fromStored(record: StoredRun): RunRecord {
       createdAt: record.createdAt.toISOString(),
       startedAt: record.startedAt?.toISOString() ?? null,
       finishedAt: record.finishedAt?.toISOString() ?? null,
+      ...protocolMetadata(record.steps.map((step) => ({ ...step, summary: step.summary as Record<string, unknown> | null }))),
     },
     steps: record.steps
       .sort((a, b) => a.seq - b.seq)

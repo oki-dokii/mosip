@@ -1,6 +1,6 @@
 # Interoperability findings and upstream issue candidates
 
-Updated 2026-10-21. This is a reproducible findings register, **not** a claim that upstream maintainers have confirmed defects. No upstream GitHub issue has been filed from this repository. Before filing, rerun against a pinned current release, check existing issues, and provide only sanitized evidence. The owning developer should file each accepted issue under their own GitHub identity and add its URL here.
+Updated 2026-10-22. This is a reproducible findings register, **not** a claim that upstream maintainers have confirmed defects. No upstream GitHub issue has been filed from this repository. Before filing, rerun against a pinned current release, check existing issues, and provide only sanitized evidence. The owning developer should file each accepted issue under their own GitHub identity and add its URL here.
 
 | ID | Observation | Evidence | Impact | Next check / likely upstream home | Status |
 |---|---|---|---|---|---|
@@ -16,3 +16,17 @@ For an upstream issue, include: exact product/build or `unreported`, environment
 On 2026-10-21, synthetic mock X.509 issuer → Reference Wallet → public Collab Inji Verify generated a **new** SD-JWT presentation with a nonce different from the signed request. Verify's direct-post endpoint returned HTTP 400 with `invalid_request`, and no result was available. The playground's status poll then marked the run `errored` rather than a matched `invalid`. See [sanitized report](submission/evidence/2026-10-21-nonce-mismatch.json), run `f8756c3d-1389-4196-85d8-8b1e2909cc1a`.
 
 This observation does **not** reproduce a claim that Verify accepts a wrong nonce. It also is not a genuine replay of a previously accepted byte-for-byte `vp_token`; our current `replay_nonce` fault is a nonce-mismatch probe. Before an upstream issue, implement that separate replay and pin the Verify build. The playground's early-rejection handling is a **local harness gap**: it should record a terminal verifier rejection without waiting for a submission status that will never appear.
+
+## Person 3 local protocol evidence — 22 October 2026
+
+The standalone mock protocol suite now distinguishes signed semantic faults from signature corruption. [Local twelve-case artifact](spikes/fixtures/wallet-interop-2026-10-22.json) records eleven exact expected rejections and one optional-disclosure acceptance, each preceded by a passing positive control and independent construction checks. Cases cover issuer signature, signed expiry/type, wrong/missing holder, audience, nonce mismatch, exact-byte replay into a fresh challenge, consumed state, required/optional disclosure and unsupported `presentation_submission` on the local profile.
+
+This is `local_mock_protocol` evidence for `mock-sdjwt-flat-v1`; it is not a new Collab result, general SD-JWT/PE conformance, trust-chain validation or A2. The artifact records a dirty working tree and unreported target build labels. Diagnostics, signed variants and exact-reason evaluation are now integrated into both BFF mock paths, reports and matrix identity. The independent cases remain separately labeled; six BFF presets cover the valid control and existing five faults. See [integration handoff](PERSON3_PROTOCOL_HANDOFF.md) and [A2 investigation](submission/A2_MOBILE_EVIDENCE.md).
+
+## Fresh Collab investigation and BFF correction — 22 October 2026
+
+[Live evidence](spikes/fixtures/wallet-interop-live-2026-10-22.json) and [investigation details](submission/PERSON3_LIVE_INVESTIGATION.md) reproduce X.509 acceptance, did:jwk rejection, corrupted-signature rejection and nonce-mismatch direct-post HTTP 400. The BFF now preserves that early rejection and its exchange without a status timeout. Collab does not supply the versioned detailed diagnostic needed for the expected local nonce/signature code, so those negative evaluations are **inconclusive**, rather than falsely passed. Genuine byte replay is verified only in the independent local harness.
+
+Both Certify configurations again return HTTP 200 for offer creation/resolution, token and nonce, then HTTP 401 for credential issuance. This is a reduced synthetic deployment observation, not an established protocol defect. Both service releases remain unreported after explicit version discovery. Current upstream source contains merged DID resolution changes despite older README profile text, so G-01 cannot be generalized to current library support or assigned a regression version. No upstream issue was filed.
+
+[BFF six-scenario evidence](spikes/fixtures/wallet-interop-bff-2026-10-22.json) records exact local reasons and separate scenario/profile/issuer matrix identities. [Final check record](spikes/fixtures/wallet-interop-integration-checks-2026-10-22.json) supersedes the earlier standalone validation checkpoint. Real mobile wallet acceptance remains excluded and blocked as recorded in the A2 report.

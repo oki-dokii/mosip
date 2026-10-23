@@ -12,15 +12,6 @@ function flipLastCharacter(value: string) {
   return `${value.slice(0, -1)}${last === "A" ? "B" : "A"}`;
 }
 
-function mutateJwtPayload(jwt: string, mutate: (payload: Record<string, unknown>) => void) {
-  const parts = jwt.split(".");
-  if (parts.length !== 3) throw new Error("Expected a compact JWT");
-  const payload = JSON.parse(Buffer.from(parts[1]!, "base64url").toString("utf8"));
-  mutate(payload);
-  parts[1] = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  return parts.join(".");
-}
-
 function corruptJwtSignature(jwt: string) {
   const parts = jwt.split(".");
   if (parts.length !== 3 || !parts[2]) throw new Error("Expected a signed compact JWT");
@@ -35,8 +26,6 @@ function tamperSdJwt(credential: string, kind: TamperKind) {
   const parts = credential.split("~");
   if (!parts[0]) throw new Error("Expected an SD-JWT credential");
   if (kind === "bad_signature") parts[0] = corruptJwtSignature(parts[0]);
-  if (kind === "expired") parts[0] = mutateJwtPayload(parts[0], (payload) => { payload.exp = 1; });
-  if (kind === "wrong_type") parts[0] = mutateJwtPayload(parts[0], (payload) => { payload.vct = "UnexpectedCredential"; });
   if (kind === "missing_disclosure") {
     if (parts.length < 3) throw new Error("SD-JWT does not contain a disclosure to remove");
     parts.splice(1, 1);
@@ -50,13 +39,12 @@ function tamperJsonLd(credential: Record<string, any>, kind: TamperKind) {
     if (!output.proof?.proofValue) throw new Error("JSON-LD credential has no proof value to corrupt");
     output.proof.proofValue = flipLastCharacter(output.proof.proofValue);
   }
-  if (kind === "expired") output.expirationDate = "2000-01-01T00:00:00Z";
-  if (kind === "wrong_type") output.type = ["VerifiableCredential", "UnexpectedCredential"];
-  if (kind === "missing_disclosure") delete output.credentialSubject;
+  if (kind === "missing_disclosure") throw new Error("Disclosure policy tests require SD-JWT");
   return output;
 }
 
 export function applyCredentialTamper(credential: unknown, kind: TamperKind, format: RunConfig["format"]) {
+  if (kind === "expired" || kind === "wrong_type") throw new Error("Semantic faults must be signed at issuance");
   if (kind === "replay_nonce") return clone(credential);
   if (format === "vc_sd_jwt") {
     if (typeof credential !== "string") throw new Error("Expected an SD-JWT string");
