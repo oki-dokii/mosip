@@ -27,11 +27,11 @@ Branch: `codex/person-b-phase-1`. Updated 23 October 2026 after the user authori
 
 Start the normal playground. Select JSON-LD, Inji Certify, Inji Web Assisted, Inji Verify and no fault. In **Backend-assisted journey**, choose **Start connected fixture**. Inject fixture issuance, confirm fixture storage, inject presentation and wait for the fixture verifier's normalized result. The timeline/history show this backend run with fixture evidence. Cancel and restart to exercise cleanup. The older browser-only rehearsal remains available separately.
 
-## Live deployment prerequisites — A1 remains blocked
+## Live deployment prerequisites — manual success, capture integration pending
 
 Set `ASSISTED_LIVE_ENABLED=true` only after the dedicated account and pinned services exist. Supply HTTPS `ASSISTED_WALLET_URL`, `ASSISTED_OFFER_URL`, `CERTIFY_BASE_URL`, `VERIFY_BASE_URL`, plus a deployment-validated HTTPS `ASSISTED_PRESENTATION_URL_TEMPLATE` containing exactly one `{request_uri}` placeholder, deployment-specific `VERIFY_CLIENT_ID` and optional `CREDENTIAL_CONFIGURATION_ID`. These are endpoint/profile settings, not login secrets. Inji Web/Mimoto retains credentials, cookies, OTPs and wallet state; the assisted backend does not use the Reference Wallet's Postman credentials or holder key.
 
-The live request link comes from the configured Verify request. The existing capture origin allowlist must match the canonical deployment. The current ingress is bounded HAR import, not an autonomous network sniffer; feed observed sanitized traffic while the run is active. Storage confirmation is a user assertion and still needs the manual persistence check and sanitized evidence in `A1_WEB_EVIDENCE.md`. A1 is signed off only after a real wallet stores and presents to Verify with `valid`. No such account/deployment was provided in this task, so live interoperability is unverified.
+The live request link comes from the configured Verify request. The existing capture origin allowlist must match the canonical deployment. The current ingress is bounded HAR import, not an autonomous network sniffer; feed observed sanitized traffic while the run is active. Storage confirmation is a user assertion and still needs the manual persistence check and sanitized evidence in `A1_WEB_EVIDENCE.md`. A1 is signed off only after a real wallet stores and presents to Verify with `valid`. A dedicated account is now available on hosted Collab. On 23 October, a manual browser journey stored a Land Registry Registration Receipt in signed-in Inji Web, presented it through the HTTPS Web handoff, and received Verify’s visible Valid verdict. Both Registration Receipt and Farmer cards survived a wallet refresh. This was not a playground-managed run; exact issuance profile, correlated Exchange evidence and backend normalization remain to be validated. See `A1_WEB_EVIDENCE.md` and its sanitized screenshots. Final integrator sign-off remains pending.
 
 ## QA
 
@@ -49,4 +49,14 @@ Status polling is serialized and stops on terminal state; old-run responses are 
 
 Live presentation observations must match the configured verifier origin and the expected run-scoped HMAC of the signed request's state. Raw state is not persisted. Missing/short state or mismatched/redacted correlation fails closed; the driver cannot accept unrelated same-run traffic. A separately running local HAR filter uses a different process key and cannot supply this correlation unchanged. Do not bypass filtering with real-session raw HAR: a live capture adapter must preserve the approved same-process state tag, or the run remains unverified/times out. This integration compatibility must be checked before A1.
 
-A generic native `openid4vp://` URI is no longer advertised as an Inji Web handoff. Live start requires the explicitly configured HTTPS Web launch template; its request URI is encoded into the placeholder. The actual deployment route still needs real-wallet validation. Fixtures do not claim that validation.
+A generic native `openid4vp://` URI is no longer advertised as an Inji Web handoff. Live start requires the explicitly configured HTTPS Web launch template; its request URI is encoded into the placeholder. The hosted route was exercised successfully in the manual browser journey below. Compatibility with the backend-created request profile still needs a managed live run; fixture results do not establish it.
+
+### Observed hosted Web presentation route — 23 October 2026
+
+Verify’s VP Verification → Land Registry → Open Web Wallets → Inji Wallet launched the following route (the real request identifier is intentionally omitted):
+
+```text
+https://injiweb.collab.mosip.net/user/authorize?client_id=decentralized_identifier%3Adid%3Aweb%3Ainjiverify.collab.mosip.net%3Av1%3Averify&request_uri={request_uri}
+```
+
+The manual flow completed matching, consent, sharing and visible Verify acceptance using the Land Registry Registration Receipt. The verifier must request only Land Registry: explicitly uncheck the default MOSIP ID and verify checkbox states. Inji Web displayed Trusted after the user-approved trust change. The exact issuance endpoint/configuration ID, protocol profile and compatibility with backend-created requests still require capture integration validation. The successful UI result is not a normalized managed-run result and does not change evidence tiers.
