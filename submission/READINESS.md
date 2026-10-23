@@ -7,7 +7,7 @@ This folder is a separate submission handoff. It does not change application cod
 | Criterion | Weight | What we can show now | Main gap |
 |---|---:|---|---|
 | Functionality completion | 40% | Fixture and Reference Wallet flows, inspector, reports, scenarios, matrix and mock roles; hosted Docker mock smoke passed on merged `main` | A1/A2 need real Inji-wallet evidence; local Inji stack and independent-machine rehearsal remain open |
-| Deliverable quality | 40% | Typed monorepo, 339 passing ordinary tests, three hosted Chromium checks, redaction, API and architecture notes | Three opt-in PostgreSQL tests and an independent-machine setup check remain |
+| Deliverable quality | 40% | Typed monorepo, 339 passing ordinary tests plus three separately passing PostgreSQL checks, three hosted Chromium checks, redaction, API and architecture notes | Independent-machine setup check remains |
 | UX/design | 10% | Working React playground, assisted journey, keyboard/axe browser checks and four synthetic screenshots | Annotated final wireframes/screenshots for submission remain |
 | Presentation | 10% | Narrative and demo outline in this folder | Actual slide deck and 2–5 minute video are still required |
 
@@ -31,7 +31,7 @@ This folder is a separate submission handoff. It does not change application cod
 | Architecture diagram | Prepared | [ARCHITECTURE.md](ARCHITECTURE.md); export an image/PDF for the deck if useful |
 | Design mockups/wireframes | Prepared, final visual review open | [Annotated UI flow and synthetic screens](UI_WIREFRAMES.md) plus [UIUX.md](../UIUX.md); confirm the final demo build still matches them |
 | Synthetic test data | Prepared | [TEST_EVIDENCE.md](TEST_EVIDENCE.md) lists committed fixtures and data boundaries |
-| Test cases and results | Updated | [TEST_EVIDENCE.md](TEST_EVIDENCE.md) records 339 ordinary passing tests, three skipped database checks, three browser checks, and unresolved A1/A2 |
+| Test cases and results | Updated | [TEST_EVIDENCE.md](TEST_EVIDENCE.md) records 339 ordinary passing tests, all 342 passing with a disposable database, three browser checks, and unresolved A1/A2 |
 | License and credits | Partial | [MPL-2.0](../LICENSE) and [direct dependency credits](../ATTRIBUTIONS.md) added; confirm team agreement and complete transitive/asset notice audit |
 | Fresh live report and matrix | Prepared for recorded mock combinations | [Aggregate report](evidence/2026-10-23-aggregate-interop.md) links 21 October Collab Verify and clean 23 October hosted mock run records with explicit untested cells; all-Inji wallet proof remains open |
 | Interoperability gaps | Drafted | [GAPS.md](../GAPS.md) separates observed findings from upstream issues, none filed yet |

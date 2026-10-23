@@ -9,12 +9,12 @@ Snapshot: 23 October 2026, merged `main` checkpoint `b0f132d`. [Hosted CI run 28
 | Mock issuer | 11 passed | Synthetic issuance, signed fault variants and HTTP boundaries |
 | Mock verifier | 71 passed | Verification, required disclosure, negative reasons and HTTP boundaries |
 | Web unit/component | 50 passed | Assisted state machine, safe evidence UI, matrix and cancellation behavior |
-| BFF | 168 passed, 3 skipped | Orchestration, capture/redaction, assisted APIs, reports and protocol evaluation; skipped checks need `CAPTURE_POSTGRES_TEST_URL` |
+| BFF | 168 passed by default; 171 passed with PostgreSQL configured | Orchestration, capture/redaction, assisted APIs, reports and protocol evaluation; three persistence checks are opt-in |
 | Chromium browser | 3 passed locally and in hosted CI | Assisted fixture, independent mock/capture flow, keyboard navigation and scoped axe/contrast checks |
 | Typecheck, build, secret audit | Passed locally and in CI | Source compiles/builds; text and tracked-file secret scanner found no match |
 | Docker Compose smoke | Passed in CI | Core + mocks started, PostgreSQL migrations completed, HTTP smoke and six exact-reason mock cases worked |
 
-**Total:** 339 runnable automated tests passed; three opt-in PostgreSQL checks skipped in the ordinary suite. The browser count is separate from 339. The browser checks use synthetic fixtures and local mocks; their scoped axe results do not certify the whole product. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) uploaded a [clean six-case matrix](evidence/2026-10-23-ci-mock-matrix.json) and browser evidence. The older [local protocol checkpoint](../spikes/fixtures/wallet-interop-integration-checks-2026-10-22.json) remains useful but recorded a dirty working tree.
+**Total:** the ordinary suite passed 339 tests and skipped three opt-in PostgreSQL checks. On 23 October, those three checks were run against a disposable PostgreSQL 16 container with all four migrations applied: **342 tests passed, none skipped**. The container was stopped and removed afterward. The browser count is separate from 342. Its synthetic fixtures and scoped axe results do not certify the whole product. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) uploaded a [clean six-case matrix](evidence/2026-10-23-ci-mock-matrix.json) and browser evidence. The older [local protocol checkpoint](../spikes/fixtures/wallet-interop-integration-checks-2026-10-22.json) remains useful but recorded a dirty working tree.
 
 ## Functional evidence and limits
 
@@ -31,4 +31,4 @@ Snapshot: 23 October 2026, merged `main` checkpoint `b0f132d`. [Hosted CI run 28
 
 The [standalone aggregate report](evidence/2026-10-23-aggregate-interop.md) groups the committed run records and marks missing full-record cells `not_tested`. A passing mock or Reference Wallet result never closes A1/A2. All public fixtures use synthetic identities; keep actual `.env`, OTPs, private keys, full VCs, raw HAR and student IDs outside Git.
 
-To repeat the ordinary checks, run `CI=true pnpm install --frozen-lockfile`, then `CI=true pnpm test`, `CI=true pnpm typecheck`, `CI=true pnpm build`, and `CI=true pnpm audit:secrets`. The browser suite additionally needs Playwright Chromium and starts four local services; see [README](../README.md#tests-and-evidence). Set `CAPTURE_POSTGRES_TEST_URL` only against a dedicated disposable test database to run the three opt-in checks.
+To repeat the ordinary checks, run `CI=true pnpm install --frozen-lockfile`, then `CI=true pnpm test`, `CI=true pnpm typecheck`, `CI=true pnpm build`, and `CI=true pnpm audit:secrets`. The browser suite additionally needs Playwright Chromium and starts four local services; see [README](../README.md#tests-and-evidence). To repeat the 342-test run, create a disposable PostgreSQL database, apply `pnpm db:deploy` with its `DATABASE_URL`, then set `CAPTURE_POSTGRES_TEST_URL` to that same database when running `pnpm test`. Never target a production or shared database: the tests create and delete synthetic run rows.
