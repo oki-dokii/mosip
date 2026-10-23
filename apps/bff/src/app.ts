@@ -18,6 +18,7 @@ import { snapshotVersions } from "./versions.js";
 import type { RunRepository } from "./store.js";
 import { browserCoverage, CaptureError, prepareHarImport } from "./capture/har.js";
 import { captureIngress } from "./capture/ingress.js";
+import { prepareLiveObservation, validBridgeToken } from "./capture/live-bridge.js";
 import { listScenarios, scenarioMismatch } from "./scenarios.js";
 
 const metadata: ImplementationMetadata = {
@@ -74,6 +75,10 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
   const assisted = new AssistedRuns(repository, getIo);
   app.use(cors({ origin: process.env.WEB_ORIGIN ?? "http://localhost:5173" }));
   app.use("/api/v1/runs/:id/capture/har", captureIngress(), express.json({ limit: "2mb" }));
+  app.use("/api/v1/assisted/runs/:id/capture/observation", captureIngress(), (request, response, next) => {
+    if (!validBridgeToken(request.get("x-capture-bridge-token"))) return response.status(403).json({ code: "CAPTURE_BRIDGE_FORBIDDEN" });
+    next();
+  }, express.json({ limit: "16kb" }));
   app.use(express.json({ limit: "256kb" }));
 
   app.get("/api/v1/assisted/capabilities", (_request, response) => response.json({ liveAvailable: assisted.available(), fixtureAvailable: true }));
@@ -94,6 +99,29 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
     if (!parsed.success) return response.status(400).json({ code: "VALIDATION_FAILED" });
     try { await assisted.observe(request.params.id, parsed.data.kind); return response.status(202).json({ accepted: true }); }
     catch (error) { if (error instanceof Error && error.message.startsWith("ASSISTED_")) return response.status(409).json({ code: error.message }); next(error); }
+  });
+  app.post("/api/v1/assisted/runs/:id/capture/observation", async (request, response, next) => {
+    const runId = request.params.id;
+    try {
+      if (!assisted.live(runId)) return response.status(409).json({ code: "ASSISTED_LIVE_INACTIVE" });
+      return await withExchangeLock(repository, runId, async () => {
+        if (!assisted.live(runId)) return response.status(409).json({ code: "ASSISTED_LIVE_INACTIVE" });
+        const record = await repository.get(runId);
+        if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
+        const exchange = prepareLiveObservation(request.body, record, captureOrigins());
+        const imported = await repository.addExchanges([exchange]);
+        if (imported) getIo().of("/runs").to(`run:${runId}`).emit("exchange:recorded", {
+          runId, exchangeId: exchange.id, seq: exchange.seq, actorFrom: exchange.actorFrom,
+          actorTo: exchange.actorTo, method: exchange.method, url: exchange.url,
+          status: exchange.status, durationMs: exchange.durationMs, redactionCount: new Set(exchange.redactions).size,
+        });
+        return response.status(202).json({ accepted: imported === 1, duplicate: imported === 0,
+          exchangeId: exchange.id, ruleId: (exchange.request as { capture: { ruleId: string } }).capture.ruleId });
+      });
+    } catch (error) {
+      if (error instanceof CaptureError) return response.status(error.status).json({ code: error.code });
+      next(error);
+    }
   });
   app.get("/api/v1/runs/:id/capture/coverage", async (request, response, next) => {
     try { const record = await repository.get(request.params.id); return record ? response.json({ coverage: browserCoverage(record) }) : response.status(404).json({ code: "RUN_NOT_FOUND" }); } catch (error) { next(error); }

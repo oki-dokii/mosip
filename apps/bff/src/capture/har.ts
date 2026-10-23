@@ -222,7 +222,7 @@ export function prepareHarImport(input: unknown, record: RunRecord, origins: Cap
 
 export function browserCoverage(record: RunRecord, added: Exchange[] = []) {
   const observed = [...new Map([...record.exchanges, ...added].map((exchange) => [exchange.id, exchange])).values()]
-    .filter((exchange) => (exchange.request as Record<string, unknown> | null)?.source === "har_import");
+    .filter((exchange) => ["har_import", "live_bridge"].includes(String((exchange.request as Record<string, unknown> | null)?.source)));
   return record.steps.map((step) => {
     const stepExchanges = observed.filter((exchange) => exchange.stepId === step.id);
     const count = stepExchanges.length;

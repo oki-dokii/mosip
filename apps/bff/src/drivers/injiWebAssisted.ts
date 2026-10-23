@@ -83,7 +83,11 @@ export class InjiWebAssistedDriver implements WalletDriver {
     const value = observation.exchange;
     const request = value.request as { source?: unknown; capture?: { ruleId?: unknown } } | null;
     const fixture = request?.source === "fixture" && value.actorFrom === this.id && value.actorTo === actorTo;
-    const capture = request?.source === "har_import" && value.actorFrom === "browser" && value.actorTo === (actorTo === "inji_certify" ? "certify" : "verify") && request?.capture?.ruleId === (actorTo === "inji_certify" ? "certify-credential" : "verify-submit");
+    const browserSource = request?.source === "har_import" || request?.source === "live_bridge";
+    const issuance = actorTo === "inji_certify" && ((value.actorTo === "certify" && request?.capture?.ruleId === "certify-credential") ||
+      (request?.source === "live_bridge" && value.actorTo === "mimoto" && request?.capture?.ruleId === "mimoto-download"));
+    const presentation = actorTo === "inji_verify" && value.actorTo === "verify" && request?.capture?.ruleId === "verify-submit";
+    const capture = browserSource && value.actorFrom === "browser" && (issuance || presentation);
     return value.runId === this.options.runId && value.stepId === stepId && (fixture || capture) && value.method === "POST" && value.status >= 200 && value.status < 300;
   }
   async authorize(context: DriverContext): Promise<DriverResult> {
@@ -95,7 +99,10 @@ export class InjiWebAssistedDriver implements WalletDriver {
     if (this.issued) throw new AssistedWaitError("observation_error", "issuance already observed");
     const observation = await this.wait("issuance", (value) => this.exchange(value, this.options.stepIds.ISSUE_CREDENTIAL, "inji_certify"));
     if (observation.kind === "exchange") this.issued = { id: observation.exchange.id, seq: observation.exchange.seq };
-    return { summary: { issuanceObserved: true, exchangeId: observation.kind === "exchange" ? observation.exchange.id : undefined, storageConfirmed: false } };
+    const route = observation.kind === "exchange" ? (observation.exchange.request as { capture?: { ruleId?: string } })?.capture?.ruleId : undefined;
+    return { summary: { issuanceObserved: true, exchangeId: observation.kind === "exchange" ? observation.exchange.id : undefined,
+      issuanceTransport: route === "mimoto-download" ? "mimoto_browser_download" : "certify_browser_credential",
+      downstreamCertifyObserved: route !== "mimoto-download", storageConfirmed: false } };
   }
   async store(context: DriverContext): Promise<DriverResult> {
     this.check(context);

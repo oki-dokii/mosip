@@ -14,9 +14,10 @@ import { snapshotVersions } from "./versions.js";
 export class AssistedRuns {
   private sessions = new Map<string, { abort: AbortController; mode: "fixture" | "live"; confirmations: AssistedObservation[]; actions: Record<string, string>; deadlineAt: number }>();
   constructor(private readonly repository: RunRepository, private readonly io: () => Server) {}
-  available() { return process.env.ASSISTED_LIVE_ENABLED === "true" && !!this.link(process.env.ASSISTED_WALLET_URL) && !!this.link(process.env.ASSISTED_OFFER_URL) && !!this.link(process.env.CERTIFY_BASE_URL) && !!this.link(process.env.VERIFY_BASE_URL) && !!process.env.VERIFY_CLIENT_ID && !!webPresentationLink(process.env.ASSISTED_PRESENTATION_URL_TEMPLATE, "openid4vp://authorize?request_uri=https%3A%2F%2Fverify.example%2Frequest"); }
+  available() { return process.env.ASSISTED_LIVE_ENABLED === "true" && (process.env.CAPTURE_BRIDGE_TOKEN?.length ?? 0) >= 32 && !!this.link(process.env.ASSISTED_WALLET_URL) && !!this.link(process.env.ASSISTED_OFFER_URL) && !!this.link(process.env.CERTIFY_BASE_URL) && !!this.link(process.env.VERIFY_BASE_URL) && !!process.env.VERIFY_CLIENT_ID && !!webPresentationLink(process.env.ASSISTED_PRESENTATION_URL_TEMPLATE, "openid4vp://authorize?request_uri=https%3A%2F%2Fverify.example%2Frequest"); }
   private link(value?: string) { try { const u = new URL(value ?? ""); return u.protocol === "https:" && !u.username && !u.password ? u.href : null; } catch { return null; } }
   active(id: string) { const session = this.sessions.get(id); return !!session && !session.abort.signal.aborted; }
+  live(id: string) { const session = this.sessions.get(id); return !!session && session.mode === "live" && !session.abort.signal.aborted; }
   async start(config: RunConfig, mode: "fixture" | "live", timeoutMs = 60_000) {
     if (config.wallet !== "inji_web_assisted" || config.format !== "ldp_vc" || config.issuer !== "inji_certify" || config.verifier !== "inji_verify" || config.tamper || config.scenarioId) throw new Error("ASSISTED_UNSUPPORTED");
     if (mode === "live" && !this.available()) throw new Error("ASSISTED_LIVE_BLOCKED");

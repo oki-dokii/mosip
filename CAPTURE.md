@@ -64,6 +64,12 @@ The output includes a safe report with skip counts and public summaries decoded 
 
 The [22 October check record](submission/evidence/2026-10-22-capture-checks.json) records the commands and local results, including 46 capture/redaction checks with PostgreSQL.
 
+## Managed live observation bridge
+
+For a real assisted run, use `pnpm capture:routes /outside-repo/session.har` locally to discover only method, allowlisted origin and a path with non-public segments replaced by `{id}`. Query strings, fragments, headers and bodies never appear in this output. The Person 2 handoff has the sequence and provenance rules. `pnpm capture:bridge /outside-repo/session.har RUN_UUID http://127.0.0.1:4000` sends only an allowlisted POST's timestamp, duration, URL without query/fragment, 2xx status and, for Verify direct-post, the opaque `state` scalar. It does **not** upload the HAR, credential, VP, cookies, auth headers or response body. A separate private `CAPTURE_BRIDGE_TOKEN` authorizes the collector; it is not the run-scoped HMAC key. The BFF computes the state marker in process, saves only the sanitized `Exchange`, and emits a body-free Socket.IO summary. The route requires an active live assisted run, a fresh observation timestamp, the exact origin and one of three rules: `certify-credential`, `mimoto-download` or `verify-submit`.
+
+`mimoto-download` is **browser → Mimoto** transport evidence. It does not expose a possible **Mimoto → Certify** server-side request; the exchange explicitly sets `downstreamCertifyObserved: false`. Wallet storage still needs separate human confirmation, and validity still comes from Verify. The hosted Land Registry issuance and direct-post paths have not yet been observed; route discovery must check them before live A1 sign-off. Keep the raw HAR outside the repository on a trusted machine, do not share it, and remove it after the review. If the BFF is not on loopback, use HTTPS for the bridge target.
+
 Capture ingress requires JSON and limits attempts to 10 per minute per transport peer. See [SECURITY.md](SECURITY.md) for threat boundaries and private disclosure, and [the integration contract](CAPTURE_CONTRACT_PROPOSAL.md) for the additive API seam and remaining owner handoffs.
 
 ## Person 1 regression and evidence tools — 22 October
