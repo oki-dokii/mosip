@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-10-23",
+  "updated": "2026-10-24",
   "source": "GAPS.md",
   "owner": "Person 3",
   "scope": "Completed protocol implementation, Collab investigations and a recorded actual Android A2 functional pass for the official-local-Certify/Collab-Verify hybrid profile; original failures and attestation limits retained.",
@@ -38,12 +38,12 @@
       "disclosure": "public_non_security_observation",
       "productVersion": "unreported",
       "evidence": [
-        "PHASE0_1.md",
-        "WALLET_VALIDATION.md"
+        "submission/A1_WEB_EVIDENCE.md",
+        "submission/A2_MOBILE_EVIDENCE.md"
       ],
       "runIds": [],
       "matrixCells": [],
-      "matrixDecision": "No real-wallet result cell is available; no A1/A2 pass can be decided from reference-wallet runs.",
+      "matrixDecision": "Manual Web JSON-LD and Android SD-JWT journeys have recorded Valid outcomes. They are exposed as manual compatibility observations; managed live validation remains pending and Reference Wallet runs cannot establish real-wallet acceptance.",
       "upstreamIssue": null
     },
     {

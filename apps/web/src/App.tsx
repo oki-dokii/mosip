@@ -1,3 +1,4 @@
+import { WalletEvidencePanel } from "./components/WalletEvidencePanel";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Exchange, ImplementationMetadata, RunConfig, RunStep, RunSummary, ScenarioDefinition } from "@playground/shared";
 import { evidenceLabels, evidenceTier } from "@playground/shared/evidence";
@@ -245,6 +246,7 @@ export default function App() {
             </div>
           )}
         </section>
+        <WalletEvidencePanel />
         <RunArchive history={history} matrix={matrix} active={archiveView} onActiveChange={setArchiveView} onSelectRun={selectArchivedRun} />
         <GapExplorer />
       </main>

@@ -2,7 +2,7 @@ import gaps from "../../../../submission/gaps.json";
 
 const titles: Record<string, string> = {
   "G-01": "Issuer key representation changes Verify's SD-JWT result",
-  "G-02": "Real Inji wallet presentation remains unobserved",
+  "G-02": "Real-wallet observations need managed-run validation",
   "G-03": "Collab deployment versions are not discoverable",
   "G-04": "Certify credential request returns 401 after a successful token exchange",
 };

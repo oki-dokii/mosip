@@ -18,8 +18,8 @@ vi.mock("./lib/api", () => ({ api: {
   runs: vi.fn(async () => ({ items: [] })), matrix: vi.fn(async () => ({ items: [] })),
   createRun: vi.fn(async () => { throw new Error("network unavailable"); }),
 } }));
-beforeEach(() => { vi.clearAllMocks(); });
-afterEach(() => { cleanup(); vi.restoreAllMocks(); });
+beforeEach(() => { vi.clearAllMocks(); vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ schemaVersion: 1, items: [] }) }))); });
+afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 const click = (name: string) => fireEvent.click(screen.getByRole("button", { name }));
 async function configure() {
   render(<React.StrictMode><App /></React.StrictMode>);

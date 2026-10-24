@@ -88,3 +88,26 @@ test("connected assisted API journey completes, cancels and reloads coverage", a
   await writeFile(new URL("connected-accessibility.json", evidence), JSON.stringify({ scope: "Connected assisted journey", violations: result.violations, passes: result.passes.map((item: any) => item.id) }, null, 2));
   await panel.screenshot({ path: new URL("connected-assisted.png", evidence).pathname });
 });
+
+test("real-wallet observations appear in compatibility and portable reports without becoming runs", async ({ page, request }) => {
+  await page.goto("/");
+  const panel = page.getByRole("region", { name: "Observed real-wallet compatibility" });
+  await expect(panel.getByRole("heading", { name: "Inji Web (real wallet) · JSON-LD" })).toBeVisible();
+  await expect(panel.getByRole("heading", { name: "Inji Wallet Android (real wallet) · SD-JWT" })).toBeVisible();
+  await expect(panel).toContainText("Persistent storage · user confirmed:");
+  await expect(panel).toContainText("Managed run: none");
+  const report = await (await request.get(`${bffUrl}/api/v1/wallet-evidence/report?format=json`)).json();
+  expect(report.items).toHaveLength(2);
+  expect(report.items.every((item: any) => item.managedRunId === null && item.managedValidation === "pending")).toBe(true);
+  await page.getByRole("button", { name: "Latest matrix", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Supported combinations" })).toContainText("Related manual Web observation: Valid");
+  const csv = await (await request.get(`${bffUrl}/api/v1/matrix/export?format=csv`)).text();
+  expect(csv).toContain("manual_wallet_observation");
+  expect(csv).toContain("inji_mobile");
+  await page.addScriptTag({ path: require.resolve("axe-core/axe.min.js") });
+  const result = await page.evaluate(async () => (window as any).axe.run(document.querySelector('[aria-labelledby="wallet-evidence-title"]'), { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21aa"] } }));
+  expect(result.violations).toEqual([]);
+  await mkdir(evidence, { recursive: true });
+  await writeFile(new URL("wallet-evidence-accessibility.json", evidence), JSON.stringify({ scope: "Real-wallet evidence catalog", violations: result.violations, passes: result.passes.map((item: any) => item.id) }, null, 2));
+  await panel.screenshot({ path: new URL("wallet-evidence-catalog.png", evidence).pathname });
+});
