@@ -1,0 +1,243 @@
+{
+  "items": [
+    {
+      "actorFrom": "inji_web_assisted",
+      "actorTo": "inji_certify",
+      "method": "GET",
+      "url": "https://injicertify-landregistry.collab.mosip.net/.well-known/openid-credential-issuer",
+      "status": 200,
+      "durationMs": 225,
+      "request": {
+        "accept": "application/json"
+      },
+      "response": {
+        "credential_issuer": "https://injicertify-landregistry.collab.mosip.net/",
+        "credential_configuration_id": "RegistrationReceiptCredential",
+        "format": "ldp_vc",
+        "supported": true
+      },
+      "seq": 1,
+      "redactions": [],
+      "id": "466d4577-18ff-44e7-88cb-045ce2612399",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "stepId": "c43ac50d-14f3-4121-bf57-71559aa324d6"
+    },
+    {
+      "id": "91a946f2-d5df-47fb-a4ee-c9655f76e485",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "stepId": "762c0591-614c-4a81-a753-4150914054fc",
+      "seq": 2,
+      "actorFrom": "browser",
+      "actorTo": "mimoto",
+      "method": "POST",
+      "url": "https://injiweb.collab.mosip.net/v1/mimoto/wallets/{id}/credentials",
+      "status": 200,
+      "durationMs": 4078,
+      "request": {
+        "source": "live_bridge",
+        "headers": {},
+        "body": null,
+        "publicView": {
+          "schemaVersion": 1,
+          "authenticity": "not_verified",
+          "items": [],
+          "withheldNames": 0,
+          "truncatedItems": 0,
+          "unsupportedKinds": 0
+        },
+        "capture": {
+          "schemaVersion": 1,
+          "ruleId": "mimoto-wallet-credential",
+          "why": "Browser requests a wallet-scoped credential through Mimoto; downstream Certify and wallet storage are not visible.",
+          "redactionCount": 1,
+          "timingKnown": true,
+          "observedAt": "2026-10-24T21:32:37.919Z",
+          "provenance": "operator_browser_har_metadata",
+          "payloadCaptured": false,
+          "downstreamCertifyObserved": false,
+          "downstreamVerifyObserved": false
+        }
+      },
+      "response": {
+        "source": "live_bridge",
+        "headers": {},
+        "body": null,
+        "publicView": {
+          "schemaVersion": 1,
+          "authenticity": "not_verified",
+          "items": [],
+          "withheldNames": 0,
+          "truncatedItems": 0,
+          "unsupportedKinds": 0
+        }
+      },
+      "redactions": [
+        "$.url.path"
+      ]
+    },
+    {
+      "actorFrom": "playground",
+      "actorTo": "inji_verify",
+      "method": "POST",
+      "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-request",
+      "status": 201,
+      "durationMs": 244,
+      "request": {
+        "clientId": "decentralized_identifier:did:web:injiverify.collab.mosip.net:v1:verify",
+        "nonce": "[REDACTED]",
+        "dcqlQuery": {
+          "credentials": [
+            {
+              "id": "credential",
+              "format": "ldp_vc",
+              "meta": {
+                "type_values": [
+                  [
+                    "https://inji.github.io/inji-config/contexts/[REDACTED]"
+                  ]
+                ]
+              }
+            }
+          ]
+        },
+        "responseCodeValidationRequired": false
+      },
+      "response": {
+        "requestUriIssued": true,
+        "requestIdIssued": true,
+        "transactionIdIssued": true
+      },
+      "seq": 3,
+      "redactions": [
+        "$.nonce",
+        "$.dcqlQuery.credentials[0].meta.type_values[0][0].path",
+        "$.dcqlQuery.credentials[0].meta.type_values[0][0].fragment"
+      ],
+      "id": "f457feb1-f0ea-4783-8503-d7ce210e796d",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "stepId": "c375d7e4-5b59-40ef-8673-ddb137fb2a1a"
+    },
+    {
+      "actorFrom": "inji_web_assisted",
+      "actorTo": "inji_verify",
+      "method": "GET",
+      "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-request/[REDACTED]",
+      "status": 200,
+      "durationMs": 90,
+      "request": {
+        "accept": "application/oauth-authz-req+jwt"
+      },
+      "response": {
+        "signedRequestReceived": true,
+        "responseMode": "direct_post"
+      },
+      "seq": 4,
+      "redactions": [
+        "$.url.path"
+      ],
+      "id": "83da6767-13dc-46e5-832d-03b5102e6702",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "stepId": "c375d7e4-5b59-40ef-8673-ddb137fb2a1a"
+    },
+    {
+      "id": "78522d51-2ccc-453a-a44b-d1fa16918e10",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "stepId": "8678ba45-f495-496f-b046-969687c19929",
+      "seq": 5,
+      "actorFrom": "browser",
+      "actorTo": "mimoto",
+      "method": "POST",
+      "url": "https://injiweb.collab.mosip.net/v1/mimoto/wallets/{id}/presentations",
+      "status": 200,
+      "durationMs": 2418,
+      "request": {
+        "source": "live_bridge",
+        "headers": {},
+        "body": null,
+        "publicView": {
+          "schemaVersion": 1,
+          "authenticity": "not_verified",
+          "items": [],
+          "withheldNames": 0,
+          "truncatedItems": 0,
+          "unsupportedKinds": 0
+        },
+        "capture": {
+          "schemaVersion": 1,
+          "ruleId": "mimoto-wallet-presentation",
+          "why": "Browser asks Mimoto to present; downstream Verify submission is not visible.",
+          "redactionCount": 1,
+          "timingKnown": true,
+          "observedAt": "2026-10-24T21:33:36.115Z",
+          "provenance": "operator_browser_har_metadata",
+          "payloadCaptured": false,
+          "downstreamCertifyObserved": false,
+          "downstreamVerifyObserved": false,
+          "requestUriTag": "[REDACTED hmac:7d95241b3c31ddd2]",
+          "requestUriSource": "same_origin_referrer"
+        }
+      },
+      "response": {
+        "source": "live_bridge",
+        "headers": {},
+        "body": null,
+        "publicView": {
+          "schemaVersion": 1,
+          "authenticity": "not_verified",
+          "items": [],
+          "withheldNames": 0,
+          "truncatedItems": 0,
+          "unsupportedKinds": 0
+        }
+      },
+      "redactions": [
+        "$.url.path",
+        "$.request.capture.requestUri"
+      ]
+    },
+    {
+      "actorFrom": "playground",
+      "actorTo": "inji_verify",
+      "method": "GET",
+      "url": "https://injiverify.collab.mosip.net/v1/verify/vp-request/[REDACTED]/status",
+      "status": 200,
+      "durationMs": 107,
+      "request": {},
+      "response": {
+        "status": "VP_SUBMITTED"
+      },
+      "seq": 6,
+      "redactions": [
+        "$.url.path"
+      ],
+      "id": "09273350-d4b9-4c0d-9916-7ffcd13bc033",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "stepId": "b14a5cd6-9647-4398-abe6-457560adcc69"
+    },
+    {
+      "actorFrom": "playground",
+      "actorTo": "inji_verify",
+      "method": "POST",
+      "url": "https://injiverify.collab.mosip.net/v1/verify/v2/vp-results/[REDACTED]",
+      "status": 200,
+      "durationMs": 1994,
+      "request": {
+        "includeClaims": false,
+        "skipStatusChecks": true
+      },
+      "response": {
+        "allChecksSuccessful": true,
+        "credentialChecksSuccessful": true,
+        "credentialProofValid": true,
+        "holderProofValid": true
+      },
+      "seq": 7,
+      "redactions": [
+        "$.url.path"
+      ],
+      "id": "6c39ddf8-c242-4ef0-90e0-83708f396282",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "stepId": "da0d9565-6c87-4cb6-934b-58ed44a5be1f"
+    }
+  ]
+}

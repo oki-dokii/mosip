@@ -1,0 +1,43 @@
+{
+  "id": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+  "parentRunId": null,
+  "config": {
+    "issuer": "inji_certify",
+    "wallet": "inji_web_assisted",
+    "verifier": "inji_verify",
+    "format": "ldp_vc",
+    "flow": "cross_device",
+    "tamper": null,
+    "scenarioId": null
+  },
+  "status": "passed",
+  "expectedOutcome": "valid",
+  "actualOutcome": "valid",
+  "proofType": "Ed25519Signature2020",
+  "algorithm": "EdDSA",
+  "serviceVersions": {
+    "issuer": "unreported",
+    "wallet": "reference-wallet/0.1.0",
+    "verifier": "unreported"
+  },
+  "createdAt": "2026-10-24T21:31:34.789Z",
+  "startedAt": "2026-10-24T21:31:34.792Z",
+  "finishedAt": "2026-10-24T21:35:40.396Z",
+  "protocolProfile": "collab-dcql",
+  "evaluation": {
+    "schemaVersion": 1,
+    "verdict": "correct_acceptance",
+    "expected": {
+      "outcome": "valid",
+      "boundary": "result",
+      "step": "PRESENT_RESULT"
+    },
+    "observed": {
+      "outcome": "valid",
+      "boundary": "result",
+      "step": "PRESENT_RESULT",
+      "stage": null,
+      "code": null
+    }
+  }
+}
