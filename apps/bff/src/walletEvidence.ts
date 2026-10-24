@@ -14,8 +14,8 @@ export interface WalletEvidence {
   versions: { issuer: string; wallet: string; verifier: string };
   outcome: "valid";
   outcomeSource: "verifier_ui" | "correlated_verifier_response";
-  managedRunId: null;
-  managedValidation: "pending";
+  managedRunId: string | null;
+  managedValidation: "pending" | "passed";
   reviewStatus: "pending_integrator_review" | "recorded_manual_acceptance";
   checkpoints: { name: string; evidence: "observed" | "user_confirmed"; detail: string }[];
   limitations: string[];
@@ -25,15 +25,17 @@ const source = (commit: string, path: string) => `https://github.com/oki-dokii/m
 // Curated public facts only. No upload/import endpoint and no fabricated RunSummary.
 export const walletEvidence: readonly WalletEvidence[] = [
   {
-    id: "a1-web-land-registry-2026-10-23", recordKind: "manual_wallet_observation", wallet: "inji_web", walletLabel: "Inji Web (real wallet)", issuer: "inji_certify", verifier: "inji_verify", format: "ldp_vc", credential: "Land Registry Registration Receipt", observedDate: "2026-10-23", deployment: "Hosted Collab Inji Web/Mimoto and Verify; exact Land Registry issuer endpoint unreported", versions: { issuer: "unreported", wallet: "unreported", verifier: "unreported" }, outcome: "valid", outcomeSource: "verifier_ui", managedRunId: null, managedValidation: "pending", reviewStatus: "pending_integrator_review",
+    id: "a1-web-land-registry-2026-10-23", recordKind: "manual_wallet_observation", wallet: "inji_web", walletLabel: "Inji Web (real wallet)", issuer: "inji_certify", verifier: "inji_verify", format: "ldp_vc", credential: "Land Registry Registration Receipt", observedDate: "2026-10-23", deployment: "Hosted Collab Inji Web/Mimoto, Land Registry Certify and Verify", versions: { issuer: "unreported", wallet: "unreported", verifier: "unreported" }, outcome: "valid", outcomeSource: "verifier_ui", managedRunId: "3dc6895d-ff87-45a2-a10b-46844198d83e", managedValidation: "passed", reviewStatus: "pending_integrator_review",
     checkpoints: [
       { name: "Issuance", evidence: "observed", detail: "Credential appeared in the dedicated signed-in wallet." },
       { name: "Persistent storage", evidence: "observed", detail: "Registration Receipt remained in Stored Cards after a full page refresh." },
       { name: "Presentation", evidence: "observed", detail: "The same wallet matched the Land Registry request, obtained consent and reported Credentials Shared." },
       { name: "Verifier acceptance", evidence: "observed", detail: "Inji Verify displayed Registration Receipt Credential — Valid." },
     ],
-    limitations: ["Manual browser journey; no playground run or correlated Exchange chain.", "Exact issuer configuration, deployment versions and protocol profile remain unreported.", "A1 integrator sign-off and managed live validation remain pending; no general JSON-LD conformance claim."],
+    limitations: ["This manual observation is preserved separately from the linked fresh managed run on 25 October.", "Managed run used RegistrationReceiptCredential and collab-dcql; deployed releases remain unreported, and browser capture omits downstream server calls.", "A1 team review remains pending; no general JSON-LD conformance claim or evidence-tier promotion."],
     artifacts: [
+      { label: "Fresh managed A1 run and capture limits", url: source("90c7b36", "submission/evidence/person2-managed-a1-2026-10-25/README.md") },
+      { label: "Managed run report", url: source("90c7b36", "submission/evidence/person2-managed-a1-2026-10-25/run-report.json") },
       { label: "A1 evidence and checklist", url: source("1537c55287ccbbf9ed9edd113ce2c46fc05c6681", "submission/A1_WEB_EVIDENCE.md") },
       { label: "Stored cards after refresh", url: source("1537c55287ccbbf9ed9edd113ce2c46fc05c6681", "submission/evidence/person2/live-stored-cards-after-refresh.png") },
       { label: "Verify Valid screenshot", url: source("1537c55287ccbbf9ed9edd113ce2c46fc05c6681", "submission/evidence/person2/live-verify-valid.png") },
@@ -62,10 +64,10 @@ export function relatedWalletEvidence(run: RunSummary, items: readonly WalletEvi
 }
 export function renderWalletEvidenceMarkdown(items: readonly WalletEvidence[]) {
   return ["# Observed real-wallet compatibility", "", "Manual evidence applies only to the recorded credential and deployment. It does not change managed-run outcomes or evidence tiers.", "", ...items.flatMap(item => [
-    `## ${item.walletLabel} · ${item.credential}`, "", `- Evidence ID: ${item.id}`, `- Record kind: ${item.recordKind}`, `- Observed: ${item.observedDate}`, `- Format: ${item.format}`, `- Outcome: ${item.outcome} (${item.outcomeSource})`, `- Deployment: ${item.deployment}`, `- Versions (issuer / wallet / verifier): ${item.versions.issuer} / ${item.versions.wallet} / ${item.versions.verifier}`, `- Managed run ID: none`, `- Managed validation: ${item.managedValidation}`, `- Review: ${item.reviewStatus}`, "", "### Checkpoints", "", ...item.checkpoints.map(check => `- ${check.name}: ${check.evidence}. ${check.detail}`), "", "### Limits", "", ...item.limitations.map(limit => `- ${limit}`), "", "### Source artifacts", "", ...item.artifacts.map(artifact => `- [${artifact.label}](${artifact.url})`), "",
+    `## ${item.walletLabel} · ${item.credential}`, "", `- Evidence ID: ${item.id}`, `- Record kind: ${item.recordKind}`, `- Observed: ${item.observedDate}`, `- Format: ${item.format}`, `- Outcome: ${item.outcome} (${item.outcomeSource})`, `- Deployment: ${item.deployment}`, `- Versions (issuer / wallet / verifier): ${item.versions.issuer} / ${item.versions.wallet} / ${item.versions.verifier}`, `- Managed run ID: ${item.managedRunId ?? "none"}`, `- Managed validation: ${item.managedValidation}`, `- Review: ${item.reviewStatus}`, "", "### Checkpoints", "", ...item.checkpoints.map(check => `- ${check.name}: ${check.evidence}. ${check.detail}`), "", "### Limits", "", ...item.limitations.map(limit => `- ${limit}`), "", "### Source artifacts", "", ...item.artifacts.map(artifact => `- [${artifact.label}](${artifact.url})`), "",
   ])].join("\n") + "\n";
 }
 export function renderWalletEvidenceCsv(items: readonly WalletEvidence[]) {
-  const rows = [["evidence_id", "record_kind", "issuer", "wallet", "verifier", "format", "credential", "observed_date", "outcome", "outcome_source", "managed_run_id", "managed_validation", "review_status", "deployment", "issuer_version", "wallet_version", "verifier_version", "limitations", "checkpoints", "artifact_urls"], ...items.map(item => [item.id, item.recordKind, item.issuer, item.wallet, item.verifier, item.format, item.credential, item.observedDate, item.outcome, item.outcomeSource, "", item.managedValidation, item.reviewStatus, item.deployment, item.versions.issuer, item.versions.wallet, item.versions.verifier, item.limitations.join("; "), item.checkpoints.map(check => `${check.name}: ${check.evidence}. ${check.detail}`).join("; "), item.artifacts.map(a => a.url).join("; ")])];
+  const rows = [["evidence_id", "record_kind", "issuer", "wallet", "verifier", "format", "credential", "observed_date", "outcome", "outcome_source", "managed_run_id", "managed_validation", "review_status", "deployment", "issuer_version", "wallet_version", "verifier_version", "limitations", "checkpoints", "artifact_urls"], ...items.map(item => [item.id, item.recordKind, item.issuer, item.wallet, item.verifier, item.format, item.credential, item.observedDate, item.outcome, item.outcomeSource, item.managedRunId ?? "", item.managedValidation, item.reviewStatus, item.deployment, item.versions.issuer, item.versions.wallet, item.versions.verifier, item.limitations.join("; "), item.checkpoints.map(check => `${check.name}: ${check.evidence}. ${check.detail}`).join("; "), item.artifacts.map(a => a.url).join("; ")])];
   return rows.map(row => row.map(cell => `"${cell.replaceAll('"', '""')}"`).join(",")).join("\n") + "\n";
 }

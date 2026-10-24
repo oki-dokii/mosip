@@ -44,3 +44,7 @@ Inji Wallet displayed version `1.0.0-alpha.1` and scanned a public authorization
 ## Actual Android A2 acceptance — 23 October 2026
 
 [The successful mobile bundle](submission/evidence/person3-a2-mobile-2026-10-23/README.md) now records the real Inji Wallet receiving/storing the local official Certify SD-JWT, user-confirmed close/reopen persistence, consent/share screenshots and the correlated Verify `valid` response with both proof flags true. A2 passes for this observed hybrid configuration. This supersedes the awaiting-phone status above without erasing the earlier Collab client failure, intermediate scanner error, unreported Verify release or installed-binary attestation limit. Native selective-claim policy and trust-chain conformance were not isolated by this case; no new upstream defect is claimed.
+
+## Fresh managed Web result — 25 October 2026
+
+G-02 now has [a fresh managed A1 record](submission/evidence/person2-managed-a1-2026-10-25/README.md): run `3dc6895d-ff87-45a2-a10b-46844198d83e` completed with correlated Mimoto issuance/presentation, reload-backed storage confirmation and independent Verify `valid`. The earlier account blocker is historical. Final team review, release attestation and Web SD-JWT capability remain separate; no upstream defect is claimed.

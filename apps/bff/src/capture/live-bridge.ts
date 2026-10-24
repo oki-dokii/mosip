@@ -63,8 +63,13 @@ export function prepareLiveObservation(input: unknown, record: RunRecord, origin
     },
     response: { status: observed.status, headers: [] },
   };
-  const exchange = prepareHarImport({ runId: record.run.id, har: { log: { entries: [entry] } } }, record, origins, true).exchanges[0];
+  // Build the candidate independently of HAR import's duplicate filtering. A
+  // cumulative recording must acknowledge earlier observations and continue.
+  const exchange = prepareHarImport({ runId: record.run.id, har: { log: { entries: [entry] } } }, { ...record, exchanges: [] }, origins, true).exchanges[0];
   if (!exchange) throw new CaptureError("CAPTURE_BRIDGE_INVALID");
+  const existing = record.exchanges.find(item => item.id === exchange.id);
+  if (existing) return existing;
+  exchange.seq = Math.max(0, ...record.exchanges.map(item => item.seq)) + 1;
   const request = exchange.request as Record<string, unknown>;
   const response = exchange.response as Record<string, unknown>;
   request.source = "live_bridge";

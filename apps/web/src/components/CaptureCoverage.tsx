@@ -3,13 +3,13 @@ import { api } from "../lib/api";
 import { coverage, object, type Coverage } from "../lib/captureEvidence";
 import { ProjectionCounts } from "./PublicEvidence";
 
-export function CaptureCoverage({ runId, onImported, canImport = true }: { runId: string; onImported: () => void; canImport?: boolean }) {
+export function CaptureCoverage({ runId, onImported, canImport = true, exchangeCount = 0 }: { runId: string; onImported: () => void; canImport?: boolean; exchangeCount?: number }) {
   const [rows, setRows] = useState<Coverage[] | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const generation = useRef(0);
   const input = useRef<HTMLInputElement>(null);
-  useEffect(() => { let stopped = false; const version = ++generation.current; void api.captureCoverage(runId).then(value => { if (!stopped && version === generation.current) setRows(coverage(object(value)?.coverage)); }).catch(() => {}); return () => { stopped = true; }; }, [runId]);
+  useEffect(() => { let stopped = false; const version = ++generation.current; void api.captureCoverage(runId).then(value => { if (!stopped && version === generation.current) setRows(coverage(object(value)?.coverage)); }).catch(() => {}); return () => { stopped = true; }; }, [runId, exchangeCount]);
   async function upload() {
     const file = input.current?.files?.[0];
     if (busy || !canImport) return;

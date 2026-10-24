@@ -1,0 +1,145 @@
+{
+  "items": [
+    {
+      "id": "1901320d-ba3a-4c6d-9097-3bed7641cb83",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "seq": 1,
+      "stepKey": "INIT",
+      "title": "Initialize run",
+      "status": "succeeded",
+      "summary": {
+        "completed": true
+      }
+    },
+    {
+      "id": "c43ac50d-14f3-4121-bf57-71559aa324d6",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "seq": 2,
+      "stepKey": "ISSUE_OFFER",
+      "title": "Discover issuer and create offer",
+      "status": "succeeded",
+      "summary": {
+        "credentialConfigurationId": "RegistrationReceiptCredential",
+        "format": "ldp_vc"
+      }
+    },
+    {
+      "id": "ba76a929-f9f1-4048-bbed-f44ac7b01cdf",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "seq": 3,
+      "stepKey": "ISSUE_TOKEN",
+      "title": "Authorize wallet and exchange token",
+      "status": "succeeded",
+      "summary": {
+        "loginObserved": false,
+        "loginLocation": "Inji Web/Mimoto",
+        "awaiting": "issuance"
+      }
+    },
+    {
+      "id": "762c0591-614c-4a81-a753-4150914054fc",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "seq": 4,
+      "stepKey": "ISSUE_CREDENTIAL",
+      "title": "Issue holder-bound credential",
+      "status": "succeeded",
+      "summary": {
+        "issuanceObserved": true,
+        "exchangeId": "91a946f2-d5df-47fb-a4ee-c9655f76e485",
+        "issuanceTransport": "mimoto_wallet_credential_post",
+        "downstreamCertifyObserved": false,
+        "storageConfirmed": false
+      }
+    },
+    {
+      "id": "a0d4be68-25b2-4ed0-bb77-1935686afdd7",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "seq": 5,
+      "stepKey": "STORE",
+      "title": "Store credential for this run",
+      "status": "succeeded",
+      "summary": {
+        "storageConfirmed": true,
+        "confirmationSource": "wallet_confirmation"
+      }
+    },
+    {
+      "id": "c375d7e4-5b59-40ef-8673-ddb137fb2a1a",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "seq": 6,
+      "stepKey": "PRESENT_REQUEST",
+      "title": "Create signed presentation request",
+      "status": "succeeded",
+      "summary": {
+        "signedRequestReceived": true,
+        "queryLanguage": "DCQL"
+      }
+    },
+    {
+      "id": "8678ba45-f495-496f-b046-969687c19929",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "seq": 7,
+      "stepKey": "PRESENT_SUBMIT",
+      "title": "Submit holder-bound presentation",
+      "status": "succeeded",
+      "summary": {
+        "presentationObserved": true,
+        "exchangeId": "78522d51-2ccc-453a-a44b-d1fa16918e10",
+        "presentationTransport": "mimoto_browser_presentation",
+        "downstreamVerifyObserved": false,
+        "verifierResultPending": true
+      }
+    },
+    {
+      "id": "b14a5cd6-9647-4398-abe6-457560adcc69",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "seq": 8,
+      "stepKey": "PRESENT_STATUS",
+      "title": "Wait for verifier submission status",
+      "status": "succeeded",
+      "summary": {
+        "status": "VP_SUBMITTED",
+        "attempts": 1
+      }
+    },
+    {
+      "id": "da0d9565-6c87-4cb6-934b-58ed44a5be1f",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "seq": 9,
+      "stepKey": "PRESENT_RESULT",
+      "title": "Verify credential and holder proof",
+      "status": "succeeded",
+      "summary": {
+        "outcome": "valid",
+        "protocolProfile": "collab-dcql",
+        "allChecksSuccessful": true
+      }
+    },
+    {
+      "id": "d391101a-e8ec-4be4-a244-9c7873aef050",
+      "runId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "seq": 10,
+      "stepKey": "REPORT",
+      "title": "Build run result",
+      "status": "succeeded",
+      "summary": {
+        "protocolEvaluation": {
+          "schemaVersion": 1,
+          "verdict": "correct_acceptance",
+          "expected": {
+            "outcome": "valid",
+            "boundary": "result",
+            "step": "PRESENT_RESULT"
+          },
+          "observed": {
+            "outcome": "valid",
+            "boundary": "result",
+            "step": "PRESENT_RESULT",
+            "stage": null,
+            "code": null
+          }
+        }
+      }
+    }
+  ]
+}

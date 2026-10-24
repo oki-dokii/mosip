@@ -5,9 +5,13 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import App from "./App";
 import { api } from "./lib/api";
 import { AssistedJourney } from "./lib/assistedJourney";
+import type { RunSummary } from "@playground/shared";
 
 vi.mock("./lib/api", () => ({ api: {
   assistedCapabilities: vi.fn(async () => ({ liveAvailable: false })),
+  assistedStatus: vi.fn(), run: vi.fn(),
+  steps: vi.fn(async () => ({ items: [] })), exchanges: vi.fn(async () => ({ items: [] })),
+  captureCoverage: vi.fn(async () => ({ coverage: [] })),
   metadata: vi.fn(async () => ({
     issuers: [{ id: "inji_certify", name: "Inji Certify", kind: "inji" }],
     wallets: [{ id: "reference_wallet", name: "Reference Wallet", kind: "reference" }, { id: "inji_web_assisted", name: "Inji Web", kind: "inji" }],
@@ -57,4 +61,19 @@ it("preserves the Reference Wallet route and displays start errors", async () =>
   fireEvent.click(start);
   expect(await screen.findByRole("alert")).toHaveProperty("textContent", "Could not start the run. Please try again.");
   expect(api.createRun).toHaveBeenCalledWith(expect.objectContaining({ wallet: "reference_wallet" }));
+});
+it("labels an archived JSON-LD live wallet run using its recorded format rather than the current selector", async () => {
+  vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+  const run: RunSummary = { id: "actual-web-run", parentRunId: null,
+    config: { issuer: "inji_certify", wallet: "inji_web_assisted", verifier: "inji_verify", format: "ldp_vc", flow: "cross_device", tamper: null, scenarioId: null },
+    status: "passed", expectedOutcome: "valid", actualOutcome: "valid", proofType: "Ed25519Signature2020", algorithm: "EdDSA",
+    serviceVersions: { issuer: "unreported", wallet: "unreported", verifier: "unreported" }, createdAt: "2026-10-25T00:00:00Z", startedAt: null, finishedAt: "2026-10-25T00:01:00Z" };
+  vi.mocked(api.runs).mockResolvedValueOnce({ items: [run] });
+  vi.mocked(api.run).mockResolvedValue(run);
+  vi.mocked(api.assistedStatus).mockResolvedValue({ run, steps: [], actions: {}, deadlineAt: null });
+  render(<App />);
+  fireEvent.click(await screen.findByRole("button", { name: "Open run actual-w" }));
+  expect(await screen.findByText("Ed25519Signature2020")).toBeTruthy();
+  expect(screen.queryByText("kb+jwt")).toBeNull();
+  expect(screen.getByText("Live assisted wallet · test data")).toBeTruthy();
 });

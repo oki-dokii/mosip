@@ -39,11 +39,14 @@
       "productVersion": "unreported",
       "evidence": [
         "submission/A1_WEB_EVIDENCE.md",
-        "submission/A2_MOBILE_EVIDENCE.md"
+        "submission/A2_MOBILE_EVIDENCE.md",
+        "submission/evidence/person2-managed-a1-2026-10-25/README.md"
       ],
-      "runIds": [],
+      "runIds": [
+        "3dc6895d-ff87-45a2-a10b-46844198d83e"
+      ],
       "matrixCells": [],
-      "matrixDecision": "Manual Web JSON-LD and Android SD-JWT journeys have recorded Valid outcomes. They are exposed as manual compatibility observations; managed live validation remains pending and Reference Wallet runs cannot establish real-wallet acceptance.",
+      "matrixDecision": "Fresh managed Inji Web JSON-LD run 3dc6895d-ff87-45a2-a10b-46844198d83e completed with correlated issuance/presentation, explicit storage confirmation and independent Verify valid. Final team review and deployed-version attestation remain pending. Android acceptance remains a separate manual observation; Web SD-JWT presentation remains unavailable.",
       "upstreamIssue": null
     },
     {

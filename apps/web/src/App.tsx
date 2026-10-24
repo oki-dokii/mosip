@@ -135,7 +135,7 @@ export default function App() {
     window.scrollTo({ top: 430, behavior: "smooth" });
   }
 
-  const format = metadata?.formats.find((item) => item.id === config.format);
+  const format = metadata?.formats.find((item) => item.id === (run?.config.format ?? config.format));
   const unsupportedReason = assistedUnavailable(config) ?? (config.wallet === "inji_web_assisted" ? null : driverMode === "collab" && (config.issuer === "mock_issuer" || config.verifier === "mock_verifier") && config.format !== "vc_sd_jwt"
         ? "Local non-Inji mock roles currently support SD-JWT VC only."
         : driverMode === "collab" && (config.tamper === "expired" || config.tamper === "wrong_type") && (config.issuer !== "mock_issuer" || config.format !== "vc_sd_jwt")
@@ -174,7 +174,7 @@ export default function App() {
         <div className="mx-auto flex max-w-[1500px] items-center gap-4 px-5 py-4 lg:px-8">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-ink text-white shadow-lg"><FlaskConical size={22} /></span>
           <div><h1 className="text-lg font-bold tracking-tight">Inji Interoperability Playground</h1><p className="text-xs text-slate-500">Issue, present, verify — and inspect every boundary.</p></div>
-          <span className="ml-auto hidden rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 sm:block">{driverMode === "fixture" ? "Fixture simulation · test data" : "Live Collab · test data"}</span>
+          <span className="ml-auto hidden rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 sm:block">{run?.config.wallet === "inji_web_assisted" && run.serviceVersions && !run.serviceVersions.wallet.startsWith("fixture/") ? "Live assisted wallet · test data" : driverMode === "fixture" ? "Fixture simulation · test data" : "Live Collab · test data"}</span>
         </div>
       </header>
 
@@ -242,7 +242,7 @@ export default function App() {
                 {runFinished && run && <div className="mb-4 grid grid-cols-2 gap-2 text-center text-xs font-bold"><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=md`}>Report · Markdown</a><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=json`}>Report · JSON</a></div>}
                 <RunTimeline steps={steps} selectedStepId={selectedStepId} onSelect={selectStep} />
               </div>
-              <div><CaptureCoverage key={runId} runId={runId} canImport={Boolean(runFinished) || run?.config.wallet === "inji_web_assisted"} onImported={() => void refresh(runId)} /><SequenceView runId={runId} exchanges={exchanges} selectedExchangeId={selectedExchangeId} onSelect={selectExchange} /><Inspector exchange={selectedExchange} /></div>
+              <div><CaptureCoverage key={runId} runId={runId} exchangeCount={exchanges.length} canImport={Boolean(runFinished) || run?.config.wallet === "inji_web_assisted"} onImported={() => void refresh(runId)} /><SequenceView runId={runId} exchanges={exchanges} selectedExchangeId={selectedExchangeId} onSelect={selectExchange} /><Inspector exchange={selectedExchange} /></div>
             </div>
           )}
         </section>
