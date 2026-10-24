@@ -42,6 +42,7 @@ interface HttpResult {
 const STATE = {
   config: "collab.config",
   cookie: "collab.cookie",
+  cookieOrigin: "collab.cookieOrigin",
   accessToken: "collab.accessToken",
   credentialNonce: "collab.credentialNonce",
   holderKey: "collab.holderKey",
@@ -205,12 +206,20 @@ async function request(context: DriverContext, url: string, options: RequestInit
   const { allowStatuses = [], ...fetchOptions } = options;
   const headers = new Headers(fetchOptions.headers);
   const cookie = context.state.get(STATE.cookie);
-  if (typeof cookie === "string" && cookie) headers.set("cookie", cookie);
+  const requestOrigin = new URL(url).origin;
+  const cookieOrigin = context.state.get(STATE.cookieOrigin);
+  const attachCookie = typeof cookie === "string" && !!cookie && cookieOrigin === requestOrigin;
+  if (attachCookie) headers.set("cookie", cookie);
   const startedAt = performance.now();
-  const response = await fetch(url, { ...fetchOptions, headers, signal: context.signal ? AbortSignal.any([context.signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000) });
+  const response = await fetch(url, { ...fetchOptions, headers, ...(attachCookie ? { redirect: "manual" as const } : {}), signal: context.signal ? AbortSignal.any([context.signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000) });
   const durationMs = Math.round(performance.now() - startedAt);
   const setCookies = response.headers.getSetCookie?.() ?? [];
-  if (setCookies.length && context.config.wallet !== "inji_web_assisted") context.state.set(STATE.cookie, setCookies.map((item) => item.split(";", 1)[0]).join("; "));
+  const config = context.state.get(STATE.config) as CollabConfig | undefined;
+  const authOrigin = config?.authBaseUrl ? new URL(config.authBaseUrl).origin : null;
+  if (setCookies.length && context.config.wallet !== "inji_web_assisted" && authOrigin === requestOrigin && (!response.url || new URL(response.url).origin === requestOrigin)) {
+    context.state.set(STATE.cookie, setCookies.map((item) => item.split(";", 1)[0]).join("; "));
+    context.state.set(STATE.cookieOrigin, requestOrigin);
+  }
   const text = await response.text();
   let body: any;
   try { body = text ? JSON.parse(text) : null; } catch { body = text; }

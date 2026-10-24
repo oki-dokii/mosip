@@ -46,6 +46,38 @@ afterEach(() => {
 });
 
 describe("Collab verifier status polling", () => {
+  it("never sends the eSignet cookie to Certify or Verify", async () => {
+    const run = context();
+    run.state.set("collab.cookie", "XSRF-TOKEN=synthetic-secret");
+    run.state.set("collab.cookieOrigin", "https://auth.example");
+    process.env.VERIFY_POLL_INTERVAL_MS = "0";
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ credential_configurations_supported: { "FarmerCredential_VCDM2.0": {} } }))
+      .mockResolvedValueOnce(jsonResponse({ status: "VP_SUBMITTED" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createCollabDrivers().issuer.createOffer(run);
+    await createCollabDrivers().verifier.pollStatus(run);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    for (const call of fetchMock.mock.calls) {
+      const sent = call[1] as RequestInit;
+      expect(new Headers(sent.headers).has("cookie")).toBe(false);
+    }
+  });
+
+  it("sends a scoped cookie only to its origin and disables redirect following", async () => {
+    const run = context();
+    run.state.set("collab.cookie", "XSRF-TOKEN=synthetic-secret");
+    run.state.set("collab.cookieOrigin", "https://verify.example");
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ status: "VP_SUBMITTED" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createCollabDrivers().verifier.pollStatus(run);
+    const sent = fetchMock.mock.calls[0]![1] as RequestInit;
+    expect(new Headers(sent.headers).get("cookie")).toBe("XSRF-TOKEN=synthetic-secret");
+    expect(sent.redirect).toBe("manual");
+  });
+
   it("uses configured public JSON-LD types for an assisted Web request", async () => {
     process.env.VERIFY_LDP_TYPE_VALUES_JSON = JSON.stringify(["https://www.w3.org/ns/credentials#VerifiableCredential", "https://example.org/land#RegistrationReceipt"]);
     const run = context(); run.config.wallet = "inji_web_assisted";
