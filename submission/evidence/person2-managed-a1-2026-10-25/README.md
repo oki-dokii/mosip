@@ -17,6 +17,8 @@ Run **`3dc6895d-ff87-45a2-a10b-46844198d83e`** completed with all ten steps succ
 
 See the original API exports: [run report](run-report.md), [JSON report](run-report.json), [run](run.json), [steps](steps.json), [exchanges](exchanges.json), [browser coverage](capture-coverage.json), and [matrix](matrix.json). UI evidence: [persistent cards after reload](stored-after-refresh.png) and [completed playground run](playground-completed.png).
 
+After the display and catalog corrections, [the reviewed UI](playground-reviewed.png) shows the live JSON-LD run and both captured checkpoints; [the concise summary](managed-summary.png) shows its run ID and `valid` result. The [reviewed catalog](catalog-reviewed.json), [matrix report](matrix-reviewed.md), and [matrix cells](matrix-cells-reviewed.json) link the actual archived run. These views were produced by restoring its unchanged API-exported record into the isolated memory repository; they do not represent another wallet trial. The original screenshot predates the coverage-refresh correction and therefore displays stale missing counts; the original capture-coverage API export contains the correct counts.
+
 ## Provenance and limits
 
 - The metadata bridge processed the fresh recording locally. No HAR, credential, VP token, cookies, login material, or bridge token is included here. The opaque request URI was sent transiently to the loopback BFF and replaced with a run-scoped HMAC before persistence. The same BFF process created the verifier request and evaluated the presentation correlation.

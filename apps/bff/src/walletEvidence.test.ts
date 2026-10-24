@@ -20,7 +20,8 @@ afterEach(async () => { await new Promise<void>(resolve => server.close(() => re
 it("exposes Web and Android observations without fabricating run history or changing managed cells", async () => {
   const evidence = await fetch(`${base}/api/v1/wallet-evidence`).then(r => r.json());
   expect(evidence.items.map((item: any) => item.wallet)).toEqual(["inji_web", "inji_mobile"]);
-  expect(evidence.items.every((item: any) => item.managedRunId === null && item.managedValidation === "pending")).toBe(true);
+  expect(evidence.items[0]).toMatchObject({ managedRunId: "3dc6895d-ff87-45a2-a10b-46844198d83e", managedValidation: "passed" });
+  expect(evidence.items[1]).toMatchObject({ managedRunId: null, managedValidation: "pending" });
   expect(await repository.list()).toEqual([]);
   const matrix = await fetch(`${base}/api/v1/matrix`).then(r => r.json());
   expect(matrix.items).toEqual([]); expect(matrix.walletEvidence).toHaveLength(2);

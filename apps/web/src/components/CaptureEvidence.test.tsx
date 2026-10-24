@@ -10,6 +10,15 @@ const totals = { withheldNames: 2, truncatedItems: 3, unsupportedKinds: 1 };
 const view = { schemaVersion: 1, authenticity: "not_verified", items: [{ kind: "verifiable_credential", summary: { types: ["FarmerCredential"] } }], ...totals };
 vi.mock("../lib/api", () => ({ api: { importCapture: vi.fn(), captureCoverage: vi.fn(async () => ({})) } }));
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
+it("refreshes coverage when live bridge exchanges arrive outside the upload control", async () => {
+  const row = { stepKey: "PRESENT_SUBMIT", state: "missing", count: 0, reason: "Not yet observed", projection: totals };
+  vi.mocked(api.captureCoverage).mockResolvedValueOnce({ coverage: [row] }).mockResolvedValueOnce({ coverage: [{ ...row, state: "captured", count: 1, reason: "Live bridge observation" }] });
+  const { rerender } = render(<CaptureCoverage runId="run" exchangeCount={0} onImported={vi.fn()} />);
+  await screen.findByText("PRESENT_SUBMIT: missing");
+  rerender(<CaptureCoverage runId="run" exchangeCount={1} onImported={vi.fn()} />);
+  expect(await screen.findByText("PRESENT_SUBMIT: captured")).toBeTruthy();
+  expect(api.importCapture).not.toHaveBeenCalled();
+});
 it("renders public names, authenticity, counters, capture reason and unknown timing", () => {
   render(<PublicEvidence label="Request" value={{ publicView: view, capture: { schemaVersion: 1, ruleId: "certify-credential", why: "Explicit credential endpoint", redactionCount: 4, timingKnown: false } }} />);
   expect(screen.getByText(/FarmerCredential/)).toBeTruthy();

@@ -11,7 +11,7 @@ export function snapshotVersions(config: RunConfig, mode: DriverMode): NonNullab
     issuer: config.issuer === "mock_issuer"
       ? process.env.MOCK_ISSUER_BASE_URL ? safeLabel(process.env.MOCK_ISSUER_VERSION_LABEL) : "local-mock/did-jwk-1"
       : safeLabel(process.env.CERTIFY_VERSION_LABEL),
-    wallet: "reference-wallet/0.1.0",
+    wallet: config.wallet === "reference_wallet" ? "reference-wallet/0.1.0" : "unreported",
     verifier: config.verifier === "mock_verifier" ? "local-mock/1" : safeLabel(process.env.VERIFY_VERSION_LABEL),
   };
 }

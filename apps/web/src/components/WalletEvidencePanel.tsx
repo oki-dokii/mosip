@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 interface WalletEvidence {
   id: string; recordKind: "manual_wallet_observation"; wallet: "inji_web" | "inji_mobile"; walletLabel: string;
   format: string; credential: string; observedDate: string; deployment: string; outcome: "valid";
-  outcomeSource: "verifier_ui" | "correlated_verifier_response"; managedRunId: null; managedValidation: "pending";
+  outcomeSource: "verifier_ui" | "correlated_verifier_response"; managedRunId: string | null; managedValidation: "pending" | "passed";
   reviewStatus: string; versions: { issuer: string; wallet: string; verifier: string };
   checkpoints: { name: string; evidence: string; detail: string }[]; limitations: string[]; artifacts: { label: string; url: string }[];
 }
@@ -23,7 +23,7 @@ export function WalletEvidencePanel() {
   }, []);
   return <section aria-labelledby="wallet-evidence-title" className="mt-7 rounded-3xl border border-slate-200 bg-white p-6 shadow-card lg:p-8">
     <h2 id="wallet-evidence-title" className="text-xl font-bold">Observed real-wallet compatibility</h2>
-    <p className="mt-2 text-sm text-slate-600">Recorded manual journeys apply to the named credential and deployment. Managed live validation remains pending; these records do not change automated run results.</p>
+    <p className="mt-2 text-sm text-slate-600">Recorded journeys apply to the named credential and deployment. Linked managed reports provide separate run evidence; manual observations do not change other run results.</p>
     {error ? <p role="alert" className="mt-4">Real-wallet evidence is unavailable. No compatibility conclusion can be drawn.</p> : !items ? <p role="status">Loading real-wallet evidence…</p> : <>
       <div className="my-4 flex flex-wrap items-center gap-3 text-sm">
         <label>Wallet evidence <select className="rounded border border-slate-300 p-2" value={wallet} onChange={event => setWallet(event.target.value)}><option value="">All real wallets</option><option value="inji_web">Inji Web</option><option value="inji_mobile">Inji Wallet Android</option></select></label>
@@ -34,7 +34,7 @@ export function WalletEvidencePanel() {
         <h3 className="font-bold">{item.walletLabel} · {item.format === "ldp_vc" ? "JSON-LD" : "SD-JWT"}</h3>
         <p className="mt-2 font-semibold text-green-800">Observed outcome: Valid · {item.outcomeSource === "verifier_ui" ? "verifier UI" : "correlated verifier response"}</p>
         <p className="mt-1 text-sm">{item.credential} · observed {item.observedDate}</p>
-        <p className="mt-2 text-sm">Manual wallet observation · Managed run: none · Managed validation: pending</p>
+        <p className="mt-2 text-sm">Manual wallet observation · Managed run: {item.managedRunId ?? "none"} · Managed validation: {item.managedValidation ?? "pending"}</p>
         <p className="text-sm">{item.reviewStatus === "pending_integrator_review" ? "A1 integrator review pending" : "A2 manual acceptance recorded"}</p>
         <p className="mt-2 text-sm text-slate-600">{item.deployment}</p>
         <p className="mt-1 text-xs text-slate-600">Versions (issuer / wallet / verifier): {item.versions.issuer} / {item.versions.wallet} / {item.versions.verifier}</p>

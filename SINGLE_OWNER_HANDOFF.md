@@ -1,5 +1,9 @@
 # Remaining work: single-developer handoff
 
+## 25 October managed A1 result
+
+Fresh run `3dc6895d-ff87-45a2-a10b-46844198d83e` completed the hosted Inji Web Registration Receipt journey with issuance transport, explicit reload-backed storage confirmation, run-correlated Mimoto presentation and independent Verify `valid`. The [sanitized evidence bundle](submission/evidence/person2-managed-a1-2026-10-25/README.md) records the original exports, actual matrix entry, import workaround, display corrections and capture limits. The technical acceptance target below is now observed for this profile; final team/integrator review remains pending. The account/configuration absence recorded on 24 October below is historical.
+
 ## 24 October A1 ownership decision
 
 The capture bridge and assisted Web journey are now **one integration task with one code owner**. The integrator owns route/correlation fixes, assisted run state, inspector diagnostics, tests, and the final evidence/report update on `main`. Dayal's earlier manual Inji Web success is retained as historical evidence; he can operate the signed-in wallet and review the fresh run when available, without making overlapping code edits. There is no need to maintain separate Person 1 and Person 2 implementation queues for A1.

@@ -98,7 +98,9 @@ test("real-wallet observations appear in compatibility and portable reports with
   await expect(panel).toContainText("Managed run: none");
   const report = await (await request.get(`${bffUrl}/api/v1/wallet-evidence/report?format=json`)).json();
   expect(report.items).toHaveLength(2);
-  expect(report.items.every((item: any) => item.managedRunId === null && item.managedValidation === "pending")).toBe(true);
+  expect(report.items.find((item: any) => item.wallet === "inji_web")).toMatchObject({ managedRunId: "3dc6895d-ff87-45a2-a10b-46844198d83e", managedValidation: "passed" });
+  expect(report.items.find((item: any) => item.wallet === "inji_mobile")).toMatchObject({ managedRunId: null, managedValidation: "pending" });
+  await expect(panel).toContainText("Managed run: 3dc6895d-ff87-45a2-a10b-46844198d83e · Managed validation: passed");
   await page.getByRole("button", { name: "Latest matrix", exact: true }).click();
   await expect(page.getByRole("region", { name: "Supported combinations" })).toContainText("Related manual Web observation: Valid");
   const csv = await (await request.get(`${bffUrl}/api/v1/matrix/export?format=csv`)).text();

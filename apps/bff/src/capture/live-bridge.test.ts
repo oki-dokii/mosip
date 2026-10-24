@@ -8,7 +8,7 @@ import { AssistedRuns } from "../assisted.js";
 import { createSteps } from "../orchestrator.js";
 import { matchesMimotoPresentation, matchesPresentation } from "../presentationCorrelation.js";
 import { maskedValue, runCorrelationKey } from "../redaction.js";
-import { MemoryRunRepository } from "../store.js";
+import { MemoryRunRepository, type RunRecord } from "../store.js";
 import { collectLiveObservations, discoverLiveRoutes } from "./live-bridge-cli.js";
 import { CaptureError } from "./har.js";
 import { prepareLiveObservation, validBridgeToken } from "./live-bridge.js";
@@ -20,7 +20,7 @@ const origins = new Map([
 ] as const);
 const state = "synthetic-state-CANARY-0123456789abcdef";
 const canary = "PRIVATE_CREDENTIAL_CANARY_DO_NOT_STORE";
-const run = () => {
+const run = (): RunRecord => {
   const id = randomUUID();
   const summary: RunSummary = { id, parentRunId: null,
     config: { issuer: "inji_certify", wallet: "inji_web_assisted", verifier: "inji_verify", format: "ldp_vc", flow: "cross_device", tamper: null, scenarioId: null },
@@ -33,6 +33,19 @@ const observed = (url: string, extra: Record<string, unknown> = {}) => ({ observ
 afterEach(() => { vi.restoreAllMocks(); delete process.env.CAPTURE_BRIDGE_TOKEN; });
 
 describe("live capture bridge", () => {
+  it("acknowledges earlier issuance in a cumulative recording and sequences the new presentation", () => {
+    const record = run();
+    const issuance = observed("https://wallet.example/v1/mimoto/wallets/private-wallet-id/credentials");
+    const first = prepareLiveObservation(issuance, record, origins);
+    record.exchanges.push(first);
+    expect(prepareLiveObservation(issuance, record, origins)).toEqual(first);
+    const presentation = prepareLiveObservation(observed("https://wallet.example/v1/mimoto/wallets/private-wallet-id/presentations", {
+      requestUri: "https://verifier.example/v1/verify/v2/vp-request/private-request-id", requestUriSource: "presentation_body",
+    }), record, origins);
+    expect(presentation.seq).toBe(first.seq + 1);
+    expect(presentation.id).not.toBe(first.id);
+  });
+
   it("rejects a raw query value before preparing a verifier observation", () => {
     const record = run();
     expect(() => prepareLiveObservation(observed("https://verifier.example/v1/verify/vp-submission/direct-post?state=forbidden", { state }), record, origins)).toThrowError(CaptureError);
@@ -162,9 +175,14 @@ describe("live capture bridge", () => {
       const post = (body: unknown, token = process.env.CAPTURE_BRIDGE_TOKEN) => fetch(base + endpoint, { method: "POST",
         headers: { "content-type": "application/json", ...(token ? { "x-capture-bridge-token": token } : {}) }, body: JSON.stringify(body) });
       expect((await post(observed("https://injiverify.collab.mosip.net/direct-post", { state }), "wrong")).status).toBe(403);
-      const response = await post(observed("https://injiverify.collab.mosip.net/direct-post", { state }));
+      const directPost = observed("https://injiverify.collab.mosip.net/direct-post", { state });
+      const response = await post(directPost);
       expect(response.status).toBe(202);
       expect((await response.json()).ruleId).toBe("verify-submit");
+      const duplicate = await post(directPost);
+      expect(duplicate.status).toBe(202);
+      expect(await duplicate.json()).toMatchObject({ accepted: false, duplicate: true, ruleId: "verify-submit" });
+      expect(emitted).toHaveLength(1);
       const requestUri = "https://injiverify.collab.mosip.net/v1/verify/v2/vp-request/private-request-id";
       const mimoto = await post(observed("https://injiweb.collab.mosip.net/v1/mimoto/wallets/private-wallet-id/presentations", { requestUri, requestUriSource: "same_origin_referrer" }));
       expect(mimoto.status).toBe(202);

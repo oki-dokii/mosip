@@ -77,6 +77,27 @@ The verifier adapter retains the signed request's raw `state` only in process me
 
 ### Joint live run instructions
 
+**Observed result, 25 October:** managed run `3dc6895d-ff87-45a2-a10b-46844198d83e` completed with correlated Mimoto presentation and independent Verify `valid`. See [the actual evidence, import workaround and limits](submission/evidence/person2-managed-a1-2026-10-25/README.md). Earlier pending-observation statements above describe pre-trial readiness. Final team review and deployment release attestation remain separate.
+
+#### Confirmed hosted Registration Receipt profile
+
+The public issuer metadata and the playground's live adapters were checked on 25 October 2026. Issuer discovery returned HTTP 200 and advertised `RegistrationReceiptCredential` as `ldp_vc`. Verify request creation returned HTTP 201, and fetching its signed request returned HTTP 200. These are setup checks, **not** evidence of wallet issuance, storage, presentation, or A1 completion.
+
+Use the following public configuration for the existing hosted Registration Receipt journey, alongside a privately generated bridge token and the remaining assisted settings:
+
+```dotenv
+CERTIFY_BASE_URL=https://injicertify-landregistry.collab.mosip.net
+CREDENTIAL_CONFIGURATION_ID=RegistrationReceiptCredential
+VERIFY_BASE_URL=https://injiverify.collab.mosip.net/v1/verify
+VERIFY_CLIENT_ID=decentralized_identifier:did:web:injiverify.collab.mosip.net:v1:verify
+ASSISTED_WALLET_URL=https://injiweb.collab.mosip.net
+ASSISTED_OFFER_URL=https://injiweb.collab.mosip.net/issuers/Land
+ASSISTED_PRESENTATION_URL_TEMPLATE=https://injiweb.collab.mosip.net/user/authorize?client_id=decentralized_identifier%3Adid%3Aweb%3Ainjiverify.collab.mosip.net%3Av1%3Averify&request_uri={request_uri}
+VERIFY_LDP_TYPE_VALUES_JSON=["https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json#RegistrationReceiptCredential"]
+```
+
+The connected UI requests the supported five-minute waiting budget per step for live runs. Start only after the dedicated wallet is unlocked and browser Network recording is ready. Fixture runs retain the backend's default budget.
+
 1. Start the BFF with a fresh private `CAPTURE_BRIDGE_TOKEN` of at least 32 characters, `ASSISTED_LIVE_ENABLED=true`, the canonical Certify/Verify/Web settings and the tested Land Registry offer/profile. The default Verify request still asks for Farmer; set `VERIFY_LDP_TYPE_VALUES_JSON` to include `https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json#RegistrationReceiptCredential` as observed in the hosted request (see `.env.example`). Set the **same bridge authorization token** in the collector shell. It is separate from the BFF's hidden HMAC key; never put either value in Git, screenshots or a command argument. Use the same `CAPTURE_ORIGINS_JSON` on the collector if custom origins are configured. The BFF endpoint may be HTTP only on loopback; use HTTPS otherwise.
 2. Start a managed live run with `timeoutMs: 300000`. Clear browser Network history and record only the current journey. Save the HAR temporarily **outside the repository**, never share or upload it. After the issuance interaction, run `pnpm capture:routes /outside-repo/session.har`. Share only the relevant `POST` rows (method, origin, masked path, rule ID) with Person 1. Unknown paths appear with `ruleId: null`; do not guess them.
 3. If the issuance rule matches, run `pnpm capture:bridge /outside-repo/session.har RUN_UUID http://127.0.0.1:4000`. The command prints counts and rule IDs only. For the observed wallet-scoped Mimoto credential POST, check that the saved exchange says `actorTo: mimoto`, `ruleId: mimoto-wallet-credential`, `downstreamCertifyObserved: false`. Once the card survives refresh, confirm storage through the assisted UI/API; this is a separate human assertion.

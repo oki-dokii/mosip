@@ -1,5 +1,13 @@
 # A1 — Inji Web JSON-LD wallet evidence
 
+## Managed run observed — 25 October 2026
+
+**Technical chain passed; final team review pending.** Fresh playground-managed run `3dc6895d-ff87-45a2-a10b-46844198d83e` recorded issuance transport, explicit persistent-storage confirmation, a presentation matching the backend-created Verify request URI, and an independent Verify result of `valid`. All ten steps succeeded. The hosted profile is Land Registry `RegistrationReceiptCredential`, `ldp_vc`, with the `collab-dcql` verifier adapter.
+
+The [sanitized evidence bundle](evidence/person2-managed-a1-2026-10-25/README.md) contains the original API run/report/matrix exports and UI proof. It documents the duplicate-import workaround, version-label correction, browser coverage limits, memory storage and unchanged shared evidence tier. No raw HAR or authentication material is included. This closes the fresh managed-run technical requirement for the observed profile; deployed releases and final integrator approval remain unreported/pending. The earlier manual record below is preserved as history.
+
+## Earlier manual journey — 23 October 2026
+
 Status on 23 October 2026: **MANUAL LIVE JOURNEY SUCCEEDED; INTEGRATOR SIGN-OFF PENDING**.
 
 The dedicated signed-in Inji Web account stored a sandbox Land Registry Registration Receipt credential, presented it to hosted Inji Verify, and received the visible verdict **“Congratulations, the given credential is valid!”**. The credential remained in Stored Cards after a full page refresh. This was a manual browser journey, not a playground-managed assisted run. Correlated redacted Exchange evidence and backend request-profile compatibility still require integration validation; this document does not promote the automated evidence tier or claim Person 1 capture integration passed.
@@ -50,9 +58,9 @@ https://injiweb.collab.mosip.net/user/authorize?client_id=decentralized_identifi
 
 - [x] Dedicated account, real wallet issuance, persistent storage, wallet presentation and visible Verify valid verdict.
 - [x] Sanitized screenshots reviewed visually: listing/verdict only; no credential contents, QR payload, login identifiers or tokens.
-- [ ] Confirm exact issuer/configuration ID, deployment versions and protocol profile for the successful Registration Receipt flow.
-- [ ] Repeat through a playground-managed live run with Person 1's approved redacted capture adapter; preserve run/step/exchange IDs and same-process state correlation. Do not import raw real-session HAR to bypass the capture contract.
-- [ ] Record issuance and presentation observations, storage-confirmation provenance, missing/not-observable coverage, and normalized valid outcome for that managed run.
+- [x] Confirm issuer/configuration ID and managed verifier profile: Land Registry Certify, `RegistrationReceiptCredential`, `collab-dcql`. Deployment releases remain unreported.
+- [x] Repeat through a playground-managed live run with the redacted capture bridge; preserve run/step/exchange IDs and same-process request-URI correlation.
+- [x] Record issuance and presentation observations, storage-confirmation provenance, missing/not-observable coverage, and normalized valid outcome in the linked managed bundle.
 - [ ] Integrator reviews evidence and signs off A1. Existing shared evidence-tier rules remain unchanged.
 
 ## Earlier attempts and limits

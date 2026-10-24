@@ -23,3 +23,13 @@ it("withholds compatibility conclusions when evidence is unavailable", async () 
   expect(await screen.findByRole("alert")).toHaveProperty("textContent", "Real-wallet evidence is unavailable. No compatibility conclusion can be drawn.");
   expect(screen.queryByText(/Observed outcome: Valid/)).toBeNull();
 });
+it("links a completed managed Web run while leaving mobile validation pending", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ schemaVersion: 1, items: [
+    { ...evidence(false), managedRunId: "actual-web-run", managedValidation: "passed", artifacts: [{ label: "Managed run report", url: "https://example.com/report" }] },
+    { ...evidence(true), managedRunId: null, managedValidation: "pending" },
+  ] }) })));
+  render(<WalletEvidencePanel />);
+  expect(await screen.findByText(/Managed run: actual-web-run · Managed validation: passed/)).toBeTruthy();
+  expect(screen.getByText(/Managed run: none · Managed validation: pending/)).toBeTruthy();
+  expect(screen.getByRole("link", { name: "Managed run report" }).getAttribute("href")).toBe("https://example.com/report");
+});
