@@ -2,6 +2,8 @@
 
 Snapshot: 23 October 2026, merged `main` checkpoint `b0f132d`. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) passed frozen install, typecheck, unit/contract tests, production build, secret audit, three Chromium browser checks and a PostgreSQL-backed six-case Docker mock matrix. The same source passed locally and in a fresh same-host clone. None of these commands performed a fresh Collab or real Inji-wallet journey.
 
+24 October follow-up on `main` (`ad06775`): after the evidence catalog, URL redaction, failed-HTTP recording and cookie-origin fix, the **BFF suite alone** passed 199 tests with three opt-in PostgreSQL tests skipped. BFF and Web typechecks and the text secret audit passed. This is not a new whole-monorepo, browser, Docker, PostgreSQL or real-wallet result; the table below remains the dated 23 October full checkpoint.
+
 | Test area | Result | What it establishes |
 |---|---:|---|
 | Script and contract checks | 36 passed | Committed contracts, protocol evaluation helpers, evidence tools and secret-audit behavior |
@@ -25,7 +27,7 @@ Snapshot: 23 October 2026, merged `main` checkpoint `b0f132d`. [Hosted CI run 28
 | Mock X.509 issuer → Reference Wallet → public Collab Verify | [21 October sanitized reports](evidence/README.md) | Valid and bad-signature outcomes observed; self-signed certificate does not prove production trust |
 | Mock issuer → Reference Wallet → mock verifier | [23 October hosted six-case matrix](evidence/2026-10-23-ci-mock-matrix.json) | Clean-checkout Docker mock protocol outcomes with exact reasons; still no real Inji wallet |
 | HAR import and secret handling | Capture/redaction tests, audit, browser mock test | Synthetic canaries absent from stored/API/socket/browser projections; passive capture has unobservable boundaries |
-| A1: actual Inji Web JSON-LD wallet | [A1 evidence](A1_WEB_EVIDENCE.md) | **Blocked**: no persistent account and authenticated Web/Mimoto target |
+| A1: actual Inji Web JSON-LD wallet | [A1 evidence](A1_WEB_EVIDENCE.md) | **Manual journey observed:** signed-in account, persistent stored Registration Receipt, wallet presentation and Verify UI `Valid`. A correlated playground-managed run and independent result lookup remain pending |
 | A2: actual Inji mobile SD-JWT wallet | [Mobile acceptance evidence](evidence/person3-a2-mobile-2026-10-23/README.md) | **Passed observed hybrid chain**: actual Android issuance/storage/share, user-confirmed reopening and correlated valid credential/holder proof result; installed binary and Collab release not independently attested |
 | A6: playground + mocks packaging | [CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) and [deployment guide](../DEPLOYMENT.md) | Hosted clean-checkout six-case Docker matrix passed; separate-machine human rehearsal and real local Inji profile remain open |
 

@@ -17,13 +17,13 @@ flowchart LR
 
 ![Assisted fixture screen with wallet actions and explicit simulated evidence](evidence/person2/assisted-fixture.png)
 
-The guided panel exposes wallet and offer actions in keyboard order. Its confirmation and verifier buttons are labeled as simulated fixture steps. The A1 status remains blocked even when the fixture completes, so the UI does not turn a rehearsal into real-wallet evidence.
+The guided panel exposes wallet and offer actions in keyboard order. Its confirmation and verifier buttons are labeled as simulated fixture steps. A completed fixture does not turn into real-wallet evidence; the separate manual Web success still needs a correlated managed run.
 
 ## 2. Connected backend-assisted journey
 
 ![Connected assisted fixture run with stage actions and status](evidence/person2/connected-assisted.png)
 
-The connected panel creates a backend run, shows stage-specific actions, supports cancellation and reconnects through run history after reload. Its live mode remains unavailable until account and HTTPS endpoint configuration exist. A human storage confirmation alone is not wallet persistence proof.
+The connected panel creates a backend run, shows stage-specific actions, supports cancellation and reconnects through run history after reload. Live mode requires HTTPS endpoint and capture-bridge configuration on the running BFF. A signed-in test account exists on the wallet operator's machine; it is not configured in this synthetic screenshot. A human storage confirmation alone is not wallet persistence proof.
 
 ## 3. Browser capture coverage
 
