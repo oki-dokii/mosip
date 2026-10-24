@@ -33,7 +33,7 @@ export function AssistedJourneyPanel({ fixture, actions = fixture.actions }: { f
   }, [active, state.deadline]);
   return <section aria-label="Assisted Inji Web fixture journey" className="mt-7 space-y-4 rounded-3xl border border-blue-200 bg-blue-50 p-6">
     <h2 className="text-xl font-bold">Inji Web Assisted · JSON-LD</h2>
-    <p className="font-semibold">Fixture simulation · A1 blocked: dedicated persistent test account unavailable.</p>
+    <p className="font-semibold">Fixture simulation · A1 blocked: managed live validation and integrator review pending. A dedicated account and manual wallet success are recorded below.</p>
     <p className="text-sm">Run {state.runId}. These controls inject synthetic observations. No wallet is contacted and no credential or login state is stored.</p>
     <div role="status" aria-live="polite" aria-atomic="true">
       <p className="font-semibold">{instructions[state.stage]}</p>

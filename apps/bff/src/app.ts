@@ -1,3 +1,4 @@
+import { walletEvidence, renderWalletEvidenceMarkdown, renderWalletEvidenceCsv } from "./walletEvidence.js";
 import { withExchangeLock } from "./exchangeLock.js";
 import { AssistedRuns } from "./assisted.js";
 import { captureOrigins } from "./capture/har.js";
@@ -137,10 +138,19 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
 
   app.get("/api/v1/meta/implementations", (_request, response) => response.json(metadata));
   app.get("/api/v1/scenarios", (_request, response) => response.json({ items: listScenarios(configuredDriverMode()) }));
-  app.get("/api/v1/matrix/cells", async (_request, response, next) => { try { response.json({ items: matrixCells(await repository.list()) }); } catch (error) { next(error); } });
+  app.get("/api/v1/wallet-evidence", (_request, response) => response.json({ schemaVersion: 1, items: walletEvidence }));
+  app.get("/api/v1/wallet-evidence/report", (request, response) => {
+    const format = request.query.format ?? "json";
+    if (!["json", "md", "csv"].includes(String(format))) return response.status(400).json({ code: "UNSUPPORTED_REPORT_FORMAT" });
+    response.setHeader("content-disposition", `attachment; filename=real-wallet-evidence.${format}`);
+    if (format === "md") return response.type("text/markdown").send(renderWalletEvidenceMarkdown(walletEvidence));
+    if (format === "csv") return response.type("text/csv").send(renderWalletEvidenceCsv(walletEvidence));
+    return response.json({ schemaVersion: 1, recordKind: "manual_wallet_observation", items: walletEvidence });
+  });
+  app.get("/api/v1/matrix/cells", async (_request, response, next) => { try { response.json({ items: matrixCells(await repository.list(), walletEvidence) }); } catch (error) { next(error); } });
   app.get("/api/v1/matrix", async (_request, response, next) => {
     try {
-      response.json({ items: latestMatrix(await repository.list()) });
+      response.json({ items: latestMatrix(await repository.list()), walletEvidence });
     } catch (error) {
       next(error);
     }
@@ -149,14 +159,14 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
     try {
       const format = request.query.format ?? "csv";
       const runs = await repository.list();
-      if (format === "json") return response.json({ items: latestMatrix(runs) });
+      if (format === "json") return response.json({ items: latestMatrix(runs), walletEvidence });
       if (format === "csv") {
         response.setHeader("content-disposition", "attachment; filename=interoperability-matrix.csv");
-        return response.type("text/csv").send(renderMatrixCsv(runs));
+        return response.type("text/csv").send(renderMatrixCsv(runs, walletEvidence));
       }
       if (format === "md") {
         response.setHeader("content-disposition", "attachment; filename=interoperability-matrix.md");
-        return response.type("text/markdown").send(renderMatrixMarkdown(runs));
+        return response.type("text/markdown").send(renderMatrixMarkdown(runs, walletEvidence));
       }
       return response.status(400).json({ code: "UNSUPPORTED_MATRIX_FORMAT" });
     } catch (error) {
@@ -291,7 +301,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
       if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
       const format = request.query.format ?? "json";
       if (format !== "json" && format !== "md") return response.status(400).json({ code: "UNSUPPORTED_REPORT_FORMAT" });
-      const report = buildReport(record);
+      const report = buildReport(record, walletEvidence);
       const extension = format === "md" ? "md" : "json";
       response.setHeader("content-disposition", `attachment; filename=run-${record.run.id}.${extension}`);
       if (format === "md") return response.type("text/markdown").send(renderMarkdown(report));

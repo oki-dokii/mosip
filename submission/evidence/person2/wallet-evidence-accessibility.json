@@ -1,0 +1,19 @@
+{
+  "scope": "Real-wallet evidence catalog",
+  "violations": [],
+  "passes": [
+    "aria-allowed-attr",
+    "aria-conditional-attr",
+    "aria-prohibited-attr",
+    "aria-valid-attr-value",
+    "aria-valid-attr",
+    "color-contrast",
+    "duplicate-id-aria",
+    "form-field-multiple-labels",
+    "link-name",
+    "list",
+    "listitem",
+    "nested-interactive",
+    "select-name"
+  ]
+}

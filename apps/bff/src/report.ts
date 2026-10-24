@@ -1,3 +1,4 @@
+import { relatedWalletEvidence, renderWalletEvidenceMarkdown, type WalletEvidence } from "./walletEvidence.js";
 import type { RunRecord } from "./store.js";
 import { evidenceLabels, evidenceTier, type EvidenceTier } from "@playground/shared";
 import { protocolMetadata } from "./protocol.js";
@@ -6,12 +7,13 @@ export interface RunReport {
   run: RunRecord["run"];
   steps: RunRecord["steps"];
   exchanges: RunRecord["exchanges"];
+  relatedWalletEvidence: readonly WalletEvidence[];
   evidence: { tier: EvidenceTier; label: string };
 }
 
-export function buildReport(record: RunRecord): RunReport {
+export function buildReport(record: RunRecord, manual: readonly WalletEvidence[] = []): RunReport {
   const tier = evidenceTier(record.run);
-  return { run: { ...record.run, ...protocolMetadata(record.steps) }, steps: record.steps, exchanges: record.exchanges, evidence: { tier, label: evidenceLabels[tier] } };
+  return { relatedWalletEvidence: relatedWalletEvidence(record.run, manual), run: { ...record.run, ...protocolMetadata(record.steps) }, steps: record.steps, exchanges: record.exchanges, evidence: { tier, label: evidenceLabels[tier] } };
 }
 
 function fencedJson(value: unknown) {
@@ -74,5 +76,6 @@ export function renderMarkdown(report: RunReport) {
       "",
     );
   }
+  if (report.relatedWalletEvidence.length) lines.push("## Related manual wallet observations", "", "These observations are not evidence for this run or its outcome; credential/profile matching has not been established.", "", renderWalletEvidenceMarkdown(report.relatedWalletEvidence));
   return `${lines.join("\n")}\n`;
 }
