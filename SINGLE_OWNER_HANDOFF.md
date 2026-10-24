@@ -1,5 +1,13 @@
 # Remaining work: single-developer handoff
 
+## 24 October A1 ownership decision
+
+The capture bridge and assisted Web journey are now **one integration task with one code owner**. The integrator owns route/correlation fixes, assisted run state, inspector diagnostics, tests, and the final evidence/report update on `main`. Dayal's earlier manual Inji Web success is retained as historical evidence; he can operate the signed-in wallet and review the fresh run when available, without making overlapping code edits. There is no need to maintain separate Person 1 and Person 2 implementation queues for A1.
+
+The immediate acceptance target is one fresh managed run whose ID joins a browser → Mimoto credential POST, explicit wallet storage confirmation, a request-URI-correlated browser → Mimoto presentation POST, and the independent Inji Verify result fetched for the same playground-created transaction. The report and matrix must link that run. A Mimoto POST is transport evidence, not proof of its downstream Certify/Verify call. If the Mimoto request contains no usable request URI, record `request_uri_unavailable` and leave A1 pending rather than matching by timing.
+
+On this machine, as checked 24 October, the live assisted environment variables and local wallet session are absent and Docker is stopped. The hosted issuer configuration/offer URL for the Land Registry credential is not confirmed. The integrator can finish code, synthetic tests and setup here; the live browser check must run where the signed-in wallet and approved synthetic identity are available. Keep its raw session HAR, bridge token, full credential and authentication material outside the repository. See [the capture bridge instructions](CAPTURE.md#managed-live-observation-bridge) and [observed hosted routes](submission/PERSON2_HOSTED_ROUTE_HANDOFF.md). Until a fresh run is recorded, A1 remains **pending** and the manual catalog's `managedRunId: null` is correct.
+
 Updated 2026-10-23 for `main` after the evidence-linked gap explorer and green hosted CI. **Assign this entire technical backlog to one designated developer.** That person owns implementation, integration, verification and status updates end to end; earlier Person 1–4 files remain historical handoffs, not concurrent assignments. The team still owns private IDs, access to a physical phone or another machine, and final submission approval.
 
 The working freeze is 2026-10-26 21:00 IST and the wallet go/no-go is 2026-10-24 21:00 IST, both provisional until the team confirms its official deadline. Do not turn a blocked test into a pass. Work sequentially: a later stage must consume an actual result from the earlier stage, not a placeholder URL or assumed version.

@@ -8,6 +8,7 @@ import type { DriverContext, DriverResult, DriverSet } from "./drivers/types.js"
 import { redact } from "./redaction.js";
 import type { RunRepository } from "./store.js";
 import { evaluateProtocol, protocolMetadata } from "./protocol.js";
+import { UpstreamHttpFailure } from "./drivers/upstreamFailure.js";
 
 const STEP_DEFINITIONS = [
   ["INIT", "Initialize run"],
@@ -43,12 +44,14 @@ async function executeStep(step: RunStep, context: DriverContext, drivers: Drive
 function sanitizeExchange(exchange: NonNullable<DriverResult["exchanges"]>[number], sequence: number) {
   const request = redact(exchange.request);
   const response = redact(exchange.response);
+  const url = redact(exchange.url, "$.url");
   return {
     ...exchange,
     seq: sequence,
+    url: url.value as string,
     request: request.value,
     response: response.value,
-    redactions: [...request.redactions, ...response.redactions],
+    redactions: [...url.redactions, ...request.redactions, ...response.redactions],
   };
 }
 
@@ -133,10 +136,32 @@ export async function runDemo(
     record.run.actualOutcome = actualOutcome;
   } catch (error) {
     if (activeStep) {
+      const failedStep = activeStep;
+      if (error instanceof UpstreamHttpFailure) {
+        await withExchangeLock(repository, runId, async () => {
+          const fresh = await repository.get(runId);
+          exchangeSequence = Math.max(exchangeSequence, ...(fresh?.exchanges.map(item => item.seq) ?? []));
+          const stored: Exchange = {
+            id: randomUUID(), runId, stepId: failedStep.id, seq: exchangeSequence + 1,
+            actorFrom: "playground", actorTo: "upstream", method: error.method,
+            url: error.origin, status: error.status, durationMs: error.durationMs,
+            request: { bodyStored: false },
+            response: { httpStatus: error.status, ...(error.errorCode ? { errorCode: error.errorCode } : {}), bodyStored: false },
+            redactions: [],
+          };
+          await repository.addExchange(stored);
+          namespace.to(room).emit("exchange:recorded", {
+            runId, exchangeId: stored.id, seq: stored.seq, actorFrom: stored.actorFrom,
+            actorTo: stored.actorTo, method: stored.method, url: stored.url,
+            status: stored.status, durationMs: stored.durationMs,
+          });
+        });
+      }
       activeStep.status = "failed";
       activeStep.summary = {
         ...activeStep.summary,
         error: error instanceof AssistedWaitError ? `ASSISTED_${error.reason.toUpperCase()}` : "DRIVER_EXECUTION_FAILED",
+        ...(error instanceof UpstreamHttpFailure ? { upstreamHttpStatus: error.status, ...(error.errorCode ? { upstreamErrorCode: error.errorCode } : {}) } : {}),
         protocolEvaluation: evaluateProtocol(record.run.config, record.run.expectedOutcome, "error", verificationSummary, activeStep.stepKey),
       };
       await repository.updateStep(activeStep);

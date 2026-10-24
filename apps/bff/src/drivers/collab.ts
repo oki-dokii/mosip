@@ -11,6 +11,7 @@ import { applyCredentialTamper, presentationNonce } from "../tamper/index.js";
 import { issueCredential as issueSignedMockCredential } from "@playground/mock-issuer/credential";
 import { loadIssuerSigner } from "@playground/mock-issuer/signing";
 import { verifyPresentation } from "@playground/mock-verifier";
+import { UpstreamHttpFailure } from "./upstreamFailure.js";
 import { mockPolicy, safeFailure, signedVariant } from "../protocol.js";
 
 const { AuthenticationProofPurpose } = jsigs.purposes;
@@ -214,7 +215,7 @@ async function request(context: DriverContext, url: string, options: RequestInit
   let body: any;
   try { body = text ? JSON.parse(text) : null; } catch { body = text; }
   if (!response.ok && !allowStatuses.includes(response.status)) {
-    throw new Error(`Upstream request failed with HTTP ${response.status}`);
+    throw new UpstreamHttpFailure({ method: fetchOptions.method ?? "GET", url, status: response.status, durationMs, body });
   }
   return { status: response.status, body, durationMs };
 }

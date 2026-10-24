@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { createSteps, runDemo } from "./orchestrator.js";
 import { createFixtureDrivers } from "./drivers/fixture.js";
 import { MemoryRunRepository } from "./store.js";
+import { UpstreamHttpFailure } from "./drivers/upstreamFailure.js";
 
 describe("walking-skeleton orchestration", () => {
   it("creates the ordered issue-to-verify timeline", () => {
@@ -90,6 +91,48 @@ describe("walking-skeleton orchestration", () => {
       status: "failed",
       summary: { error: "DRIVER_EXECUTION_FAILED" },
     });
+  });
+
+  it("records only safe transport metadata for an upstream HTTP failure", async () => {
+    const repository = new MemoryRunRepository();
+    const id = randomUUID();
+    const config: RunSummary["config"] = { issuer: "inji_certify", wallet: "reference_wallet", verifier: "inji_verify", format: "ldp_vc", flow: "cross_device", tamper: null, scenarioId: null };
+    const run: RunSummary = { id, parentRunId: null, config, status: "pending", expectedOutcome: "valid", actualOutcome: null, proofType: "Ed25519Signature2020", algorithm: "EdDSA", createdAt: new Date().toISOString(), startedAt: null, finishedAt: null };
+    await repository.create({ run, steps: createSteps(id), exchanges: [] });
+    const drivers = createFixtureDrivers(config);
+    drivers.issuer.createOffer = async () => { throw new UpstreamHttpFailure({
+      method: "POST", url: "https://issuer.example/private-session-id?access_token=canary-token#canary-fragment",
+      status: 401, durationMs: 12, body: { error: "canary-secret", credential: "canary-credential" },
+    }); };
+    const emitted: unknown[] = [];
+    const io = { of: () => ({ to: () => ({ emit: (_event: string, payload: unknown) => emitted.push(payload) }) }) } as unknown as Server;
+
+    await expect(runDemo(id, io, repository, 0, drivers)).rejects.toThrow("ISSUE_OFFER");
+    const stored = (await repository.get(id))!;
+    const failed = stored.exchanges.at(-1)!;
+    expect(failed).toMatchObject({ stepId: stored.steps[1]?.id, url: "https://issuer.example", method: "POST", status: 401,
+      request: { bodyStored: false }, response: { httpStatus: 401, bodyStored: false } });
+    expect(stored.steps[1]?.summary).toMatchObject({ error: "DRIVER_EXECUTION_FAILED", upstreamHttpStatus: 401 });
+    expect(JSON.stringify({ stored, emitted })).not.toMatch(/canary|private-session-id|access_token/);
+  });
+
+  it("redacts driver exchange URLs before persistence and socket emission", async () => {
+    const repository = new MemoryRunRepository();
+    const id = randomUUID();
+    const config: RunSummary["config"] = { issuer: "inji_certify", wallet: "reference_wallet", verifier: "inji_verify", format: "ldp_vc", flow: "cross_device", tamper: null, scenarioId: null };
+    const run: RunSummary = { id, parentRunId: null, config, status: "pending", expectedOutcome: "valid", actualOutcome: null, proofType: "Ed25519Signature2020", algorithm: "EdDSA", createdAt: new Date().toISOString(), startedAt: null, finishedAt: null };
+    await repository.create({ run, steps: createSteps(id), exchanges: [] });
+    const drivers = createFixtureDrivers(config);
+    const original = drivers.issuer.createOffer.bind(drivers.issuer);
+    drivers.issuer.createOffer = async (context) => {
+      const result = await original(context);
+      result.exchanges![0]!.url = "https://issuer.example/offer?code=canary-code#canary-fragment";
+      return result;
+    };
+    const emitted: unknown[] = [];
+    const io = { of: () => ({ to: () => ({ emit: (_event: string, payload: unknown) => emitted.push(payload) }) }) } as unknown as Server;
+    await runDemo(id, io, repository, 0, drivers);
+    expect(JSON.stringify({ stored: await repository.get(id), emitted })).not.toMatch(/canary-code|canary-fragment/);
   });
 
   it("passes a tamper run when the verifier returns the expected invalid outcome", async () => {
