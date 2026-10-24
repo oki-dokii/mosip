@@ -307,5 +307,3 @@ Manual evidence applies only to the recorded credential and deployment. It does 
 - [Stored cards after refresh](https://github.com/oki-dokii/mosip/blob/1537c55287ccbbf9ed9edd113ce2c46fc05c6681/submission/evidence/person2/live-stored-cards-after-refresh.png)
 - [Verify Valid screenshot](https://github.com/oki-dokii/mosip/blob/1537c55287ccbbf9ed9edd113ce2c46fc05c6681/submission/evidence/person2/live-verify-valid.png)
 - [Observed hosted route limits](https://github.com/oki-dokii/mosip/blob/fab1288306bd52c3b7942468f1dc6f45f2e82987/submission/PERSON2_HOSTED_ROUTE_HANDOFF.md)
-
-
