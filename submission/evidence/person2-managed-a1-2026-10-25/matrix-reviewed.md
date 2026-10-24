@@ -75,4 +75,3 @@ Manual evidence applies only to the recorded credential and deployment. It does 
 - [Mobile attempt and provenance](https://github.com/oki-dokii/mosip/blob/a638911cd9fc54b147a643b05a6155f02937c7b7/submission/evidence/person3-a2-mobile-2026-10-23/attempt.json)
 - [Wallet share success](https://github.com/oki-dokii/mosip/blob/a638911cd9fc54b147a643b05a6155f02937c7b7/submission/evidence/person3-a2-mobile-2026-10-23/04-wallet-share-success.jpg)
 - [Correlated verifier result](https://github.com/oki-dokii/mosip/blob/a638911cd9fc54b147a643b05a6155f02937c7b7/submission/evidence/person3-a2-mobile-2026-10-23/verifier-result.json)
-
