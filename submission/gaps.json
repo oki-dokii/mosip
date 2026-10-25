@@ -92,6 +92,27 @@
       "matrixCells": [],
       "matrixDecision": "Fresh Verify v0.18.2 sample DB omitted response-code columns: direct-post HTTP 500. The same synthetic Certify/holder/Verify path reached valid after adding the three columns present in its tagged DDL. Local packaging observation only; no other deployment is inferred.",
       "upstreamIssue": null
+    },
+    {
+      "id": "G-06",
+      "status": "reproduced_local_verifier_binding_gap",
+      "disclosure": "public_synthetic_security_observation",
+      "productVersion": "Inji Verify 0.18.2",
+      "evidence": [
+        "submission/evidence/2026-10-25-local-inji-negative-matrix.json",
+        "scripts/local-inji-smoke.mjs",
+        "deploy/INJI_LOCAL.md"
+      ],
+      "runIds": [
+        "txn_1ecec786-d239-4c8e-b17c-323f792d2c5f",
+        "txn_4f5b45e0-fbc0-4271-b943-ad97b3a39abf",
+        "txn_cff0444e-f7cd-4c5a-a5f3-18926be795fd",
+        "txn_88b4d872-19bf-4d5c-b070-76607bd80bbd",
+        "txn_0b402ad7-3eff-4c44-833e-ffe9ebe61f93"
+      ],
+      "matrixCells": [],
+      "matrixDecision": "Pinned local Verify 0.18.2 accepted wrong-nonce, wrong-audience and exact-replay SD-JWT presentations into fresh challenges; it rejected a broken issuer signature. Synthetic reference-holder profile only. Collab and newer releases are untested; upstream issue not filed.",
+      "upstreamIssue": null
     }
   ],
   "localProtocolEvidence": {

@@ -1,0 +1,31 @@
+{
+  "observedAt": "2026-10-25T06:54:24.661Z",
+  "sourceCommit": "aaa246c",
+  "sourceBranch": "main",
+  "command": "pnpm demo:inji",
+  "outcome": "LOCAL INJI DEMO PASS",
+  "issuer": "official_inji_certify",
+  "issuerVersion": "1.0.0-alpha.1",
+  "verifier": "official_inji_verify",
+  "verifierVersion": "0.18.2",
+  "holder": "non_inji_reference",
+  "deployment": "local_services_loopback_only",
+  "issuerFormat": "dc+sd-jwt",
+  "presentationDefinitionFormat": "vc+sd-jwt",
+  "protocol": "OpenID4VP Presentation Exchange",
+  "transactionId": "txn_834e87ed-4df6-4a69-9a96-e980c8d1ffc3",
+  "requestId": "req_9c59b805-ea66-4cad-b493-8a09a92911e3",
+  "issuerSignatureChecked": true,
+  "holderBindingChecked": true,
+  "verifierHttpStatus": 200,
+  "verifierValid": true,
+  "credentialProofValid": true,
+  "holderProofValid": true,
+  "resultCode": null,
+  "evidenceTier": "local_official_services_reference_holder",
+  "limits": [
+    "The holder is not Inji Web or Inji Wallet mobile.",
+    "The control does not exercise Mimoto or the playground BFF.",
+    "This rerun used the development Mac, not an independent clean machine."
+  ]
+}

@@ -21,6 +21,8 @@ node scripts/local-inji-smoke.mjs
 
 Acceptance requires a pre-authorized offer and token, credential returned by Certify, independent verification of the issuer signature and holder binding, a fresh signed Verify request, direct-post of a holder-bound presentation, and Verify's `allChecksSuccessful: true` with credential and holder proof checks true. The CLI prints only the sanitized result; it never writes the credential, VP or holder key. The official services can store raw synthetic material in their dedicated Docker databases, and Certify keys remain in the owner-only runtime. No raw material is committed or sent to the playground database. Identity claims are synthetic.
 
+After the services are running, `pnpm probe:inji` creates separate fresh Verify requests for a valid control, a correctly signed holder proof with the wrong nonce, one with the wrong audience, an exact replay of the accepted VP into a fresh challenge, and a broken issuer signature. It prints only match flags, transaction/request IDs, HTTP statuses and verifier verdicts. The probe intentionally exits nonzero if Verify accepts a negative case. On the pinned local 0.18.2 profile the three holder-binding/replay cases returned `allChecksSuccessful: true`, while the broken issuer signature returned false; see the [sanitized matrix](../submission/evidence/2026-10-25-local-inji-negative-matrix.json) and [G-06](../GAPS.md). This is a versioned local observation, not a statement about Collab or newer Verify releases.
+
 Stop **only these dedicated services**, preserving their test databases and generated keys:
 
 ```sh
@@ -48,6 +50,7 @@ The official v0.18.2 [sample Compose seed](https://github.com/inji/inji-verify/b
 - The verifier's DID uses a loopback identifier; this control does not prove external DID resolution or request-signature trust by a real wallet.
 - The reference holder, rather than Inji Web/mobile, creates the presentation. The accepted result proves this official Certify/Verify combination with that holder and format profile.
 - Certificate-chain/root trust, revocation and native selective-disclosure policy are outside this control.
+- The negative probe uses `skipStatusChecks: true` when fetching each result, just like the positive control; status/revocation behavior is not under test. Its VP requests set `responseCodeValidationRequired: false` to match the working local profile.
 - Generated Certify keys and DB credentials remain in the owner-only OS temp runtime (`mosip-mobile-inji`) or Docker volumes. The CLI does not export them.
 - The [mobile route](MOBILE_INJI.md) remains separate. It uses a temporary HTTPS tunnel and public Collab Verify because a phone cannot reach Mac loopback addresses.
 
