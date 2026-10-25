@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "recordKind": "phase1_configuration_fixture",
+  "integrationReady": false,
+  "sources": ["deploy/INJI_WEB_LOCAL.md", "deploy/INJI_LOCAL.md", "scripts/prepare-inji-web-local.mjs", "scripts/local-inji-smoke.mjs"],
+  "walletOrigin": "http://127.0.0.1:18093",
+  "mimotoOrigin": "http://127.0.0.1:18099",
+  "idpOrigin": "http://127.0.0.1:18095",
+  "certifyOrigin": "http://127.0.0.1:18090",
+  "verifyOrigin": "http://127.0.0.1:18081",
+  "oidcCallbackPath": "/v1/mimoto/oauth2/callback/google",
+  "certifyMetadataPath": "/v1/certify/.well-known/openid-credential-issuer",
+  "verifyRequestPath": "/v1/verify/vp-request",
+  "verifyResultPath": "/v1/verify/v2/vp-results/{id}",
+  "versions": {"web": "0.17.0", "mimoto": "0.22.0", "certify": "1.0.0-alpha.1", "verify": "0.18.2"},
+  "imageDigests": {
+    "web": "sha256:62ca25a6c2f5c3d61edfed1e43e52885f1bcf1229b3a3ffb89c117245f839719",
+    "mimoto": "sha256:89fc81eeb8c911c8a9944e4071d8f3e8f287d3de697c4461f2b3a2e8ce29858e",
+    "certify": "sha256:1579b2449f1a7213fe25de1f6a1509b5636f1fedf0d7f5c4cfd07b9f0fc5b346",
+    "verify": "sha256:2ed468e7e1f1ce317a41476dd131f4ce8f081b0f055a080c95e99a92cc192bdd"
+  },
+  "protocols": {"currentIssuerControl": "SD-JWT pre-authorized grant", "currentVerifyControl": "OpenID4VP Presentation Exchange", "jsonLdIssuance": "unconfirmed", "protocolDraft": "unreported"},
+  "jsonLd": {"issuerLabel": "Person 2 Local JSON-LD", "credentialLabel": "Person 2 Synthetic JSON-LD", "credentialConfigurationId": null, "credentialTypeUri": null},
+  "captureProxy": null,
+  "limits": ["Origins belong to separate existing stacks, not a confirmed joined deployment.", "The working local issuer control is SD-JWT; JSON-LD metadata/configuration is unconfirmed.", "Verify local control uses Presentation Exchange; the assisted adapter currently uses hosted DCQL.", "Container-to-container canonical origins and proxy mapping require Person 4 and Person 1 handoff."]
+}

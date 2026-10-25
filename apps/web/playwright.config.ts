@@ -10,7 +10,7 @@ const bffUrl = `http://127.0.0.1:${bffPort}`;
 const webUrl = `http://127.0.0.1:${webPort}`;
 
 export default defineConfig({
-  testDir: "./browser", testMatch: "**/*.pw.ts", workers: 1,
+  testDir: "./browser", testMatch: "**/*.pw.ts", testIgnore: "**/*.local.pw.ts", workers: 1,
   outputDir: "/tmp/person2-playwright-results", reporter: "list",
   use: { baseURL: webUrl, viewport: { width: 1440, height: 1000 } },
   webServer: [

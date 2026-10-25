@@ -1,0 +1,18 @@
+{
+  "issuers": [{
+    "issuer_id": "Person2LocalJsonLd",
+    "protocol": "OpenId4VCI",
+    "display": [{"name": "Person 2 Local JSON-LD", "title": "Person 2 Local JSON-LD", "description": "Synthetic local JSON-LD test issuer; not configured", "language": "en", "logo": {"url": "__PERSON4_LOCAL_ISSUER_LOGO_URL__", "alt_text": "Synthetic local issuer"}}],
+    "client_id": "__PERSON4_REGISTERED_CLIENT_ID__",
+    "client_alias": "__PERSON4_KEYSTORE_CLIENT_ALIAS__",
+    "token_endpoint": "__PERSON4_CANONICAL_MIMOTO_TOKEN_ENDPOINT__",
+    "qr_code_type": "OnlineSharing",
+    "enabled": "false",
+    "credential_issuer_host": "__PERSON4_CANONICAL_CERTIFY_ISSUER__",
+    "wellknown_endpoint": "__PERSON4_CONFIRMED_JSONLD_METADATA_ENDPOINT__",
+    "redirect_uri": "__PERSON4_REGISTERED_ISSUANCE_CALLBACK__",
+    "authorization_audience": "__PERSON4_ISSUANCE_AUTHORIZATION_AUDIENCE__",
+    "proxy_token_endpoint": "__PERSON4_ISSUANCE_TOKEN_ENDPOINT__",
+    "credential_issuer": "Person2LocalJsonLd"
+  }]
+}
