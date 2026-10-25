@@ -4,10 +4,10 @@
 
 **Find where a verifiable credential journey succeeds or fails.** Choose an issuer, wallet, verifier, and credential format; run an issue → hold → present → verify journey; then inspect its step timeline, sanitized protocol exchanges, sequence view, and downloadable result report.
 
-This is a **test playground**, not a production identity provider or wallet. It uses synthetic identities. Its automated wallet is the project's **Reference Wallet**. A Reference Wallet success does not prove that Inji Web or Inji Wallet mobile stored and presented the credential. The [evidence guide](SCENARIOS_AND_EVIDENCE.md) and [submission checklist](submission/READINESS.md) make that distinction explicit.
+This is a **test playground**, not a production identity provider or wallet. It uses synthetic identities. Its automated wallet is the project's **Reference Wallet**. A Reference Wallet success does not prove that Inji Web or Inji Wallet mobile stored and presented the credential. The [evidence guide](docs/SCENARIOS_AND_EVIDENCE.md) and [submission checklist](submission/READINESS.md) make that distinction explicit.
 
-The web app includes an evidence-linked gap explorer. The [feature parity roadmap](FEATURE_PARITY_ROADMAP.md) identifies meaningful additions to pursue after the current validated flows, with explicit proof required for every live claim.
-For a single-developer finish, use the [ordered remaining-work handoff](SINGLE_OWNER_HANDOFF.md).
+The web app includes an evidence-linked gap explorer. The [feature parity roadmap](docs/FEATURE_PARITY_ROADMAP.md) identifies meaningful additions to pursue after the current validated flows, with explicit proof required for every live claim.
+For a single-developer finish, use the [ordered remaining-work handoff](docs/SINGLE_OWNER_HANDOFF.md).
 The [editable pitch deck](submission/pitch/Interoperability_Playground_Pitch.pptx) summarizes the problem, prototype and recorded evidence for review. A [2:07 silent demo draft](submission/pitch/VIDEO_README.md) is ready for voiceover and final review.
 
 For the implemented official local-Certify mobile setup, use `pnpm mobile:inji` and follow [the mobile runbook](deploy/MOBILE_INJI.md). Its official-Certify → Reference Wallet → Collab Verify control passed; it does not establish phone acceptance.
@@ -64,14 +64,14 @@ The question for every run is **which exact combination was tested, what happene
 
 | Issuer | Wallet | Verifier | Format | Recorded status |
 |---|---|---|---|---|
-| Inji Certify | Reference Wallet | Inji Verify | JSON-LD, SD-JWT | Prior Collab runs returned `valid`; see [Phase 2](PHASE2.md). |
+| Inji Certify | Reference Wallet | Inji Verify | JSON-LD, SD-JWT | Prior Collab runs returned `valid`; see [Phase 2](docs/PHASE2.md). |
 | X.509 mock issuer | Reference Wallet | Inji Verify | SD-JWT | Prior Collab run returned `valid`; the self-signed test certificate does not prove root trust. |
 | Inji Certify | Reference Wallet | Standalone mock verifier | SD-JWT | Positive and bad-signature paths recorded. |
 | Standalone mock issuer | Reference Wallet | Standalone mock verifier | SD-JWT | Cross-service mock path recorded. |
 | Official local Inji Certify | Actual Inji Wallet Android | Collab Inji Verify | SD-JWT | **Observed A2 pass:** stored card, user-confirmed reopen persistence, same-wallet share and correlated valid proof result; [evidence/limits](submission/evidence/person3-a2-mobile-2026-10-23/README.md). |
 | Inji Certify | Inji Web (assisted) | Inji Verify | JSON-LD | **Managed A1 technical chain recorded:** same-run Mimoto transport, reload-backed storage confirmation, correlated presentation and independent Verify `valid`; [evidence and limits](submission/evidence/person2-managed-a1-2026-10-25/README.md). Final team review pending. |
 
-The detailed recorded outcomes and limitations are in [Phase 3](PHASE3.md). These are prior results, not a fresh live run performed by reading this README. A new mobile app is **not required**; real-wallet validation should use an existing, pinned Inji Wallet build.
+The detailed recorded outcomes and limitations are in [Phase 3](docs/PHASE3.md). These are prior results, not a fresh live run performed by reading this README. A new mobile app is **not required**; real-wallet validation should use an existing, pinned Inji Wallet build.
 
 ## Architecture and flows
 
@@ -187,7 +187,7 @@ For the **one-command container demo** with the web app, BFF, PostgreSQL, and se
 pnpm demo:docker
 ```
 
-Open **http://localhost:5174**. The command builds and health-checks the services, then runs six cross-container synthetic SD-JWT presets (valid control, corrupted signature, signed expiry, signed wrong type, missing required disclosure and nonce mismatch) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) passed the six-case Docker matrix and browser checks; an independent-machine rehearsal remains open.
+Open **http://localhost:5174**. The command builds and health-checks the services, then runs six cross-container synthetic SD-JWT presets (valid control, corrupted signature, signed expiry, signed wrong type, missing required disclosure and nonce mismatch) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](docs/DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) passed the six-case Docker matrix and browser checks; an independent-machine rehearsal remains open.
 The same command passed on this Mac on 25 October with all six scenarios; [the dated local record](submission/evidence/2026-10-25-local-demo.md) lists their run IDs. Independent-machine installation remains a final review check.
 
 For a separate **official local Inji service control**, run `pnpm demo:inji`. It starts pinned Inji Certify and Inji Verify on loopback, issues a synthetic SD-JWT, and uses a non-Inji reference holder to present it. On 25 October it printed `LOCAL INJI DEMO PASS` with Verify `valid` and true credential/holder proof checks. With the services running, `pnpm probe:inji` runs seven fresh-request cases; the pinned Verify release accepted wrong-nonce, wrong-audience, exact-replay and invalid-descriptor-path presentations, so this probe currently exits nonzero by design. It does not start Mimoto or Inji Web and does not create a playground BFF run. See the [exact setup, versions and limits](deploy/INJI_LOCAL.md) and [sanitized evidence](submission/evidence/2026-10-25-local-inji-extended-matrix.json).
@@ -206,7 +206,7 @@ The same Compose demo also lists the **25 October managed Inji Web A1 run** in R
 | Assisted real Inji Web | Backend-assisted live run with a signed-in wallet and metadata-only capture bridge | Persistent test wallet, configured public endpoints and local bridge token | One managed A1 JSON-LD run is recorded for the Land Registry profile; browser capture omits Mimoto server-side calls. A2 has separate Android evidence. |
 | Local official Inji service control | `pnpm demo:inji` | Docker and first-setup access to tagged official images/config | Certify → reference holder → Verify returned `valid` on loopback for one synthetic SD-JWT; no real wallet or BFF run is claimed. |
 
-For live Certify → Reference Wallet → Verify, obtain the **official public test-client environment** described in [Phase 0–1](PHASE0_1.md), keep it outside the repository, and set:
+For live Certify → Reference Wallet → Verify, obtain the **official public test-client environment** described in [Phase 0–1](docs/PHASE0_1.md), keep it outside the repository, and set:
 
 ```bash
 export PLAYGROUND_DRIVER_MODE=collab
@@ -223,7 +223,7 @@ For a local external mock issuer with an ephemeral X.509 certificate:
 pnpm dev:x509-mock
 ```
 
-Then select **Mock issuer → Reference Wallet → Inji Verify → SD-JWT VC**. The helper generates and removes a temporary self-signed test certificate. This tests protocol compatibility, not certificate-chain trust. For the separate mock-verifier HTTP service, set `MOCK_VERIFIER_BASE_URL=http://127.0.0.1:4102` in Collab mode; [Phase 3](PHASE3.md) details supported combinations.
+Then select **Mock issuer → Reference Wallet → Inji Verify → SD-JWT VC**. The helper generates and removes a temporary self-signed test certificate. This tests protocol compatibility, not certificate-chain trust. For the separate mock-verifier HTTP service, set `MOCK_VERIFIER_BASE_URL=http://127.0.0.1:4102` in Collab mode; [Phase 3](docs/PHASE3.md) details supported combinations.
 
 ## Using the playground
 
@@ -256,7 +256,7 @@ The local API base is `http://localhost:4000/api/v1`. The BFF has **no user-auth
 | Compatibility | `GET /matrix`, `/matrix/export` | Latest outcomes by combination and evidence tier. |
 | Progress | Socket.IO namespace `/runs` | Small events; fetch bodies via REST. |
 
-The [API reference](submission/API_REFERENCE.md) gives request/response details. The [capture guide](CAPTURE.md) explains HAR bounds and blind spots.
+The [API reference](submission/API_REFERENCE.md) gives request/response details. The [capture guide](docs/CAPTURE.md) explains HAR bounds and blind spots.
 
 ```text
 apps/
@@ -284,7 +284,7 @@ On the **2026-10-23** `main` checkpoint (`b0f132d`), **339 ordinary automated te
 
 For the browser checks, install Chromium once with `pnpm --filter @playground/web exec playwright install chromium`, then run `pnpm --filter @playground/web test:browser`. The Playwright configuration starts its own local mocks, in-memory BFF and Vite. Override `PLAYGROUND_BROWSER_ISSUER_PORT`, `PLAYGROUND_BROWSER_VERIFIER_PORT`, `PLAYGROUND_BROWSER_BFF_PORT` and `PLAYGROUND_BROWSER_WEB_PORT` if the default ports are occupied. Tests use synthetic data only.
 
-Fresh synthetic X.509 mock-issuer → Reference Wallet → Collab Verify positive and bad-signature reports were exported on 2026-10-21 at commit `ec1cbbd`; see the [standalone evidence and matrix](submission/evidence/README.md). They are `mock_interop` evidence, not all-Inji wallet evidence. For a live synthetic contract probe, use `pnpm spike:contracts` only after configuring the official public test environment in [Phase 0–1](PHASE0_1.md). The committed fixtures let ordinary tests run offline.
+Fresh synthetic X.509 mock-issuer → Reference Wallet → Collab Verify positive and bad-signature reports were exported on 2026-10-21 at commit `ec1cbbd`; see the [standalone evidence and matrix](submission/evidence/README.md). They are `mock_interop` evidence, not all-Inji wallet evidence. For a live synthetic contract probe, use `pnpm spike:contracts` only after configuring the official public test environment in [Phase 0–1](docs/PHASE0_1.md). The committed fixtures let ordinary tests run offline.
 
 ## Security boundaries
 
@@ -296,7 +296,7 @@ Fresh synthetic X.509 mock-issuer → Reference Wallet → Collab Verify positiv
 
 ## License and attributions
 
-Project source is provided under [MPL-2.0](LICENSE), consistent with [MOSIP's published licensing](https://github.com/mosip) and the [official Mozilla license text](https://www.mozilla.org/en-US/MPL/2.0/). Direct library credits and the remaining transitive-notice review are in [ATTRIBUTIONS.md](ATTRIBUTIONS.md). The team should confirm all contributors agree to this license before final publication.
+Project source is provided under [MPL-2.0](LICENSE), consistent with [MOSIP's published licensing](https://github.com/mosip) and the [official Mozilla license text](https://www.mozilla.org/en-US/MPL/2.0/). Direct library credits and the remaining transitive-notice review are in [ATTRIBUTIONS.md](docs/ATTRIBUTIONS.md). The team should confirm all contributors agree to this license before final publication.
 
 ## Submission and project documents
 
@@ -304,16 +304,16 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 
 | Read this for… | Document |
 |---|---|
-| Product goal and acceptance requirements | [PRD](PRD.md), [SRS](SRS.md) |
-| Technical and UI design | [TRD](TRD.md), [UI/UX](UIUX.md), [backend](BACKEND.md), [database](DATABASE.md) |
-| Code paths and design choices | [Flow map](flow.md), [decision log](decisions.md) |
-| Phase evidence | [Phase 0–1](PHASE0_1.md), [Phase 2](PHASE2.md), [Phase 3](PHASE3.md) |
-| Independent remaining work | [Four-person plan](NEXT_STEPS_4_PERSON_PLAN.md) |
-| Container setup and shutdown | [Deployment guide](DEPLOYMENT.md) |
-| Scenario provenance | [Scenarios and evidence](SCENARIOS_AND_EVIDENCE.md) |
-| Observed interoperability findings | [Gap register](GAPS.md) |
-| Proposed capture safety and inspector contract | [Capture contract proposal](CAPTURE_CONTRACT_PROPOSAL.md) |
-| A1/A2 proof and cut-off | [Wallet validation](WALLET_VALIDATION.md) |
+| Product goal and acceptance requirements | [PRD](docs/PRD.md), [SRS](docs/SRS.md) |
+| Technical and UI design | [TRD](docs/TRD.md), [UI/UX](docs/UIUX.md), [backend](docs/BACKEND.md), [database](docs/DATABASE.md) |
+| Code paths and design choices | [Flow map](docs/flow.md), [decision log](docs/decisions.md) |
+| Phase evidence | [Phase 0–1](docs/PHASE0_1.md), [Phase 2](docs/PHASE2.md), [Phase 3](docs/PHASE3.md) |
+| Independent remaining work | [Four-person plan](docs/NEXT_STEPS_4_PERSON_PLAN.md) |
+| Container setup and shutdown | [Deployment guide](docs/DEPLOYMENT.md) |
+| Scenario provenance | [Scenarios and evidence](docs/SCENARIOS_AND_EVIDENCE.md) |
+| Observed interoperability findings | [Gap register](docs/GAPS.md) |
+| Proposed capture safety and inspector contract | [Capture contract proposal](docs/CAPTURE_CONTRACT_PROPOSAL.md) |
+| A1/A2 proof and cut-off | [Wallet validation](docs/WALLET_VALIDATION.md) |
 
 ## Known gaps
 
@@ -324,4 +324,4 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 | A6: packaging | Playground core + mocks pass `pnpm demo:docker`; separate official Certify/Verify services pass `pnpm demo:inji`; local Inji Web/Mimoto wallet creation and fresh-session unlock pass `pnpm stage:web-local` plus `pnpm check:web-local`. | An integrated local issuer → Web wallet → verifier flow and independent-machine rehearsal remain open. |
 | Capture and browser QA | Live assisted-wallet observation without rewriting signed messages. | Three synthetic browser/axe checks pass; they cannot prove the real wallet's browser/native boundaries. |
 
-Ownership and next steps are in the [single-owner handoff](SINGLE_OWNER_HANDOFF.md). Reports should state the exact implementation, profile and observed boundaries; the A1 and A2 records do not establish every format or a complete local Inji deployment.
+Ownership and next steps are in the [single-owner handoff](docs/SINGLE_OWNER_HANDOFF.md). Reports should state the exact implementation, profile and observed boundaries; the A1 and A2 records do not establish every format or a complete local Inji deployment.

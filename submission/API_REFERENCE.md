@@ -41,7 +41,7 @@ Example run body:
 }
 ```
 
-Use `GET /scenarios` to obtain a preset's exact `config`; changing a field while keeping its `scenarioId` returns `SCENARIO_CONFIG_MISMATCH`. In fixture mode, a successful run is simulated. In Collab mode, the BFF needs the configured upstream environment. The `capture/har` route accepts at most 2 MiB and 100 entries, validates allowed origins, redacts before persistence, and never stores the raw HAR; see [CAPTURE.md](../CAPTURE.md).
+Use `GET /scenarios` to obtain a preset's exact `config`; changing a field while keeping its `scenarioId` returns `SCENARIO_CONFIG_MISMATCH`. In fixture mode, a successful run is simulated. In Collab mode, the BFF needs the configured upstream environment. The `capture/har` route accepts at most 2 MiB and 100 entries, validates allowed origins, redacts before persistence, and never stores the raw HAR; see [CAPTURE.md](../docs/CAPTURE.md).
 
 The assisted API accepts only Inji Certify → Inji Web assisted → Inji Verify, JSON-LD, cross-device, with no tamper or scenario ID. Its connected fixture mode is reproducible without a wallet account. Live mode additionally requires configured HTTPS wallet, offer and presentation links plus Certify/Verify settings; `liveAvailable: true` means configured, not that a wallet run passed. Managed assisted sessions are process-local. A restarted BFF reports an interrupted run instead of resuming it. The ordinary `/runs` and `/runs/:id/replay` routes reject assisted-wallet requests with `USE_ASSISTED_API`.
 
@@ -51,7 +51,7 @@ Socket.IO namespace `/runs` accepts `join(runId)` and sends `run:created`, `step
 
 The additive import response is `{ imported, skipped, skippedReasons, coverage, gaps }`. Each coverage item has `stepKey`, `state` (`captured`, `missing`, `not_observable`), `count`, and `reason`. Coverage describes browser observation and does not change a run result. Imported request/response envelopes include a versioned `publicView` with `authenticity: "not_verified"`; request metadata also records the tagging rule, reason, timing certainty and redaction count. No shared Exchange type or database migration was added.
 
-The endpoint requires `Content-Type: application/json`. Stable capture errors include `CAPTURE_JSON_REQUIRED` (415), `CAPTURE_RATE_LIMITED` (429 with `Retry-After`), malformed JSON/top-level HAR (400), active/cross-run imports (409), unapproved origins (422), and unsafe sizes (413). The per-process rate limit is ten attempts per minute per transport peer. See [the capture contract](../CAPTURE_CONTRACT_PROPOSAL.md) and [security boundaries](../SECURITY.md).
+The endpoint requires `Content-Type: application/json`. Stable capture errors include `CAPTURE_JSON_REQUIRED` (415), `CAPTURE_RATE_LIMITED` (429 with `Retry-After`), malformed JSON/top-level HAR (400), active/cross-run imports (409), unapproved origins (422), and unsafe sizes (413). The per-process rate limit is ten attempts per minute per transport peer. See [the capture contract](../docs/CAPTURE_CONTRACT_PROPOSAL.md) and [security boundaries](../docs/SECURITY.md).
 
 ### Protocol evaluation (additive)
 

@@ -1,10 +1,10 @@
 # Person 4: setup required before the next Person 3 mobile test
 
-Updated: 23 October 2026. Implemented on `main`. **The recorded actual Android A2 chain now passes through the controlled official-Certify route.** This file retains the original setup handoff and authorization-code requirements as history; that Collab client registration was not changed. See [mobile acceptance evidence](submission/evidence/person3-a2-mobile-2026-10-23/README.md) for the observed scope and remaining attestation/version limits.
+Updated: 23 October 2026. Implemented on `main`. **The recorded actual Android A2 chain now passes through the controlled official-Certify route.** This file retains the original setup handoff and authorization-code requirements as history; that Collab client registration was not changed. See [mobile acceptance evidence](../submission/evidence/person3-a2-mobile-2026-10-23/README.md) for the observed scope and remaining attestation/version limits.
 
 ## Implemented route after this handoff
 
-The controlled mobile launcher is now implemented on `main`: `pnpm mobile:inji`. See [the executable mobile runbook](deploy/MOBILE_INJI.md). It runs a digest-pinned official Certify instance with its own pre-authorized token service and generated keys, then checks a Reference Wallet issuance/presentation against Collab Verify before opening a local QR console. This is an alternative supported flow; it does not fix or administer Collab's rejected authorization-code client. The actual phone subsequently issued, stored, reopened and presented the credential; the correlated Verify result is valid with both proof flags true. The [runtime control record](submission/evidence/2026-10-23-person4-mobile-control.json) records actual issuance and Verify `valid`, with both credential/holder proof flags true.
+The controlled mobile launcher is now implemented on `main`: `pnpm mobile:inji`. See [the executable mobile runbook](../deploy/MOBILE_INJI.md). It runs a digest-pinned official Certify instance with its own pre-authorized token service and generated keys, then checks a Reference Wallet issuance/presentation against Collab Verify before opening a local QR console. This is an alternative supported flow; it does not fix or administer Collab's rejected authorization-code client. The actual phone subsequently issued, stored, reopened and presented the credential; the correlated Verify result is valid with both proof flags true. The [runtime control record](../submission/evidence/2026-10-23-person4-mobile-control.json) records actual issuance and Verify `valid`, with both credential/holder proof flags true.
 
 The checklists below retain the original authorization-code setup requirements for deployment owners. For the implemented pre-authorized route, external OAuth client registration, native OAuth callback and Mimoto catalog onboarding are not applicable; the token exchange is checked against the local official issuer. Collab Verify version attribution and APK attestation remain limitations.
 
@@ -16,9 +16,9 @@ A public inline authorization-code offer for `https://injicertify-mock.collab.mo
 
 Evidence:
 
-- [Mobile evidence bundle and five screenshots](submission/evidence/person3-a2-2026-10-23/README.md).
-- [Machine-readable attempt/checkpoint/hash manifest](submission/evidence/person3-a2-2026-10-23/attempt.json).
-- [A2 report and diagnosis](submission/A2_MOBILE_EVIDENCE.md).
+- [Mobile evidence bundle and five screenshots](../submission/evidence/person3-a2-2026-10-23/README.md).
+- [Machine-readable attempt/checkpoint/hash manifest](../submission/evidence/person3-a2-2026-10-23/attempt.json).
+- [A2 report and diagnosis](../submission/A2_MOBILE_EVIDENCE.md).
 - [Acceptance gate](WALLET_VALIDATION.md).
 
 The [official release source](https://github.com/inji/inji-wallet/blob/v1.0.0-alpha.1/shared/vciClient/VciClient.ts#L166) uses client ID `wallet` and callback `io.mosip.residentapp.inji://oauthredirect` for credential-offer issuance. These are source defaults, not a captured or attested authorization request from the installed APK. The screenshot establishes rejection; a registration mismatch is the current hypothesis.
@@ -112,8 +112,8 @@ A phone installation, a service health check or the previous six mock cases cann
 
 ## 5. Closeout and existing completed work
 
-Person 3 updates [A2 evidence](submission/A2_MOBILE_EVIDENCE.md), [wallet acceptance](WALLET_VALIDATION.md), findings and sanitized artifacts, then commits/pushes the result. If blocked, record the exact owner/dependency and retain the unpassed gate.
+Person 3 updates [A2 evidence](../submission/A2_MOBILE_EVIDENCE.md), [wallet acceptance](WALLET_VALIDATION.md), findings and sanitized artifacts, then commits/pushes the result. If blocked, record the exact owner/dependency and retain the unpassed gate.
 
 Already implemented/pushed in `39fceaf`: strict mock protocol profile, signed expiry/type variants, twelve independent cases, in-process/HTTP BFF parity, exact-reason evaluation, error/polling fixes, reports/UI/matrix identity and six Docker presets. The recorded 22 October checkpoint passed 266 tests with PostgreSQL enabled, typecheck, build, secret audit, twelve probes and six Docker scenarios. Those are historical verified results; this documentation/evidence change does not rerun or extend them.
 
-See [protocol handoff](PERSON3_PROTOCOL_HANDOFF.md) and [check record](spikes/fixtures/wallet-interop-integration-checks-2026-10-22.json). The recorded A2 chain is complete. Deployment version attribution, installed-binary/signing attestation and the separate Collab pre-authorized HTTP 401 remain limits; A1 and a fully local Verify/Web stack remain separate work.
+See [protocol handoff](PERSON3_PROTOCOL_HANDOFF.md) and [check record](../spikes/fixtures/wallet-interop-integration-checks-2026-10-22.json). The recorded A2 chain is complete. Deployment version attribution, installed-binary/signing attestation and the separate Collab pre-authorized HTTP 401 remain limits; A1 and a fully local Verify/Web stack remain separate work.

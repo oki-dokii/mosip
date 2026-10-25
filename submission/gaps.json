@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "updated": "2026-10-25",
-  "source": "GAPS.md",
+  "source": "docs/GAPS.md",
   "owner": "Person 3",
   "scope": "Completed protocol implementation, Collab investigations and a recorded actual Android A2 functional pass for the official-local-Certify/Collab-Verify hybrid profile; original failures and attestation limits retained.",
   "findings": [
@@ -11,7 +11,7 @@
       "disclosure": "public_non_security_observation",
       "productVersion": "unreported",
       "evidence": [
-        "PHASE3.md",
+        "docs/PHASE3.md",
         "submission/evidence/2026-10-21-mock-x509-valid.json",
         "spikes/fixtures/wallet-interop-live-2026-10-22.json",
         "submission/PERSON3_LIVE_INVESTIGATION.md"
@@ -55,7 +55,7 @@
       "disclosure": "public_non_security_observation",
       "productVersion": "unreported",
       "evidence": [
-        "PHASE3.md",
+        "docs/PHASE3.md",
         "spikes/fixtures/wallet-interop-live-2026-10-22.json"
       ],
       "runIds": [],
@@ -69,7 +69,7 @@
       "disclosure": "public_non_security_observation",
       "productVersion": "unreported",
       "evidence": [
-        "PHASE0_1.md",
+        "docs/PHASE0_1.md",
         "spikes/fixtures/collab-contracts-2026-10-20.json",
         "spikes/fixtures/wallet-interop-live-2026-10-22.json",
         "submission/PERSON3_LIVE_INVESTIGATION.md"
@@ -163,7 +163,7 @@
     "presentationObserved": false,
     "verifierResultObserved": false,
     "artifact": "submission/evidence/person3-a2-2026-10-23/attempt.json",
-    "setupHandoff": "PERSON4_A2_PREREQUISITES.md",
+    "setupHandoff": "docs/PERSON4_A2_PREREQUISITES.md",
     "diagnosis": "Source-default client mismatch inferred; actual request and registration not captured.",
     "upstreamDefectConfirmed": false
   },

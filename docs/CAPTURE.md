@@ -16,7 +16,7 @@ Browser HAR can miss server-to-server Certify/eSignet calls, native-wallet traff
 
 ## Person 1 synthetic handoff (22 October 2026)
 
-The committed [four-service synthetic HAR](apps/bff/src/capture/fixtures/four-service.synthetic.har.json) contains browser-shaped Mimoto, Certify, eSignet, and Verify calls plus one static asset that the importer skips. It uses `.example` origins, synthetic canary values, and a fixed run ID. No real credential, account, or session traffic is in this fixture. The [saved import result](apps/bff/src/capture/fixtures/four-service.import-result.json) lists the four deterministic exchange IDs and their step mapping; the test verifies it against a fresh import. The result's evidence tier is `synthetic_browser_har`, and `liveInjiWebObserved` is `false`.
+The committed [four-service synthetic HAR](../apps/bff/src/capture/fixtures/four-service.synthetic.har.json) contains browser-shaped Mimoto, Certify, eSignet, and Verify calls plus one static asset that the importer skips. It uses `.example` origins, synthetic canary values, and a fixed run ID. No real credential, account, or session traffic is in this fixture. The [saved import result](../apps/bff/src/capture/fixtures/four-service.import-result.json) lists the four deterministic exchange IDs and their step mapping; the test verifies it against a fresh import. The result's evidence tier is `synthetic_browser_har`, and `liveInjiWebObserved` is `false`.
 
 | Browser-visible step | Fixture service | Saved exchange ID | What the HAR proves |
 | --- | --- | --- | --- |
@@ -62,7 +62,7 @@ curl -H 'Content-Type: application/json' --data-binary @/absolute/path/safe-impo
 
 The output includes a safe report with skip counts and public summaries decoded locally. Imported filtered bodies can produce a smaller public projection because private scalar values were already removed; use the report for that additional safe detail. The report itself is not treated as trusted server-decoded evidence. The original trace is never uploaded by this command. Output files use `0600` and cannot overwrite an existing file. A malformed source or unsafe size fails with a codes-only message.
 
-The [22 October check record](submission/evidence/2026-10-22-capture-checks.json) records the commands and local results, including 46 capture/redaction checks with PostgreSQL.
+The [22 October check record](../submission/evidence/2026-10-22-capture-checks.json) records the commands and local results, including 46 capture/redaction checks with PostgreSQL.
 
 ## Managed live observation bridge
 
@@ -114,7 +114,7 @@ The exporter reads **HEAD**, not uncommitted working-tree data, and accepts JSON
 
 Run comparison aligns exchanges by step, actors, method and occurrence order, ignoring raw URLs and volatile IDs. Each request/response has a bounded shape map: added/removed fields, primitive type changes and array element type unions. Redacted markers have their own type; unknown field names collapse to `[unknown-field]` to avoid key-name leaks. Truncation is explicit. Reordered repeated requests can misalign; omitted fields, masking and different scenarios can produce differences without an upstream protocol change. Equal shapes do not establish compatibility.
 
-The committed [shape comparison](submission/evidence/2026-10-22-capture-shape-diff.json) finds that the October 21 bad-signature result omits `holderProofValid` and its submission has string rather than null `tamper`. These are observations of different recorded scenarios, not newly reproduced vulnerabilities. The contract-fixture tests use deliberate in-memory mutations to verify detection; they are not fresh Collab evidence.
+The committed [shape comparison](../submission/evidence/2026-10-22-capture-shape-diff.json) finds that the October 21 bad-signature result omits `holderProofValid` and its submission has string rather than null `tamper`. These are observations of different recorded scenarios, not newly reproduced vulnerabilities. The contract-fixture tests use deliberate in-memory mutations to verify detection; they are not fresh Collab evidence.
 
 Issue output defaults to a **private review draft**, with no automatic filing. It deliberately excludes arbitrary titles, summaries, error prose, URLs, secrets and unknown version strings. Add a reviewed minimal reproducer and check the applicable protocol/version before sharing. Follow `SECURITY.md` for security-impact findings. Runtime keys and generated complete credential canaries are never committed.
 

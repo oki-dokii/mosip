@@ -92,7 +92,7 @@ const lines = [
   "- A1 requires an actual logged-in Inji Web wallet to issue, persist, present and receive a correlated `valid` Verify result. The connected fixture and browser tests do not satisfy it. See [A1 evidence](../A1_WEB_EVIDENCE.md).",
   "- The observed A2 hybrid chain passes as recorded above. Installed-binary attestation and running Collab Verify release remain unverified. See [A2 evidence](../A2_MOBILE_EVIDENCE.md).",
   "- The dedicated [official Certify mobile route](../../deploy/MOBILE_INJI.md) runs with generated embedded PKCS12 keys and its own supported token service. A fully local Verify/Mimoto/Web stack remains separate from this hybrid mobile pass. See [local Inji status](../../deploy/INJI_LOCAL.md).",
-  "- Capture sees only explicitly recorded, allowlisted browser exchanges; server-to-server and native-wallet boundaries stay unobserved. See [capture limits](../../CAPTURE.md).",
+  "- Capture sees only explicitly recorded, allowlisted browser exchanges; server-to-server and native-wallet boundaries stay unobserved. See [capture limits](../../docs/CAPTURE.md).",
   "",
 ];
 const document = `${lines.join("\n")}\n`;

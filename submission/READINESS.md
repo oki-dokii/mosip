@@ -1,6 +1,6 @@
 # Submission readiness — 2026-10-25 working checkpoint
 
-This folder is the submission handoff. Refresh statuses and links before sending the final submission. The A1 capture and journey code now have [one integration owner](../SINGLE_OWNER_HANDOFF.md); older person-specific handoffs are historical.
+This folder is the submission handoff. Refresh statuses and links before sending the final submission. The A1 capture and journey code now have [one integration owner](../docs/SINGLE_OWNER_HANDOFF.md); older person-specific handoffs are historical.
 
 ## Judge priorities
 
@@ -19,7 +19,7 @@ This folder is the submission handoff. Refresh statuses and links before sending
 | Working prototype/demo | Working; final human rehearsal open | [25 October local six-case Compose demo](evidence/2026-10-25-local-demo.md) passed and exposes the labelled, read-only managed A1 archive; hosted browser and Compose CI also passed. Rehearse on another machine | Yes, independent-machine rehearsal and final team review of A1 |
 | Pitch slide deck | Draft ready for team review | [Editable six-slide deck](pitch/Interoperability_Playground_Pitch.pptx) covers the required story and cites recorded evidence in speaker notes; confirm team name and export a PDF backup if needed | Yes |
 | 2–5 minute video demo | Silent draft ready | [2:07 synthetic-only walkthrough](pitch/VIDEO_README.md) covers a fresh mock run, archived A1, matrix and gaps; add human narration and verify final playback | Yes, voiceover and review |
-| Installation instructions | Prepared, needs independent-machine rehearsal | [README.md](../README.md) and [DEPLOYMENT.md](../DEPLOYMENT.md) cover startup. A [fresh clone on this Mac](CLEAN_CHECKOUT_REHEARSAL.md) passed install, test, build and audit; hosted clean-checkout Docker smoke passed. Another human/host should follow the guide | Yes |
+| Installation instructions | Prepared, needs independent-machine rehearsal | [README.md](../README.md) and [DEPLOYMENT.md](../docs/DEPLOYMENT.md) cover startup. A [fresh clone on this Mac](CLEAN_CHECKOUT_REHEARSAL.md) passed install, test, build and audit; hosted clean-checkout Docker smoke passed. Another human/host should follow the guide | Yes |
 | API documentation | Updated | [API_REFERENCE.md](API_REFERENCE.md) includes assisted routes, capture coverage and supported matrix cells | Yes, final review |
 | Git version history | Present | The merged `main` history preserves commits under four contributor identities; do not squash or rewrite it | Yes, final access check |
 | College/university IDs | Pending, private | Each student uploads their own valid ID through the required submission channel | Individual students only; never commit IDs |
@@ -29,13 +29,13 @@ This folder is the submission handoff. Refresh statuses and links before sending
 | Item | Status | Evidence / next action |
 |---|---|---|
 | Architecture diagram | Prepared | [ARCHITECTURE.md](ARCHITECTURE.md); export an image/PDF for the deck if useful |
-| Design mockups/wireframes | Prepared, final visual review open | [Annotated UI flow and synthetic screens](UI_WIREFRAMES.md) plus [UIUX.md](../UIUX.md); confirm the final demo build still matches them |
+| Design mockups/wireframes | Prepared, final visual review open | [Annotated UI flow and synthetic screens](UI_WIREFRAMES.md) plus [UIUX.md](../docs/UIUX.md); confirm the final demo build still matches them |
 | Synthetic test data | Prepared | [TEST_EVIDENCE.md](TEST_EVIDENCE.md) lists committed fixtures and data boundaries |
 | Test cases and results | Updated, final refresh pending | [TEST_EVIDENCE.md](TEST_EVIDENCE.md) separates historical full-suite results, the 25 October BFF/web regressions, manual A1 evidence and [actual A2 acceptance](evidence/person3-a2-mobile-2026-10-23/README.md) |
-| License and credits | Partial | [MPL-2.0](../LICENSE) and [direct dependency credits](../ATTRIBUTIONS.md) added; confirm team agreement and complete transitive/asset notice audit |
+| License and credits | Partial | [MPL-2.0](../LICENSE) and [direct dependency credits](../docs/ATTRIBUTIONS.md) added; confirm team agreement and complete transitive/asset notice audit |
 | Fresh live report and matrix | Managed A1 record added; aggregate refresh pending | [Managed A1 report and reviewed matrix](evidence/person2-managed-a1-2026-10-25/README.md) link the correlated Web run; the older [aggregate report](evidence/2026-10-23-aggregate-interop.md) predates A1 and must be regenerated before final submission |
-| Interoperability gaps | Drafted | [GAPS.md](../GAPS.md) separates observed findings from upstream issues, none filed yet |
-| Remaining integration plan | Prepared | [Four-person plan](../NEXT_STEPS_4_PERSON_PLAN.md) prioritizes local Inji integration, CI and independently reproduced findings |
+| Interoperability gaps | Drafted | [GAPS.md](../docs/GAPS.md) separates observed findings from upstream issues, none filed yet |
+| Remaining integration plan | Prepared | [Four-person plan](../docs/NEXT_STEPS_4_PERSON_PLAN.md) prioritizes local Inji integration, CI and independently reproduced findings |
 
 ## Release gates to verify before claiming completion
 
@@ -43,7 +43,7 @@ This folder is the submission handoff. Refresh statuses and links before sending
 2. **A2: observed functional pass, 23 October.** Official local Certify → actual Android Inji Wallet → Collab Verify, with user-confirmed reopen persistence and correlated valid credential/holder proof result. [Evidence and limits](evidence/person3-a2-mobile-2026-10-23/README.md) distinguish installed-binary/Collab-version uncertainty from the observed chain. Inji Web SD-JWT and A1 JSON-LD remain separate.
 3. **A6:** `pnpm demo:docker` builds the playground, BFF, PostgreSQL and separate mocks for six synthetic presets. [Hosted CI](https://github.com/oki-dokii/mosip/actions/runs/40167968420) passed typecheck, tests, browser/axe and Compose smoke. The [25 October local Docker rehearsal](evidence/2026-10-25-local-demo.md) printed `DEMO PASS` for all six cases and exposed the archived A1 run. Separately, `pnpm demo:inji` locally passed official Certify → reference holder → official Verify; [scope and pins](../deploy/INJI_LOCAL.md). Run both on a separate clean machine before final sign-off. Neither command runs a local real Inji wallet.
 4. **A3/A5:** Inspect the final browser capture and exported report for missing boundaries and any secret leakage. Passive HAR import is synthetic-only and cannot see server-to-server or native-wallet exchanges.
-5. **Go/no-go:** [WALLET_VALIDATION.md](../WALLET_VALIDATION.md) lists a provisional 2026-10-24 21:00 IST A1 cutoff, 48 hours before the working freeze. Confirm the actual competition deadline; do not present this planning date as official.
+5. **Go/no-go:** [WALLET_VALIDATION.md](../docs/WALLET_VALIDATION.md) lists a provisional 2026-10-24 21:00 IST A1 cutoff, 48 hours before the working freeze. Confirm the actual competition deadline; do not present this planning date as official.
 6. **Release quality:** Three Chromium checks passed locally and in hosted CI with keyboard/axe assertions. The secret audit is in hosted CI. Independent-machine installation, contributor license confirmation and a complete third-party notice audit remain. [Annotated UI screens](UI_WIREFRAMES.md) are prepared. Splitting `collab.ts` is post-integration maintenance, not an acceptance gate.
 
 ## Final handoff outside Git

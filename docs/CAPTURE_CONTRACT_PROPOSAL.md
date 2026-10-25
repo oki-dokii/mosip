@@ -38,7 +38,7 @@ The browser pass remains synthetic. Live Inji Web is **unobserved**. Coverage an
 | Owner | Concrete next task | Boundary |
 | --- | --- | --- |
 | Person 2 | Optionally render `request.publicView`, `response.publicView`, `request.capture`, and import `coverage`; show `not_verified` and timing-unknown labels. Add a dedicated live-wallet HAR when a wallet flow exists. | Existing JSON inspector remains compatible. Do not turn a captured step into a passed step. |
-| Person 3 | Maintain the [machine-readable gap snapshot](submission/gaps.json), add exact spec/profile references for each new scenario, and reproduce issuer-method/padded-DID leads with one changed variable. Privately triage security-impact findings. | Only independently reproduced observations are confirmed gaps here. Gap snapshots with no matching run/cell explicitly say so. |
+| Person 3 | Maintain the [machine-readable gap snapshot](../submission/gaps.json), add exact spec/profile references for each new scenario, and reproduce issuer-method/padded-DID leads with one changed variable. Privately triage security-impact findings. | Only independently reproduced observations are confirmed gaps here. Gap snapshots with no matching run/cell explicitly say so. |
 | Person 4 | Add the existing secret audit to hosted CI before build/artifact publication, and run the PostgreSQL capture check against the job database if available. Supply canonical public-URL/TLS/upstream configuration before any proxy work. | Workflow, Compose and service settings remain Person 4's files. |
 | Integrator | Apply handoffs serially on `main`; keep versions, acceptance claims and final evidence consistent. | No branches or contributor-identity rewriting. |
 

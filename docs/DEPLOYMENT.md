@@ -341,19 +341,19 @@ The **core/mocks Compose stack** and `pnpm demo:docker` exercise mock and fixtur
 - The mock issuer is a synthetic OpenID4VCI server with an in-memory key. It does not represent Inji Certify.
 - The mock verifier is a synthetic OpenID4VP server. It does not represent Inji Verify.
 - The Reference Wallet is the playground's own automated wallet client. It is not Inji Web or Inji Wallet mobile.
-- This specific command does not start local Inji services. The separate `pnpm demo:inji` command runs official Certify and Verify with a reference holder; see [its scope](deploy/INJI_LOCAL.md).
+- This specific command does not start local Inji services. The separate `pnpm demo:inji` command runs official Certify and Verify with a reference holder; see [its scope](../deploy/INJI_LOCAL.md).
 - The CI nightly run is a mock-mode regression check, not a live Collab run.
 - `DEMO PASS` or a passing smoke test **does not prove Inji interoperability**.
 
 Real-wallet gates:
-- **A1 (Inji Web)**: A dedicated signed-in account completed a managed JSON-LD journey on 25 October. The read-only committed export is browsable in the Compose demo; see [the evidence and limits](submission/evidence/person2-managed-a1-2026-10-25/README.md). Final team review remains pending.
-- **A2 (Inji mobile wallet)**: Passed for the recorded hybrid Android profile; [evidence and limits](submission/evidence/person3-a2-mobile-2026-10-23/README.md).
+- **A1 (Inji Web)**: A dedicated signed-in account completed a managed JSON-LD journey on 25 October. The read-only committed export is browsable in the Compose demo; see [the evidence and limits](../submission/evidence/person2-managed-a1-2026-10-25/README.md). Final team review remains pending.
+- **A2 (Inji mobile wallet)**: Passed for the recorded hybrid Android profile; [evidence and limits](../submission/evidence/person3-a2-mobile-2026-10-23/README.md).
 
 ---
 
 ## Not provided
 
-- **Complete local Inji wallet stack**: The separate [official Certify/Verify control](deploy/INJI_LOCAL.md) runs successfully on loopback with a reference holder. Local Mimoto/Inji Web login and presentation are still unimplemented. The older `deploy/docker-compose.inji.yml` is an unvalidated historical sketch and must not be used as evidence.
+- **Complete local Inji wallet stack**: The separate [official Certify/Verify control](../deploy/INJI_LOCAL.md) runs successfully on loopback with a reference holder. Local Mimoto/Inji Web login and presentation are still unimplemented. The older `deploy/docker-compose.inji.yml` is an unvalidated historical sketch and must not be used as evidence.
 - **walt.id Compatibility Study**: A documentation-only comparison of walt.id Issuer2/Verifier2 vs. Inji components is available at `deploy/WALTID_COMPARISON.md`.
 - **Collab nightly runs**: Require the public test environment credentials and are kept outside this repository.
 - **Production hardening**: TLS termination, authentication, rate limiting, and secrets management are not part of this deployment.
@@ -361,4 +361,4 @@ Real-wallet gates:
 
 ## Real Android SD-JWT setup
 
-`pnpm mobile:inji` starts the separate controlled official-Certify mobile route and local QR console. See [mobile deployment](deploy/MOBILE_INJI.md) for its digest pin, runtime-only keys, HTTPS tunnel, supported pre-authorized flow, stop command and exact evidence limits. It does not start or change the normal core/mocks profiles, and it does not close A2 without an observed phone journey.
+`pnpm mobile:inji` starts the separate controlled official-Certify mobile route and local QR console. See [mobile deployment](../deploy/MOBILE_INJI.md) for its digest pin, runtime-only keys, HTTPS tunnel, supported pre-authorized flow, stop command and exact evidence limits. It does not start or change the normal core/mocks profiles, and it does not close A2 without an observed phone journey.

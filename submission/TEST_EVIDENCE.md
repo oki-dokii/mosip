@@ -25,13 +25,13 @@ Snapshot: 23 October 2026, merged `main` checkpoint `b0f132d`. [Hosted CI run 28
 | Case | Source | Conclusion |
 |---|---|---|
 | Fixture issue → hold → present → verify | Unit/browser checks | Simulated flow works; no live interoperability claim |
-| Certify → Reference Wallet → Verify, JSON-LD and SD-JWT | Earlier sanitized [Phase 2](../PHASE2.md) and [spike fixtures](../spikes/fixtures/) | Recorded prior Reference Wallet behavior; full fresh run records are unavailable |
+| Certify → Reference Wallet → Verify, JSON-LD and SD-JWT | Earlier sanitized [Phase 2](../docs/PHASE2.md) and [spike fixtures](../spikes/fixtures/) | Recorded prior Reference Wallet behavior; full fresh run records are unavailable |
 | Mock X.509 issuer → Reference Wallet → public Collab Verify | [21 October sanitized reports](evidence/README.md) | Valid and bad-signature outcomes observed; self-signed certificate does not prove production trust |
 | Mock issuer → Reference Wallet → mock verifier | [23 October hosted six-case matrix](evidence/2026-10-23-ci-mock-matrix.json) | Clean-checkout Docker mock protocol outcomes with exact reasons; still no real Inji wallet |
 | HAR import and secret handling | Capture/redaction tests, audit, browser mock test | Synthetic canaries absent from stored/API/socket/browser projections; passive capture has unobservable boundaries |
 | A1: actual Inji Web JSON-LD wallet | [Managed run and capture limits](evidence/person2-managed-a1-2026-10-25/README.md) | **Managed technical chain observed:** signed-in wallet, Mimoto issuance/presentation transport, reload-backed storage confirmation, request-URI correlation, and independent Verify `valid` result for the same run. Server-side Mimoto calls were not observed; final team review remains pending |
 | A2: actual Inji mobile SD-JWT wallet | [Mobile acceptance evidence](evidence/person3-a2-mobile-2026-10-23/README.md) | **Passed observed hybrid chain**: actual Android issuance/storage/share, user-confirmed reopening and correlated valid credential/holder proof result; installed binary and Collab release not independently attested |
-| A6: playground + mocks packaging | [CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) and [deployment guide](../DEPLOYMENT.md) | Hosted clean-checkout six-case Docker matrix passed; separate-machine human rehearsal and real local Inji profile remain open |
+| A6: playground + mocks packaging | [CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) and [deployment guide](../docs/DEPLOYMENT.md) | Hosted clean-checkout six-case Docker matrix passed; separate-machine human rehearsal and real local Inji profile remain open |
 
 The [standalone aggregate report](evidence/2026-10-23-aggregate-interop.md) groups the committed run records and marks missing full-record cells `not_tested`. A passing mock or Reference Wallet result never closes A1/A2. All public fixtures use synthetic identities; keep actual `.env`, OTPs, private keys, full VCs, raw HAR and student IDs outside Git.
 

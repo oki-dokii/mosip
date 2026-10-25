@@ -1,6 +1,6 @@
 # Third-party software and design attribution
 
-The playground is original project code. It integrates with Inji services through public APIs and does not vendor Inji source. Its interface is not copied from an external VC playground. The repository's [MPL-2.0 license](LICENSE) covers the project's own source; each dependency remains under its own license.
+The playground is original project code. It integrates with Inji services through public APIs and does not vendor Inji source. Its interface is not copied from an external VC playground. The repository's [MPL-2.0 license](../LICENSE) covers the project's own source; each dependency remains under its own license.
 
 The table records **direct runtime dependencies** and license identifiers from their installed `package.json` metadata. Exact versions are pinned in the workspace manifests and lockfile. This is a reviewer index, not legal advice.
 

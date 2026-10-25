@@ -26,4 +26,4 @@ The selected flow uses real official Inji software across a hybrid deployment: p
 
 Screenshots were visually reviewed and copied without pixel edits. No EXIF/XMP marker was found. No raw credential, QR, personal identity value, installation App ID or authentication code is visible in the included screenshots. The text secret scanner does not inspect image contents. Private runtime data and the APK itself remain outside Git.
 
-[A2 report](../../A2_MOBILE_EVIDENCE.md) · [acceptance gates](../../../WALLET_VALIDATION.md) · [mobile runbook](../../../deploy/MOBILE_INJI.md) · [earlier failed Collab attempt](../person3-a2-2026-10-23/README.md).
+[A2 report](../../A2_MOBILE_EVIDENCE.md) · [acceptance gates](../../../docs/WALLET_VALIDATION.md) · [mobile runbook](../../../deploy/MOBILE_INJI.md) · [earlier failed Collab attempt](../person3-a2-2026-10-23/README.md).

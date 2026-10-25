@@ -14,4 +14,4 @@
 
 The About/settings screenshots containing an installation App ID are deliberately withheld; the observed app version is transcribed in the report. APK hash, signing identity, device model, Android version and actual authorization parameters remain unreported. There is no issuance/storage/presentation/Verify success evidence to export.
 
-See [A2 report](../../A2_MOBILE_EVIDENCE.md), [acceptance gates](../../../WALLET_VALIDATION.md), and [Person 4 prerequisites](../../../PERSON4_A2_PREREQUISITES.md). The likely OAuth-client mismatch is an inference from release source, not a confirmed upstream defect. The earlier pre-authorized credential HTTP 401 is a separate observation and not a demonstrated workaround.
+See [A2 report](../../A2_MOBILE_EVIDENCE.md), [acceptance gates](../../../docs/WALLET_VALIDATION.md), and [Person 4 prerequisites](../../../docs/PERSON4_A2_PREREQUISITES.md). The likely OAuth-client mismatch is an inference from release source, not a confirmed upstream defect. The earlier pre-authorized credential HTTP 401 is a separate observation and not a demonstrated workaround.

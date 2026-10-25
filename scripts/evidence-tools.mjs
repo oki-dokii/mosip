@@ -108,7 +108,7 @@ export function issueDraft(doc) {
     lines.push("", `### ${slot}`, "", `HTTP status: ${Number.isInteger(exchange.status) && exchange.status >= 100 && exchange.status <= 599 ? exchange.status : "withheld"}`, "", "```json",
       JSON.stringify({ request: shapeOf(exchange.request), response: shapeOf(exchange.response) }, null, 2), "```");
   }
-  lines.push("", "## Triage", "", "Confirm reproducibility, expected protocol behaviour, affected versions and disclosure channel. Security-impact findings require private triage under SECURITY.md. Do not infer a live-wallet result from a reference-wallet or synthetic capture.", "");
+  lines.push("", "## Triage", "", "Confirm reproducibility, expected protocol behaviour, affected versions and disclosure channel. Security-impact findings require private triage under docs/SECURITY.md. Do not infer a live-wallet result from a reference-wallet or synthetic capture.", "");
   return lines.join("\n");
 }
 

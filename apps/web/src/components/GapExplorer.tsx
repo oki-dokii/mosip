@@ -32,7 +32,7 @@ export function GapExplorer() {
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-issuer">Interoperability findings</p>
           <h2 id="gap-explorer-heading" className="mt-1 text-xl font-bold">What the evidence has revealed</h2>
         </div>
-        <a className="text-sm font-semibold text-issuer underline" href={evidenceUrl("GAPS.md")} target="_blank" rel="noreferrer">Read full gap register</a>
+        <a className="text-sm font-semibold text-issuer underline" href={evidenceUrl("docs/GAPS.md")} target="_blank" rel="noreferrer">Read full gap register</a>
       </div>
       <p className="mt-3 max-w-3xl text-sm text-slate-600">These are observed behaviors and test limits, not confirmed upstream defects. An unreported service version or missing wallet account cannot establish a product regression.</p>
       <ul className="mt-5 grid gap-4 md:grid-cols-2">
