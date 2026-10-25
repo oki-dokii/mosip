@@ -4,6 +4,8 @@ Snapshot: 23 October 2026, merged `main` checkpoint `b0f132d`. [Hosted CI run 28
 
 24 October follow-up on `main` (`ad06775`): after the evidence catalog, URL redaction, failed-HTTP recording and cookie-origin fix, the **BFF suite alone** passed 199 tests with three opt-in PostgreSQL tests skipped. BFF and Web typechecks and the text secret audit passed. This is not a new whole-monorepo, browser, Docker, PostgreSQL or real-wallet result; the table below remains the dated 23 October full checkpoint.
 
+25 October review of `main` (`2a500bc`): the fresh [managed A1 evidence](evidence/person2-managed-a1-2026-10-25/README.md) links one BFF run ID to Mimoto issuance and presentation observations, explicit storage confirmation, a request-URI HMAC marker, and that run's independent Verify `valid` result. The BFF suite passed **201** tests with three opt-in PostgreSQL tests skipped; the Web suite passed **58** tests. BFF and Web typechecks and the secret audit passed. The exported run/step/exchange/report IDs and verdicts were cross-checked. These are targeted current-code checks, not a repeat of the full-repo Docker/browser/clean-machine suite, and they do not independently replay the live wallet session.
+
 | Test area | Result | What it establishes |
 |---|---:|---|
 | Script and contract checks | 36 passed | Committed contracts, protocol evaluation helpers, evidence tools and secret-audit behavior |
@@ -27,7 +29,7 @@ Snapshot: 23 October 2026, merged `main` checkpoint `b0f132d`. [Hosted CI run 28
 | Mock X.509 issuer → Reference Wallet → public Collab Verify | [21 October sanitized reports](evidence/README.md) | Valid and bad-signature outcomes observed; self-signed certificate does not prove production trust |
 | Mock issuer → Reference Wallet → mock verifier | [23 October hosted six-case matrix](evidence/2026-10-23-ci-mock-matrix.json) | Clean-checkout Docker mock protocol outcomes with exact reasons; still no real Inji wallet |
 | HAR import and secret handling | Capture/redaction tests, audit, browser mock test | Synthetic canaries absent from stored/API/socket/browser projections; passive capture has unobservable boundaries |
-| A1: actual Inji Web JSON-LD wallet | [A1 evidence](A1_WEB_EVIDENCE.md) | **Manual journey observed:** signed-in account, persistent stored Registration Receipt, wallet presentation and Verify UI `Valid`. A correlated playground-managed run and independent result lookup remain pending |
+| A1: actual Inji Web JSON-LD wallet | [Managed run and capture limits](evidence/person2-managed-a1-2026-10-25/README.md) | **Managed technical chain observed:** signed-in wallet, Mimoto issuance/presentation transport, reload-backed storage confirmation, request-URI correlation, and independent Verify `valid` result for the same run. Server-side Mimoto calls were not observed; final team review remains pending |
 | A2: actual Inji mobile SD-JWT wallet | [Mobile acceptance evidence](evidence/person3-a2-mobile-2026-10-23/README.md) | **Passed observed hybrid chain**: actual Android issuance/storage/share, user-confirmed reopening and correlated valid credential/holder proof result; installed binary and Collab release not independently attested |
 | A6: playground + mocks packaging | [CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) and [deployment guide](../DEPLOYMENT.md) | Hosted clean-checkout six-case Docker matrix passed; separate-machine human rehearsal and real local Inji profile remain open |
 

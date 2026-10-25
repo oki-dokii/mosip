@@ -11,7 +11,7 @@ For a single-developer finish, use the [ordered remaining-work handoff](SINGLE_O
 
 For the implemented official local-Certify mobile setup, use `pnpm mobile:inji` and follow [the mobile runbook](deploy/MOBILE_INJI.md). Its official-Certify → Reference Wallet → Collab Verify control passed; it does not establish phone acceptance.
 
-Latest mobile checkpoint (23 October): **A2 passed for the recorded hybrid profile**—official local Certify → actual Android Inji Wallet → Collab Verify, with user-confirmed reopen persistence and a correlated `valid` result. See [the mobile evidence and limitations](submission/evidence/person3-a2-mobile-2026-10-23/README.md). Installed-binary attestation and the running Collab release remain unverified; A1 is still separate.
+Latest wallet checkpoints: **A1 has a fresh managed Inji Web JSON-LD run** with Mimoto issuance/presentation observations, reload-backed storage confirmation, request-URI correlation and an independent Inji Verify `valid` result; [the evidence bundle](submission/evidence/person2-managed-a1-2026-10-25/README.md) records its blind spots and awaits final team review. **A2 passed for the recorded hybrid profile** on 23 October—official local Certify → actual Android Inji Wallet → Collab Verify, with user-confirmed reopen persistence and a correlated `valid` result. See [the mobile evidence and limitations](submission/evidence/person3-a2-mobile-2026-10-23/README.md). Installed-binary attestation and running Collab releases remain unverified.
 
 ## Contents
 
@@ -68,7 +68,7 @@ The question for every run is **which exact combination was tested, what happene
 | Inji Certify | Reference Wallet | Standalone mock verifier | SD-JWT | Positive and bad-signature paths recorded. |
 | Standalone mock issuer | Reference Wallet | Standalone mock verifier | SD-JWT | Cross-service mock path recorded. |
 | Official local Inji Certify | Actual Inji Wallet Android | Collab Inji Verify | SD-JWT | **Observed A2 pass:** stored card, user-confirmed reopen persistence, same-wallet share and correlated valid proof result; [evidence/limits](submission/evidence/person3-a2-mobile-2026-10-23/README.md). |
-| Inji Certify | Inji Web or suitable Inji mobile wallet | Inji Verify | JSON-LD | **A1 not yet accepted:** its real-wallet store-and-present evidence is missing. |
+| Inji Certify | Inji Web (assisted) | Inji Verify | JSON-LD | **Managed A1 technical chain recorded:** same-run Mimoto transport, reload-backed storage confirmation, correlated presentation and independent Verify `valid`; [evidence and limits](submission/evidence/person2-managed-a1-2026-10-25/README.md). Final team review pending. |
 
 The detailed recorded outcomes and limitations are in [Phase 3](PHASE3.md). These are prior results, not a fresh live run performed by reading this README. A new mobile app is **not required**; real-wallet validation should use an existing, pinned Inji Wallet build.
 
@@ -195,7 +195,7 @@ Open **http://localhost:5174**. The command builds and health-checks the service
 | Fixture | Default or `PLAYGROUND_DRIVER_MODE=fixture` | None | Product UI and run lifecycle work. |
 | Collab with Reference Wallet | `PLAYGROUND_DRIVER_MODE=collab` | Public test environment config and reachable Collab services | Exact live role combination shown in report. |
 | Collab with separate mock roles | Collab mode plus `MOCK_ISSUER_BASE_URL` and/or `MOCK_VERIFIER_BASE_URL` | Running local mock services; Certify tests also need its test config | Cross-service mock interoperability for supported SD-JWT cases. |
-| Assisted real Inji wallet | Not a completed automated mode | Persistent test wallet, supported version, observed presentation | A2 has separate manual mobile evidence; A1 remains pending. |
+| Assisted real Inji Web | Backend-assisted live run with a signed-in wallet and metadata-only capture bridge | Persistent test wallet, configured public endpoints and local bridge token | One managed A1 JSON-LD run is recorded for the Land Registry profile; browser capture omits Mimoto server-side calls. A2 has separate Android evidence. |
 
 For live Certify → Reference Wallet → Verify, obtain the **official public test-client environment** described in [Phase 0–1](PHASE0_1.md), keep it outside the repository, and set:
 
@@ -310,9 +310,9 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 
 | Gate | Needed evidence | Why it matters |
 |---|---|---|
-| A1: real-wallet JSON-LD | A dedicated logged-in Inji Web or suitable mobile wallet stores and presents to Inji Verify; capture the result. | A Reference Wallet pass does not establish Inji-wallet interoperability. |
+| A1: real-wallet JSON-LD | A fresh managed Inji Web run records the observed Mimoto checkpoints, storage confirmation and matching Verify `valid` result; [final team review is pending](submission/evidence/person2-managed-a1-2026-10-25/README.md). | Browser capture cannot see Mimoto's downstream server calls; deployed releases remain unreported. |
 | A2: real-wallet SD-JWT | Recorded functional pass with actual Android wallet, reopened storage and valid credential/holder proof result. | Hybrid profile only; installed-binary attestation and Collab release remain unverified. |
 | A6: packaging | Playground core + mocks now build, pass health checks, run migrations, and complete a mock smoke through `pnpm demo:docker`. | A separate clean-machine rehearsal and local Inji stack remain open. |
 | Capture and browser QA | Live assisted-wallet observation without rewriting signed messages. | Three synthetic browser/axe checks pass; they cannot prove the real wallet's browser/native boundaries. |
 
-Ownership and next steps are in the [four-person plan](NEXT_STEPS_4_PERSON_PLAN.md). Until these gates have evidence, reports should state exactly which implementation was tested instead of claiming a completed all-Inji flow.
+Ownership and next steps are in the [single-owner handoff](SINGLE_OWNER_HANDOFF.md). Reports should state the exact implementation, profile and observed boundaries; the A1 and A2 records do not establish every format or a complete local Inji deployment.

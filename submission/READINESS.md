@@ -33,7 +33,7 @@ This folder is the submission handoff. Refresh statuses and links before sending
 | Synthetic test data | Prepared | [TEST_EVIDENCE.md](TEST_EVIDENCE.md) lists committed fixtures and data boundaries |
 | Test cases and results | Updated, final refresh pending | [TEST_EVIDENCE.md](TEST_EVIDENCE.md) separates historical full-suite results, the 24 October BFF regression, manual A1 evidence and [actual A2 acceptance](evidence/person3-a2-mobile-2026-10-23/README.md) |
 | License and credits | Partial | [MPL-2.0](../LICENSE) and [direct dependency credits](../ATTRIBUTIONS.md) added; confirm team agreement and complete transitive/asset notice audit |
-| Fresh live report and matrix | Prepared for recorded mock combinations | [Aggregate report](evidence/2026-10-23-aggregate-interop.md) links 21 October Collab Verify and clean 23 October hosted mock run records with explicit untested cells; all-Inji wallet proof remains open |
+| Fresh live report and matrix | Managed A1 record added; aggregate refresh pending | [Managed A1 report and reviewed matrix](evidence/person2-managed-a1-2026-10-25/README.md) link the correlated Web run; the older [aggregate report](evidence/2026-10-23-aggregate-interop.md) predates A1 and must be regenerated before final submission |
 | Interoperability gaps | Drafted | [GAPS.md](../GAPS.md) separates observed findings from upstream issues, none filed yet |
 | Remaining integration plan | Prepared | [Four-person plan](../NEXT_STEPS_4_PERSON_PLAN.md) prioritizes local Inji integration, CI and independently reproduced findings |
 
