@@ -13,8 +13,16 @@ export function validateTarget(value) {
   return url.origin;
 }
 export function validateCatalog(catalog) {
-  const faults = ["bad_signature", "expired", "wrong_type", "wrong_holder", "missing_holder_binding", "wrong_audience", "wrong_nonce", "replay", "used_state", "missing_required", "missing_optional", "unsupported_parameter"];
-  if (catalog.schemaVersion !== 1 || catalog.profile !== "mock-sdjwt-flat-v1" || !Array.isArray(catalog.cases) || catalog.cases.length !== faults.length) throw new ProbeError("configuration");
+  const faults = [
+    "bad_signature", "expired", "not_yet_valid", "wrong_type",
+    "wrong_holder", "missing_holder_binding",
+    "wrong_audience", "wrong_nonce", "wrong_sd_hash", "wrong_kb_type", "expired_kb",
+    "replay", "used_state",
+    "missing_required", "missing_optional", "uncommitted_disclosure", "malformed_disclosure",
+    "invalid_vp_token", "malformed_presentation",
+    "unsupported_parameter",
+  ];
+  if (![1, 2].includes(catalog.schemaVersion) || catalog.profile !== "mock-sdjwt-flat-v1" || !Array.isArray(catalog.cases) || catalog.cases.length < 1 || catalog.cases.length > faults.length) throw new ProbeError("configuration");
   const ids = new Set(), seen = new Set();
   for (const item of catalog.cases) {
     if (!/^p3\.[a-z_.]{1,64}$/.test(item.id) || ids.has(item.id) || !faults.includes(item.fault) || seen.has(item.fault)) throw new ProbeError("configuration");
@@ -70,30 +78,64 @@ async function present(issued, target, fault) {
     const index = parts.findIndex((part, i) => i > 0 && part && JSON.parse(Buffer.from(part, "base64url").toString("utf8"))[1] === name);
     if (index < 1) throw new ProbeError("construction"); parts.splice(index, 1);
   }
+  // Uncommitted disclosure: replace a valid disclosure with one that has a different salt (digest won't match issuer _sd)
+  if (fault === "uncommitted_disclosure") {
+    const index = parts.findIndex((part, i) => i > 0 && part && part.length > 1);
+    if (index < 1) throw new ProbeError("construction");
+    // Create a disclosure with a different salt but same claim name/value
+    const original = JSON.parse(Buffer.from(parts[index], "base64url").toString("utf8"));
+    const tampered = ["TAMPERED_SALT_VALUE", original[1], original[2]];
+    parts[index] = Buffer.from(JSON.stringify(tampered)).toString("base64url");
+  }
+  // Malformed disclosure: duplicate a valid disclosure (RFC 9901 §5 / disclosures.ts duplicate check)
+  if (fault === "malformed_disclosure") {
+    const index = parts.findIndex((part, i) => i > 0 && part && part.length > 1);
+    if (index < 1) throw new ProbeError("construction");
+    parts.splice(index + 1, 0, parts[index]);
+  }
+  // Malformed presentation: corrupt the structure so it's not valid SD-JWT
+  if (fault === "malformed_presentation") {
+    // Return a token that has only one segment (not a valid JWT~disclosure~kb structure)
+    return { token: "not-a-valid-sdjwt", constructionPassed: true, construction: { deliberatelyMalformed: true } };
+  }
   const prefix = parts.join("~"), time = now();
   const holderKey = fault === "wrong_holder" ? generateKeyPairSync("ed25519").privateKey : issued.holder.privateKey;
-  const kb = await new SignJWT({ iat: time, aud: fault === "wrong_audience" ? "different-verifier" : target.claims.client_id, nonce: fault === "wrong_nonce" ? randomUUID() : target.claims.nonce, sd_hash: hash(prefix) }).setProtectedHeader({ alg: "EdDSA", typ: "kb+jwt" }).sign(holderKey);
+  // KB type fault: use wrong typ header
+  const kbTyp = fault === "wrong_kb_type" ? "JWT" : "kb+jwt";
+  // KB time fault: set iat far in the past (beyond 120s tolerance)
+  const kbIat = fault === "expired_kb" ? time - 300 : time;
+  const kb = await new SignJWT({
+    iat: kbIat,
+    aud: fault === "wrong_audience" ? "different-verifier" : target.claims.client_id,
+    nonce: fault === "wrong_nonce" ? randomUUID() : target.claims.nonce,
+    sd_hash: fault === "wrong_sd_hash" ? hash("deliberately-wrong-prefix") : hash(prefix),
+  }).setProtectedHeader({ alg: "EdDSA", typ: kbTyp }).sign(holderKey);
   const claims = decodeJwt(originalJwt), header = decodeProtectedHeader(originalJwt);
   const issuerKey = header.x5c ? await importX509(`-----BEGIN CERTIFICATE-----\n${header.x5c[0]}\n-----END CERTIFICATE-----`, header.alg) : await importJWK(JSON.parse(Buffer.from(claims.iss.slice(8), "base64url").toString("utf8")), header.alg);
   let issuerSignatureValid = true, holderSignatureValid = true;
   try { await compactVerify(parts[0], issuerKey); } catch { issuerSignatureValid = false; }
   try { await compactVerify(kb, issued.holder.publicKey); } catch { holderSignatureValid = false; }
   const disclosures = parts.slice(1, -1).map((part) => JSON.parse(Buffer.from(part, "base64url").toString("utf8")));
-  const committed = disclosures.every((_, i) => claims._sd.includes(hash(parts[i + 1])));
+  const committed = fault !== "uncommitted_disclosure" ? disclosures.every((_, i) => claims._sd.includes(hash(parts[i + 1]))) : false;
   const holderClaims = decodeJwt(kb);
   const bound = claims.cnf?.jwk?.x === (await exportJWK(issued.holder.publicKey)).x;
   const construction = {
     issuerSignatureAsExpected: issuerSignatureValid === (fault !== "bad_signature"),
     holderSignatureAsExpected: holderSignatureValid === (fault !== "wrong_holder"),
     credentialTypeAsExpected: fault === "wrong_type" ? claims.vct === "UnexpectedCredential" : claims.vct === "MockVerifiableCredential_SD_JWT",
-    validityAsExpected: fault === "expired" ? claims.exp < time && claims.nbf <= time : claims.exp > time && claims.nbf <= time,
+    validityAsExpected: fault === "expired" ? claims.exp < time && claims.nbf <= time
+      : fault === "not_yet_valid" ? claims.nbf > time && claims.exp > time
+      : claims.exp > time && claims.nbf <= time,
     holderBindingAsExpected: fault === "missing_holder_binding" ? claims.cnf === undefined : bound,
-    bindingHashValid: holderClaims.sd_hash === hash(prefix),
-    disclosureCommitmentsValid: committed,
+    bindingHashValid: fault === "wrong_sd_hash" ? holderClaims.sd_hash !== hash(prefix) : holderClaims.sd_hash === hash(prefix),
+    disclosureCommitmentsValid: fault === "uncommitted_disclosure" ? !committed : committed,
     requiredClaimAsExpected: fault === "missing_required" ? !disclosures.some((item) => item[1] === "given_name") : disclosures.some((item) => item[1] === "given_name"),
     optionalClaimAsExpected: fault === "missing_optional" ? !disclosures.some((item) => item[1] === "family_name") : true,
     audienceAsExpected: fault === "wrong_audience" ? holderClaims.aud !== target.claims.client_id : holderClaims.aud === target.claims.client_id,
     nonceAsExpected: fault === "wrong_nonce" ? holderClaims.nonce !== target.claims.nonce : holderClaims.nonce === target.claims.nonce,
+    kbTypAsExpected: fault === "wrong_kb_type" ? kbTyp !== "kb+jwt" : kbTyp === "kb+jwt",
+    kbTimeAsExpected: fault === "expired_kb" ? kbIat < time - 120 : Math.abs(kbIat - time) <= 120,
+    sdHashAsExpected: fault === "wrong_sd_hash" ? holderClaims.sd_hash !== hash(prefix) : holderClaims.sd_hash === hash(prefix),
   };
   return { token: `${prefix}${kb}`, constructionPassed: Object.values(construction).every(Boolean), construction };
 }
@@ -110,12 +152,29 @@ async function submit(verifier, target, token, deadline, extra = {}) {
   }
   throw new ProbeError("timeout");
 }
+// Submit with an invalid vp_token envelope (empty credential array)
+async function submitInvalidToken(verifier, target, deadline) {
+  const submitted = await request(`${verifier}/direct-post`, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ state: target.claims.state, vp_token: JSON.stringify({ credential: [] }) }) }, deadline);
+  if (submitted.status >= 500) return { httpStatus: submitted.status, error: "transport" };
+  if (submitted.status === 400) return { httpStatus: 400, boundary: "direct_post", outcome: "invalid", diagnosticsVersion: submitted.body?.diagnosticsVersion, code: submitted.body?.failure?.code, stage: submitted.body?.failure?.stage };
+  throw new ProbeError("malformed_result");
+}
 export async function runProbes({ issuer, verifier, catalog, caseTimeoutMs = 20_000 }) {
   issuer = validateTarget(issuer); verifier = validateTarget(verifier); validateCatalog(catalog);
   const results = [];
   for (const definition of catalog.cases) {
     const deadline = Date.now() + caseTimeoutMs, started = Date.now(); let controlPassed = false, constructionPassed = false, controlRecord = null, construction = {};
     try {
+      // Transport-level faults that don't require issuance
+      if (definition.fault === "invalid_vp_token") {
+        const a = await challenge(verifier, deadline);
+        controlPassed = true; constructionPassed = true;
+        construction = { invalidEnvelopeSent: true };
+        const observation = await submitInvalidToken(verifier, a, deadline);
+        const observed = safeObservation({ ...observation, controlPassed, constructionPassed });
+        results.push({ caseId: definition.id, profile: catalog.profile, applicationStep: null, control: null, construction, expected: definition.expected, observed, verdict: evaluate(definition.expected, observed), durationMs: Date.now() - started });
+        continue;
+      }
       const baseline = await issue(issuer, "valid", deadline), a = await challenge(verifier, deadline);
       const control = await present(baseline, a, "valid");
       const controlResult = safeObservation({ ...await submit(verifier, a, control.token, deadline), controlPassed: true, constructionPassed: control.constructionPassed });
@@ -130,8 +189,14 @@ export async function runProbes({ issuer, verifier, catalog, caseTimeoutMs = 20_
         const b = await challenge(verifier, deadline);
         const originalBytes = control.token; construction = { ...control.construction, freshChallengeNonceDiffers: a.claims.nonce !== b.claims.nonce, byteForBytePresentationPreserved: originalBytes === control.token }; constructionPassed = Object.values(construction).every(Boolean);
         observation = await submit(verifier, b, originalBytes, deadline);
+      } else if (definition.fault === "malformed_presentation") {
+        // Submit a deliberately malformed token to a fresh challenge
+        const b = await challenge(verifier, deadline);
+        const presentation = await present(baseline, b, definition.fault);
+        constructionPassed = presentation.constructionPassed; construction = presentation.construction;
+        observation = await submit(verifier, b, presentation.token, deadline);
       } else {
-        const variant = ["expired", "wrong_type", "missing_holder_binding"].includes(definition.fault) ? definition.fault : "valid";
+        const variant = ["expired", "wrong_type", "missing_holder_binding", "not_yet_valid"].includes(definition.fault) ? definition.fault : "valid";
         const issued = await issue(issuer, variant, deadline), b = await challenge(verifier, deadline);
         const presentation = await present(issued, b, definition.fault); constructionPassed = presentation.constructionPassed; construction = presentation.construction;
         if (!constructionPassed) throw new ProbeError("construction");
@@ -159,7 +224,7 @@ async function main() {
   let commit = "unreported", dirty = true;
   const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
   try { commit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8", cwd: repositoryRoot }).trim(); dirty = Boolean(execFileSync("git", ["status", "--porcelain"], { encoding: "utf8", cwd: repositoryRoot }).trim()); } catch { /* explicit unknown provenance */ }
-  const evidence = { schemaVersion: 1, evidenceTier: "local_mock_protocol", timestamp: new Date().toISOString(), sourceCommit: /^[0-9a-f]{40}$/.test(commit) ? commit : "unreported", dirtyWorkingTree: dirty, versions: { issuer: "unreported", verifier: "unreported", labelSource: "target_builds_not_attested" }, profile: catalog.profile, results, exitCode: exitCode(results) };
+  const evidence = { schemaVersion: 2, evidenceTier: "local_mock_protocol", timestamp: new Date().toISOString(), sourceCommit: /^[0-9a-f]{40}$/.test(commit) ? commit : "unreported", dirtyWorkingTree: dirty, versions: { issuer: "unreported", verifier: "unreported", labelSource: "target_builds_not_attested" }, profile: catalog.profile, results, exitCode: exitCode(results) };
   await writeFile(options["--out"], `${JSON.stringify(evidence, null, 2)}\n`, { flag: "wx", mode: 0o600 });
   process.stdout.write(`Protocol probes: ${results.length} cases; exit ${evidence.exitCode}\n`); process.exitCode = evidence.exitCode;
 }

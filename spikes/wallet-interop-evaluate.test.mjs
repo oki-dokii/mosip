@@ -49,14 +49,15 @@ test("targets require explicit loopback HTTP origins", () => {
 });
 test("catalog rejects duplicate cases and unsupported expectations", async () => {
   const catalog = JSON.parse(await readFile(new URL("./wallet-interop-cases.json", import.meta.url), "utf8"));
-  assert.equal(validateCatalog(catalog).cases.length, 12);
+  assert.equal(validateCatalog(catalog).cases.length, catalog.cases.length);
+  assert.ok(catalog.cases.length >= 12);
   const changed = structuredClone(catalog); changed.cases[1] = changed.cases[0]; assert.throws(() => validateCatalog(changed));
   const wrong = structuredClone(catalog); wrong.cases[0].expected.code = "unknown"; assert.throws(() => validateCatalog(wrong));
 });
 test("transport failures retain every case as inconclusive", async () => {
   const catalog = JSON.parse(await readFile(new URL("./wallet-interop-cases.json", import.meta.url), "utf8"));
   const results = await runProbes({ issuer: "http://127.0.0.1:1", verifier: "http://127.0.0.1:1", catalog, caseTimeoutMs: 1 });
-  assert.equal(results.length, 12); assert.equal(results.every((item) => item.verdict === "inconclusive"), true); assert.equal(exitCode(results), 2);
+  assert.equal(results.length, catalog.cases.length); assert.equal(results.every((item) => item.verdict === "inconclusive"), true); assert.equal(exitCode(results), 2);
   assert.equal(JSON.stringify(results).includes("stack"), false);
 });
 test("local launcher refuses stale success evidence without starting services", async () => {

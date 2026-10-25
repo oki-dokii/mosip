@@ -142,7 +142,7 @@ describe("Collab verifier status polling", () => {
   it("stops when the configured polling deadline expires", async () => {
     process.env.VERIFY_POLL_INTERVAL_MS = "2";
     process.env.VERIFY_POLL_TIMEOUT_MS = "1";
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ status: "ACTIVE" })));
+    vi.stubGlobal("fetch", vi.fn().mockImplementation(() => Promise.resolve(jsonResponse({ status: "ACTIVE" }))));
 
     await expect(createCollabDrivers().verifier.pollStatus(context()))
       .rejects.toThrow("Timed out waiting for Inji Verify presentation status");

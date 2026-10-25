@@ -21,11 +21,19 @@ The versioned catalog is `spikes/wallet-interop-cases.json`; its stable IDs, exp
 | --- | --- |
 | `p3.signature.issuer` | Reject issuer signature corruption: RFC 7515 §5.2. |
 | `p3.credential.expired` | Reject a validly signed expired credential: RFC 7519 §4.1.4; local profile requires exp. |
+| `p3.credential.not_yet_valid` | Reject a validly signed credential with future nbf: RFC 7519 §4.1.5 (`CREDENTIAL_NOT_YET_VALID`). |
 | `p3.credential.type` | Reject unexpected vct under the explicit local credential-type policy; not an issuer-signature test. |
 | `p3.holder.wrong_key`, `p3.holder.missing_binding` | Require holder proof bound to the issued key: RFC 9901 §7.3 under this profile's mandatory-binding policy. |
 | `p3.binding.audience`, `p3.binding.nonce`, `p3.replay.fresh_challenge` | Reject presentations not bound to this verifier/challenge: RFC 9901 §7.3. The replay preserves exact previously accepted presentation bytes. |
+| `p3.binding.sd_hash` | Reject tampered or mismatched `sd_hash` in KB-JWT: RFC 9901 §7.3 (`SD_HASH_MISMATCH`). |
+| `p3.binding.kb_type` | Reject unexpected `typ` header in KB-JWT (must be `kb+jwt`): RFC 9901 §7.3 (`KB_TYPE_MISMATCH`). |
+| `p3.binding.kb_time` | Reject expired or excessive clock-skewed KB-JWT: RFC 9901 §7.3 (`KB_TIME_INVALID`). |
 | `p3.replay.consumed_state` | One accepted submission per local challenge: harness transport policy, distinct from cryptographic nonce replay. |
 | `p3.disclosure.required`, `p3.disclosure.optional` | Verify disclosure commitments per RFC 9901 §4.2, then apply local requested-claim policy; optional omissions must remain valid. |
+| `p3.disclosure.digest_mismatch` | Reject disclosures not committed in credential `_sd` array: RFC 9901 §4.2 (`DISCLOSURE_DIGEST_MISMATCH`). |
+| `p3.disclosure.malformed` | Reject duplicate or structurally malformed disclosures in presentation: RFC 9901 §5 (`MALFORMED_DISCLOSURE`). |
+| `p3.transport.invalid_token` | Reject malformed or empty `vp_token` transport envelope at `direct-post`: OpenID4VP 1.0 §8.2 (`INVALID_VP_TOKEN`). |
+| `p3.structure.malformed` | Reject presentations that violate SD-JWT tilde-delimited format structure: RFC 7515 §5.2 / RFC 9901 §5 (`MALFORMED_PRESENTATION`). |
 | `p3.profile.presentation_submission` | Reject a present unsupported parameter on this local profile. A malformed PE mapping is not interpreted as a PE conformance test. |
 
-Primary references: [RFC 7515](https://www.rfc-editor.org/rfc/rfc7515.html#section-5.2), [RFC 7519](https://www.rfc-editor.org/rfc/rfc7519.html#section-4.1.4), [RFC 9901](https://www.rfc-editor.org/rfc/rfc9901.html#section-7.3). These local expectations cannot establish which protocol edition an external deployment implements. The sanitized dated artifact is `spikes/fixtures/wallet-interop-2026-10-22.json`.
+Primary references: [RFC 7515](https://www.rfc-editor.org/rfc/rfc7515.html#section-5.2), [RFC 7519](https://www.rfc-editor.org/rfc/rfc7519.html#section-4.1.4), [RFC 9901](https://www.rfc-editor.org/rfc/rfc9901.html#section-7.3), [OpenID4VP 1.0](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#section-8.2). These local expectations cannot establish which protocol edition an external deployment implements. The 20-case test catalogue is pinned in `spikes/wallet-interop-cases.json`.
