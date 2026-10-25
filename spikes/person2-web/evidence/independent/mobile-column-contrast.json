@@ -1,0 +1,21 @@
+{
+  "source": "synthetic_playground_ui",
+  "check": "automated_computed_colors_not_manual_screen_reader",
+  "viewportWidth": 320,
+  "checks": [
+    {
+      "region": "Run configuration comparison table",
+      "cellsMeasured": 45,
+      "minimumContrast": 15.61,
+      "allColumnsReachable": true
+    },
+    {
+      "region": "Run step comparison table",
+      "cellsMeasured": 6,
+      "minimumContrast": 16.19,
+      "allColumnsReachable": true
+    }
+  ],
+  "result": "passed",
+  "limitation": "CSS color measurement for the current opaque comparison tables; does not replace axe or human visual review."
+}
