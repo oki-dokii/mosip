@@ -7,6 +7,7 @@ const titles: Record<string, string> = {
   "G-04": "Certify credential request returns 401 after a successful token exchange",
   "G-05": "Verify 0.18.2 sample database seed breaks direct-post",
   "G-06": "Verify 0.18.2 accepts mismatched holder challenges in a local probe",
+  "G-07": "Verify 0.18.2 accepts a descriptor path outside the VP array",
 };
 
 const statusLabels: Record<string, string> = {
@@ -16,6 +17,7 @@ const statusLabels: Record<string, string> = {
   investigative_deployment_behavior: "Under investigation",
   confirmed_local_release_packaging_mismatch: "Reproduced locally",
   reproduced_local_verifier_binding_gap: "Reproduced locally",
+  reproduced_local_descriptor_mapping_gap: "Reproduced locally",
 };
 
 function evidenceUrl(path: string): string {

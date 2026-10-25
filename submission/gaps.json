@@ -113,6 +113,23 @@
       "matrixCells": [],
       "matrixDecision": "Pinned local Verify 0.18.2 accepted wrong-nonce, wrong-audience and exact-replay SD-JWT presentations into fresh challenges; it rejected a broken issuer signature. Synthetic reference-holder profile only. Collab and newer releases are untested; upstream issue not filed.",
       "upstreamIssue": null
+    },
+    {
+      "id": "G-07",
+      "status": "reproduced_local_descriptor_mapping_gap",
+      "disclosure": "public_synthetic_protocol_observation",
+      "productVersion": "Inji Verify 0.18.2",
+      "evidence": [
+        "submission/evidence/2026-10-25-local-inji-extended-matrix.json",
+        "scripts/local-inji-smoke.mjs"
+      ],
+      "runIds": [
+        "txn_9f9e0578-adcb-4ec3-991c-967a21e023d3",
+        "txn_386369e2-32f5-4fe6-830c-28466e0c5495"
+      ],
+      "matrixCells": [],
+      "matrixDecision": "Pinned local Verify 0.18.2 returned valid when the submitted descriptor path $[99] pointed outside the one-element VP array. A wrong-state control received HTTP 404. Mapping semantics need a second-credential test before a broader upstream claim.",
+      "upstreamIssue": null
     }
   ],
   "localProtocolEvidence": {

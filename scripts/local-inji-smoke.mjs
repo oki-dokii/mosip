@@ -104,11 +104,12 @@ async function present(credential, holder, scenario, replayToken) {
   assert(typeof checkedKb.payload.nonce === 'string' && typeof checkedKb.payload.aud === 'string', 'HOLDER_PROOF_INVALID');
   const submission = {
     id: randomUUID(), definition_id: definitionId,
-    descriptor_map: [{ id: 'credential', format: 'vc+sd-jwt', path: '$[0]' }],
+    descriptor_map: [{ id: 'credential', format: 'vc+sd-jwt', path: scenario === 'wrong_descriptor_path' ? '$[99]' : '$[0]' }],
   };
+  const submittedState = scenario === 'wrong_state' ? randomBytes(24).toString('base64url') : claims.state;
   const submitted = await request(claims.response_uri, {
     method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ state: claims.state, vp_token: JSON.stringify([vpToken]), presentation_submission: JSON.stringify(submission) }),
+    body: new URLSearchParams({ state: submittedState, vp_token: JSON.stringify([vpToken]), presentation_submission: JSON.stringify(submission) }),
   });
   const result = await request(verifier + '/v2/vp-results/' + encodeURIComponent(vpRequest.body.transactionId), json({ includeClaims: false, skipStatusChecks: true }));
   const first = result.body?.credentialResults?.[0];
@@ -116,6 +117,8 @@ async function present(credential, holder, scenario, replayToken) {
     scenario,
     nonceMatched: checkedKb.payload.nonce === claims.nonce,
     audienceMatched: checkedKb.payload.aud === claims.client_id,
+    stateMatched: submittedState === claims.state,
+    descriptorPathMatched: submission.descriptor_map[0].path === '$[0]',
     transactionId: vpRequest.body.transactionId, requestId: vpRequest.body.requestId,
     directPostHttpStatus: submitted.status,
     verifierHttpStatus: result.status, verifierValid: result.body?.allChecksSuccessful ?? null,
@@ -133,7 +136,7 @@ async function main() {
   assert((await request(verifier + '/actuator/health')).body?.status === 'UP', 'VERIFY_NOT_READY');
   const { credential, holder } = await issueCredential(issuer);
   const matrix = process.argv.includes('--matrix');
-  const scenarios = matrix ? ['valid', 'wrong_nonce', 'wrong_audience', 'replayed_presentation', 'bad_issuer_signature'] : ['valid'];
+  const scenarios = matrix ? ['valid', 'wrong_nonce', 'wrong_audience', 'replayed_presentation', 'bad_issuer_signature', 'wrong_state', 'wrong_descriptor_path'] : ['valid'];
   const results = [];
   let validVpToken;
   for (const scenario of scenarios) {

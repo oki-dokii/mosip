@@ -1,0 +1,28 @@
+{
+  "observedAt": "2026-10-25T11:18:29.354Z",
+  "sourceBaseCommit": "28f15a7",
+  "invocation": "node scripts/local-inji-smoke.mjs --matrix",
+  "processExitCode": 1,
+  "processFailureCode": "LOCAL_NEGATIVE_ACCEPTED_WRONG_NONCE",
+  "issuer": "official_inji_certify",
+  "issuerVersion": "1.0.0-alpha.1",
+  "verifier": "official_inji_verify",
+  "verifierVersion": "0.18.2",
+  "holder": "non_inji_reference",
+  "deployment": "local_services_loopback_only",
+  "issuerFormat": "dc+sd-jwt",
+  "presentationDefinitionFormat": "vc+sd-jwt",
+  "responseCodeValidationRequired": false,
+  "resultQuerySkipStatusChecks": true,
+  "cases": [
+    { "scenario": "valid", "transactionId": "txn_3dad507c-4084-4445-a7f4-133b877750b9", "nonceMatched": true, "audienceMatched": true, "stateMatched": true, "descriptorPathMatched": true, "directPostHttpStatus": 200, "verifierHttpStatus": 200, "verifierValid": true, "credentialProofValid": true, "holderProofValid": true },
+    { "scenario": "wrong_nonce", "transactionId": "txn_2438c567-74dd-42a3-a2e0-c05b2c31f3ce", "nonceMatched": false, "audienceMatched": true, "stateMatched": true, "descriptorPathMatched": true, "directPostHttpStatus": 200, "verifierHttpStatus": 200, "verifierValid": true, "credentialProofValid": true, "holderProofValid": true },
+    { "scenario": "wrong_audience", "transactionId": "txn_6ce49bfc-2029-4d38-889a-55b78e2acbd9", "nonceMatched": true, "audienceMatched": false, "stateMatched": true, "descriptorPathMatched": true, "directPostHttpStatus": 200, "verifierHttpStatus": 200, "verifierValid": true, "credentialProofValid": true, "holderProofValid": true },
+    { "scenario": "replayed_presentation", "transactionId": "txn_b1a7bd6c-3ed0-458d-a73d-8868217525e1", "nonceMatched": false, "audienceMatched": true, "stateMatched": true, "descriptorPathMatched": true, "directPostHttpStatus": 200, "verifierHttpStatus": 200, "verifierValid": true, "credentialProofValid": true, "holderProofValid": true },
+    { "scenario": "bad_issuer_signature", "transactionId": "txn_29595757-a516-4fcc-8f7b-c64e8404fc5a", "nonceMatched": true, "audienceMatched": true, "stateMatched": true, "descriptorPathMatched": true, "directPostHttpStatus": 200, "verifierHttpStatus": 200, "verifierValid": false, "credentialProofValid": false, "holderProofValid": null, "resultCode": "ERR_SIGNATURE_VERIFICATION_FAILED" },
+    { "scenario": "wrong_state", "transactionId": "txn_386369e2-32f5-4fe6-830c-28466e0c5495", "nonceMatched": true, "audienceMatched": true, "stateMatched": false, "descriptorPathMatched": true, "directPostHttpStatus": 404, "verifierHttpStatus": 404, "verifierValid": null, "credentialProofValid": null, "holderProofValid": null },
+    { "scenario": "wrong_descriptor_path", "transactionId": "txn_9f9e0578-adcb-4ec3-991c-967a21e023d3", "nonceMatched": true, "audienceMatched": true, "stateMatched": true, "descriptorPathMatched": false, "directPostHttpStatus": 200, "verifierHttpStatus": 200, "verifierValid": true, "credentialProofValid": true, "holderProofValid": true }
+  ],
+  "interpretation": "The pinned local verifier rejected a wrong state and corrupted issuer signature, but reported valid for three holder-binding/replay cases and for a descriptor path that selects no VP token.",
+  "evidenceTier": "local_official_services_reference_holder"
+}
