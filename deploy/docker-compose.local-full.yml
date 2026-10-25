@@ -1,0 +1,188 @@
+# LEGACY ALTERNATIVE SHELL ONLY. Not used by start-local-full.sh.
+# Do not start alongside the canonical projects: host ports overlap.
+# Use pnpm start:local-full for the connected JSON-LD profile.
+# ──────────────────────────────────────────────────────────────────────────────
+# Unified opt-in local profile: official Certify + Verify + Inji Web + Mimoto.
+#
+# This profile joins the two pinned local stacks into one Compose project for
+# developers who want all official Inji services running simultaneously.
+# It is strictly OPT-IN; core and mocks profiles remain completely independent.
+#
+# PREREQUISITES (one-time setup):
+#   pnpm install --frozen-lockfile
+#   pnpm mobile:inji setup         # generates Certify keys and DB init SQL
+#   node scripts/prepare-inji-web-local.mjs   # generates Mimoto keystore, DB
+#
+# START:
+#   bash scripts/start-local-full.sh          # uses dedicated project name
+#
+# STOP (preserves synthetic DBs and generated keys):
+#   bash scripts/start-local-full.sh down
+#
+# STOP and DELETE all volumes (DATA LOSS WARNING):
+#   bash scripts/start-local-full.sh down -v
+#
+# This does NOT include the core playground / mocks; start those separately:
+#   docker compose --profile core --profile mocks up --build -d --wait
+#
+# Evidence boundary: see deploy/INJI_LOCAL.md and deploy/INJI_WEB_LOCAL.md.
+# A running container is not an end-to-end pass.
+# Issuance + presentation through Inji Web are not yet configured.
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Verify DB (isolated; identical to docker-compose.verify-local.yml) ───────
+  verify-db:
+    image: postgres:13@sha256:4689940c683801b4ab839ab3b0a0a3555a5fe425371422310944e89eca7d8068
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: local-verify-synthetic
+      POSTGRES_DB: inji_verify
+    volumes:
+      - verify-db-data:/var/lib/postgresql/data
+      - ./verify-db-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d inji_verify]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 256m
+
+  # ── Inji Verify service (official, loopback-bound) ───────────────────────────
+  verify-service:
+    image: injistack/inji-verify-service:0.18.2@sha256:2ed468e7e1f1ce317a41476dd131f4ce8f081b0f055a080c95e99a92cc192bdd
+    environment:
+      active_profile_env: default
+      DATABASE_HOST: verify-db
+      DATABASE_PORT: '5432'
+      DATABASE_NAME: inji_verify
+      DATABASE_SCHEMA: verify
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: local-verify-synthetic
+      INJI_VP_SUBMISSION_BASE_URL: http://127.0.0.1:18081/v1/verify
+      INJI_DID_VERIFY_URI: did:web:localhost%3A18081:v1:verify
+      INJI_DID_VERIFY_PUBLIC_KEY_URI: did:web:localhost%3A18081:v1:verify#key-0
+      INJI_KEYSTORE_FILE_PASS: mosip
+      INJI_VERIFY_REDIRECT_URI: http://127.0.0.1:18081
+      INJI_VERIFY_RESPONSE_CODE_EXPIRY_TIME_IN_MINS: '5'
+      INJI_VERIFY_CLAIMS_WITH_META_DATA: _sd,_sd_alg,iss,cnf,sub,aud,exp,nbf,iat,cti
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx768m
+    ports:
+      - 127.0.0.1:18081:8080
+    depends_on:
+      verify-db:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, 'http://127.0.0.1:8080/v1/verify/actuator/health']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    mem_limit: 1200m
+
+  # ── Synthetic OAuth2 IdP for Mimoto ─────────────────────────────────────────
+  synthetic-idp:
+    image: node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
+    command: [node, /app/local-web-idp.mjs]
+    environment:
+      LOCAL_IDP_CLIENT_SECRET: ${MIMOTO_GOOGLE_CLIENT_SECRET:?Run scripts/prepare-inji-web-local.mjs first}
+    volumes:
+      - ../scripts/local-web-idp.mjs:/app/local-web-idp.mjs:ro
+    ports:
+      - 127.0.0.1:18095:8080
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/health]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    mem_limit: 128m
+
+  # ── Mimoto DB (isolated from playground DB) ──────────────────────────────────
+  mimoto-db:
+    image: postgres:13@sha256:4689940c683801b4ab839ab3b0a0a3555a5fe425371422310944e89eca7d8068
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${MIMOTO_DB_PASSWORD:?Run scripts/prepare-inji-web-local.mjs first}
+    volumes:
+      - mimoto-db-data:/var/lib/postgresql/data
+      - ${MIMOTO_RUNTIME_DIR:?}/mimoto_init.sql:/docker-entrypoint-initdb.d/01-mimoto.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d inji_mimoto]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 256m
+
+  # ── Mimoto wallet BFF ────────────────────────────────────────────────────────
+  mimoto-service:
+    image: injistack/mimoto:0.22.0@sha256:89fc81eeb8c911c8a9944e4071d8f3e8f287d3de697c4461f2b3a2e8ce29858e
+    environment:
+      active_profile_env: default
+      SPRING_CONFIG_NAME: mimoto
+      SPRING_CONFIG_LOCATION: /home/mosip/
+      SPRING_CLOUD_BOOTSTRAP_LOCATION: /home/mosip/mimoto-bootstrap.properties
+      oidc_p12_password: ${MIMOTO_OIDC_P12_PASSWORD:?}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://mimoto-db:5432/inji_mimoto
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${MIMOTO_DB_PASSWORD:?}
+      GOOGLE_OAUTH_CLIENT_ID: local-synthetic
+      GOOGLE_OAUTH_CLIENT_SECRET: ${MIMOTO_GOOGLE_CLIENT_SECRET:?}
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx640m
+    user: root
+    volumes:
+      - ${MIMOTO_RUNTIME_DIR:?}/mimoto-default.properties:/home/mosip/mimoto-default.properties:ro
+      - ${MIMOTO_RUNTIME_DIR:?}/mimoto-bootstrap.properties:/home/mosip/mimoto-bootstrap.properties:ro
+      - ${MIMOTO_RUNTIME_DIR:?}/oidckeystore.p12:/home/mosip/certs/oidckeystore.p12
+    ports:
+      - 127.0.0.1:18099:8099
+    depends_on:
+      mimoto-db:
+        condition: service_healthy
+      synthetic-idp:
+        condition: service_healthy
+    # Metadata readiness only. Aggregate actuator retains HSMHealth DOWN
+    # (no external KERNEL HSM in this isolated profile). Not hidden.
+    healthcheck:
+      test: [CMD, curl, -fsS, http://127.0.0.1:8099/v1/mimoto/issuers]
+      interval: 10s
+      timeout: 5s
+      retries: 24
+      start_period: 45s
+    mem_limit: 1100m
+
+  # ── Inji Web frontend ────────────────────────────────────────────────────────
+  inji-web:
+    image: injistack/inji-web:0.17.0@sha256:62ca25a6c2f5c3d61edfed1e43e52885f1bcf1229b3a3ffb89c117245f839719
+    environment:
+      DEFAULT_LANG: en
+      # Loopback URL that the browser uses to reach Mimoto via the nginx reverse proxy.
+      MIMOTO_URL: http://127.0.0.1:18093/v1/mimoto
+      IGNORED_ISSUER_IDS: ''
+    volumes:
+      - ${MIMOTO_RUNTIME_DIR:?}/mimoto-issuers-config.json:/home/mosip/mimoto-issuers-config.json:ro
+      - ${MIMOTO_RUNTIME_DIR:?}/mimoto-trusted-verifiers.json:/home/mosip/mimoto-trusted-verifiers.json:ro
+      - ${MIMOTO_RUNTIME_DIR:?}/credential-template.html:/home/mosip/credential-template.html:ro
+      - ${MIMOTO_RUNTIME_DIR:?}/mosip-cbeff.xsd:/usr/share/nginx/html/mosip-cbeff.xsd:ro
+    ports:
+      - 127.0.0.1:18093:3004
+    depends_on:
+      mimoto-service:
+        condition: service_started
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:3004/]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 256m
+
+volumes:
+  verify-db-data:
+  mimoto-db-data:
+
+# ── Port layout (all 127.0.0.1, no conflicts with core/mocks) ──────────────────
+# 18081  Inji Verify service  (was also used by mosip-local-inji project)
+# 18090  Inji Certify         (started separately by scripts/mobile-inji.mjs)
+# 18093  Inji Web             (nginx frontend)
+# 18095  Synthetic OAuth2 IdP
+# 18099  Mimoto               (wallet BFF)

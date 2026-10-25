@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "publishedAt": "2026-10-26",
+  "evidenceTiers": {
+    "certify_verify_path": "reference_wallet",
+    "inji_web_login_persistence": "inji_web",
+    "playground_core_mocks": "mock",
+    "local_jsonld_web": "inji_web",
+    "hybrid_android": "inji_mobile"
+  },
+  "stacks": {
+    "playground_core_mocks": {
+      "project": "mosip",
+      "compose": [
+        "docker-compose.yml"
+      ],
+      "profiles": [
+        "core",
+        "mocks"
+      ],
+      "services": {
+        "bff": {
+          "publicBrowserOrigin": "http://localhost:4000",
+          "containerOrigin": "http://bff:4000",
+          "hostPort": "127.0.0.1:4000",
+          "healthRoute": "GET /api/v1/health",
+          "status": "healthy"
+        },
+        "web": {
+          "publicBrowserOrigin": "http://localhost:5174",
+          "containerOrigin": "http://web:80",
+          "hostPort": "127.0.0.1:5174",
+          "healthRoute": "GET /",
+          "status": "healthy"
+        },
+        "postgres": {
+          "publicBrowserOrigin": null,
+          "hostPort": "127.0.0.1:55433",
+          "database": "playground",
+          "status": "healthy"
+        },
+        "mock_issuer": {
+          "publicBrowserOrigin": null,
+          "containerOrigin": "http://mock-issuer:4101",
+          "hostPort": null,
+          "healthRoute": "GET /.well-known/openid-credential-issuer",
+          "status": "healthy"
+        },
+        "mock_verifier": {
+          "publicBrowserOrigin": null,
+          "containerOrigin": "http://mock-verifier:4102",
+          "hostPort": null,
+          "healthRoute": "TCP connect :4102",
+          "status": "healthy"
+        }
+      }
+    },
+    "official_certify_verify": {
+      "projects": [
+        "mosip-mobile-a2",
+        "mosip-local-inji"
+      ],
+      "compose": [
+        "deploy/docker-compose.mobile.yml",
+        "deploy/docker-compose.verify-local.yml"
+      ],
+      "startCommand": "pnpm demo:inji",
+      "services": {
+        "inji_certify": {
+          "project": "mosip-mobile-a2",
+          "publicBrowserOrigin": "http://127.0.0.1:18090",
+          "containerOrigin": null,
+          "hostPort": "127.0.0.1:18090",
+          "issuerUrl": "http://127.0.0.1:18090/v1/certify",
+          "issuerMetadataUrl": "http://127.0.0.1:18090/v1/certify/.well-known/openid-credential-issuer",
+          "tokenEndpoint": "http://127.0.0.1:18090/v1/certify/oauth/token",
+          "credentialEndpoint": "http://127.0.0.1:18090/v1/certify/issuance/credential",
+          "healthRoute": "GET /v1/certify/.well-known/openid-credential-issuer",
+          "image": "injistack/inji-certify-with-plugins",
+          "tag": "1.0.0-alpha.1",
+          "digest": "sha256:1579b2449f1a7213fe25de1f6a1509b5636f1fedf0d7f5c4cfd07b9f0fc5b346",
+          "configSourceCommit": "8fdf71656979a72fa8263766d4dec3cc25127b76",
+          "credentialFormat": "dc+sd-jwt",
+          "protocol": "OID4VCI pre-authorized",
+          "status": "flow_observed_2026-10-25",
+          "containerAccessNote": "Host loopback is not a container origin; use the profile-specific internal bridge or configured host gateway."
+        },
+        "inji_verify": {
+          "project": "mosip-local-inji",
+          "publicBrowserOrigin": "http://127.0.0.1:18081",
+          "containerOrigin": null,
+          "hostPort": "127.0.0.1:18081",
+          "verifierBaseUrl": "http://127.0.0.1:18081/v1/verify",
+          "vpRequestUrl": "POST http://127.0.0.1:18081/v1/verify/vp-request",
+          "directPostUrl": "POST http://127.0.0.1:18081/v1/verify/vp-submission/direct-post",
+          "resultUrl": "GET http://127.0.0.1:18081/v1/verify/v2/vp-results/:transactionId",
+          "healthRoute": "GET /v1/verify/actuator/health",
+          "did": "did:web:localhost%3A18081:v1:verify",
+          "image": "injistack/inji-verify-service",
+          "tag": "0.18.2",
+          "digest": "sha256:2ed468e7e1f1ce317a41476dd131f4ce8f081b0f055a080c95e99a92cc192bdd",
+          "presentationFormat": "vc+sd-jwt",
+          "protocol": "OID4VP + Presentation Exchange",
+          "status": "flow_observed_2026-10-25",
+          "containerAccessNote": "Host loopback is not a container origin; use the profile-specific internal bridge or configured host gateway."
+        }
+      }
+    },
+    "inji_web_mimoto": {
+      "project": "mosip-web-local",
+      "compose": [
+        "deploy/docker-compose.web-local.yml"
+      ],
+      "startCommand": "pnpm stage:web-local",
+      "checkCommand": "pnpm check:web-local",
+      "services": {
+        "inji_web": {
+          "publicBrowserOrigin": "http://127.0.0.1:18093",
+          "containerOrigin": "http://inji-web:3004",
+          "hostPort": "127.0.0.1:18093",
+          "healthRoute": "GET http://127.0.0.1:18093/",
+          "oidcRedirectUri": "http://127.0.0.1:18093/v1/mimoto/oauth2/callback/google",
+          "image": "injistack/inji-web",
+          "tag": "0.17.0",
+          "digest": "sha256:62ca25a6c2f5c3d61edfed1e43e52885f1bcf1229b3a3ffb89c117245f839719",
+          "status": "flow_observed_2026-10-25"
+        },
+        "mimoto": {
+          "publicBrowserOrigin": "http://127.0.0.1:18099",
+          "containerOrigin": "http://mimoto-service:8099",
+          "hostPort": "127.0.0.1:18099",
+          "issuerCatalogUrl": "http://127.0.0.1:18093/v1/mimoto/issuers",
+          "healthRoute": "GET http://127.0.0.1:18093/v1/mimoto/issuers",
+          "oidcClientId": "local-synthetic",
+          "oidcClientSecretSource": "${MIMOTO_RUNTIME_DIR}/wallet.env (generated; never committed)",
+          "oidcKeystoreSource": "${MIMOTO_RUNTIME_DIR}/oidckeystore.p12 (generated by OpenSSL; never committed)",
+          "image": "injistack/mimoto",
+          "tag": "0.22.0",
+          "digest": "sha256:89fc81eeb8c911c8a9944e4071d8f3e8f287d3de697c4461f2b3a2e8ce29858e",
+          "status": "flow_observed_2026-10-25"
+        },
+        "synthetic_idp": {
+          "publicBrowserOrigin": "http://127.0.0.1:18095",
+          "containerOrigin": "http://synthetic-idp:8080",
+          "hostPort": "127.0.0.1:18095",
+          "authorizationEndpoint": "http://127.0.0.1:18095/authorize",
+          "tokenEndpoint": "http://synthetic-idp:8080/token",
+          "userinfoEndpoint": "http://synthetic-idp:8080/userinfo",
+          "jwksEndpoint": "http://synthetic-idp:8080/jwks",
+          "healthRoute": "GET http://127.0.0.1:18095/health",
+          "clientId": "local-synthetic",
+          "image": "node:22-alpine",
+          "digest": "sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914",
+          "script": "scripts/local-web-idp.mjs",
+          "status": "flow_observed_2026-10-25"
+        }
+      }
+    }
+  },
+  "databases": [
+    {
+      "component": "Playground BFF",
+      "database": "playground",
+      "user": "playground",
+      "volume": "playground-postgres",
+      "hostPort": "127.0.0.1:55433"
+    },
+    {
+      "component": "Inji Verify",
+      "database": "inji_verify",
+      "user": "postgres",
+      "volume": "mosip-local-inji_verify-db-data",
+      "hostPort": null
+    },
+    {
+      "component": "Inji Certify",
+      "database": "inji_certify",
+      "user": "postgres",
+      "volume": "mosip-mobile-a2_mobile-postgres",
+      "hostPort": null
+    },
+    {
+      "component": "Mimoto",
+      "database": "inji_mimoto",
+      "user": "postgres",
+      "volume": "mosip-web-local_mimoto-db-data",
+      "hostPort": null
+    }
+  ],
+  "captureProxyHook": {
+    "status": "disabled",
+    "description": "A transparent reverse-proxy entry can be inserted at 127.0.0.1:18090 (Certify) and 127.0.0.1:18081 (Verify) without changing issuer identifiers, redirect URIs or signed protocol values. No proxy is active until Person 1's capture contract passes leakage tests."
+  },
+  "connectedJsonld": {
+    "startCommand": "pnpm start:local-full",
+    "demoCommand": "pnpm demo:web-jsonld",
+    "projects": [
+      "mosip-mobile-a2",
+      "mosip-local-inji",
+      "mosip-web-local"
+    ],
+    "certifyVersion": "0.14.0",
+    "certifyDigest": "sha256:f6686f55f5202815ff691a11bbaa7d1ce5bab4e5b8feaeeda0e33d6bba6bd00b",
+    "credentialFormat": "ldp_vc",
+    "verifierDid": "did:web:local.test:verify",
+    "directPostUrl": "https://local.test/v1/verify/vp-submission/direct-post",
+    "bridgeOrigin": "http://127.0.0.1:18096",
+    "internalTlsOrigin": "https://local.test",
+    "evidence": "submission/evidence/2026-10-26-local-web-jsonld/README.md",
+    "limits": [
+      "Synthetic authorization fixture bypasses initial IAR ceremony",
+      "Explicit DID assertionMethod adapter",
+      "Direct browser harness has no BFF run ID",
+      "Public contexts require network access"
+    ],
+    "exclusiveWith": "alpha SD-JWT reference/mobile profile; same Certify service is reconfigured"
+  }
+}

@@ -29,7 +29,10 @@
     "typecheck": "pnpm --filter @playground/shared --filter @playground/mock-issuer --filter @playground/mock-verifier build && pnpm -r typecheck",
     "test": "pnpm --filter @playground/shared --filter @playground/mock-issuer --filter @playground/mock-verifier build && node --test spikes/*.test.mjs scripts/*.test.mjs && pnpm -r test",
     "spike:contracts": "node spikes/collab-contract-spike.mjs",
-    "spike:wallet": "node spikes/collab-reference-wallet.mjs"
+    "spike:wallet": "node spikes/collab-reference-wallet.mjs",
+    "start:local-full": "bash scripts/start-local-full.sh",
+    "stop:local-full": "bash scripts/start-local-full.sh down",
+    "smoke:local-full": "node scripts/smoke-local-full.mjs"
   },
   "engines": {
     "node": ">=20"
