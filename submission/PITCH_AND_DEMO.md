@@ -1,15 +1,15 @@
 # Pitch and demo outline
 
-This is a script and slide outline, **not** the required finished deck or video. Update it to match the final tested commit and deployment.
+The [editable six-slide deck](pitch/Interoperability_Playground_Pitch.pptx) covers the problem, role flow, managed A1 run, Android/Web checkpoints, technical stack, audience and impact. Its speaker notes record evidence sources and limits. The video remains to be recorded against the final tested commit and deployment.
 
-## Six-slide pitch
+## Six-slide pitch structure
 
-1. **Problem:** Standards-compliant components can still fail together because of draft versions, formats, proof binding, and trust choices. Manual checks are hard to repeat.
-2. **Solution:** Pick an issuer, wallet, verifier, and format; run the journey and inspect each protocol boundary and result.
-3. **Architecture:** Use [ARCHITECTURE.md](ARCHITECTURE.md). Point out role adapters, redaction before storage, and the difference between the Reference Wallet and an Inji wallet.
-4. **Live product:** Show one scenario, timeline, safe inspector, negative replay, report, and evidence-tier matrix.
-5. **Validation:** Show the dated 339-test full checkpoint, three Chromium checks and clean six-case hosted mock matrix from [TEST_EVIDENCE.md](TEST_EVIDENCE.md). Separately show the [fresh managed Web A1 run](evidence/person2-managed-a1-2026-10-25/README.md) and recorded Android hybrid acceptance, with each one's evidence limits.
-6. **Impact and next step:** Faster integration diagnosis, reusable test cases and safe evidence handling. State remaining managed-Web and deployment-rehearsal limits plainly.
+1. **Title:** State the product and its purpose.
+2. **Problem:** A credential may issue successfully while another wallet or verifier fails later in the journey.
+3. **Architecture:** Explain issuer, wallet and verifier roles, plus the React/Express/PostgreSQL evidence path and write-time redaction. The automated Reference Wallet and observed Inji wallets have distinct evidence.
+4. **Managed run:** Show the original A1 run ID, ten succeeded steps and seven sanitized exchanges. The committed run is available read-only in a fresh demo.
+5. **Real wallets:** Show the dated Inji Web JSON-LD and Android SD-JWT observations with their separate deployment limits.
+6. **Audience and quality:** Explain the value for MOSIP integrators and QA teams; cite the six-case mock demo and current 204 BFF / 60 web passing tests.
 
 ## Suggested 3–4 minute video
 
@@ -22,4 +22,4 @@ This is a script and slide outline, **not** the required finished deck or video.
 | 2:35–3:15 | Report and matrix | Show format, versions, outcome, and evidence tier. The matrix keeps fixture and live evidence separate. |
 | 3:15–3:45 | Architecture and limitations | State that the managed Web run passed for its recorded profile, Android has a separate observed hybrid acceptance, and browser capture cannot see Mimoto server-side calls. The complete local Inji bundle remains open. |
 
-Record at a fixed browser size, use only synthetic test data, rehearse once without cuts, and keep a backup recording. The team should make the final slide deck and video accessible through the cloud link submitted to MOSIP.
+Record at a fixed browser size, use only synthetic test data, rehearse once without cuts, and keep a backup recording. Upload the deck and video to the reviewer-accessible cloud folder submitted to MOSIP.
