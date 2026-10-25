@@ -18,7 +18,7 @@ This folder is the submission handoff. Refresh statuses and links before sending
 | Complete source code | Present | [GitHub repository](https://github.com/oki-dokii/mosip), currently on `main`; verify judges can access the final URL | Yes, final access check |
 | Working prototype/demo | Working; final human rehearsal open | [25 October local six-case Compose demo](evidence/2026-10-25-local-demo.md) passed and exposes the labelled, read-only managed A1 archive; hosted browser and Compose CI also passed. Rehearse on another machine | Yes, independent-machine rehearsal and final team review of A1 |
 | Pitch slide deck | Draft ready for team review | [Editable six-slide deck](pitch/Interoperability_Playground_Pitch.pptx) covers the required story and cites recorded evidence in speaker notes; confirm team name and export a PDF backup if needed | Yes |
-| 2–5 minute video demo | Missing | Record the actual UI and verifier outcome using the script; check audio and playback | Yes, after a stable demo environment is ready |
+| 2–5 minute video demo | Silent draft ready | [2:07 synthetic-only walkthrough](pitch/VIDEO_README.md) covers a fresh mock run, archived A1, matrix and gaps; add human narration and verify final playback | Yes, voiceover and review |
 | Installation instructions | Prepared, needs independent-machine rehearsal | [README.md](../README.md) and [DEPLOYMENT.md](../DEPLOYMENT.md) cover startup. A [fresh clone on this Mac](CLEAN_CHECKOUT_REHEARSAL.md) passed install, test, build and audit; hosted clean-checkout Docker smoke passed. Another human/host should follow the guide | Yes |
 | API documentation | Updated | [API_REFERENCE.md](API_REFERENCE.md) includes assisted routes, capture coverage and supported matrix cells | Yes, final review |
 | Git version history | Present | The merged `main` history preserves commits under four contributor identities; do not squash or rewrite it | Yes, final access check |
@@ -48,7 +48,7 @@ This folder is the submission handoff. Refresh statuses and links before sending
 
 ## Final handoff outside Git
 
-- Put the [draft deck](pitch/Interoperability_Playground_Pitch.pptx), final video, any design images, and safe test-case exports in cloud storage with reviewer access. **No video or final cloud URL is present in this repository yet.** Keep credentials, private keys, OTPs, real HAR files, and student IDs out of the public repository and demo recording.
+- Put the [draft deck](pitch/Interoperability_Playground_Pitch.pptx), [silent video draft](pitch/VIDEO_README.md) after adding voiceover, any design images, and safe test-case exports in cloud storage with reviewer access. **No final narrated video or cloud URL is present in this repository yet.** Keep credentials, private keys, OTPs, real HAR files, and student IDs out of the public repository and demo recording.
 - Confirm repository and cloud links in a private/incognito browser.
 - The team sends the final email to `decode@mosip.io` with team name, problem statement, and URLs. This folder is preparation; it does not send or submit anything.
 
@@ -58,7 +58,7 @@ This folder is the submission handoff. Refresh statuses and links before sending
 | Problem statement | Interoperability Playground for Verifiable Credentials |
 | Source repository URL | [oki-dokii/mosip](https://github.com/oki-dokii/mosip); verify public reviewer access at submission time |
 | Working prototype/demo URL or reproducible install | README and Docker mock demo documented; final demo URL/rehearsal not recorded |
-| Deck PDF and video URL | Editable deck committed; PDF backup and video missing; upload to reviewer-accessible cloud folder |
+| Deck PDF and video URL | Editable deck and silent video draft committed; PDF backup, final narration and cloud URL pending |
 | Optional mockups, test exports, architecture images | Repository sources exist; link selected exports from the cloud folder if required |
 | Individual college IDs | Each student submits privately through the required channel; never add them to this public package |
 | Official deadline and final email sent | Unconfirmed; team must verify and retain the sent email |

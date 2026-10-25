@@ -8,7 +8,7 @@ This is a **test playground**, not a production identity provider or wallet. It 
 
 The web app includes an evidence-linked gap explorer. The [feature parity roadmap](FEATURE_PARITY_ROADMAP.md) identifies meaningful additions to pursue after the current validated flows, with explicit proof required for every live claim.
 For a single-developer finish, use the [ordered remaining-work handoff](SINGLE_OWNER_HANDOFF.md).
-The [editable pitch deck](submission/pitch/Interoperability_Playground_Pitch.pptx) summarizes the problem, prototype and recorded evidence for review; the demo video remains to be recorded.
+The [editable pitch deck](submission/pitch/Interoperability_Playground_Pitch.pptx) summarizes the problem, prototype and recorded evidence for review. A [2:07 silent demo draft](submission/pitch/VIDEO_README.md) is ready for voiceover and final review.
 
 For the implemented official local-Certify mobile setup, use `pnpm mobile:inji` and follow [the mobile runbook](deploy/MOBILE_INJI.md). Its official-Certify → Reference Wallet → Collab Verify control passed; it does not establish phone acceptance.
 
