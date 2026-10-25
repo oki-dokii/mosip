@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-25T21:52:42.018Z",
+  "sourceCommit": "77d7d10ec276deec06ae7d1553bd10947f2e934f",
+  "sourceTreeCleanAtFinalRun": true,
+  "evidenceTier": "local_official_inji_web_with_synthetic_authorization_and_did_adapter",
+  "components": [
+    {
+      "role": "certify",
+      "version": "0.14.0",
+      "configuredImage": "injistack/inji-certify-with-plugins:0.14.0@sha256:f6686f55f5202815ff691a11bbaa7d1ce5bab4e5b8feaeeda0e33d6bba6bd00b",
+      "runningImageId": "sha256:f6686f55f5202815ff691a11bbaa7d1ce5bab4e5b8feaeeda0e33d6bba6bd00b"
+    },
+    {
+      "role": "inji_web",
+      "version": "0.17.0",
+      "configuredImage": "injistack/inji-web:0.17.0@sha256:62ca25a6c2f5c3d61edfed1e43e52885f1bcf1229b3a3ffb89c117245f839719",
+      "runningImageId": "sha256:62ca25a6c2f5c3d61edfed1e43e52885f1bcf1229b3a3ffb89c117245f839719"
+    },
+    {
+      "role": "mimoto",
+      "version": "0.22.0",
+      "configuredImage": "injistack/mimoto:0.22.0@sha256:89fc81eeb8c911c8a9944e4071d8f3e8f287d3de697c4461f2b3a2e8ce29858e",
+      "runningImageId": "sha256:89fc81eeb8c911c8a9944e4071d8f3e8f287d3de697c4461f2b3a2e8ce29858e"
+    },
+    {
+      "role": "verify",
+      "version": "0.18.2",
+      "configuredImage": "injistack/inji-verify-service:0.18.2@sha256:2ed468e7e1f1ce317a41476dd131f4ce8f081b0f055a080c95e99a92cc192bdd",
+      "runningImageId": "sha256:2ed468e7e1f1ce317a41476dd131f4ce8f081b0f055a080c95e99a92cc192bdd"
+    },
+    {
+      "role": "synthetic_bridge",
+      "version": "project",
+      "configuredImage": "mosip-web-local-local-issuer-bridge",
+      "runningImageId": "sha256:6330f229c94d58e5fa9d3517f1e4407f4949aeeb067ad71cba7aca351e0a480e"
+    }
+  ],
+  "playgroundRunId": null,
+  "validation": {
+    "finalCommands": [
+      "node scripts/check-inji-web-jsonld.mjs",
+      "node scripts/check-inji-web-presentation.mjs"
+    ],
+    "fullRestartRehearsal": {
+      "command": "bash scripts/demo-inji-web-jsonld.sh",
+      "result": "LOCAL INJI WEB JSON-LD DEMO PASS",
+      "scope": "Same development machine, before implementation commit; not a clean-machine installation"
+    },
+    "scriptRegressionTests": {
+      "passed": 13,
+      "failed": 0
+    },
+    "secretAudit": {
+      "status": "passed_after_export",
+      "filesChecked": 401
+    },
+    "shellAndJavaScriptSyntax": "passed"
+  },
+  "boundaries": {
+    "productBinariesPatched": false,
+    "syntheticIdentity": true,
+    "syntheticIarSessionSeed": true,
+    "completeIarAuthorizationValidated": false,
+    "realEsignetAuthenticationValidated": false,
+    "publicDidAssertionMethodAdapted": true,
+    "subjectKeyUriNormalizedByIssuerTemplate": true,
+    "signedProtocolArtifactsRewritten": false,
+    "externalPublicContextResolution": true,
+    "managedBffRunCreated": false,
+    "independentMachineRehearsal": false,
+    "rawCredentialsTokensStatesCookiesKeysOrSessionHarExported": false
+  }
+}

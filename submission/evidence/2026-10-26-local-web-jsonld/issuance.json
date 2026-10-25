@@ -1,0 +1,63 @@
+{
+  "observedAt": "2026-10-25T21:51:14.159Z",
+  "issuerVersion": "0.14.0",
+  "walletVersion": "0.17.0",
+  "mimotoVersion": "0.22.0",
+  "result": "LOCAL_WEB_JSONLD_ISSUANCE_API_OK",
+  "stage": "issuance",
+  "walletApiStatuses": [
+    {
+      "method": "POST",
+      "path": "/v1/mimoto/wallets/{id}/credentials",
+      "status": 200
+    }
+  ],
+  "routeStatuses": [
+    {
+      "method": "GET",
+      "path": "/v1/mimoto/v2/issuers",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/mimoto/v2/issuers/LocalFarmer",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/mimoto/issuers/LocalFarmer/configuration",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/mimoto/v2/issuers/LocalFarmer",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/mimoto/issuers/LocalFarmer/configuration",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/v1/mimoto/wallets/{id}/credentials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/mimoto/wallets/{id}/credentials",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/mimoto/wallets/{id}/credentials",
+      "status": 200
+    }
+  ],
+  "uiFailureVisible": false,
+  "currentPath": "/user/credentials",
+  "storedAfterReload": true,
+  "issuedCredentialCorrelated": true,
+  "presentationObserved": false,
+  "verifierValid": false
+}

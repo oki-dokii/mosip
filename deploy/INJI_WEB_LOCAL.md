@@ -74,6 +74,21 @@ sequenceDiagram
 
 The connected overlay files are [wallet/DID networking](docker-compose.web-jsonld.yml), [Certify release selection](docker-compose.certify-web-jsonld.yml), and [Verify DID/TLS configuration](docker-compose.verify-web-jsonld.yml). The bridge's independently locked `pg` dependency is installed during its container build. Generated credentials, TLS keys, keystores, synthetic identity data and private correlation records remain outside Git.
 
+### Internal fixture endpoints
+
+These are local test interfaces, not production authentication APIs. `authorize` permits only the fixed client, redirect, synthetic scope and S256 PKCE; `token` requires its one-use code, verifier, client and redirect. Errors contain stable codes and never echo request bodies.
+
+| Interface | Purpose |
+| --- | --- |
+| `GET http://127.0.0.1:18096/.well-known/oauth-authorization-server` | Advertise the fixture's authorization-code endpoints to Mimoto. |
+| `GET http://127.0.0.1:18096/authorize` | Validate fixed OAuth parameters, seed the isolated synthetic session and return the browser's original state with a fresh code. |
+| `POST http://127.0.0.1:18096/token` | Validate form-encoded PKCE/code binding; exchange with official Certify and return its genuine token and nonce. |
+| Mimoto namespace `http://127.0.0.1:18090/…` | Allowlisted Certify metadata/credential proxy; the same port on the host reaches official Certify directly. |
+| Docker-only `GET https://local.test/.well-known/did.json` | Issuer public DID document with the declared assertion relationship correction. |
+| Docker-only `GET https://local.test/verify/did.json` | Official Verify's public DID document and signing key. |
+| Docker-only `GET https://local.test/v1/verify/vp-request/{id}` | Forward the official signed request unchanged. |
+| Docker-only `POST https://local.test/v1/verify/vp-submission/direct-post` | Forward the wallet's presentation unchanged to official Verify. |
+
 ## Original login-only shell
 
 The shell runs official Inji Web 0.17.0 + Mimoto 0.22.0, an isolated PostgreSQL database and the synthetic identity provider. Its empty issuer catalog is intentional; use the connected command above for issuance and presentation.

@@ -1,0 +1,45 @@
+{
+  "observedAt": "2026-10-25T21:51:25.063Z",
+  "issuerVersion": "0.14.0",
+  "walletVersion": "0.17.0",
+  "mimotoVersion": "0.22.0",
+  "verifierVersion": "0.18.2",
+  "result": "LOCAL_WEB_JSONLD_VERIFY_VALID",
+  "routeStatuses": [
+    {
+      "method": "POST",
+      "path": "/v1/mimoto/wallets/{id}/presentations",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/mimoto/wallets/{id}/presentations/{id}/credentials",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/mimoto/wallets/{id}/presentations/{id}",
+      "status": 200
+    }
+  ],
+  "submissionStatus": 200,
+  "verifierStatus": 200,
+  "verifierValid": true,
+  "verifierDetails": {
+    "resultKeys": [
+      "transactionId",
+      "allChecksSuccessful",
+      "credentialResults"
+    ],
+    "credentialResults": 1,
+    "credentialProofValid": true,
+    "holderProofValid": true,
+    "holderErrorCode": "none",
+    "credentialErrorCode": "none"
+  },
+  "walletMatchesIssuance": true,
+  "selectedCredentialMatchesIssuance": true,
+  "signedRequestAccepted": true,
+  "requestEnvelope": "signed_jwt_by_value_with_client_id",
+  "errorModalVisible": false
+}

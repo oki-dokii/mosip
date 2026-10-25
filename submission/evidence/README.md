@@ -1,5 +1,9 @@
 # Fresh synthetic live evidence — 2026-10-21
 
+## Connected local Web wallet — 26 October 2026
+
+[The local JSON-LD bundle](2026-10-26-local-web-jsonld/README.md) records official Certify 0.14.0 → actual official Inji Web/Mimoto wallet → local official Verify 0.18.2, with exact-card reload persistence, same-wallet consent/presentation and Valid with both proofs true. It uses a synthetic authorization fixture and explicit DID adapter. The direct browser harness is separate from managed BFF capture, hosted A1 and clean-machine evidence.
+
 The [23 October aggregate report](2026-10-23-aggregate-interop.md) projects metadata from these two public Collab Verify reports and the separately labeled [clean hosted six-case mock matrix](2026-10-23-ci-mock-matrix.json). It marks missing full-record and real-wallet combinations `not_tested`; it is a compiled report, not a fresh protocol run. Regenerate it with `node scripts/build-aggregate-report.mjs` from the repository root and check it with `node scripts/build-aggregate-report.mjs --check`.
 
 These are **actual exported BFF run reports**, not manually reconstructed outcomes. Both runs used source commit `ec1cbbd` on `main`, `PLAYGROUND_DRIVER_MODE=collab`, an ephemeral self-signed X.509 mock issuer (`mock-x509-1`), Reference Wallet `reference-wallet/0.1.0`, and the public Collab Inji Verify deployment (release label `unreported`). Run IDs are from temporary memory storage and are not persistent web links. The key and certificate were generated in a temporary directory by `pnpm dev:x509-mock` and removed when the process stopped.
