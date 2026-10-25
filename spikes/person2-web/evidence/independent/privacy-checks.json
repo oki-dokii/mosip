@@ -1,0 +1,8 @@
+{
+  "source": "independent_artifact_audit",
+  "result": "passed",
+  "check": "exact_metadata_keys_and_bounded_values",
+  "filesChecked": 2,
+  "manualScreenReader": "not_tested",
+  "physicalDevice": "not_tested"
+}

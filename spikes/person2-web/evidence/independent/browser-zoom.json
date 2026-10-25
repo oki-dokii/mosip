@@ -1,0 +1,30 @@
+{
+  "source": "isolated_synthetic_chromium",
+  "check": "browser_tabs_setZoom_not_css_zoom_or_pinch",
+  "browserVersion": "141.0.7390.37",
+  "baseline": {
+    "width": 1440,
+    "dpr": 1
+  },
+  "result": "passed",
+  "measurements": [
+    {
+      "factor": 2,
+      "observedZoom": 2,
+      "devicePixelRatio": 2,
+      "cssViewportWidth": 720,
+      "pageWidth": 720,
+      "filterAndKeyboardChecks": "passed"
+    },
+    {
+      "factor": 4,
+      "observedZoom": 4,
+      "devicePixelRatio": 4,
+      "cssViewportWidth": 360,
+      "pageWidth": 360,
+      "filterAndKeyboardChecks": "passed"
+    }
+  ],
+  "manualScreenReader": "not_tested",
+  "physicalDevice": "not_tested"
+}
