@@ -1,5 +1,9 @@
 # Remaining work: single-developer handoff
 
+## 26 October connected local JSON-LD checkpoint
+
+The [connected local profile](../deploy/INJI_WEB_LOCAL.md) now issues through official Certify 0.14.0 into the real Web/Mimoto wallet, confirms the exact card after reload, presents it from the same wallet and receives local Verify Valid with both proof flags true. Run `pnpm demo:web-jsonld`; [evidence](../submission/evidence/2026-10-26-local-web-jsonld/README.md) records synthetic authorization and DID adapter boundaries. The empty-catalogue blocker below is historical. Remaining work includes independent-machine rehearsal and connecting this direct local browser flow to managed BFF capture; hosted A1 remains a separate record.
+
 ## 25 October local Web wallet checkpoint
 
 The opt-in [pinned local Inji Web/Mimoto profile](../deploy/INJI_WEB_LOCAL.md) now starts with `pnpm stage:web-local`. A synthetic OAuth2 login created a persistent wallet; `pnpm check:web-local` unlocked it in two fresh browser sessions, including after a container restart. This is a local **wallet-shell pass**, not a local issuer → wallet → verifier pass: the issuer catalog is empty, no local credential has been stored or presented, and Mimoto's aggregate HSM health retains a missing external KERNEL alias warning. The next technical step under order 2 is to connect a local JSON-LD issuer and Verify request and capture a correlated `valid` result.

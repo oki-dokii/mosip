@@ -117,8 +117,28 @@ async function main() {
   assert(!properties.includes('collab.mosip.net'), 'REMOTE_COLLAB_URL_REMAINS');
   await writeFile(join(runtime, 'mimoto-default.properties'), properties, { mode: 0o600 });
   await writeFile(join(runtime, 'mimoto-bootstrap.properties'), await pinnedFile('mimoto-bootstrap.properties'), { mode: 0o600 });
-  await writeFile(join(runtime, 'mimoto-issuers-config.json'), JSON.stringify({ issuers: [] }) + '\n', { mode: 0o600 });
-  await writeFile(join(runtime, 'mimoto-trusted-verifiers.json'), JSON.stringify({ verifiers: [] }) + '\n', { mode: 0o600 });
+  const localJsonLd = process.env.LOCAL_WEB_JSONLD_ENABLED === 'true';
+  const issuers = localJsonLd ? [{
+    issuer_id: 'LocalFarmer', protocol: 'OpenId4VCI',
+    display: [{ name: 'Playground Synthetic Farmer', title: 'Synthetic Farmer Credential',
+      description: 'Locally issued test credential', language: 'en',
+      logo: { url: 'http://127.0.0.1:18093/favicon.ico', alt_text: 'Synthetic issuer' } }],
+    client_id: 'local-jsonld-web', client_alias: 'local-synthetic',
+    token_endpoint: 'http://127.0.0.1:18093/v1/mimoto/get-token/LocalFarmer',
+    qr_code_type: 'EmbeddedVC', enabled: 'true',
+    credential_issuer_host: 'http://127.0.0.1:18090',
+    wellknown_endpoint: 'http://127.0.0.1:18090/.well-known/openid-credential-issuer',
+    redirect_uri: 'http://127.0.0.1:18093/redirect',
+    authorization_audience: 'http://127.0.0.1:18096/token',
+    proxy_token_endpoint: 'http://127.0.0.1:18096/token',
+    credential_issuer: 'LocalFarmer',
+  }] : [];
+  const verifiers = localJsonLd ? [{ client_id: 'did:web:local.test:verify',
+    redirect_uris: ['http://127.0.0.1:18081/'],
+    response_uris: ['http://127.0.0.1:18081/v1/verify/vp-submission/direct-post'],
+  }] : [];
+  await writeFile(join(runtime, 'mimoto-issuers-config.json'), JSON.stringify({ issuers }) + '\n', { mode: 0o600 });
+  await writeFile(join(runtime, 'mimoto-trusted-verifiers.json'), JSON.stringify({ verifiers }) + '\n', { mode: 0o600 });
   console.log(`Prepared pinned synthetic Mimoto/Web startup files in ${runtime}`);
   console.log(`Compose environment: ${join(runtime, 'wallet.env')}`);
 }

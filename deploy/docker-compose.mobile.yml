@@ -28,6 +28,7 @@ services:
       JAVA_TOOL_OPTIONS: -Xms128m -Xmx768m -XX:MaxMetaspaceSize=256m
     volumes:
       - ${MOBILE_RUNTIME_DIR:?}/certify-default.properties:/home/mosip/config/certify-default.properties:ro
+      - ${MOBILE_RUNTIME_DIR:?}/synthetic-farmer.csv:/home/mosip/config/synthetic-farmer.csv:ro
       - ${MOBILE_RUNTIME_DIR:?}/keys:/home/mosip/CERTIFY_PKCS12
       - ${MOBILE_RUNTIME_DIR:?}/verifier.p12:/home/mosip/verifier.p12:ro
     ports:

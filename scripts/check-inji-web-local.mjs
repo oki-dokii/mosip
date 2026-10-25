@@ -68,10 +68,12 @@ async function main() {
     const first = await warmupJourney(browser, pin);
     const second = await warmupJourney(browser, pin);
     if (second.login !== 'existing_synthetic_wallet') throw new Error('WALLET_NOT_PERSISTED');
+    const catalog = await fetch(origin + '/v1/mimoto/issuers', { signal: AbortSignal.timeout(5000) });
+    const catalogConfigured = catalog.ok && JSON.stringify(await catalog.json()).includes('LocalFarmer');
     console.log(JSON.stringify({
       observedAt: new Date().toISOString(), profile: 'local_official_inji_web_mimoto_synthetic_idp',
       first, freshBrowserSession: second, result: 'LOCAL_WEB_WALLET_PASS',
-      issuerCatalogConfigured: false, credentialIssuanceObserved: false, presentationObserved: false,
+      issuerCatalogConfigured: catalogConfigured, credentialIssuanceObserved: false, presentationObserved: false,
     }, null, 2));
   } finally { await browser.close(); }
 }

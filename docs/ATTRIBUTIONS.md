@@ -18,9 +18,10 @@ The table records **direct runtime dependencies** and license identifiers from t
 | jsonld and jsonld-signatures | JSON-LD processing and proofs | BSD-3-Clause |
 | Zod | Shared runtime schemas | MIT |
 | Digital Bazaar Ed25519 Signature 2020 and Verification Key 2020 | JSON-LD proof support | BSD-3-Clause |
+| pg 8.16.3 | Local-only synthetic authorization fixture's PostgreSQL access; independently locked under `deploy/local-issuer-bridge/` | MIT |
 
 The project also uses development-only tooling (TypeScript, Vitest, Tailwind, PostCSS, tsx, and Prisma CLI). On 2026-10-23, a local installed-package inventory found **382 unique package/version pairs** under pnpm's virtual store on macOS arm64: 322 MIT, 17 ISC, 19 Apache-2.0, 16 BSD-3-Clause, 3 BSD-2-Clause, and one each of MIT-0, CC-BY-4.0, MPL-2.0, and `(MIT OR CC0-1.0)`. One package, `xmlhttprequest-ssl@2.1.2`, omits `license` metadata but includes an MIT-style `LICENSE` file, which was inspected. The local `pnpm licenses list --json` command still fails because its store lacks a package index file. This manual inventory is platform-specific and does not certify every transitive notice or container-base-image license; include required license texts and notices if redistributing binaries/images.
 
-The web app contains no vendored image or font files. Its icons come from Lucide React. The four committed Person 2 PNGs are synthetic screenshots captured from this app by the browser tests; no third-party UI image is bundled. The repository secret audit does not inspect binary image contents, so review any new image before publication.
+The web app contains no vendored image or font files. Its icons come from Lucide React. Person 2's playground PNGs and the local wallet evidence screenshots contain synthetic data. The latter show official Inji Web's UI and are attributed to the [Inji Web project](https://github.com/inji/inji-web/tree/v0.17.0); that interface is not bundled into our web app. The repository secret audit does not inspect binary image contents, so new images are reviewed before publication.
 
 Comparable interoperability projects informed the scenario and adapter approach; see [the research table](NEXT_STEPS_4_PERSON_PLAN.md#research-worth-using). No code, test keys, or UI layout was copied from those repositories.

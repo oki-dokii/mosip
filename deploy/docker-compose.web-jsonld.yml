@@ -1,0 +1,45 @@
+# Opt-in bridge between the separate pinned Certify/Verify and Web/Mimoto projects.
+# The bridge shares Mimoto's network namespace so canonical 127.0.0.1 URLs
+# advertised to the browser also resolve correctly for Mimoto server calls.
+services:
+  mimoto-service:
+    restart: on-failure
+    extra_hosts:
+      - local.test:127.0.0.1
+    environment:
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx640m -Djavax.net.ssl.trustStore=/home/mosip/certs/local-truststore -Djavax.net.ssl.trustStorePassword=changeit
+    volumes:
+      - ${MIMOTO_RUNTIME_DIR:?}/local-truststore:/home/mosip/certs/local-truststore:ro
+    ports:
+      - 127.0.0.1:18096:18096
+    networks:
+      default: {}
+      certify-network: {}
+      verify-network:
+        aliases:
+          - local.test
+
+  local-issuer-bridge:
+    build:
+      context: ./local-issuer-bridge
+    network_mode: service:mimoto-service
+    user: "0:0"
+    environment:
+      LOCAL_CERTIFY_DB_PASSWORD: ${MOBILE_DB_PASSWORD:?Run the local Certify setup first}
+      LOCAL_CERTIFY_VERSION: '0.14.0'
+    volumes:
+      - ../scripts/local-web-issuer-bridge.mjs:/app/local-web-issuer-bridge.mjs:ro
+      - ${MIMOTO_RUNTIME_DIR:?}/localhost.key:/app/tls/localhost.key:ro
+      - ${MIMOTO_RUNTIME_DIR:?}/localhost.crt:/app/tls/localhost.crt:ro
+    depends_on:
+      mimoto-service:
+        condition: service_started
+    mem_limit: 128m
+
+networks:
+  certify-network:
+    external: true
+    name: mosip-mobile-a2_default
+  verify-network:
+    external: true
+    name: mosip-local-inji_default

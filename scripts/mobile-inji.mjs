@@ -117,8 +117,9 @@ async function configure(issuer) {
   const seed = `\nINSERT INTO certify.credential_config
     (credential_config_key_id, config_id, status, vc_template, sd_jwt_vct, credential_format, did_url, key_manager_app_id, key_manager_ref_id, signature_algo, display, display_order, scope, cryptographic_binding_methods_supported, credential_signing_alg_values_supported, proof_types_supported, sd_claim, sd_jwt_claims, cr_dtimes)
     VALUES (${sql(configId)}, 'a2-mobile-identity', 'active', ${sql(template)}, ${sql(configId)}, 'dc+sd-jwt', ${sql('did:web:' + hostname)}, 'CERTIFY_VC_SIGN_RSA', '', 'RS256', ${sql(display)}::jsonb, ARRAY['given_name','family_name'], 'playground_identity_sdjwt', ARRAY['did:jwk'], ARRAY['RS256'], '{"jwt":{"proof_signing_alg_values_supported":["EdDSA"]}}'::jsonb, '$.given_name,$.family_name', ${sql(JSON.stringify(claims))}::jsonb, NOW())
-    ON CONFLICT (credential_config_key_id) DO UPDATE SET vc_template=EXCLUDED.vc_template, did_url=EXCLUDED.did_url, proof_types_supported=EXCLUDED.proof_types_supported;\n`;
+    ON CONFLICT (credential_config_key_id) DO UPDATE SET vc_template=EXCLUDED.vc_template, did_url=EXCLUDED.did_url, proof_types_supported=EXCLUDED.proof_types_supported, status=EXCLUDED.status, sd_jwt_claims=EXCLUDED.sd_jwt_claims;\n`;
   await save('database-init.sql', bootstrap + seed); await save('credential-seed.sql', seed);
+  await save('synthetic-farmer.csv', 'id,fullName,farmerID,validFrom,validUntil\nSYNTHETIC-001,Ada Example,SYNTHETIC-001,2026-10-25T00:00:00Z,2027-10-25T00:00:00Z\n');
   const overrides = {
     'spring.cloud.config.enabled': 'false', 'spring.cloud.bootstrap.enabled': 'false',
     'server.port': '8090', 'mosip.certify.domain.url': issuer, 'mosip.certify.identifier': issuer,

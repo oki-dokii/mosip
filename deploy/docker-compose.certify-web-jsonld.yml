@@ -1,0 +1,5 @@
+# JSON-LD wallet profile: this official release accepts Mimoto's Ed25519 proof.
+# The default mobile/SD-JWT profile retains its separate alpha image pin.
+services:
+  mobile-certify:
+    image: injistack/inji-certify-with-plugins:0.14.0@sha256:f6686f55f5202815ff691a11bbaa7d1ce5bab4e5b8feaeeda0e33d6bba6bd00b

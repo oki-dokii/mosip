@@ -1,10 +1,10 @@
 # Remaining technical work: four owners
 
-Updated 2026-10-25. This assigns the improvement list supplied by the team. It excludes the deck, video, judge guide, submission logistics, and final publication audit. It does not turn proposed features or another team's results into evidence for this project.
+Updated 2026-10-26. This assigns the improvement list supplied by the team. It excludes the deck, video, judge guide, submission logistics, and final publication audit. It does not turn proposed features or another team's results into evidence for this project.
 
 ## Starting point
 
-- The local official Certify → reference holder → Verify SD-JWT path works. The separate pinned Web/Mimoto stack supports synthetic sign-in and wallet persistence, but its local issuer catalogue, issuance, and presentation are not yet proven end to end.
+- The local official Certify → reference holder → Verify SD-JWT path works. On 26 October, the connected local JSON-LD profile also passed exact-card issuance, reload, same-wallet presentation and Verify Valid with both proofs true. It uses official Certify 0.14.0, a synthetic authorization fixture and an explicit DID adapter; [runbook and boundaries](../deploy/INJI_WEB_LOCAL.md). The direct browser harness has no BFF run ID.
 - A hosted, playground-managed Inji Web JSON-LD journey and a hybrid Android journey have evidence. Neither proves an all-local wallet path.
 - The mock playground, capture/redaction pipeline, six-case mock matrix, CI, browser smoke, and some axe checks already exist. Extend them instead of rebuilding them.
 - Keep evidence tiers explicit: `mock`, `reference_wallet`, `inji_web`, `inji_mobile`, and `not_tested`. Record component versions as `unreported` when unavailable. Never store raw real-session HARs, credentials, OTPs, private keys, or student IDs.

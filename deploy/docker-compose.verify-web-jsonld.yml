@@ -1,0 +1,10 @@
+# Opt-in DID identifier that resolves through the local HTTPS bridge.
+services:
+  verify-service:
+    environment:
+      INJI_DID_VERIFY_URI: did:web:local.test:verify
+      INJI_DID_VERIFY_PUBLIC_KEY_URI: did:web:local.test:verify#key-0
+      INJI_VP_SUBMISSION_BASE_URL: https://local.test/v1/verify
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx768m -Djavax.net.ssl.trustStore=/home/mosip/local-truststore -Djavax.net.ssl.trustStorePassword=changeit
+    volumes:
+      - ${MIMOTO_RUNTIME_DIR:?Prepare local DID TLS first}/local-truststore:/home/mosip/local-truststore:ro
