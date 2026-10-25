@@ -1,7 +1,8 @@
 import { SupportedMatrix } from "./SupportedMatrix";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { RunSummary } from "@playground/shared";
 import { evidenceLabels, evidenceTier } from "@playground/shared/evidence";
+import { isRunId, versionsFor, type ArchiveLocation, type Filters } from "../lib/archiveLocation";
 import { Download } from "lucide-react";
 
 interface Props {
@@ -10,6 +11,9 @@ interface Props {
   active: "history" | "matrix";
   onActiveChange: (active: "history" | "matrix") => void;
   onSelectRun: (id: string) => void;
+  location: ArchiveLocation;
+  onLocationChange: (patch: Partial<ArchiveLocation>) => void;
+  shareHref: string;
 }
 
 function Outcome({ run }: { run: RunSummary }) {
@@ -17,18 +21,18 @@ function Outcome({ run }: { run: RunSummary }) {
   return <span className={`rounded-full px-2 py-1 text-[11px] font-bold ${success ? "bg-green-50 text-ok" : run.status === "running" || run.status === "pending" ? "bg-blue-50 text-issuer" : "bg-red-50 text-fail"}`}>{run.status}</span>;
 }
 
-export function RunArchive({ history, matrix, active, onActiveChange, onSelectRun }: Props) {
-  const [format, setFormat] = useState("");
-  const [status, setStatus] = useState("");
-  const [issuer, setIssuer] = useState("");
-  const [wallet, setWallet] = useState("");
-  const [verifier, setVerifier] = useState("");
-  const [issuerVersion, setIssuerVersion] = useState("");
-  const [verifierVersion, setVerifierVersion] = useState("");
-  const versions = useMemo(() => ({
-    issuer: [...new Set(history.map((run) => run.serviceVersions?.issuer).filter((value): value is string => Boolean(value)))].sort(),
-    verifier: [...new Set(history.map((run) => run.serviceVersions?.verifier).filter((value): value is string => Boolean(value)))].sort(),
-  }), [history]);
+export function RunArchive({ history, matrix, active, onActiveChange, onSelectRun, location, onLocationChange, shareHref }: Props) {
+  const { format, status, issuer, wallet, verifier, issuerVersion, verifierVersion } = location.filters;
+  const setFilter = (key: keyof Filters, value: string) => onLocationChange({ filters: { ...location.filters, [key]: value } });
+  const setFormat = (value: string) => setFilter("format", value);
+  const setStatus = (value: string) => setFilter("status", value);
+  const setIssuer = (value: string) => setFilter("issuer", value);
+  const setWallet = (value: string) => setFilter("wallet", value);
+  const setVerifier = (value: string) => setFilter("verifier", value);
+  const setIssuerVersion = (value: string) => setFilter("issuerVersion", value);
+  const setVerifierVersion = (value: string) => setFilter("verifierVersion", value);
+  const versions = useMemo(() => versionsFor([...history, ...matrix]), [history, matrix]);
+  const recorded = [...new Map([...history, ...matrix].filter(r => isRunId(r.id)).map(r => [r.id, r])).values()];
   const rows = useMemo(() => (active === "history" ? history : matrix).filter((run) =>
     (!format || run.config.format === format) &&
     (!status || run.status === status) &&
@@ -50,10 +54,14 @@ export function RunArchive({ history, matrix, active, onActiveChange, onSelectRu
         <select aria-label="Filter wallet" className={selectClass} value={wallet} onChange={(event) => setWallet(event.target.value)}><option value="">All wallets</option><option value="reference_wallet">Reference Wallet</option><option value="inji_web_assisted">Inji Web</option></select>
         <select aria-label="Filter verifier" className={selectClass} value={verifier} onChange={(event) => setVerifier(event.target.value)}><option value="">All verifiers</option><option value="inji_verify">Inji Verify</option><option value="mock_verifier">Mock verifier</option></select>
         <select aria-label="Filter format" className={selectClass} value={format} onChange={(event) => setFormat(event.target.value)}><option value="">All formats</option><option value="ldp_vc">JSON-LD VC</option><option value="vc_sd_jwt">SD-JWT VC</option></select>
-        <select aria-label="Filter status" className={selectClass} value={status} onChange={(event) => setStatus(event.target.value)}><option value="">All outcomes</option><option value="passed">Passed</option><option value="failed">Mismatch</option><option value="errored">Error</option></select>
+        <select aria-label="Filter status" className={selectClass} value={status} onChange={(event) => setStatus(event.target.value)}><option value="">All outcomes</option><option value="passed">Passed</option><option value="failed">Mismatch</option><option value="errored">Error</option><option value="pending">Pending</option><option value="running">Running</option><option value="cancelled">Cancelled</option></select>
         <select aria-label="Filter issuer version" className={selectClass} value={issuerVersion} onChange={(event) => setIssuerVersion(event.target.value)}><option value="">All issuer versions</option>{versions.issuer.map((version) => <option key={version} value={version}>{version}</option>)}</select>
         <select aria-label="Filter verifier version" className={selectClass} value={verifierVersion} onChange={(event) => setVerifierVersion(event.target.value)}><option value="">All verifier versions</option>{versions.verifier.map((version) => <option key={version} value={version}>{version}</option>)}</select>
         <span className="ml-auto self-center text-xs text-slate-500">{rows.length} runs</span>
+      </div>
+      <div className="flex flex-wrap items-center gap-3 border-b p-4">
+        {(["compareA", "compareB"] as const).map((key, i) => <label key={key}>Run {i === 0 ? "A" : "B"} <select aria-label={`Compare run ${i === 0 ? "A" : "B"}`} className={selectClass} value={location[key]} onChange={event => onLocationChange({ [key]: event.target.value })}><option value="">Select recorded run</option>{location[key] && !recorded.some(r => r.id === location[key]) && <option value={location[key]}>Linked run {location[key].slice(0, 8)}</option>}{recorded.map(r => <option key={r.id} value={r.id}>{r.id.slice(0, 8)} · {r.config.wallet} · {r.config.format} · {r.status}</option>)}</select></label>)}
+        <a className="underline" href={shareHref}>Share this view</a>
       </div>
       {active === "matrix" && <SupportedMatrix />}
       <div className="overflow-x-auto">

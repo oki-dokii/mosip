@@ -1,4 +1,5 @@
 import { PublicEvidence } from "./PublicEvidence";
+import { publicStructure } from "../lib/publicStructure";
 import type { Exchange } from "@playground/shared";
 import { ArrowRight, LockKeyhole } from "lucide-react";
 
@@ -24,7 +25,7 @@ export function Inspector({ exchange }: { exchange: Exchange | null }) {
           <section key={label} className="min-w-0 bg-[#111827] p-5">
             <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">{label}{exchange.redactions.length > 0 && <LockKeyhole size={13} className="text-amber-300" />}</h3>
             <PublicEvidence value={value} label={label} />
-            <details className="mt-4"><summary className="cursor-pointer">Sanitized JSON details</summary><pre className="overflow-auto whitespace-pre-wrap break-words font-mono text-xs leading-6 text-slate-200">{JSON.stringify(value, null, 2)}</pre></details>
+            <details className="mt-4"><summary className="cursor-pointer">Projected structure details</summary><pre className="overflow-auto whitespace-pre-wrap break-words font-mono text-xs leading-6 text-slate-200">{JSON.stringify(publicStructure(value), null, 2)}</pre></details>
           </section>
         ))}
       </div>

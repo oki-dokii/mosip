@@ -7,6 +7,8 @@ import { io } from "socket.io-client";
 import { Inspector } from "./components/Inspector";
 import { RoleSelector } from "./components/RoleSelector";
 import { RunTimeline } from "./components/RunTimeline";
+import { useArchiveLocation, versionsFor } from "./lib/archiveLocation";
+import { RunComparison } from "./components/RunComparison";
 import { RunArchive } from "./components/RunArchive";
 import { GapExplorer } from "./components/GapExplorer";
 import { SequenceView } from "./components/SequenceView";
@@ -41,7 +43,17 @@ export default function App() {
   const [scenarios, setScenarios] = useState<ScenarioDefinition[]>([]);
   const [driverMode, setDriverMode] = useState<"fixture" | "collab" | null>(null);
   const [config, setConfig] = useState<RunConfig>(initialConfig);
-  const [runId, setRunId] = useState<string | null>(null);
+  const [history, setHistory] = useState<RunSummary[]>([]);
+  const [matrix, setMatrix] = useState<RunSummary[]>([]);
+  const [archiveReady, setArchiveReady] = useState(false);
+  const [archiveError, setArchiveError] = useState(false);
+  const versions = useMemo(() => versionsFor([...history, ...matrix]), [history, matrix]);
+  const location = useArchiveLocation(versions, archiveReady);
+  const runId = location.state.run || null;
+  const setRunId = (id: string) => location.update({ run: id });
+  const archiveView = location.state.view;
+  const setArchiveView = (view: "history" | "matrix") => location.update({ view });
+  const [runError, setRunError] = useState(false);
   const activeRunId = useRef(runId);
   activeRunId.current = runId;
   const [run, setRun] = useState<RunSummary | null>(null);
@@ -53,25 +65,27 @@ export default function App() {
   const [assisted, setAssisted] = useState<ReturnType<typeof createAssistedFixture> | null>(null);
   const [startError, setStartError] = useState<string | null>(null);
   useEffect(() => () => assisted?.journey.dispose(), [assisted]);
-  const [history, setHistory] = useState<RunSummary[]>([]);
-  const [matrix, setMatrix] = useState<RunSummary[]>([]);
-  const [archiveView, setArchiveView] = useState<"history" | "matrix">("history");
   const archivedRunId = useRef<string | null>(null);
 
   const refreshArchive = useCallback(async () => {
-    const [runs, latest] = await Promise.all([api.runs(), api.matrix()]);
-    setHistory(runs.items);
-    setMatrix(latest.items);
+    try {
+      const [runs, latest] = await Promise.all([api.runs(), api.matrix()]);
+      setHistory(runs.items);
+      setMatrix(latest.items);
+      setArchiveReady(true); setArchiveError(false);
+    } catch { setArchiveError(true); }
   }, []);
 
-  useEffect(() => { void Promise.all([api.metadata().then(setMetadata), api.scenarios().then((result) => setScenarios(result.items)), api.health().then((health) => setDriverMode(health.driverMode)), refreshArchive()]); }, [refreshArchive]);
+  useEffect(() => { void Promise.all([api.metadata().then(setMetadata), api.scenarios().then((result) => setScenarios(result.items)), api.health().then((health) => setDriverMode(health.driverMode)), refreshArchive()]).catch(() => setStartError("Playground configuration unavailable. Reload to retry.")); }, [refreshArchive]);
 
   const refresh = useCallback(async (id: string) => {
     const [nextRun, nextSteps, nextExchanges] = await Promise.all([api.run(id), api.steps(id), api.exchanges(id)]);
     if (activeRunId.current !== id) return;
+    if (nextRun.id !== id) throw new Error("Run mismatch");
+    setRunError(false);
     setRun(nextRun);
-    setSteps(nextSteps.items);
-    setExchanges(nextExchanges.items);
+    setSteps(nextSteps.items.filter(step => step.runId === id));
+    setExchanges(nextExchanges.items.filter(exchange => exchange.runId === id));
     setSelectedStepId((current) => current ?? nextExchanges.items.at(-1)?.stepId ?? nextSteps.items[0]?.id ?? null);
     setSelectedExchangeId((current) => current ?? nextExchanges.items.at(-1)?.id ?? null);
     if (["passed", "failed", "errored", "cancelled"].includes(nextRun.status) && archivedRunId.current !== nextRun.id) {
@@ -81,16 +95,17 @@ export default function App() {
   }, [refreshArchive]);
 
   useEffect(() => {
+    setRun(null); setSteps([]); setExchanges([]); setSelectedStepId(null); setSelectedExchangeId(null); setRunError(false);
     if (!runId) return;
     const socket = io("/runs", { path: "/socket.io" });
     socket.emit("join", runId);
-    const update = () => void refresh(runId);
+    const update = () => void refresh(runId).catch(() => { if (activeRunId.current === runId) { setRunError(true); setRun(null); setSteps([]); setExchanges([]); } });
     socket.on("step:started", update);
     socket.on("step:finished", update);
     socket.on("exchange:recorded", update);
     socket.on("run:finished", update);
     const poll = window.setInterval(update, 500);
-    void refresh(runId);
+    update();
     return () => { window.clearInterval(poll); socket.disconnect(); };
   }, [refresh, runId]);
 
@@ -224,14 +239,15 @@ export default function App() {
 
         {startError && <p role="alert" className="mt-4 text-red-800">{startError}</p>}
         {config.wallet === "inji_web_assisted" && <p className="mt-4 text-sm text-amber-900">Live assisted start requires a configured deployment and dedicated account. The backend-assisted journey below supports connected fixtures and configured live runs.</p>}
-        {((config.wallet === "inji_web_assisted" && !assistedUnavailable(config)) || run?.config.wallet === "inji_web_assisted") && <ConnectedAssisted config={run?.config.wallet === "inji_web_assisted" ? run.config : config} resumeId={run?.config.wallet === "inji_web_assisted" && run.recordKind !== "archived_evidence" ? run.id : null} onRun={setRunId} />}
+        {((config.wallet === "inji_web_assisted" && !assistedUnavailable(config)) || run?.config.wallet === "inji_web_assisted") && <ConnectedAssisted key={runId ?? "new"} config={run?.config.wallet === "inji_web_assisted" ? run.config : config} resumeId={run?.config.wallet === "inji_web_assisted" && run.recordKind !== "archived_evidence" ? run.id : null} onRun={setRunId} />}
         {assisted && <AssistedJourneyPanel key={assisted.journey.runId} fixture={assisted} />}
         <section className="mt-7 rounded-3xl border border-slate-200 bg-white shadow-card">
           <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 px-6 py-5 lg:px-8">
             <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-wallet">{run?.recordKind === "archived_evidence" ? "Historical evidence · read only" : "Live run"}</p><h2 className="mt-1 text-xl font-bold">{run ? `Run ${run.id.slice(0, 8)}` : "Ready when you are"}</h2></div>
             {format && <div className="ml-auto flex flex-wrap gap-2"><span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold">{format.name}</span><span className="rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-800">{format.proofType}</span><span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800">{format.algorithm}</span></div>}
           </div>
-          {!runId ? <div className="grid min-h-72 place-items-center p-8 text-center"><div><ArrowRight className="mx-auto mb-3 text-slate-300" size={36} /><p className="font-semibold text-slate-600">Start a flow to see the live protocol timeline.</p><p className="mt-1 text-sm text-slate-400">Protocol exchanges are sanitized before storage.</p></div></div> : (
+          {runError && <p role="alert">Run unavailable. It may be missing or your session may not have access. No previous result is shown.</p>}
+          {runError ? null : !runId ? <div className="grid min-h-72 place-items-center p-8 text-center"><div><ArrowRight className="mx-auto mb-3 text-slate-300" size={36} /><p className="font-semibold text-slate-600">Start a flow to see the live protocol timeline.</p><p className="mt-1 text-sm text-slate-400">Protocol exchanges are sanitized before storage.</p></div></div> : (
             <div className="grid gap-6 p-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:p-8">
               <div>
                 <div className={`mb-4 rounded-xl border px-4 py-3 text-sm font-semibold ${run?.status === "passed" ? "border-green-200 bg-green-50 text-ok" : runFinished ? "border-red-200 bg-red-50 text-fail" : "border-blue-200 bg-blue-50 text-issuer"}`} aria-live="polite">{runMessage}</div>
@@ -248,7 +264,9 @@ export default function App() {
           )}
         </section>
         <WalletEvidencePanel onOpenManagedRun={selectArchivedRun} archivedRunIds={history.filter(item => item.recordKind === "archived_evidence").map(item => item.id)} />
-        <RunArchive history={history} matrix={matrix} active={archiveView} onActiveChange={setArchiveView} onSelectRun={selectArchivedRun} />
+        {archiveError && <p role="alert">Run archive unavailable. <button onClick={() => void refreshArchive()}>Retry archive</button></p>}
+        <RunArchive history={history} matrix={matrix} active={archiveView} onActiveChange={setArchiveView} onSelectRun={selectArchivedRun} location={location.state} onLocationChange={location.update} shareHref={location.href} />
+        <RunComparison a={location.state.compareA} b={location.state.compareB} />
         <GapExplorer />
       </main>
     </div>
