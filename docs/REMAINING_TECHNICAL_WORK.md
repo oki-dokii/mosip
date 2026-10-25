@@ -14,7 +14,8 @@ completed features.
   relationship adapter remain explicit boundaries.
 - Android A2 has an observed hybrid pass: local Certify → Android → Collab Verify.
 - Capture/redaction, reports, standalone mocks, six-case mock Docker demo, ordinary
-  CI, mock nightly checks, run comparison/archive views and accessibility tests exist.
+  CI, mock nightly checks, run comparison/archive views and accessibility tests exist. The latest teammate
+  commit adds real Chromium tab zoom at 200%/400% and 320px table contrast checks.
 - Person 4's endpoint catalogue and readiness smoke are integrated. The unified
   launcher delegates to the proven projects, avoiding duplicate-port deployments.
 
@@ -29,6 +30,8 @@ completed features.
 | 5 | Person 3 | Refresh the version-pinned local protocol matrix with positive controls; reduce the strongest replay/nonce/audience/descriptor findings and link each to spec expectations. Twenty catalogue entries are not twenty proven live passes. | Each executed case has versions, one changed variable, expected/actual result and dated evidence. Unexecuted cases remain labelled. |
 | 6 | Person 3 + phone operator | Attempt Android → fully local Verify. The existing hybrid Android pass remains valid but separate. | A real phone issues, reloads and presents to local Verify, or the exact failed checkpoint is recorded. |
 | 7 | Integrator + Person 3 | Reconcile dated aggregate reports and the machine-readable gap register with current A1/local JSON-LD evidence and G-09/G-10. The aggregate generator still emits historical A1-blocked wording. | UI gap entries and regenerated reports agree with dated source evidence, without inventing BFF records for direct harnesses. |
+
+Human UX validation also remains: run the [manual accessibility checklist](../spikes/person2-web/MANUAL_ACCESSIBILITY_CHECKLIST.md) for VoiceOver/NVDA, enlarged-text visual review and physical-device use. Automated checks do not establish those results.
 
 ## Valuable extensions after those gates
 
@@ -64,8 +67,9 @@ pnpm stop:local-full
 The readiness command does not create a BFF run or re-prove the wallet journey.
 
 Verification during this merge: typecheck and production build passed; 413 ordinary
-automated tests passed with three opt-in PostgreSQL tests skipped; all 15 browser
-checks passed on isolated ports, including keyboard/axe checks. Local readiness
+automated tests passed with three opt-in PostgreSQL tests skipped; all 17 browser
+checks passed on isolated ports, including keyboard/axe, native Chromium zoom and
+mobile table contrast checks. Browser TypeScript and bounded evidence audits also passed. Local readiness
 passed 8/8; secret audit passed; aggregate-report consistency passed (it checks
 consistency, not freshness of the historical narrative). The legacy alternative
 Compose file parsed successfully but was not started. The unchanged full wallet
