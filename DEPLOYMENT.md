@@ -46,6 +46,27 @@ pnpm install        # only needed once, for the demo script itself
 pnpm demo:docker
 ```
 
+### Unified opt-in local profile (Verify + Inji Web + Mimoto + IdP)
+
+For developers needing the official Inji stack running locally (strictly opt-in; does not disturb core/mocks):
+
+```bash
+# 1. First-time setup (generates Mimoto secrets/keystore into git-ignored directory):
+node scripts/prepare-inji-web-local.mjs
+
+# 2. Start unified profile with dedicated project name (mosip-local-full):
+bash scripts/start-local-full.sh
+
+# 3. Run the one-command smoke test (verifies endpoints, OIDC, metadata, leak scan):
+node scripts/smoke-local-full.mjs
+
+# 4. Stop unified profile (preserves database volumes and generated keys):
+bash scripts/start-local-full.sh down
+
+# 4b. Stop and delete volumes (DATA LOSS WARNING):
+bash scripts/start-local-full.sh down -v
+```
+
 ---
 
 ## Prerequisites
@@ -110,14 +131,17 @@ See `.env.example` for the full list with comments. Never commit real Postman en
 
 ---
 
-## Modes
+## Modes and Evidence Tiers
 
-| Mode | How to start | Valid claim | Cannot prove |
+The repository classifies all verification into exactly five evidence tiers:
+
+| Evidence Tier | How to start | Valid claim | Cannot prove |
 |---|---|---|---|
-| **Fixture** (default) | `docker compose --profile core up` | Playground starts; API, storage and Socket.IO work in synthetic mode | Any interoperability with external services |
-| **Mock** (separate services) | `--profile core --profile mocks` + `PLAYGROUND_DRIVER_MODE=collab` + `MOCK_*_BASE_URL` set | Cross-container mock issuer → Reference Wallet → mock verifier SD-JWT journey ran; result stored in PostgreSQL | Inji Certify, Inji Verify, or Inji Web/Wallet interoperability |
-| **Collab** (live Inji) | Requires `OFFICIAL_POSTMAN_ENV_PATH` and Collab credentials outside the repo | Specific Inji Certify and Inji Verify versions accepted or rejected a credential | Only the exact Collab endpoint tested; not general Inji interoperability |
-| **Assisted Inji wallet** | Needs a logged-in Inji Web test account + real Mimoto/eSignet | One managed A1 JSON-LD run recorded Mimoto transport, reload-backed storage, correlated presentation and Verify `valid` | Server-side Mimoto → Certify/Verify hops were not observed; final team review remains pending |
+| **`mock`** | `docker compose --profile core --profile mocks up` (or `pnpm demo:docker`) | Synthetic OpenID4VCI/VP SD-JWT runs with mock issuer and verifier; tests BFF orchestration, storage, redaction and timeline | Official Inji Certify, Verify, or Inji Web/mobile wallet interoperability |
+| **`reference_wallet`** | `pnpm demo:inji` (or `scripts/local-inji-smoke.mjs`) | Official Inji Certify and Inji Verify containers run on loopback; automated Reference Wallet completes SD-JWT journey | Inji Web browser wallet, mobile wallet UI/storage, or end-user consent |
+| **`inji_web`** | `bash scripts/start-local-full.sh` + `pnpm check:web-local` | Official Inji Web and Mimoto containers start on loopback with synthetic IdP; browser login and persistent wallet unlock verified | End-to-end local issuance or presentation through Inji Web (catalog unconfigured) |
+| **`inji_mobile`** | `pnpm mobile:inji` | Pinned official Certify issuance observed on physical Android device (A2 mobile route) | All-local execution without physical phone, or untested phone models |
+| **`not_tested`** | N/A (unexercised paths) | Explicitly marks untracked or blocked components (e.g. unconfigured issuer catalog) | Any runtime guarantee whatsoever |
 
 ---
 
@@ -168,11 +192,20 @@ docker compose --profile core --profile mocks down -v
 
 ---
 
-## Persistent storage and migrations
+## Persistent storage and database isolation
 
-Run history is stored in a PostgreSQL named volume (`playground-postgres`). The `migrate` one-shot service runs `prisma migrate deploy` before the BFF starts; it is idempotent and safe to re-run.
+Each component running a database maintains strict isolation with its own dedicated database name, user, volume, and host port binding (loopback `127.0.0.1` only). There is no shared superuser and no shared volume across services.
 
-To inspect the database from the host:
+| Component / Service | Database Name | Database User | Volume Name | Port (Host / Container) | Isolation Notes |
+|---|---|---|---|---|---|
+| **Playground Core** (`postgres`) | `playground` | `playground` | `playground-postgres` | `127.0.0.1:55433` → `5432` | Stores playground runs, steps, and sanitized exchanges |
+| **Inji Verify DB** (`verify-db`) | `inji_verify` | `postgres` | `verify-db-data` | Internal only (`5432`) | Isolated from playground and Mimoto databases |
+| **Mimoto DB** (`mimoto-db`) | `inji_mimoto` | `postgres` | `mimoto-db-data` | Internal only (`5432`) | Stores local wallet profiles and card references |
+| **Inji Certify DB** (`certify-db`) | `certify_local` | `certify_user` | `certify-db-data` | Internal only (`5432`) | Used exclusively in mobile/demo Inji profile |
+
+Run history is stored in the PostgreSQL named volume (`playground-postgres`). The `migrate` one-shot service runs `prisma migrate deploy` before the BFF starts; it is idempotent and safe to re-run.
+
+To inspect the playground database from the host:
 
 ```bash
 psql postgresql://playground:playground@127.0.0.1:55433/playground
@@ -184,6 +217,18 @@ To run migrations manually (outside Compose):
 DATABASE_URL=postgresql://playground:playground@127.0.0.1:55433/playground?schema=public \
   pnpm db:deploy
 ```
+
+---
+
+## Key and secret generation
+
+All cryptographic keys, certificates, keystores, and credentials required by the local profiles are generated at setup time into owner-only, git-ignored runtime directories:
+
+- **Certify signing keys & DIDs**: Generated by `pnpm mobile:inji setup` (or `node scripts/mobile-inji.mjs setup`). Keys reside in a git-ignored temporary storage directory.
+- **Mimoto OIDC client keystore & OAuth secrets**: Generated by `node scripts/prepare-inji-web-local.mjs` into `$MIMOTO_RUNTIME_DIR` (defaults to `/tmp/mosip-web-local` or OS temp).
+- **Nested `.gitignore` protection**: Runtime key directories include a nested `.gitignore` (`*` and `!.gitignore`) ensuring no private keys, `.p12` keystores, or `.env` files enter git tracking.
+- **Strict permissions**: Sensitive secret files are generated with restrictive `0600` file modes.
+- **Zero secrets in images/repo**: Dockerfiles and Compose files never bake secrets, certificates, or real credentials into images or repo files. Default env values are synthetic and non-secret.
 
 ---
 

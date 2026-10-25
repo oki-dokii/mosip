@@ -59,6 +59,11 @@ All modified and added files belong strictly to Person 4's owned area (Rule 8):
 | `Dockerfile` | Modified | Pinned Node 22 LTS, non-root user (`node`), OCI labels, separate `migrate` stage, direct `pnpm@11.25.0` installation. |
 | `docker-compose.yml` | Modified | Profile separation (`core` / `mocks`), real HTTP/TCP health checks, explicit health dependencies, 127.0.0.1 port bindings. |
 | `.dockerignore` | Modified | Comprehensive exclusions for `.env*`, `*.har`, Postman files (`*.postman_environment.json`), local evidence, and `dist/`. |
+| `deploy/ENDPOINTS.md` | Added | Component endpoint sheet covering browser/container origins, health routes, OIDC callback URIs and draft protocols. |
+| `deploy/endpoints.json` | Added | Machine-readable endpoint catalog consumable by automation scripts. |
+| `deploy/docker-compose.local-full.yml` | Added | Unified opt-in local profile definition joining Verify + Inji Web + Mimoto + synthetic IdP into one isolated project. |
+| `scripts/start-local-full.sh` | Added | One-command start/stop script for the unified local profile with dedicated project name (`mosip-local-full`). |
+| `scripts/smoke-local-full.mjs` | Added | One-command smoke script for endpoint health, OIDC discovery, Certify metadata, Verify request, and leak check. |
 | `deploy/INJI_LOCAL.md` | Added | Component provenance table, Stage 1/2 evaluations, Person 2 endpoints, Person 1 canonical origins. |
 | `deploy/docker-compose.inji.yml` | Added | Opt-in Inji stack definition with health checks and port mappings. |
 | `deploy/WALTID_COMPARISON.md` | Added | Documentation-only comparison between walt.id Issuer2/Verifier2 and Inji stack. |
@@ -197,9 +202,12 @@ node scripts/audit-secrets.mjs
 ## 5. Requests for the Integrator
 
 1. **Root `package.json`**:
-   Ensure the following script entry is preserved in the merged `package.json`:
+   Ensure the following script entries are preserved or added to the root `package.json`:
    ```json
-   "e2e:smoke": "node e2e/smoke.mjs"
+   "e2e:smoke": "node e2e/smoke.mjs",
+   "smoke:local-full": "node scripts/smoke-local-full.mjs",
+   "start:local-full": "bash scripts/start-local-full.sh",
+   "stop:local-full": "bash scripts/start-local-full.sh down"
    ```
 2. **README CI Badge**:
    Add the GitHub Actions CI badge to `README.md` (Integrator owned):
@@ -215,7 +223,28 @@ node scripts/audit-secrets.mjs
    ```
    Open [http://localhost:5174](http://localhost:5174). All mock services, PostgreSQL, and the BFF start with synthetic defaults.
    See [DEPLOYMENT.md](DEPLOYMENT.md) for full operational details.
+
+   ### Unified Opt-In Local Inji Profile
+   ```bash
+   bash scripts/start-local-full.sh
+   node scripts/smoke-local-full.mjs
    ```
+   ```
+4. **BFF Hook Requests**:
+   - Local driver parameterization: Ensure BFF continues to honor `VERIFY_BASE_URL` and `CERTIFY_BASE_URL` when pointing to `http://127.0.0.1:18081` and `http://127.0.0.1:18090` without hardcoded schema expectations.
+5. **Repo-Wide Linting & Formatting Proposal**:
+   - Integrator proposal: Introduce non-gating linting steps for CI (e.g. `actionlint` for `.github/workflows/*.yml`, `shellcheck` for `scripts/*.sh`, and `prettier`/`eslint` for monorepo consistency).
+   - Non-gating CI stub proposal:
+     ```yaml
+     lint-non-gating:
+       name: Lint & Format Checks (Non-gating advisory)
+       runs-on: ubuntu-latest
+       continue-on-error: true
+       steps:
+         - uses: actions/checkout@v4
+         - name: Run shellcheck
+           run: which shellcheck >/dev/null && shellcheck scripts/*.sh || echo "shellcheck skipped"
+     ```
 
 ---
 
