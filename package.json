@@ -8,6 +8,7 @@
     "dev": "pnpm --parallel --filter @playground/bff --filter @playground/web --filter @playground/mock-issuer --filter @playground/mock-verifier dev",
     "dev:x509-mock": "bash scripts/dev-x509-mock.sh",
     "mobile:inji": "node scripts/mobile-inji.mjs",
+    "demo:inji": "bash scripts/demo-inji-local.sh",
     "demo:docker": "bash scripts/demo-docker.sh",
     "e2e:smoke": "node e2e/smoke.mjs",
     "audit:secrets": "node scripts/audit-secrets.mjs",

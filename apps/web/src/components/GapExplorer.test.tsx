@@ -6,7 +6,8 @@ import { GapExplorer } from "./GapExplorer";
 it("presents evidence-backed findings without promoting them to confirmed upstream defects", () => {
   render(<GapExplorer />);
   expect(screen.getByRole("heading", { name: "What the evidence has revealed" })).toBeTruthy();
-  expect(screen.getAllByRole("listitem")).toHaveLength(4);
+  expect(screen.getAllByRole("listitem")).toHaveLength(5);
+  expect(screen.getByText("Verify 0.18.2 sample database seed breaks direct-post")).toBeTruthy();
   expect(screen.getByText(/No upstream issue has been filed/)).toBeTruthy();
   expect(screen.getByText(/An unreported service version or missing wallet account/)).toBeTruthy();
   const links = screen.getAllByRole("link");

@@ -1,5 +1,7 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# Inji Interoperability Playground — Opt-In Local Inji Stack
+# Historical unvalidated full-stack sketch. DO NOT USE AS A DEMO COMMAND.
+# For the verified official Certify -> reference holder -> Verify control,
+# run pnpm demo:inji; see deploy/INJI_LOCAL.md.
 #
 # Usage:
 #   docker compose -f docker-compose.yml -f deploy/docker-compose.inji.yml --profile inji up -d

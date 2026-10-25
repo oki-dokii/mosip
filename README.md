@@ -190,6 +190,8 @@ pnpm demo:docker
 Open **http://localhost:5174**. The command builds and health-checks the services, then runs six cross-container synthetic SD-JWT presets (valid control, corrupted signature, signed expiry, signed wrong type, missing required disclosure and nonce mismatch) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) passed the six-case Docker matrix and browser checks; an independent-machine rehearsal remains open.
 The same command passed on this Mac on 25 October with all six scenarios; [the dated local record](submission/evidence/2026-10-25-local-demo.md) lists their run IDs. Independent-machine installation remains a final review check.
 
+For a separate **official local Inji service control**, run `pnpm demo:inji`. It starts pinned Inji Certify and Inji Verify on loopback, issues a synthetic SD-JWT, and uses a non-Inji reference holder to present it. On 25 October it printed `LOCAL INJI DEMO PASS` with Verify `valid` and true credential/holder proof checks. It does not start Mimoto or Inji Web and does not create a playground BFF run. See the [exact setup, versions and limits](deploy/INJI_LOCAL.md).
+
 The same Compose demo also lists the **25 October managed Inji Web A1 run** in Run history. Open run `3dc6895d` or use **Explore managed run in playground** in the real-wallet evidence panel to inspect its ten steps, seven sanitized exchanges, sequence and report. This is a **read-only projection of a committed historical export**, with the original run ID and timestamps. Opening it does not contact Collab or repeat issuance or presentation. Its original export incorrectly labelled the wallet version as `reference-wallet/0.1.0`; the demo projection displays `unreported` and leaves the source export intact. Set `PLAYGROUND_ARCHIVED_A1=false` to omit this record.
 
 ## Integration modes
@@ -200,6 +202,7 @@ The same Compose demo also lists the **25 October managed Inji Web A1 run** in R
 | Collab with Reference Wallet | `PLAYGROUND_DRIVER_MODE=collab` | Public test environment config and reachable Collab services | Exact live role combination shown in report. |
 | Collab with separate mock roles | Collab mode plus `MOCK_ISSUER_BASE_URL` and/or `MOCK_VERIFIER_BASE_URL` | Running local mock services; Certify tests also need its test config | Cross-service mock interoperability for supported SD-JWT cases. |
 | Assisted real Inji Web | Backend-assisted live run with a signed-in wallet and metadata-only capture bridge | Persistent test wallet, configured public endpoints and local bridge token | One managed A1 JSON-LD run is recorded for the Land Registry profile; browser capture omits Mimoto server-side calls. A2 has separate Android evidence. |
+| Local official Inji service control | `pnpm demo:inji` | Docker and first-setup access to tagged official images/config | Certify → reference holder → Verify returned `valid` on loopback for one synthetic SD-JWT; no real wallet or BFF run is claimed. |
 
 For live Certify → Reference Wallet → Verify, obtain the **official public test-client environment** described in [Phase 0–1](PHASE0_1.md), keep it outside the repository, and set:
 
@@ -316,7 +319,7 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 |---|---|---|
 | A1: real-wallet JSON-LD | A fresh managed Inji Web run records the observed Mimoto checkpoints, storage confirmation and matching Verify `valid` result; [final team review is pending](submission/evidence/person2-managed-a1-2026-10-25/README.md). | Browser capture cannot see Mimoto's downstream server calls; deployed releases remain unreported. |
 | A2: real-wallet SD-JWT | Recorded functional pass with actual Android wallet, reopened storage and valid credential/holder proof result. | Hybrid profile only; installed-binary attestation and Collab release remain unverified. |
-| A6: packaging | Playground core + mocks now build, pass health checks, run migrations, and complete a mock smoke through `pnpm demo:docker`. | A separate clean-machine rehearsal and local Inji stack remain open. |
+| A6: packaging | Playground core + mocks pass `pnpm demo:docker`; separate official Certify/Verify services pass `pnpm demo:inji`. | A separate clean-machine rehearsal and local Mimoto/Inji Web stack remain open. |
 | Capture and browser QA | Live assisted-wallet observation without rewriting signed messages. | Three synthetic browser/axe checks pass; they cannot prove the real wallet's browser/native boundaries. |
 
 Ownership and next steps are in the [single-owner handoff](SINGLE_OWNER_HANDOFF.md). Reports should state the exact implementation, profile and observed boundaries; the A1 and A2 records do not establish every format or a complete local Inji deployment.

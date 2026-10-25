@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-10-24",
+  "updated": "2026-10-25",
   "source": "GAPS.md",
   "owner": "Person 3",
   "scope": "Completed protocol implementation, Collab investigations and a recorded actual Android A2 functional pass for the official-local-Certify/Collab-Verify hybrid profile; original failures and attestation limits retained.",
@@ -77,6 +77,20 @@
       "runIds": [],
       "matrixCells": [],
       "matrixDecision": "Both synthetic configurations reproduce offer/token/nonce HTTP 200 then credential HTTP 401. Deployment version and authorization configuration remain unreported; do not classify a new protocol defect.",
+      "upstreamIssue": null
+    },
+    {
+      "id": "G-05",
+      "status": "confirmed_local_release_packaging_mismatch",
+      "disclosure": "public_non_security_observation",
+      "productVersion": "Inji Verify 0.18.2",
+      "evidence": [
+        "deploy/INJI_LOCAL.md",
+        "deploy/verify-db-init.sql"
+      ],
+      "runIds": [],
+      "matrixCells": [],
+      "matrixDecision": "Fresh Verify v0.18.2 sample DB omitted response-code columns: direct-post HTTP 500. The same synthetic Certify/holder/Verify path reached valid after adding the three columns present in its tagged DDL. Local packaging observation only; no other deployment is inferred.",
       "upstreamIssue": null
     }
   ],

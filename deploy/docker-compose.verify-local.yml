@@ -1,0 +1,52 @@
+# Official Inji Verify v0.18.2, isolated from the playground's own database.
+# Use with the loopback-only official Certify runtime and local-inji-smoke.mjs.
+services:
+  verify-db:
+    image: postgres:13@sha256:4689940c683801b4ab839ab3b0a0a3555a5fe425371422310944e89eca7d8068
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: local-verify-synthetic
+      POSTGRES_DB: inji_verify
+    volumes:
+      - verify-db-data:/var/lib/postgresql/data
+      - ./verify-db-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d inji_verify]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 256m
+
+  verify-service:
+    image: injistack/inji-verify-service:0.18.2@sha256:2ed468e7e1f1ce317a41476dd131f4ce8f081b0f055a080c95e99a92cc192bdd
+    environment:
+      active_profile_env: default
+      DATABASE_HOST: verify-db
+      DATABASE_PORT: '5432'
+      DATABASE_NAME: inji_verify
+      DATABASE_SCHEMA: verify
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: local-verify-synthetic
+      INJI_VP_SUBMISSION_BASE_URL: http://127.0.0.1:18081/v1/verify
+      INJI_DID_VERIFY_URI: did:web:localhost%3A18081:v1:verify
+      INJI_DID_VERIFY_PUBLIC_KEY_URI: did:web:localhost%3A18081:v1:verify#key-0
+      INJI_KEYSTORE_FILE_PASS: mosip
+      INJI_VERIFY_REDIRECT_URI: http://127.0.0.1:18081
+      INJI_VERIFY_RESPONSE_CODE_EXPIRY_TIME_IN_MINS: '5'
+      INJI_VERIFY_CLAIMS_WITH_META_DATA: _sd,_sd_alg,iss,cnf,sub,aud,exp,nbf,iat,cti
+      JAVA_TOOL_OPTIONS: -Xms128m -Xmx768m
+    ports:
+      - 127.0.0.1:18081:8080
+    depends_on:
+      verify-db:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, 'http://127.0.0.1:8080/v1/verify/actuator/health']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    mem_limit: 1200m
+
+volumes:
+  verify-db-data:

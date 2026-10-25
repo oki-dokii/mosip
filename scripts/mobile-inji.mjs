@@ -14,6 +14,7 @@ const runtime = resolve(process.env.MOBILE_RUNTIME_DIR ?? join(tmpdir(), 'mosip-
 const port = Number(process.env.MOBILE_CONSOLE_PORT ?? 8060);
 const backend = 'http://127.0.0.1:18090';
 const verify = 'https://injiverify.collab.mosip.net/v1/verify';
+const localOnly = process.env.LOCAL_INJI_ONLY === 'true';
 const source = '8fdf71656979a72fa8263766d4dec3cc25127b76';
 const configId = 'MockVerifiableCredential_SD_JWT';
 const files = 'https://raw.githubusercontent.com/inji/inji-certify/' + source + '/docker-compose/docker-compose-injistack/';
@@ -102,7 +103,7 @@ async function obtainTunnel() {
 }
 async function configure(issuer) {
   const hostname = new URL(issuer).hostname;
-  if (!/^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(issuer)) fail('INVALID_PUBLIC_ORIGIN');
+  if (!(/^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/.test(issuer) || (localOnly && issuer === backend))) fail('INVALID_PUBLIC_ORIGIN');
   const [properties, schema] = await Promise.all(['config/certify-default.properties', 'certify_init.sql'].map(p => bounded(files + p)));
   if (properties.status !== 200 || schema.status !== 200) fail('UPSTREAM_CONFIG_UNAVAILABLE');
   const first = schema.raw.indexOf('INSERT INTO certify.credential_config');
@@ -157,7 +158,7 @@ async function configure(issuer) {
     for (const n of ['signing.key','signing.crt','verifier.p12']) await chmod(join(runtime,n),0o600);
     settings.verifierKeyAlgorithm = 'Ed25519'; await save('settings.json', settings);
   }
-  await save('public-state.json', { schemaVersion:1, issuer, console:`http://127.0.0.1:${port}`, configurationId:configId, sourceCommit:source, image:'injistack/inji-certify-with-plugins:1.0.0-alpha.1', imageDigest:'sha256:1579b2449f1a7213fe25de1f6a1509b5636f1fedf0d7f5c4cfd07b9f0fc5b346', verifier:verify, verifierVersion:'unreported', mobileAcceptance:'not_observed' });
+  await save('public-state.json', { schemaVersion:1, issuer, console:`http://127.0.0.1:${port}`, configurationId:configId, sourceCommit:source, image:'injistack/inji-certify-with-plugins:1.0.0-alpha.1', imageDigest:'sha256:1579b2449f1a7213fe25de1f6a1509b5636f1fedf0d7f5c4cfd07b9f0fc5b346', verifier:localOnly?'http://127.0.0.1:18081/v1/verify':verify, verifierVersion:localOnly?'0.18.2':'unreported', mobileAcceptance:'not_observed', localOnly });
 }
 async function waitReady() {
   for (let i=0; i<120; i++) {
@@ -232,6 +233,7 @@ function localConsole(req) {
   return ['127.0.0.1','::1','::ffff:127.0.0.1'].includes(req.socket.remoteAddress) && ['127.0.0.1:'+port,'localhost:'+port].includes(req.headers.host) && !req.headers['cf-connecting-ip'] && (!req.headers.origin || ['http://127.0.0.1:'+port,'http://localhost:'+port].includes(req.headers.origin));
 }
 function page() {
+  if (localOnly) return '<!doctype html><meta charset="utf-8"><title>Local Inji control</title><h1>Local Inji control</h1><p>Official Certify is running on loopback for the synthetic reference-holder smoke. Run <code>node scripts/local-inji-smoke.mjs</code> from the repository root. Phone and Collab actions are disabled in this mode.</p>';
   return `<!doctype html><meta charset="utf-8"><title>Inji mobile acceptance</title><style>body{font:18px system-ui;max-width:850px;margin:2rem auto;padding:1rem}button{padding:.8rem;margin:.4rem}svg{width:420px;max-width:100%;height:auto}pre{white-space:pre-wrap}aside{padding:1rem;background:#eef}</style><h1>Real Inji Wallet: SD-JWT attempt</h1><aside>Official local Inji Certify, synthetic identity. The automated control is a Reference Wallet check; mobile acceptance requires the actual phone.</aside><p>Leave this process and Mac running. The phone needs internet, not USB.</p><pre id="status"></pre><button onclick="action('offer')">1. Create fresh issuance QR</button><button onclick="action('request')">2. Create fresh presentation QR</button><button onclick="action('result')">3. Read Verify result</button><h2 id="title"></h2><div id="qr"></div><pre id="detail"></pre><script>
 async function refresh(){document.getElementById('status').textContent=JSON.stringify(await(await fetch('/local/status')).json(),null,2)}
 async function action(name){const r=await fetch('/local/'+name,{method:'POST',headers:{'content-type':'application/json'},body:'{}'});const x=await r.json();document.getElementById('detail').textContent=JSON.stringify(x.summary??x,null,2);document.getElementById('title').textContent=x.title??'';document.getElementById('qr').innerHTML=x.svg??'';await refresh()}
@@ -249,6 +251,7 @@ async function route(req,res) {
       if(req.method!=='POST' || req.headers['content-type']!=='application/json') {res.writeHead(415).end('{}');return;}
       let size=0;for await(const c of req){size+=c.length;if(size>1024)fail('REQUEST_LIMIT');}
       if(path==='/local/stop'){state.phase='stopping';await runDocker(['stop']);res.end(JSON.stringify({status:'stopped'}));setTimeout(()=>void shutdown(),100);return;}
+      if(localOnly){res.writeHead(404).end('{}');return;}
       if(path==='/local/control'){res.end(JSON.stringify(await control()));return;}
       if(path==='/local/offer'){if(state.control?.status!=='valid')fail('CONTROL_NOT_PASSED');state.offer=await createOffer();res.end(JSON.stringify({title:'Scan using + → Scan & Download Card',svg:await QRCode.toString(state.offer.uri,{type:'svg',margin:4}),summary:{issuer:state.issuer,configurationId:configId,expiresAt:state.offer.expiresAt,instructions:'Trust only the displayed issuer. No identity/OTP is needed for this synthetic pre-authorized flow.'}}));return;}
       if(path==='/local/request'){state.presentation=await createRequest();res.end(JSON.stringify({title:'Scan using the wallet OpenID4VP sharing scanner',svg:await QRCode.toString(state.presentation.uri,{type:'svg',margin:4}),summary:{verifier:verify,createdAt:state.presentation.createdAt,instructions:'Select the credential just issued on this phone, review and approve.'}}));return;}
@@ -278,15 +281,19 @@ async function main() {
   await new Promise((done,reject)=>{server.once('error',reject);server.listen(port,'127.0.0.1',done);});
   process.once('SIGINT',()=>void shutdown());process.once('SIGTERM',()=>void shutdown());
   console.log('Preparing official Certify mobile environment. Runtime files: '+runtime);
-  state.issuer=await obtainTunnel();console.log('Phone-reachable issuer: '+state.issuer);
+  state.issuer=localOnly?backend:await obtainTunnel();console.log((localOnly?'Loopback-only issuer: ':'Phone-reachable issuer: ')+state.issuer);
   await configure(state.issuer);state.phase='booting';
   await runDocker(['up','-d','--wait','mobile-db']);
   // Existing dedicated volumes keep their schema; refresh only our own credential row.
   await runDocker(['exec','-T','mobile-db','psql','-U','postgres','-d','inji_certify','-v','ON_ERROR_STOP=1'],false,await readFile(join(runtime,'credential-seed.sql'),'utf8'));
   await runDocker(['up','-d','--no-deps','--force-recreate','mobile-certify']);
   await waitReady();
-  state.phase='ready';await control();
-  console.log('Reference Wallet control: official Certify issued; Collab Verify returned valid. This does not close A2.');
-  console.log('Open the local phone console: http://127.0.0.1:'+port);
+  state.phase='ready';
+  if (localOnly) console.log('Official Certify is ready for the separate local Inji Verify smoke. No Collab request or phone flow was run.');
+  else {
+    await control();
+    console.log('Reference Wallet control: official Certify issued; Collab Verify returned valid. This does not close A2.');
+    console.log('Open the local phone console: http://127.0.0.1:'+port);
+  }
 }
 main().catch(async error=>{state.phase='failed';console.error('Mobile setup stopped: '+(/^[A-Z0-9_]+$/.test(error.message)?error.message:'SETUP_DEPENDENCY_FAILURE'));await save('failure-summary.json',{phase:state.phase,error:/^[A-Z0-9_]+$/.test(error.message)?error.message:'SETUP_DEPENDENCY_FAILURE',mobileAcceptance:'not_observed'}).catch(()=>{});await shutdown();process.exitCode=1;});

@@ -5,6 +5,7 @@ const titles: Record<string, string> = {
   "G-02": "Real-wallet validation and remaining profile limits",
   "G-03": "Collab deployment versions are not discoverable",
   "G-04": "Certify credential request returns 401 after a successful token exchange",
+  "G-05": "Verify 0.18.2 sample database seed breaks direct-post",
 };
 
 const statusLabels: Record<string, string> = {
@@ -12,6 +13,7 @@ const statusLabels: Record<string, string> = {
   wallet_capability_or_test_blocker: "Capability or test blocker",
   version_discovery_gap: "Reproducibility gap",
   investigative_deployment_behavior: "Under investigation",
+  confirmed_local_release_packaging_mismatch: "Reproduced locally",
 };
 
 function evidenceUrl(path: string): string {

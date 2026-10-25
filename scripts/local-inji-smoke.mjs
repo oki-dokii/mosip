@@ -1,0 +1,128 @@
+// Synthetic official Certify -> reference holder -> official local Verify control.
+// Credential, access token, holder key and VP exist only in this process.
+import { createHash, generateKeyPairSync, randomBytes, randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { decodeJwt, decodeProtectedHeader, exportJWK, importX509, jwtVerify, SignJWT } from 'jose';
+
+const issuerBackend = 'http://127.0.0.1:18090';
+const verifier = 'http://127.0.0.1:18081/v1/verify';
+const configurationId = 'MockVerifiableCredential_SD_JWT';
+const runtime = process.env.MOBILE_RUNTIME_DIR ?? join(tmpdir(), 'mosip-mobile-inji');
+const startedAt = new Date().toISOString();
+
+function assert(condition, code) { if (!condition) throw new Error(code); }
+function json(body) { return { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }; }
+function sdHash(value) { return createHash('sha256').update(value).digest('base64url'); }
+async function request(url, options = {}) {
+  const response = await fetch(url, { ...options, redirect: 'error', signal: AbortSignal.timeout(15_000) });
+  const raw = await response.text();
+  assert(raw.length < 2_097_152, 'RESPONSE_TOO_LARGE');
+  let body;
+  try { body = JSON.parse(raw); } catch { body = raw; }
+  return { status: response.status, body };
+}
+
+async function main() {
+  const state = JSON.parse(await readFile(join(runtime, 'public-state.json'), 'utf8'));
+  const issuer = state.issuer;
+  assert(issuer === issuerBackend, 'ISSUER_RUNTIME_MUST_BE_LOOPBACK_ONLY');
+  assert((await request(issuerBackend + '/v1/certify/.well-known/openid-credential-issuer')).status === 200, 'CERTIFY_NOT_READY');
+  assert((await request(verifier + '/actuator/health')).body?.status === 'UP', 'VERIFY_NOT_READY');
+
+  const now = Math.floor(Date.now() / 1000);
+  const created = await request(issuerBackend + '/v1/certify/pre-authorized-data', json({
+    credential_configuration_id: configurationId,
+    claims: { given_name: 'Ada', family_name: 'Example', issuedAt: now, expiresAt: now + 86400 },
+    expires_in: 600,
+  }));
+  assert(created.status === 200 && typeof created.body?.credential_offer_uri === 'string', 'OFFER_FAILED');
+  const offerUrl = new URL(created.body.credential_offer_uri).searchParams.get('credential_offer_uri');
+  assert(offerUrl && new URL(offerUrl).origin === issuer, 'OFFER_ORIGIN_INVALID');
+  const offer = await request(offerUrl);
+  const code = offer.body?.grants?.['urn:ietf:params:oauth:grant-type:pre-authorized_code']?.['pre-authorized_code'];
+  assert(offer.status === 200 && typeof code === 'string', 'OFFER_RESOLUTION_FAILED');
+
+  const token = await request(issuer + '/v1/certify/oauth/token', {
+    method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:pre-authorized_code', 'pre-authorized_code': code, client_id: 'wallet' }),
+  });
+  assert(token.status === 200 && typeof token.body?.access_token === 'string', 'TOKEN_FAILED');
+  const nonce = await request(issuer + '/v1/certify/nonce', { method: 'POST' });
+  assert(nonce.status === 200 && typeof nonce.body?.c_nonce === 'string', 'NONCE_FAILED');
+  const holder = generateKeyPairSync('ed25519');
+  const jwk = await exportJWK(holder.publicKey);
+  const kid = 'did:jwk:' + Buffer.from(JSON.stringify(jwk)).toString('base64url') + '#0';
+  const proof = await new SignJWT({ aud: issuer, nonce: nonce.body.c_nonce })
+    .setProtectedHeader({ alg: 'EdDSA', typ: 'openid4vci-proof+jwt', kid })
+    .setIssuedAt().setExpirationTime('5m').sign(holder.privateKey);
+  const issuance = await request(issuer + '/v1/certify/issuance/credential', {
+    ...json({ credential_configuration_id: configurationId, proofs: { jwt: [proof] } }),
+    headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token.body.access_token },
+  });
+  const credential = issuance.body?.credential ?? issuance.body?.credentials?.[0]?.credential ?? issuance.body?.credentials?.[0];
+  assert(issuance.status === 200 && typeof credential === 'string', 'ISSUANCE_FAILED');
+  const issuerJwt = credential.split('~')[0];
+  const header = decodeProtectedHeader(issuerJwt);
+  assert(header.alg === 'RS256' && Array.isArray(header.x5c) && header.x5c.length > 0, 'ISSUER_KEY_UNEXPECTED');
+  const pem = '-----BEGIN CERTIFICATE-----\n' + header.x5c[0].match(/.{1,64}/g).join('\n') + '\n-----END CERTIFICATE-----';
+  const verified = await jwtVerify(issuerJwt, await importX509(pem, 'RS256'), { algorithms: ['RS256'], issuer });
+  assert(verified.payload.vct === configurationId && verified.payload.cnf?.kid === kid, 'ISSUER_OR_HOLDER_BINDING_INVALID');
+
+  const definitionId = 'playground-local-sdjwt-' + randomUUID();
+  const clientId = 'did:web:localhost%3A18081:v1:verify';
+  const vpRequest = await request(verifier + '/vp-request', json({
+    clientId, nonce: randomBytes(24).toString('base64url'),
+    presentationDefinition: {
+      id: definitionId,
+      input_descriptors: [{ id: 'credential', format: { 'vc+sd-jwt': { alg: ['RS256'] } }, constraints: { fields: [{ path: ['$.vct'], filter: { type: 'string', const: configurationId } }] } }],
+    },
+    responseCodeValidationRequired: false,
+  }));
+  assert(vpRequest.status === 201 && typeof vpRequest.body?.requestUri === 'string', 'VP_REQUEST_FAILED');
+  assert(new URL(vpRequest.body.requestUri).origin === 'http://127.0.0.1:18081', 'VP_REQUEST_ORIGIN_INVALID');
+  const signedRequest = await request(vpRequest.body.requestUri, { headers: { accept: 'application/oauth-authz-req+jwt' } });
+  assert(signedRequest.status === 200 && typeof signedRequest.body === 'string', 'SIGNED_REQUEST_FAILED');
+  const claims = decodeJwt(signedRequest.body);
+  assert(claims.client_id === clientId && claims.response_uri === verifier + '/vp-submission/direct-post', 'REQUEST_BINDING_INVALID');
+
+  const prefix = credential.endsWith('~') ? credential : credential + '~';
+  const kb = await new SignJWT({ aud: claims.client_id, nonce: claims.nonce, sd_hash: sdHash(prefix) })
+    .setProtectedHeader({ alg: 'EdDSA', typ: 'kb+jwt' }).setIssuedAt().sign(holder.privateKey);
+  const submission = {
+    id: randomUUID(), definition_id: definitionId,
+    descriptor_map: [{ id: 'credential', format: 'vc+sd-jwt', path: '$[0]' }],
+  };
+  const submitted = await request(claims.response_uri, {
+    method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ state: claims.state, vp_token: JSON.stringify([prefix + kb]), presentation_submission: JSON.stringify(submission) }),
+  });
+  assert(submitted.status === 200, 'DIRECT_POST_FAILED_' + submitted.status);
+
+  const result = await request(verifier + '/v2/vp-results/' + encodeURIComponent(vpRequest.body.transactionId), json({ includeClaims: false, skipStatusChecks: true }));
+  assert(result.status === 200 && typeof result.body?.allChecksSuccessful === 'boolean', 'RESULT_UNAVAILABLE');
+  const first = result.body.credentialResults?.[0];
+  const summary = {
+    observedAt: startedAt, issuer: 'official_inji_certify', issuerVersion: '1.0.0-alpha.1',
+    verifier: 'official_inji_verify', verifierVersion: '0.18.2', holder: 'non_inji_reference',
+    deployment: 'local_services_loopback_only', issuerFormat: 'dc+sd-jwt',
+    presentationDefinitionFormat: 'vc+sd-jwt', protocol: 'OpenID4VP Presentation Exchange',
+    transactionId: vpRequest.body.transactionId, requestId: vpRequest.body.requestId,
+    issuerSignatureChecked: true, holderBindingChecked: true,
+    verifierHttpStatus: result.status, verifierValid: result.body.allChecksSuccessful,
+    credentialProofValid: first?.schemaAndSignatureCheck?.valid ?? null,
+    holderProofValid: first?.holderProofCheck?.valid ?? null,
+    resultCode: first?.schemaAndSignatureCheck?.error?.errorCode ?? null,
+    evidenceTier: 'local_official_services_reference_holder',
+  };
+  console.log(JSON.stringify(summary, null, 2));
+  assert(summary.verifierValid, 'LOCAL_VERIFY_INVALID');
+}
+
+main().catch(error => {
+  // Never serialize upstream response bodies, JWTs, credentials or request URLs.
+  const code = /^[A-Z0-9_]+$/.test(error.message) ? error.message : 'LOCAL_INJI_SMOKE_FAILED';
+  console.error(code);
+  process.exitCode = 1;
+});
