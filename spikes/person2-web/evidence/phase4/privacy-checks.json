@@ -1,0 +1,9 @@
+{
+  "source": "artifact_boundary_audit",
+  "check": "automated_metadata_allowlist_and_canary_scan",
+  "result": "passed",
+  "sourceReportsChecked": 34,
+  "axeSnapshots": 31,
+  "incompleteSnapshots": 1,
+  "manualScreenReader": "not_tested"
+}

@@ -12,7 +12,8 @@ export function Inspector({ exchange }: { exchange: Exchange | null }) {
     { label: "Response", value: exchange.response },
   ];
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-[#111827] text-slate-100">
+    <article aria-label="Protocol message inspector" className="overflow-hidden rounded-2xl border border-slate-200 bg-[#111827] text-slate-100">
+      <p role="status" className="sr-only">Selected exchange {exchange.seq}: {exchange.actorFrom} to {exchange.actorTo}, HTTP {exchange.status}.</p>
       <header className="border-b border-white/10 bg-white/5 px-5 py-4">
         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
           <span>{exchange.actorFrom}</span><ArrowRight size={13} /><span>{exchange.actorTo}</span>

@@ -1,0 +1,20 @@
+{
+  "source": "synthetic_playground_ui",
+  "check": "automated_keyboard_and_accessibility_tree_not_manual_screen_reader",
+  "result": "passed",
+  "assertions": [
+    "skip link",
+    "radio arrow keys",
+    "3px focus outline",
+    "run heading focus",
+    "step pressed state",
+    "details keyboard toggle",
+    "clipboard feedback",
+    "matrix pressed state",
+    "named regions in accessibility tree",
+    "no page overflow at 320/390/768/1440",
+    "keyboard horizontal table scroll",
+    "URL back navigation",
+    "no private value or withheld name in tree"
+  ]
+}

@@ -2,6 +2,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { actionUrl, type AssistedActions } from "../lib/assistedActions";
 import { createAssistedFixture } from "../lib/assistedFixture";
 import { activeStages, type JourneyStage } from "../lib/assistedJourney";
+import { useFocusRecovery } from "../lib/useFocusRecovery";
 
 const instructions: Record<JourneyStage, string> = {
   idle: "Start a fixture run to rehearse the assisted JSON-LD journey.",
@@ -19,6 +20,7 @@ const button = "rounded-lg border border-slate-400 bg-white px-4 py-2 text-sm fo
 
 export function AssistedJourneyPanel({ fixture, actions = fixture.actions }: { fixture: ReturnType<typeof createAssistedFixture>; actions?: AssistedActions }) {
   const { journey } = fixture;
+  const focus = useFocusRecovery();
   const state = useSyncExternalStore(journey.subscribe, journey.getSnapshot);
   const [now, setNow] = useState(Date.now());
   const active = activeStages.includes(state.stage);
@@ -31,8 +33,8 @@ export function AssistedJourneyPanel({ fixture, actions = fixture.actions }: { f
     const timer = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(timer);
   }, [active, state.deadline]);
-  return <section aria-label="Assisted Inji Web fixture journey" className="mt-7 space-y-4 rounded-3xl border border-blue-200 bg-blue-50 p-6">
-    <h2 className="text-xl font-bold">Inji Web Assisted · JSON-LD</h2>
+  return <section ref={focus.root} aria-label="Assisted Inji Web fixture journey" className="mt-7 space-y-4 rounded-3xl border border-blue-200 bg-blue-50 p-6">
+    <h2 ref={focus.fallback} tabIndex={-1} className="text-xl font-bold">Inji Web Assisted · JSON-LD</h2>
     <p className="font-semibold">Fixture simulation · A1 blocked: managed live validation and integrator review pending. A dedicated account and manual wallet success are recorded below.</p>
     <p className="text-sm">Run {state.runId}. These controls inject synthetic observations. No wallet is contacted and no credential or login state is stored.</p>
     <div role="status" aria-live="polite" aria-atomic="true">

@@ -53,6 +53,9 @@ export default function App() {
   const setRunId = (id: string) => location.update({ run: id });
   const archiveView = location.state.view;
   const setArchiveView = (view: "history" | "matrix") => location.update({ view });
+  const runHeading = useRef<HTMLHeadingElement>(null);
+  const archiveOpener = useRef<HTMLElement | null>(null);
+  const previousRun = useRef<string | null>(null);
   const [runError, setRunError] = useState(false);
   const activeRunId = useRef(runId);
   activeRunId.current = runId;
@@ -109,6 +112,17 @@ export default function App() {
     return () => { window.clearInterval(poll); socket.disconnect(); };
   }, [refresh, runId]);
 
+  useEffect(() => {
+    if (runId) {
+      runHeading.current?.focus({ preventScroll: true });
+      runHeading.current?.scrollIntoView?.({ block: "start", behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    } else if (previousRun.current) {
+      const opener = archiveOpener.current?.isConnected ? archiveOpener.current : document.querySelector<HTMLElement>(`[data-open-run="${previousRun.current}"]`);
+      (opener ?? document.querySelector<HTMLElement>('[aria-label="Run archive"]'))?.focus();
+    }
+    previousRun.current = runId;
+  }, [runId, metadata]);
+
   async function startRun() {
     setStartError(null);
     if (config.wallet === "inji_web_assisted") {
@@ -139,7 +153,7 @@ export default function App() {
       const created = await api.replayRun(run.id, config.tamper);
       setRun(null); setSteps([]); setExchanges([]); setSelectedStepId(null); setSelectedExchangeId(null);
       setRunId(created.runId);
-    } finally {
+    } catch { setStartError("Replay unavailable. Please try again."); } finally {
       setBusy(false);
     }
   }
@@ -147,7 +161,7 @@ export default function App() {
   function selectArchivedRun(id: string) {
     setRun(null); setSteps([]); setExchanges([]); setSelectedStepId(null); setSelectedExchangeId(null);
     setRunId(id);
-    window.scrollTo({ top: 430, behavior: "smooth" });
+    archiveOpener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   }
 
   const format = metadata?.formats.find((item) => item.id === (run?.config.format ?? config.format));
@@ -181,10 +195,11 @@ export default function App() {
   const selectedScenario = scenarios.find((item) => item.id === config.scenarioId);
   const scenarioGaps = [...new Set(scenarios.flatMap((item) => item.unavailableReason ? [item.unavailableReason] : []))];
 
-  if (!metadata) return <main className="grid min-h-screen place-items-center text-slate-600"><Activity className="animate-pulse" /> Loading playground…</main>;
+  if (!metadata) return <main className="grid min-h-screen place-items-center p-6 text-slate-600"><div><h1 className="text-xl font-bold">Inji Interoperability Playground</h1>{startError ? <p role="alert">{startError}</p> : <p role="status"><Activity aria-hidden="true" className="animate-pulse" /> Loading playground…</p>}</div></main>;
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
+      <a className="skip-link" href="#playground-main">Skip to main content</a>
       <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-[1500px] items-center gap-4 px-5 py-4 lg:px-8">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-ink text-white shadow-lg"><FlaskConical size={22} /></span>
@@ -193,7 +208,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="dot-grid mx-auto max-w-[1500px] px-5 py-8 lg:px-8">
+      <main id="playground-main" tabIndex={-1} className="dot-grid mx-auto max-w-[1500px] px-5 py-8 lg:px-8">
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-card">
           <div className="border-b border-slate-200 px-6 py-5 lg:px-8">
             <div className="flex flex-wrap items-end justify-between gap-4">
@@ -224,7 +239,7 @@ export default function App() {
           </div>
           <div className="flex flex-col gap-4 border-t border-slate-200 bg-slate-50 px-6 py-5 sm:flex-row sm:items-center lg:px-8">
             <div className="flex flex-wrap gap-2">
-              {metadata.formats.map((item) => <button key={item.id} onClick={() => setConfig({ ...config, format: item.id, scenarioId: null })} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${config.format === item.id ? "border-ink bg-ink text-white" : "border-slate-300 bg-white text-slate-600 hover:border-slate-500"}`}>{item.name}</button>)}
+              {metadata.formats.map((item) => <button key={item.id} aria-pressed={config.format === item.id} onClick={() => setConfig({ ...config, format: item.id, scenarioId: null })} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${config.format === item.id ? "border-ink bg-ink text-white" : "border-slate-300 bg-white text-slate-600 hover:border-slate-500"}`}>{item.name}</button>)}
             </div>
             <label className="flex items-center gap-2 text-sm font-semibold text-slate-600">
               Fault
@@ -243,14 +258,14 @@ export default function App() {
         {assisted && <AssistedJourneyPanel key={assisted.journey.runId} fixture={assisted} />}
         <section className="mt-7 rounded-3xl border border-slate-200 bg-white shadow-card">
           <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 px-6 py-5 lg:px-8">
-            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-wallet">{run?.recordKind === "archived_evidence" ? "Historical evidence · read only" : "Live run"}</p><h2 className="mt-1 text-xl font-bold">{run ? `Run ${run.id.slice(0, 8)}` : "Ready when you are"}</h2></div>
+            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-wallet">{run?.recordKind === "archived_evidence" ? "Historical evidence · read only" : "Live run"}</p><h2 ref={runHeading} tabIndex={-1} className="mt-1 text-xl font-bold">{run ? `Run ${run.id.slice(0, 8)}` : runId ? "Loading selected run…" : "Ready when you are"}</h2></div>
             {format && <div className="ml-auto flex flex-wrap gap-2"><span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold">{format.name}</span><span className="rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-800">{format.proofType}</span><span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800">{format.algorithm}</span></div>}
           </div>
           {runError && <p role="alert">Run unavailable. It may be missing or your session may not have access. No previous result is shown.</p>}
-          {runError ? null : !runId ? <div className="grid min-h-72 place-items-center p-8 text-center"><div><ArrowRight className="mx-auto mb-3 text-slate-300" size={36} /><p className="font-semibold text-slate-600">Start a flow to see the live protocol timeline.</p><p className="mt-1 text-sm text-slate-400">Protocol exchanges are sanitized before storage.</p></div></div> : (
+          {runError ? null : !runId ? <div className="grid min-h-72 place-items-center p-8 text-center"><div><ArrowRight className="mx-auto mb-3 text-slate-300" size={36} /><p className="font-semibold text-slate-600">Start a flow to see the live protocol timeline.</p><p className="mt-1 text-sm text-slate-600">Protocol exchanges are sanitized before storage.</p></div></div> : (
             <div className="grid gap-6 p-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:p-8">
               <div>
-                <div className={`mb-4 rounded-xl border px-4 py-3 text-sm font-semibold ${run?.status === "passed" ? "border-green-200 bg-green-50 text-ok" : runFinished ? "border-red-200 bg-red-50 text-fail" : "border-blue-200 bg-blue-50 text-issuer"}`} aria-live="polite">{runMessage}</div>
+                <div className={`mb-4 rounded-xl border px-4 py-3 text-sm font-semibold ${run?.status === "passed" ? "border-green-200 bg-green-50 text-ok" : runFinished ? "border-red-200 bg-red-50 text-fail" : "border-blue-200 bg-blue-50 text-issuer"}`} role="status" aria-atomic="true">{runMessage}</div>
                 {run && <p className="mb-4 text-xs font-semibold text-slate-600">Evidence: {evidenceLabels[evidenceTier(run)]}</p>}
                 {run?.recordKind === "archived_evidence" && <p className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-900">Committed, sanitized 25 October A1 export. Original run ID and timestamps are preserved; opening this record does not repeat the wallet journey.</p>}
                 {run?.evaluation && <p className="mb-4 text-xs text-slate-700">Validation: {run.evaluation.verdict.replaceAll("_", " ")}{run.evaluation.observed.code ? ` · ${run.evaluation.observed.code}` : ""}</p>}

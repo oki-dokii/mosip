@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Exchange, RunStep, RunSummary } from "@playground/shared";
 import { evidenceLabels, evidenceTier } from "@playground/shared/evidence";
+import { useFocusRecovery } from "../lib/useFocusRecovery";
 import { api } from "../lib/api";
 import { isRunId } from "../lib/archiveLocation";
 import { PublicEvidence } from "./PublicEvidence";
@@ -24,6 +25,7 @@ function origins(exchanges: Exchange[]) {
 }
 const text = (value: string | null | undefined) => value ?? "unreported";
 export function RunComparison({ a, b }: { a: string; b: string }) {
+  const focus = useFocusRecovery();
   const [result, setResult] = useState<{ key: string; records: [Recorded, Recorded] } | null>(null);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
@@ -53,18 +55,19 @@ export function RunComparison({ a, b }: { a: string; b: string }) {
     ["Expected verifier verdict", r => r.run.expectedOutcome],
     ["Recorded verifier verdict", r => r.run.actualOutcome ?? "Unavailable: no normalized result recorded"],
   ];
-  return <section aria-label="Run comparison" className="my-6 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 text-sm">
-    <h2 className="text-lg font-bold">Compare recorded runs</h2>
+  return <section ref={focus.root} aria-label="Run comparison" className="my-6 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 text-sm">
+    <h2 ref={focus.fallback} tabIndex={-1} className="text-lg font-bold">Compare recorded runs</h2>
     <p>Read-only comparison of existing records. Projected metadata does not verify a credential. Links use the current session’s existing access controls.</p>
     <p>Fixture, mock and Reference Wallet evidence retain their recorded classifications. Hosted Web, local Web and Android must not be inferred from wallet names or loopback observations. Unreported deployment provenance remains unavailable; not-tested entries have no recorded run to compare.</p>
-    {!a || !b ? <p>Select two recorded runs to compare.</p> : a === b ? <p>Select two different runs.</p> : error ? <div role="alert">{error} <button onClick={() => setRetry(n => n + 1)} className="underline">Retry comparison</button></div> : !records ? <p role="status">Loading comparison…</p> : <>
+    <p role="status" className="sr-only">{!a || !b ? "Comparison selection incomplete." : a === b ? "Comparison requires distinct runs." : error ? "Comparison unavailable." : !records ? "Loading comparison…" : "Comparison ready."}</p>
+    {!a || !b ? <p>Select two recorded runs to compare.</p> : a === b ? <p>Select two different runs.</p> : error ? <div role="alert">{error} <button onClick={() => setRetry(n => n + 1)} className="underline">Retry comparison</button></div> : !records ? <p>Loading comparison…</p> : <>
       <p className="rounded bg-amber-50 p-3">Profile and version differences are shown below. Different formats, profiles, service versions or evidence sources can make results incomparable; missing versions prevent an equivalence claim. Differences are not automatically regressions.</p>
-      <div className="overflow-x-auto"><table className="w-full text-left"><caption className="sr-only">Configuration, provenance and verifier comparison</caption><thead><tr><th>Field</th><th>Run A</th><th>Run B</th></tr></thead><tbody>{fields.map(([label, read]) => {
+      <div role="region" aria-label="Run configuration comparison table" tabIndex={0} className="overflow-x-auto"><table className="w-full min-w-[36rem] text-left"><caption className="sr-only">Configuration, provenance and verifier comparison</caption><thead><tr><th scope="col">Field</th><th scope="col">Run A</th><th scope="col">Run B</th></tr></thead><tbody>{fields.map(([label, read]) => {
         const left = read(records[0]), right = read(records[1]);
-        return <tr key={label} className={left === right ? "" : "bg-amber-50"}><th className="p-2">{label}{left !== right && <span className="sr-only"> (different)</span>}</th><td className="break-all p-2">{left}</td><td className="break-all p-2">{right}</td></tr>;
+        return <tr key={label} className={left === right ? "" : "bg-amber-50"}><th scope="row" className="p-2">{label}{left !== right && <span className="sr-only"> (different)</span>}</th><td className="break-all p-2">{left}</td><td className="break-all p-2">{right}</td></tr>;
       })}</tbody></table></div>
       <h3 className="font-bold">Step outcomes</h3>
-      <table className="w-full text-left"><thead><tr><th>Step key</th><th>Run A</th><th>Run B</th></tr></thead><tbody>{[...new Set(records.flatMap(r => r.steps.map(s => s.stepKey)))].map(step => <tr key={step}><th>{step}</th>{records.map((r, i) => <td key={i}>{r.steps.filter(s => s.stepKey === step).map(s => s.status).join(", ") || "Unavailable: step not recorded"}</td>)}</tr>)}</tbody></table>
+      <div role="region" aria-label="Run step comparison table" tabIndex={0} className="overflow-x-auto"><table className="w-full min-w-[36rem] text-left"><thead><tr><th scope="col">Step key</th><th scope="col">Run A</th><th scope="col">Run B</th></tr></thead><tbody>{[...new Set(records.flatMap(r => r.steps.map(s => s.stepKey)))].map(step => <tr key={step}><th scope="row">{step}</th>{records.map((r, i) => <td key={i}>{r.steps.filter(s => s.stepKey === step).map(s => s.status).join(", ") || "Unavailable: step not recorded"}</td>)}</tr>)}</tbody></table></div>
       {!records.some(r => r.steps.length) && <p>No steps recorded.</p>}
       <div className="grid gap-4 md:grid-cols-2">{records.map((r, i) => <section key={i} aria-label={`Run ${i === 0 ? "A" : "B"} sanitized structure`}>
         <h3 className="font-bold">Run {i === 0 ? "A" : "B"} available sanitized structure</h3>

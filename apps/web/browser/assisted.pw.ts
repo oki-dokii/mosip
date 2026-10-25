@@ -1,8 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 const require = createRequire(import.meta.url);
-const evidence = new URL("../../../submission/evidence/person2/", import.meta.url);
+const evidence = process.env.PERSON2_SYNTHETIC_EVIDENCE_DIR ? pathToFileURL(resolve(process.env.PERSON2_SYNTHETIC_EVIDENCE_DIR) + "/") : new URL("../../../submission/evidence/person2/", import.meta.url);
 const bffUrl = `http://127.0.0.1:${process.env.PLAYGROUND_BROWSER_BFF_PORT ?? "4000"}`;
 
 test("assisted fixture supports keyboard completion and accessibility", async ({ page }) => {

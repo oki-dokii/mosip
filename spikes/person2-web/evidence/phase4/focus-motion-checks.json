@@ -1,0 +1,11 @@
+{
+  "source": "synthetic_playground_ui",
+  "check": "automated_keyboard_not_manual_screen_reader",
+  "result": "passed",
+  "assertions": [
+    "focus recovered after issuance and completion",
+    "focus recovered after cancellation and timeout",
+    "reduced-motion transition disabled",
+    "reduced-motion hover translation disabled"
+  ]
+}

@@ -12,7 +12,7 @@ const webUrl = `http://127.0.0.1:${webPort}`;
 export default defineConfig({
   testDir: "./browser", testMatch: "**/*.pw.ts", testIgnore: "**/*.local.pw.ts", workers: 1,
   outputDir: "/tmp/person2-playwright-results", reporter: "list",
-  use: { baseURL: webUrl, viewport: { width: 1440, height: 1000 } },
+  use: { baseURL: webUrl, viewport: { width: 1440, height: 1000 }, screenshot: "off", trace: "off", video: "off", serviceWorkers: "block" },
   webServer: [
     { command: "pnpm --filter @playground/mock-issuer exec tsx src/server.ts", url: `${issuerUrl}/.well-known/openid-credential-issuer`, reuseExistingServer: false, env: { MOCK_ISSUER_PORT: String(issuerPort), MOCK_ISSUER_PUBLIC_URL: issuerUrl } },
     { command: "pnpm --filter @playground/mock-verifier exec tsx src/server.ts", port: verifierPort, reuseExistingServer: false, env: { MOCK_VERIFIER_PORT: String(verifierPort), MOCK_VERIFIER_PUBLIC_URL: verifierUrl } },

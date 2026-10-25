@@ -10,14 +10,26 @@
 }
 
 body { margin: 0; min-width: 320px; min-height: 100vh; }
-button, input { font: inherit; }
-button:focus-visible, input:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.28); outline-offset: 2px; }
+button, input, select { font: inherit; }
+/* Enabling a disabled control must not fade through low-contrast opacity. */
+button.transition { transition-property: color, background-color, border-color, box-shadow, transform; }
+:focus-visible { outline: 3px solid #1d4ed8 !important; outline-offset: 3px; box-shadow: 0 0 0 3px #fff; }
+main { overflow-wrap: anywhere; }
+.grid > *, .flex > * { min-width: 0; }
+select, input[type="file"] { max-width: 100%; }
+label { max-width: 100%; }
+.skip-link { position: absolute; left: 1rem; top: -5rem; z-index: 50; background: white; color: #18212f; padding: 0.75rem; }
+.skip-link:focus { top: 1rem; }
+[tabindex="-1"] { scroll-margin-top: 1.5rem; }
 
 .dot-grid {
   background-image: radial-gradient(rgba(24, 33, 47, 0.08) 1px, transparent 1px);
   background-size: 18px 18px;
 }
+/* Place notices on a solid canvas so text contrast is measurable and stable. */
+.dot-grid > p { background-color: #f4f7f9; }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .hover\:-translate-y-0\.5:hover { transform: none !important; }
 }

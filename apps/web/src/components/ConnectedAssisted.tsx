@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import type { RunConfig, RunSummary, RunStep } from "@playground/shared";
 import { api } from "../lib/api";
 import { actionUrl } from "../lib/assistedActions";
+import { useFocusRecovery } from "../lib/useFocusRecovery";
 
 export function ConnectedAssisted({ config, onRun, resumeId }: { config: RunConfig; onRun: (id: string) => void; resumeId: string | null }) {
+  const focus = useFocusRecovery();
   const [live, setLive] = useState(false);
   const [id, setId] = useState<string | null>(null);
   const [state, setState] = useState<{ run: RunSummary; steps: RunStep[]; actions: Record<string, string>; deadlineAt: number | null } | null>(null);
@@ -41,14 +43,14 @@ export function ConnectedAssisted({ config, onRun, resumeId }: { config: RunConf
     try { await api.assistedObserve(id, kind); } catch { setMessage("Observation rejected or run already finished. Refresh status before retrying."); }
   }
   const step = state?.steps.find(item => item.status === "running");
-  return <section aria-label="Connected assisted journey" className="mt-5 space-y-3 rounded-xl border border-blue-300 bg-white p-5">
-    <h2 className="text-lg font-bold">Backend-assisted journey</h2>
+  return <section ref={focus.root} aria-label="Connected assisted journey" className="mt-5 space-y-3 rounded-xl border border-blue-300 bg-white p-5">
+    <h2 ref={focus.fallback} tabIndex={-1} className="text-lg font-bold">Backend-assisted journey</h2>
     <p>Fixture mode tests the API and observation-driven journey. Live A1 requires a fresh playground-managed wallet run with correlated issuance, storage, presentation and verifier result.</p>
-    <div className="flex gap-3"><button disabled={busy || active} onClick={() => void start("fixture")} className="rounded border px-3 py-2">Start connected fixture</button><button disabled={!live || busy || active} onClick={() => void start("live")} className="rounded border px-3 py-2 disabled:opacity-50">Start live assisted run</button></div>
+    <div className="flex flex-wrap gap-3"><button disabled={busy || active} onClick={() => void start("fixture")} className="rounded border px-3 py-2">Start connected fixture</button><button disabled={!live || busy || active} onClick={() => void start("live")} className="rounded border px-3 py-2 disabled:opacity-50">Start live assisted run</button></div>
     {!live && <p>Live start unavailable on this deployment. Configure the assisted endpoints and capture bridge before starting a managed wallet run.</p>}
     {message && <p role="alert">{message}</p>}
-    {state && <div role="status"><p>Backend run: {state.run.id}</p><p>{fixture ? "Fixture simulation" : "Wallet evidence unverified"} · {state.run.status}</p><p>{step ? `Waiting: ${step.stepKey}` : `Verifier outcome: ${state.run.actualOutcome ?? "not established"}`}</p>{state.steps.filter(item => typeof item.summary?.error === "string").map(item => <p key={item.id}>{String(item.summary?.error)}{typeof item.summary?.upstreamHttpStatus === "number" ? ` · upstream HTTP ${item.summary.upstreamHttpStatus}` : ""}{typeof item.summary?.upstreamErrorCode === "string" ? ` · ${item.summary.upstreamErrorCode}` : ""}</p>)}</div>}
-    {active && state?.deadlineAt && <p role="timer">Time remaining: {Math.max(0, Math.ceil((state.deadlineAt - Date.now()) / 1000))} seconds</p>}
+    {state && <div role="status" aria-atomic="true"><p>Backend run: {state.run.id}</p><p>{fixture ? "Fixture simulation" : "Wallet evidence unverified"} · {state.run.status}</p><p>{step ? `Waiting: ${step.stepKey}` : `Verifier outcome: ${state.run.actualOutcome ?? "not established"}`}</p>{state.steps.filter(item => typeof item.summary?.error === "string").map(item => <p key={item.id}>{String(item.summary?.error)}{typeof item.summary?.upstreamHttpStatus === "number" ? ` · upstream HTTP ${item.summary.upstreamHttpStatus}` : ""}{typeof item.summary?.upstreamErrorCode === "string" ? ` · ${item.summary.upstreamErrorCode}` : ""}</p>)}</div>}
+    {active && state?.deadlineAt && <p role="timer" aria-label="Time remaining">Time remaining: {Math.max(0, Math.ceil((state.deadlineAt - Date.now()) / 1000))} seconds</p>}
     {active && <>
       <nav aria-label="Connected wallet actions">{Object.entries(state?.actions ?? {}).map(([label, value]) => { const href = actionUrl(value); return href ? <a key={label} href={href} rel="noopener noreferrer" target={href.startsWith("https:") ? "_blank" : undefined} className="mr-3 underline">{label}</a> : null; })}</nav>
       {step?.stepKey === "ISSUE_CREDENTIAL" && fixture && <button onClick={() => void observe("issuance")}>Inject fixture issuance</button>}

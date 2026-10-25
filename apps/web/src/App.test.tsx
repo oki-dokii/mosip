@@ -48,7 +48,7 @@ it("blocks an unsupported format after selection and re-enables JSON-LD", async 
   await configure();
   click("SD-JWT");
   expect((screen.getByRole("button", { name: "Start assisted fixture run" }) as HTMLButtonElement).disabled).toBe(true);
-  expect(screen.getByRole("status").textContent).toMatch(/SD-JWT Web presentation is unavailable/);
+  expect(screen.getAllByRole("status").some(node => /SD-JWT Web presentation is unavailable/.test(node.textContent ?? ""))).toBe(true);
   click("JSON-LD");
   expect((screen.getByRole("button", { name: "Start assisted fixture run" }) as HTMLButtonElement).disabled).toBe(false);
   fireEvent.change(screen.getByRole("combobox", { name: "Fault" }), { target: { value: "bad_signature" } });

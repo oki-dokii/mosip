@@ -1,0 +1,28 @@
+{
+  "source": "local_dependency_probe",
+  "ports": [
+    {
+      "port": 18093,
+      "reachable": false
+    },
+    {
+      "port": 18099,
+      "reachable": false
+    },
+    {
+      "port": 18095,
+      "reachable": false
+    },
+    {
+      "port": 18090,
+      "reachable": false
+    },
+    {
+      "port": 18081,
+      "reachable": false
+    }
+  ],
+  "dockerDaemonSocketPresent": false,
+  "externalSyntheticPasscodeFilePresent": false,
+  "liveWalletAcceptance": "blocked_not_run"
+}

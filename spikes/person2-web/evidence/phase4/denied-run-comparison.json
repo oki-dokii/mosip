@@ -1,0 +1,8 @@
+{
+  "source": "synthetic_playground_ui",
+  "check": "automated_axe_not_manual_screen_reader",
+  "state": "denied-run-comparison",
+  "violations": [],
+  "incomplete": [],
+  "passes": 45
+}

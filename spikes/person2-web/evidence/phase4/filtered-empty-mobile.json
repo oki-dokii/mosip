@@ -1,0 +1,92 @@
+{
+  "source": "synthetic_playground_ui",
+  "check": "automated_axe_not_manual_screen_reader",
+  "state": "filtered-empty-mobile",
+  "violations": [],
+  "incomplete": [
+    {
+      "rule": "color-contrast",
+      "targets": [
+        [
+          ".overflow-x-auto[role=\"region\"]:nth-child(6) > .min-w-\\[36rem\\] > thead > tr > th[scope=\"col\"]:nth-child(3)"
+        ],
+        [
+          "tr:nth-child(2) > .break-all:nth-child(2)"
+        ],
+        [
+          "tr:nth-child(2) > .break-all:nth-child(3)"
+        ],
+        [
+          "tr:nth-child(3) > .break-all:nth-child(2)"
+        ],
+        [
+          "tr:nth-child(3) > .break-all:nth-child(3)"
+        ],
+        [
+          "tr:nth-child(4) > .break-all:nth-child(3)"
+        ],
+        [
+          "tr:nth-child(7) > .break-all:nth-child(3)"
+        ],
+        [
+          "tr:nth-child(8) > .break-all:nth-child(3)"
+        ],
+        [
+          "tr:nth-child(9) > .break-all:nth-child(3)"
+        ],
+        [
+          "tr:nth-child(10) > .break-all:nth-child(2)"
+        ],
+        [
+          "tr:nth-child(10) > .break-all:nth-child(3)"
+        ],
+        [
+          "tr:nth-child(11) > .break-all:nth-child(2)"
+        ],
+        [
+          "tr:nth-child(11) > .break-all:nth-child(3)"
+        ],
+        [
+          "tr:nth-child(12) > .break-all:nth-child(3)"
+        ],
+        [
+          "tr:nth-child(13) > .break-all:nth-child(3)"
+        ],
+        [
+          "tr:nth-child(14) > .break-all:nth-child(3)"
+        ],
+        [
+          "div[aria-label=\"Run step comparison table\"] > .min-w-\\[36rem\\] > thead > tr > th[scope=\"col\"]:nth-child(3)"
+        ],
+        [
+          "div[aria-label=\"Run step comparison table\"] > .min-w-\\[36rem\\] > tbody > tr > td:nth-child(2)"
+        ],
+        [
+          "div[aria-label=\"Run step comparison table\"] > .min-w-\\[36rem\\] > tbody > tr > td:nth-child(3)"
+        ]
+      ],
+      "reasons": [
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element",
+        "Element's background color could not be determined because it's partially obscured by another element"
+      ]
+    }
+  ],
+  "passes": 49
+}
