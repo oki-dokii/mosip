@@ -1,5 +1,9 @@
 # Remaining work: single-developer handoff
 
+## 25 October local Web wallet checkpoint
+
+The opt-in [pinned local Inji Web/Mimoto profile](deploy/INJI_WEB_LOCAL.md) now starts with `pnpm stage:web-local`. A synthetic OAuth2 login created a persistent wallet; `pnpm check:web-local` unlocked it in two fresh browser sessions, including after a container restart. This is a local **wallet-shell pass**, not a local issuer → wallet → verifier pass: the issuer catalog is empty, no local credential has been stored or presented, and Mimoto's aggregate HSM health retains a missing external KERNEL alias warning. The next technical step under order 2 is to connect a local JSON-LD issuer and Verify request and capture a correlated `valid` result.
+
 ## 25 October managed A1 result
 
 Fresh run `3dc6895d-ff87-45a2-a10b-46844198d83e` completed the hosted Inji Web Registration Receipt journey with issuance transport, explicit reload-backed storage confirmation, run-correlated Mimoto presentation and independent Verify `valid`. The [sanitized evidence bundle](submission/evidence/person2-managed-a1-2026-10-25/README.md) records the original exports, actual matrix entry, import workaround, display corrections and capture limits. The technical acceptance target below is now observed for this profile; final team/integrator review remains pending. The account/configuration absence recorded on 24 October below is historical.

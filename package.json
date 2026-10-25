@@ -9,6 +9,8 @@
     "dev:x509-mock": "bash scripts/dev-x509-mock.sh",
     "mobile:inji": "node scripts/mobile-inji.mjs",
     "demo:inji": "bash scripts/demo-inji-local.sh",
+    "stage:web-local": "bash scripts/stage-inji-web-local.sh",
+    "check:web-local": "node scripts/check-inji-web-local.mjs",
     "probe:inji": "node scripts/local-inji-smoke.mjs --matrix",
     "demo:docker": "bash scripts/demo-docker.sh",
     "e2e:smoke": "node e2e/smoke.mjs",

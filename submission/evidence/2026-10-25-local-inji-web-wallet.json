@@ -1,0 +1,45 @@
+{
+  "observedAt": "2026-10-25T12:10:15.058Z",
+  "sourceBaseCommit": "bd9dcb6",
+  "commands": ["pnpm stage:web-local", "pnpm check:web-local"],
+  "result": "LOCAL_WEB_WALLET_PASS",
+  "profile": "local_official_inji_web_mimoto_synthetic_idp",
+  "components": {
+    "injiWeb": "0.17.0",
+    "mimoto": "0.22.0",
+    "syntheticIdp": "local_mock",
+    "database": "isolated_postgresql_13"
+  },
+  "serviceChecks": {
+    "webHomeHttp": 200,
+    "mimotoIssuersHttp": 200,
+    "mimotoVerifiersHttp": 200,
+    "idpHealthHttp": 200,
+    "mimotoAggregateHealth": "DOWN_HSMHealth_NO_UNIQUE_KEY_ALIAS_FOUND",
+    "composeMetadataReadiness": "healthy"
+  },
+  "firstObservedBrowserSession": {
+    "oauthCallbackHttp": 302,
+    "passcodeSetupVisible": true,
+    "walletCreationHttp": 200,
+    "walletUnlockHttp": 200,
+    "walletHomeVisible": true
+  },
+  "freshBrowserSession": {
+    "existingPasscodePromptVisible": true,
+    "walletUnlockHttp": 200,
+    "walletHomeVisible": true
+  },
+  "automatedRepeatCheck": {
+    "firstSession": "existing_synthetic_wallet",
+    "secondSession": "existing_synthetic_wallet",
+    "walletApiHttp200": true,
+    "homeVisible": true
+  },
+  "screenshot": "submission/evidence/2026-10-25-local-inji-web-home.png",
+  "issuerCatalogConfigured": false,
+  "credentialIssuanceObserved": false,
+  "presentationObserved": false,
+  "verifierResultObserved": false,
+  "evidenceTier": "local_official_web_wallet_synthetic_login"
+}
