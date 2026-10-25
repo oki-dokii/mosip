@@ -46,6 +46,10 @@ spikes/
 submission/**
 !submission/
 !submission/gaps.json
+# Only the sanitized managed A1 report is needed for the read-only demo overlay.
+!submission/evidence/
+!submission/evidence/person2-managed-a1-2026-10-25/
+!submission/evidence/person2-managed-a1-2026-10-25/run-report.json
 
 # ── local evidence files ─────────────────────────────────────────────────────
 artifacts/

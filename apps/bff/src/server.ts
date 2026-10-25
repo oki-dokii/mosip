@@ -2,10 +2,12 @@ import { createServer } from "node:http";
 import { Server } from "socket.io";
 import { buildApp } from "./app.js";
 import { createRunRepository } from "./store.js";
+import { withArchivedA1 } from "./archivedA1.js";
 
 const port = Number(process.env.PORT ?? 4000);
 const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5173";
-const repository = createRunRepository();
+const baseRepository = createRunRepository();
+const repository = process.env.PLAYGROUND_ARCHIVED_A1 === "true" ? withArchivedA1(baseRepository) : baseRepository;
 let io: Server;
 const app = buildApp(() => io, repository);
 const httpServer = createServer(app);

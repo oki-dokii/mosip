@@ -25,7 +25,7 @@ function csvCell(value: unknown) {
 export function renderMatrixCsv(runs: RunSummary[], manual: readonly WalletEvidence[] = []) {
   const rows = [["run_id", "issuer", "wallet", "verifier", "format", "flow", "tamper", "status", "expected", "actual", "evidence_tier", "created_at", "scenario_id", "protocol_profile", "issuer_representation", "evaluation", "expected_code", "observed_code", "record_kind", "evidence_id", "outcome_source", "managed_validation", "limitations"]];
   for (const run of latestMatrix(runs)) {
-    rows.push([run.id, run.config.issuer, run.config.wallet, run.config.verifier, run.config.format, run.config.flow, run.config.tamper ?? "none", run.status, run.expectedOutcome, run.actualOutcome ?? "", evidenceTier(run), run.createdAt, run.config.scenarioId ?? "custom", run.protocolProfile ?? "unreported", run.issuerRepresentation ?? "unreported", run.evaluation?.verdict ?? "not_recorded", run.evaluation?.expected.code ?? "", run.evaluation?.observed.code ?? "", "managed_run", "", "verifier_driver", "", ""]);
+    rows.push([run.id, run.config.issuer, run.config.wallet, run.config.verifier, run.config.format, run.config.flow, run.config.tamper ?? "none", run.status, run.expectedOutcome, run.actualOutcome ?? "", evidenceTier(run), run.createdAt, run.config.scenarioId ?? "custom", run.protocolProfile ?? "unreported", run.issuerRepresentation ?? "unreported", run.evaluation?.verdict ?? "not_recorded", run.evaluation?.expected.code ?? "", run.evaluation?.observed.code ?? "", run.recordKind ?? "managed_run", "", "verifier_driver", "", ""]);
   }
   for (const item of manual) rows.push(["", item.issuer, item.wallet, item.verifier, item.format, "recorded_manual_journey", "none", "observed_valid", "", item.outcome, item.recordKind, item.observedDate, "", "unreported", "unreported", "not_evaluated", "", "", item.recordKind, item.id, item.outcomeSource, item.managedValidation, item.limitations.join("; ")]);
   return rows.map((row) => row.map(csvCell).join(",")).join("\n") + "\n";
@@ -45,7 +45,11 @@ export function matrixCells(runs: RunSummary[], manual: readonly WalletEvidence[
     { issuer: "inji_certify" as const, verifier: "inji_verify" as const, wallet: "inji_web_assisted" as const, format: "ldp_vc" as const },
   ];
   return supported.map(config => {
-    const run = runs.filter(run => !run.config.tamper && ["passed", "failed", "errored"].includes(run.status) && Object.entries(config).every(([key, value]) => run.config[key as keyof typeof config] === value)).sort((a,b) => b.createdAt.localeCompare(a.createdAt))[0];
+    const run = runs.filter(run => !run.config.tamper && ["passed", "failed", "errored"].includes(run.status) && Object.entries(config).every(([key, value]) => run.config[key as keyof typeof config] === value)).sort((a,b) => {
+      const aFixture = evidenceTier(a) === "fixture" ? 1 : 0;
+      const bFixture = evidenceTier(b) === "fixture" ? 1 : 0;
+      return aFixture - bFixture || b.createdAt.localeCompare(a.createdAt);
+    })[0];
     const manualEvidenceIds = config.wallet === "inji_web_assisted" ? manual.filter(item => item.wallet === "inji_web" && item.format === config.format && item.issuer === config.issuer && item.verifier === config.verifier).map(item => item.id) : [];
     return { config, manualEvidenceIds, status: run?.status ?? "not_tested", testedAt: run?.finishedAt ?? null, evidence: run ? evidenceTier(run) : "unverified", runId: run?.id ?? null };
   });

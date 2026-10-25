@@ -50,3 +50,14 @@ it("reports an explicit server-owned untested grid with no invented run evidence
   expect(cells.every(cell => cell.status === "not_tested" && cell.runId === null && cell.testedAt === null)).toBe(true);
   expect(cells.filter(cell => cell.config.wallet === "inji_web_assisted").map(cell => cell.config.format)).toEqual(["ldp_vc"]);
 });
+
+it("keeps a recorded real-wallet cell visible when a later fixture runs", async () => {
+  const { matrixCells } = await import("./matrix.js");
+  const base = run("real", "2026-10-25T00:00:00Z");
+  const real = { ...base, config: { ...base.config, wallet: "inji_web_assisted" as const, format: "ldp_vc" as const }, recordKind: "archived_evidence" as const, serviceVersions: { issuer: "unreported", wallet: "unreported", verifier: "unreported" } };
+  const { recordKind: _archived, ...realFields } = real;
+  const fixture = { ...realFields, id: "fixture", createdAt: "2026-10-26T00:00:00Z", serviceVersions: { issuer: "fixture/1", wallet: "fixture/1", verifier: "fixture/1" } };
+  const cell = matrixCells([real, fixture]).find(item => item.config.wallet === "inji_web_assisted");
+  expect(cell?.runId).toBe("real");
+  expect(renderMatrixCsv([real])).toContain('"archived_evidence"');
+});

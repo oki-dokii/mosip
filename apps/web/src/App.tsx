@@ -174,7 +174,7 @@ export default function App() {
         <div className="mx-auto flex max-w-[1500px] items-center gap-4 px-5 py-4 lg:px-8">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-ink text-white shadow-lg"><FlaskConical size={22} /></span>
           <div><h1 className="text-lg font-bold tracking-tight">Inji Interoperability Playground</h1><p className="text-xs text-slate-500">Issue, present, verify — and inspect every boundary.</p></div>
-          <span className="ml-auto hidden rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 sm:block">{run?.config.wallet === "inji_web_assisted" && run.serviceVersions && !run.serviceVersions.wallet.startsWith("fixture/") ? "Live assisted wallet · test data" : driverMode === "fixture" ? "Fixture simulation · test data" : "Live Collab · test data"}</span>
+          <span className="ml-auto hidden rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 sm:block">{run?.recordKind === "archived_evidence" ? "Archived real-wallet evidence · 25 Oct" : run?.config.wallet === "inji_web_assisted" && run.serviceVersions && !run.serviceVersions.wallet.startsWith("fixture/") ? "Live assisted wallet · test data" : driverMode === "fixture" ? "Fixture simulation · test data" : "Live Collab · test data"}</span>
         </div>
       </header>
 
@@ -224,11 +224,11 @@ export default function App() {
 
         {startError && <p role="alert" className="mt-4 text-red-800">{startError}</p>}
         {config.wallet === "inji_web_assisted" && <p className="mt-4 text-sm text-amber-900">Live assisted start requires a configured deployment and dedicated account. The backend-assisted journey below supports connected fixtures and configured live runs.</p>}
-        {((config.wallet === "inji_web_assisted" && !assistedUnavailable(config)) || run?.config.wallet === "inji_web_assisted") && <ConnectedAssisted config={run?.config.wallet === "inji_web_assisted" ? run.config : config} resumeId={run?.config.wallet === "inji_web_assisted" ? run.id : null} onRun={setRunId} />}
+        {((config.wallet === "inji_web_assisted" && !assistedUnavailable(config)) || run?.config.wallet === "inji_web_assisted") && <ConnectedAssisted config={run?.config.wallet === "inji_web_assisted" ? run.config : config} resumeId={run?.config.wallet === "inji_web_assisted" && run.recordKind !== "archived_evidence" ? run.id : null} onRun={setRunId} />}
         {assisted && <AssistedJourneyPanel key={assisted.journey.runId} fixture={assisted} />}
         <section className="mt-7 rounded-3xl border border-slate-200 bg-white shadow-card">
           <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 px-6 py-5 lg:px-8">
-            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-wallet">Live run</p><h2 className="mt-1 text-xl font-bold">{run ? `Run ${run.id.slice(0, 8)}` : "Ready when you are"}</h2></div>
+            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-wallet">{run?.recordKind === "archived_evidence" ? "Historical evidence · read only" : "Live run"}</p><h2 className="mt-1 text-xl font-bold">{run ? `Run ${run.id.slice(0, 8)}` : "Ready when you are"}</h2></div>
             {format && <div className="ml-auto flex flex-wrap gap-2"><span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold">{format.name}</span><span className="rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-800">{format.proofType}</span><span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800">{format.algorithm}</span></div>}
           </div>
           {!runId ? <div className="grid min-h-72 place-items-center p-8 text-center"><div><ArrowRight className="mx-auto mb-3 text-slate-300" size={36} /><p className="font-semibold text-slate-600">Start a flow to see the live protocol timeline.</p><p className="mt-1 text-sm text-slate-400">Protocol exchanges are sanitized before storage.</p></div></div> : (
@@ -236,17 +236,18 @@ export default function App() {
               <div>
                 <div className={`mb-4 rounded-xl border px-4 py-3 text-sm font-semibold ${run?.status === "passed" ? "border-green-200 bg-green-50 text-ok" : runFinished ? "border-red-200 bg-red-50 text-fail" : "border-blue-200 bg-blue-50 text-issuer"}`} aria-live="polite">{runMessage}</div>
                 {run && <p className="mb-4 text-xs font-semibold text-slate-600">Evidence: {evidenceLabels[evidenceTier(run)]}</p>}
+                {run?.recordKind === "archived_evidence" && <p className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-900">Committed, sanitized 25 October A1 export. Original run ID and timestamps are preserved; opening this record does not repeat the wallet journey.</p>}
                 {run?.evaluation && <p className="mb-4 text-xs text-slate-700">Validation: {run.evaluation.verdict.replaceAll("_", " ")}{run.evaluation.observed.code ? ` · ${run.evaluation.observed.code}` : ""}</p>}
                 {typeof verifierDetail === "string" && <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">Verifier detail: {verifierDetail}</p>}
                 {runFinished && run?.config.wallet !== "inji_web_assisted" && run?.status !== "errored" && run?.status !== "cancelled" && <button disabled={busy} onClick={() => void replayRun()} className="mb-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:border-slate-500 disabled:opacity-60">Replay with selected fault</button>}
                 {runFinished && run && <div className="mb-4 grid grid-cols-2 gap-2 text-center text-xs font-bold"><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=md`}>Report · Markdown</a><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=json`}>Report · JSON</a></div>}
                 <RunTimeline steps={steps} selectedStepId={selectedStepId} onSelect={selectStep} />
               </div>
-              <div><CaptureCoverage key={runId} runId={runId} exchangeCount={exchanges.length} canImport={Boolean(runFinished) || run?.config.wallet === "inji_web_assisted"} onImported={() => void refresh(runId)} /><SequenceView runId={runId} exchanges={exchanges} selectedExchangeId={selectedExchangeId} onSelect={selectExchange} /><Inspector exchange={selectedExchange} /></div>
+              <div>{run?.recordKind !== "archived_evidence" && <CaptureCoverage key={runId} runId={runId} exchangeCount={exchanges.length} canImport={Boolean(runFinished) || run?.config.wallet === "inji_web_assisted"} onImported={() => void refresh(runId)} />}<SequenceView runId={runId} exchanges={exchanges} selectedExchangeId={selectedExchangeId} onSelect={selectExchange} /><Inspector exchange={selectedExchange} /></div>
             </div>
           )}
         </section>
-        <WalletEvidencePanel />
+        <WalletEvidencePanel onOpenManagedRun={selectArchivedRun} archivedRunIds={history.filter(item => item.recordKind === "archived_evidence").map(item => item.id)} />
         <RunArchive history={history} matrix={matrix} active={archiveView} onActiveChange={setArchiveView} onSelectRun={selectArchivedRun} />
         <GapExplorer />
       </main>

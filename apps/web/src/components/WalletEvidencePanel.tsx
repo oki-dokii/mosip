@@ -7,7 +7,7 @@ interface WalletEvidence {
   reviewStatus: string; versions: { issuer: string; wallet: string; verifier: string };
   checkpoints: { name: string; evidence: string; detail: string }[]; limitations: string[]; artifacts: { label: string; url: string }[];
 }
-export function WalletEvidencePanel() {
+export function WalletEvidencePanel({ onOpenManagedRun, archivedRunIds = [] }: { onOpenManagedRun?: (id: string) => void; archivedRunIds?: string[] }) {
   const [items, setItems] = useState<WalletEvidence[] | null>(null);
   const [error, setError] = useState(false);
   const [wallet, setWallet] = useState("");
@@ -40,7 +40,7 @@ export function WalletEvidencePanel() {
         <p className="mt-1 text-xs text-slate-600">Versions (issuer / wallet / verifier): {item.versions.issuer} / {item.versions.wallet} / {item.versions.verifier}</p>
         <ul className="mt-3 space-y-2 text-sm">{item.checkpoints.map(check => <li key={check.name}><strong>{check.name} · {check.evidence === "user_confirmed" ? "user confirmed" : "observed"}:</strong> {check.detail}</li>)}</ul>
         <h4 className="mt-4 font-semibold">Evidence limits</h4><ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-slate-600">{item.limitations.map(limit => <li key={limit}>{limit}</li>)}</ul>
-        <div className="mt-4 flex flex-wrap gap-3 text-sm">{item.artifacts.map(artifact => <a key={artifact.url} href={artifact.url} target="_blank" rel="noreferrer" className="font-semibold text-issuer underline">{artifact.label}</a>)}</div>
+        <div className="mt-4 flex flex-wrap gap-3 text-sm">{item.managedRunId && archivedRunIds.includes(item.managedRunId) && onOpenManagedRun && <button type="button" onClick={() => onOpenManagedRun(item.managedRunId!)} className="font-semibold text-issuer underline">Explore managed run in playground</button>}{item.artifacts.map(artifact => <a key={artifact.url} href={artifact.url} target="_blank" rel="noreferrer" className="font-semibold text-issuer underline">{artifact.label}</a>)}</div>
       </article>)}</div>
     </>}
   </section>;

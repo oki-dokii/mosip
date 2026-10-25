@@ -274,6 +274,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
       return await withExchangeLock(repository, runId, async () => {
       const record = await repository.get(runId);
       if (!record) return response.status(404).json({ code: "RUN_NOT_FOUND" });
+      if (record.run.recordKind === "archived_evidence") return response.status(409).json({ code: "ARCHIVED_EVIDENCE_READ_ONLY" });
       const prepared = prepareHarImport(request.body, record, captureOrigins(), assisted.active(record.run.id));
       const imported = await repository.addExchanges(prepared.exchanges);
       const saved = await repository.get(runId);

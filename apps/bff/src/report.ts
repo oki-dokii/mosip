@@ -26,6 +26,7 @@ export function renderMarkdown(report: RunReport) {
     `# Interoperability run ${run.id}`,
     "",
     `- Status: **${run.status}**`,
+    ...(run.recordKind === "archived_evidence" ? ["- Record kind: **archived historical evidence (read only)**; opening this report does not repeat the wallet journey."] : []),
     `- Expected outcome: **${run.expectedOutcome}**`,
     `- Actual outcome: **${run.actualOutcome ?? "pending"}**`,
     `- Reason evaluation: **${run.evaluation?.verdict ?? "not_recorded"}**`,

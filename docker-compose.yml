@@ -80,6 +80,8 @@ services:
       WEB_ORIGIN: http://localhost:${PLAYGROUND_WEB_PORT:-5174}
       # Default: fixture mode (no external mock services required).
       PLAYGROUND_DRIVER_MODE: ${PLAYGROUND_DRIVER_MODE:-fixture}
+      # Historical, read-only managed A1 export for judge exploration; disable with false.
+      PLAYGROUND_ARCHIVED_A1: ${PLAYGROUND_ARCHIVED_A1:-true}
       # Set by demo-docker.sh / CI when mocks profile is active.
       MOCK_ISSUER_BASE_URL: ${MOCK_ISSUER_BASE_URL:-}
       MOCK_VERIFIER_BASE_URL: ${MOCK_VERIFIER_BASE_URL:-}

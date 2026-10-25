@@ -37,6 +37,8 @@ docker compose --profile core --profile mocks up --build -d --wait
 
 Open **http://localhost:5174** in a browser. The app starts in cross-container mock mode. All run data is stored in PostgreSQL inside the Compose network.
 
+Run history also contains a read-only, committed **25 October managed Inji Web A1** export. Open run `3dc6895d` to inspect its sanitized timeline, sequence and report. Its original ID and timestamps remain intact; this is historical evidence, not a fresh wallet run. The API projection corrects the archived export's erroneous Reference Wallet version label to `unreported`. Set `PLAYGROUND_ARCHIVED_A1=false` to disable the overlay. Normal newly executed runs continue to use PostgreSQL.
+
 Or use the one-command demo script (builds, starts, runs six synthetic SD-JWT cases, prints DEMO PASS):
 
 ```bash
@@ -92,6 +94,7 @@ Copy `.env.example` as a reference. Do not commit real values. All defaults are 
 | Variable | Default | Purpose | Secret? |
 |---|---|---|---|
 | `PLAYGROUND_DRIVER_MODE` | `fixture` | `fixture` \| `collab`. `collab` uses mock or live Inji URLs. | No |
+| `PLAYGROUND_ARCHIVED_A1` | `true` in Compose; unset for host-run BFF | Show the committed managed A1 export read-only in history and reports. | No |
 | `DATABASE_URL` | `postgresql://playground:playground@postgres:5432/playground?schema=public` | Prisma connection string (Compose DNS) | No (dev default) |
 | `PLAYGROUND_POSTGRES_PORT` | `55433` | Host port for PostgreSQL | No |
 | `PLAYGROUND_WEB_PORT` | `5174` | Host port for the web app | No |
@@ -114,7 +117,7 @@ See `.env.example` for the full list with comments. Never commit real Postman en
 | **Fixture** (default) | `docker compose --profile core up` | Playground starts; API, storage and Socket.IO work in synthetic mode | Any interoperability with external services |
 | **Mock** (separate services) | `--profile core --profile mocks` + `PLAYGROUND_DRIVER_MODE=collab` + `MOCK_*_BASE_URL` set | Cross-container mock issuer → Reference Wallet → mock verifier SD-JWT journey ran; result stored in PostgreSQL | Inji Certify, Inji Verify, or Inji Web/Wallet interoperability |
 | **Collab** (live Inji) | Requires `OFFICIAL_POSTMAN_ENV_PATH` and Collab credentials outside the repo | Specific Inji Certify and Inji Verify versions accepted or rejected a credential | Only the exact Collab endpoint tested; not general Inji interoperability |
-| **Assisted Inji wallet** | Needs a logged-in Inji Web test account + real Mimoto/eSignet | A real Inji wallet stored and presented a credential to Inji Verify | A1 gate — not complete; blocked until a persistent test account exists |
+| **Assisted Inji wallet** | Needs a logged-in Inji Web test account + real Mimoto/eSignet | One managed A1 JSON-LD run recorded Mimoto transport, reload-backed storage, correlated presentation and Verify `valid` | Server-side Mimoto → Certify/Verify hops were not observed; final team review remains pending |
 
 ---
 
@@ -343,7 +346,7 @@ The Compose stack and smoke test exercise **mock and fixture paths only**:
 - `DEMO PASS` or a passing smoke test **does not prove Inji interoperability**.
 
 Real-wallet gates:
-- **A1 (Inji Web)**: Requires a dedicated persistent Inji Web test account with login, storage, and Verify presentation. Owned by Person 2. Status: blocked (no test account available).
+- **A1 (Inji Web)**: A dedicated signed-in account completed a managed JSON-LD journey on 25 October. The read-only committed export is browsable in the Compose demo; see [the evidence and limits](submission/evidence/person2-managed-a1-2026-10-25/README.md). Final team review remains pending.
 - **A2 (Inji mobile wallet)**: Requires a pinned Inji mobile wallet build tested against Certify and Verify. Owned by Person 3.
 
 ---

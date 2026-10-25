@@ -188,6 +188,8 @@ pnpm demo:docker
 
 Open **http://localhost:5174**. The command builds and health-checks the services, then runs six cross-container synthetic SD-JWT presets (valid control, corrupted signature, signed expiry, signed wrong type, missing required disclosure and nonce mismatch) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) passed the six-case Docker matrix and browser checks; an independent-machine rehearsal remains open.
 
+The same Compose demo also lists the **25 October managed Inji Web A1 run** in Run history. Open run `3dc6895d` or use **Explore managed run in playground** in the real-wallet evidence panel to inspect its ten steps, seven sanitized exchanges, sequence and report. This is a **read-only projection of a committed historical export**, with the original run ID and timestamps. Opening it does not contact Collab or repeat issuance or presentation. Its original export incorrectly labelled the wallet version as `reference-wallet/0.1.0`; the demo projection displays `unreported` and leaves the source export intact. Set `PLAYGROUND_ARCHIVED_A1=false` to omit this record.
+
 ## Integration modes
 
 | Mode | Selection | External requirements | Valid claim |
@@ -220,7 +222,7 @@ Then select **Mock issuer → Reference Wallet → Inji Verify → SD-JWT VC**. 
 
 1. Open the web app and check its mode badge. Choose a named preset or select issuer, wallet, verifier, format, and optional fault.
 2. Start the run. The timeline follows issuance, holding, presentation, and verification; the result compares **expected** with **actual** outcome.
-3. Select a step or sequence message to inspect a sanitized exchange. Use history to reopen an earlier run.
+3. Select a step or sequence message to inspect a sanitized exchange. Use history to reopen an earlier run. The historical A1 row is explicitly marked **Archived real-wallet evidence** and cannot be modified by capture import.
 4. Replay a completed run with a fault, or compare combinations in the matrix. Download the report or matrix for a reviewable record.
 5. For a live claim, record the environment, exact versions, timestamp, verifier response, and evidence tier. A fixture pass remains fixture evidence.
 

@@ -33,3 +33,13 @@ it("links a completed managed Web run while leaving mobile validation pending", 
   expect(screen.getByText(/Managed run: none · Managed validation: pending/)).toBeTruthy();
   expect(screen.getByRole("link", { name: "Managed run report" }).getAttribute("href")).toBe("https://example.com/report");
 });
+it("opens a managed run only when that historical record is available in this installation", async () => {
+  const open = vi.fn();
+  vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ schemaVersion: 1, items: [{ ...evidence(false), managedRunId: "actual-web-run", artifacts: [] }] }) })));
+  const view = render(<WalletEvidencePanel onOpenManagedRun={open} archivedRunIds={[]} />);
+  await screen.findByText(/Managed run: actual-web-run/);
+  expect(screen.queryByRole("button", { name: "Explore managed run in playground" })).toBeNull();
+  view.rerender(<WalletEvidencePanel onOpenManagedRun={open} archivedRunIds={["actual-web-run"]} />);
+  fireEvent.click(screen.getByRole("button", { name: "Explore managed run in playground" }));
+  expect(open).toHaveBeenCalledWith("actual-web-run");
+});

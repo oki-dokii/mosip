@@ -77,3 +77,18 @@ it("labels an archived JSON-LD live wallet run using its recorded format rather 
   expect(screen.queryByText("kb+jwt")).toBeNull();
   expect(screen.getByText("Live assisted wallet · test data")).toBeTruthy();
 });
+
+it("marks a committed A1 export as historical and disables capture import", async () => {
+  vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+  const run: RunSummary = { id: "archived-web-run", parentRunId: null, recordKind: "archived_evidence",
+    config: { issuer: "inji_certify", wallet: "inji_web_assisted", verifier: "inji_verify", format: "ldp_vc", flow: "cross_device", tamper: null, scenarioId: null },
+    status: "passed", expectedOutcome: "valid", actualOutcome: "valid", proofType: "Ed25519Signature2020", algorithm: "EdDSA",
+    serviceVersions: { issuer: "unreported", wallet: "unreported", verifier: "unreported" }, createdAt: "2026-10-25T00:00:00Z", startedAt: null, finishedAt: "2026-10-25T00:01:00Z" };
+  vi.mocked(api.runs).mockResolvedValueOnce({ items: [run] });
+  vi.mocked(api.run).mockResolvedValue(run);
+  render(<App />);
+  fireEvent.click(await screen.findByRole("button", { name: "Open run archived" }));
+  expect(await screen.findByText("Historical evidence · read only")).toBeTruthy();
+  expect(screen.getByText("Archived real-wallet evidence · 25 Oct")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Import synthetic capture" })).toBeNull();
+});

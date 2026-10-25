@@ -34,6 +34,8 @@ export interface ProtocolEvaluation {
 }
 
 export interface RunSummary {
+  /** A committed, read-only historical export shown in a fresh demo installation. */
+  recordKind?: "archived_evidence";
   id: string;
   parentRunId: string | null;
   config: RunConfig;
