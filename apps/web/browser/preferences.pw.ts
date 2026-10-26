@@ -14,6 +14,8 @@ test('dark/light and Hindi navigation preserve evidence, persist on reload and m
  await expect(page.getByRole('button',{name:'रन का इतिहास',exact:true})).toHaveAttribute('lang','hi');
  await expect(page.locator('body')).not.toContainText(canary);
  await page.reload();await expect(page.getByRole('button',{name:'प्रक्रिया चलाएँ',exact:true})).toBeVisible();await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+ await expect(page.getByRole('combobox',{name:'Wallet evidence',exact:true})).toHaveCSS('background-color','rgb(23, 32, 51)');
+ await expect(page.getByRole('combobox',{name:'Wallet evidence',exact:true})).toHaveCSS('color','rgb(226, 232, 240)');
  await page.addScriptTag({path:require.resolve('axe-core/axe.min.js')});
  const violations=await page.evaluate(async()=>{const result=await (window as any).axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','best-practice']}});return result.violations.map((v:any)=>({rule:v.id,targets:v.nodes.map((n:any)=>n.target)}));});
  expect(violations).toEqual([]);

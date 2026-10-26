@@ -1,6 +1,6 @@
 # Pitch and demo outline
 
-The [editable six-slide deck](pitch/Interoperability_Playground_Pitch.pptx) covers the problem, role flow, managed A1 run, Android/Web checkpoints, technical stack, audience and impact. Its speaker notes record evidence sources and limits. A [2:07 silent walkthrough draft](pitch/VIDEO_README.md) is ready for a human voiceover and final team review.
+The [editable six-slide deck](pitch/archive/Interoperability_Playground_Pitch.pptx) covers the problem, role flow, managed A1 run, Android/Web checkpoints, technical stack, audience and impact. Its speaker notes record evidence sources and limits. A [2:07 silent walkthrough draft](pitch/VIDEO_README.md) is ready for a human voiceover and final team review.
 
 ## Six-slide pitch structure
 

@@ -28,4 +28,4 @@ Repeat the local managed acceptance using `pnpm check:web-managed-ui` and the ex
 
 The [browser capability record](evidence/2026-10-26-person2-local-ui/native-browser-check.json) reports API support in the tested Chromium, not a completed native credential flow. See the [W3C Digital Credentials API draft](https://www.w3.org/TR/2026/WD-digital-credentials-20261015/) and [Chrome implementation announcement](https://developer.chrome.com/blog/digital-credentials-api-shipped).
 
-Hosted and Android evidence remain separate from local acceptance. The aggregate report is a dated source list; the new UI run is linked here without inventing or rewriting older run records. No external reports, messages or uploads were sent by this work.
+Hosted and Android evidence remain separate from local acceptance. The aggregate report is a dated source list; the new UI run is linked here without inventing or rewriting older run records. Upstream reports were subsequently submitted as recorded in [UPSTREAM_REPORT_STATUS.md](UPSTREAM_REPORT_STATUS.md); cloud uploads remain open. See [human review checklist](FINAL_HUMAN_CHECKS.md).

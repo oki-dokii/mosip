@@ -99,7 +99,7 @@ Current sources are `docs/CAPTURE_CONTRACT_PROPOSAL.md`, `docs/PERSON2_LIVE_CAPT
 - Default browser discovery: the original 4 smoke tests only; local tests are excluded. Existing default smoke cases were not re-executed in this phase.
 - Repository secret audit and tracked diff whitespace checks: passed.
 
-The initial Phase 1 implementation did not create branches, commits, pushes or merges. A subsequent user request authorizes publication to `main` through the existing reviewed-PR workflow. The unrelated untracked competitor analysis file is untouched.
+The initial Phase 1 implementation did not create branches, commits, pushes or merges. A subsequent user request authorizes publication to `main` through the existing reviewed-PR workflow.
 
 ## Dependency recheck before publication — 26 October
 

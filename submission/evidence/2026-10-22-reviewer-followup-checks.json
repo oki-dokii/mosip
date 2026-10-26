@@ -39,8 +39,7 @@
   "observations": [
     "Driver redactor independently tested against 16 newly listed plausible secret fields and variants.",
     "Truncation and withheld/unsupported counts verified with synthetic large and unknown-format inputs.",
-    "Split CLI created two importable owner-only files for 101 synthetic protocol entries and removed a partial file on collision.",
-    "Public competitor comparison documents and links removed from the repository working tree."
+    "Split CLI created two importable owner-only files for 101 synthetic protocol entries and removed a partial file on collision."
   ],
   "limits": [
     "Local PostgreSQL checks require an opt-in test database; hosted CI does not run them yet.",

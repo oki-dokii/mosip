@@ -24,4 +24,4 @@ The project also uses development-only tooling (TypeScript, Vitest, Tailwind, Po
 
 The web app contains no vendored image or font files. Its icons come from Lucide React. Person 2's playground PNGs and the local wallet evidence screenshots contain synthetic data. The latter show official Inji Web's UI and are attributed to the [Inji Web project](https://github.com/inji/inji-web/tree/v0.17.0); that interface is not bundled into our web app. The repository secret audit does not inspect binary image contents, so new images are reviewed before publication.
 
-Comparable interoperability projects informed the scenario and adapter approach; see [the research table](NEXT_STEPS_4_PERSON_PLAN.md#research-worth-using). No code, test keys, or UI layout was copied from those repositories.
+Comparable interoperability projects informed the scenario and adapter approach; see [the research table](archive/NEXT_STEPS_4_PERSON_PLAN.md#research-worth-using). No code, test keys, or UI layout was copied from those repositories.

@@ -1,0 +1,4 @@
+# Generated presentation/media artifacts are binary, not whitespace-checked text.
+*.pdf binary
+*.pptx binary
+*.mp4 binary

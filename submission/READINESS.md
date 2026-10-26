@@ -1,17 +1,24 @@
-# Submission readiness — 2026-10-26 working checkpoint
+# Submission readiness — 26 October 2026
 
-This folder is the submission handoff. Refresh statuses and links before sending the final submission. The [26 October managed local acceptance](evidence/2026-10-26-managed-local-jsonld/README.md) adds a BFF run with captured server hops, reload confirmation and independent Verify Valid. Team review and the separately assigned delivery tasks remain.
+## Final-status checkpoint
 
-The A1 capture and journey code now have [one integration owner](../docs/SINGLE_OWNER_HANDOFF.md); older person-specific handoffs are historical.
-
-Latest Person 2 checkpoint: **445 tests passed, five optional DB skips; 18 browser checks; typecheck/build passed**. [Completion and remaining human/native checks](PERSON2_COMPLETION.md) and [UI-managed local acceptance](evidence/2026-10-26-person2-local-ui/README.md) supersede older test counts below; historical records remain dated.
+| Area | Current status |
+| --- | --- |
+| Team | **Bhole Chature**; five confirmed members in [TEAM.md](TEAM.md) |
+| Local acceptance | UI-managed run `8fc582b8-9548-4b86-b6b9-7ed67e7ca171`: exact-card reload, same wallet/card presentation, independent Verify Valid; [evidence](evidence/2026-10-26-person2-local-ui/README.md) |
+| Local automated checks | **445 passed, 5 optional DB skips; 18 browser checks**; typecheck/build/secret audit passed. These counts are the current deck checkpoint |
+| Hosted CI | Pre-cleanup CI exposed a Linux dark-mode selector contrast failure; explicit colors now pass all 18 local browser checks. [Hosted workflow](https://github.com/oki-dokii/mosip/actions/workflows/ci.yml) must be checked against this release commit |
+| Media | Eight-slide deck and PDF with confirmed team; four-minute synthetic-narration video with captions. Human listening/rehearsal and cloud upload remain open |
+| Findings | G-05 filed; G-09/G-10 added to existing issues; G-06/G-07 privately submitted on 26 October, triage pending. [Receipts/status](UPSTREAM_REPORT_STATUS.md) |
+| Human/other-host checks | Screen reader, phone layout and independent-machine rehearsal remain unperformed; [review checklist](FINAL_HUMAN_CHECKS.md) |
+| Submission | [Drive destination](https://drive.google.com/drive/folders/1fy-bgTacPqOQm-p_LHGR27bFzh2xguVG) supplied; signed-out folder view works, upload still needs authenticated write access. Deadline, private IDs and final email remain team actions |
 
 ## Judge priorities
 
 | Criterion | Weight | What we can show now | Main gap |
 |---|---:|---|---|
 | Functionality completion | 40% | Fixture/reference flows, capture, reports, mock matrix, hosted Web and Android successes; connected local JSON-LD wallet flow returns Valid with both proofs true ([scope](../deploy/INJI_WEB_LOCAL.md)) | A1 final review and independent-machine rehearsal remain open; the managed local BFF/capture chain now has a clean-source pass |
-| Deliverable quality | 40% | Typed monorepo, historical 339-test ordinary checkpoint plus three separately passing PostgreSQL checks, three hosted Chromium checks, redaction, API and architecture notes; current BFF suite passed 199 tests with three opt-in DB skips on 24 October | Full-repo retest at final commit and independent-machine setup remain |
+| Deliverable quality | 40% | Typed monorepo; 445 tests passed with 5 optional DB skips, 18 local browser checks, redaction and API/architecture documentation | Full-repo retest at final commit and independent-machine setup remain |
 | UX/design | 10% | Working React playground, assisted journey, keyboard/axe browser checks and annotated synthetic screens | Review final build against screenshots and capture final screens |
 | Presentation | 10% | Narrative and demo outline in this folder | Eight-slide deck, PDF and narrated four-minute video exist; human media review and sharing remain |
 
@@ -21,7 +28,7 @@ Latest Person 2 checkpoint: **445 tests passed, five optional DB skips; 18 brows
 |---|---|---|---|
 | Complete source code | Present | [GitHub repository](https://github.com/oki-dokii/mosip), currently on `main`; verify judges can access the final URL | Yes, final access check |
 | Working prototype/demo | Working; final human rehearsal open | [25 October local six-case Compose demo](evidence/2026-10-25-local-demo.md) passed and exposes the labelled, read-only managed A1 archive; hosted browser and Compose CI also passed. Rehearse on another machine | Yes, independent-machine rehearsal and final team review of A1 |
-| Pitch slide deck | Draft ready for team review | [Updated eight-slide deck and PDF](pitch/DECK_README.md) cite recorded evidence; team details confirmed; rehearsal remains | Yes |
+| Pitch slide deck | Prepared; human pitch rehearsal pending | [Updated eight-slide deck and PDF](pitch/DECK_README.md) cite recorded evidence; team details confirmed; rehearsal remains | Yes |
 | 2–5 minute video demo | Narrated/captioned four-minute draft ready | [Video and transcript](pitch/VIDEO_README.md): synthetic narration, fresh mock controls and recorded local evidence; human listening/review and cloud sharing remain | Yes |
 | Installation instructions | Prepared, needs independent-machine rehearsal | [README.md](../README.md) and [DEPLOYMENT.md](../docs/DEPLOYMENT.md) cover startup. A [fresh clone on this Mac](CLEAN_CHECKOUT_REHEARSAL.md) passed install, test, build and audit; hosted clean-checkout Docker smoke passed. Another human/host should follow the guide | Yes |
 | API documentation | Updated | [API_REFERENCE.md](API_REFERENCE.md) includes assisted routes, capture coverage and supported matrix cells | Yes, final review |
@@ -38,8 +45,8 @@ Latest Person 2 checkpoint: **445 tests passed, five optional DB skips; 18 brows
 | Test cases and results | Updated, final refresh pending | [TEST_EVIDENCE.md](TEST_EVIDENCE.md) separates historical full-suite results, the 25 October BFF/web regressions, manual A1 evidence and [actual A2 acceptance](evidence/person3-a2-mobile-2026-10-23/README.md) |
 | License and credits | Partial | [MPL-2.0](../LICENSE) and [direct dependency credits](../docs/ATTRIBUTIONS.md) added; confirm team agreement and complete transitive/asset notice audit |
 | Fresh live report and matrix | Current managed Web/local and separate Android records aggregated | [Managed A1 report and reviewed matrix](evidence/person2-managed-a1-2026-10-25/README.md) link the correlated Web run; the current [aggregate report](evidence/2026-10-26-aggregate-interop.md) includes A1, the local managed pass and the separate Android observation; regenerate with the source-checking script when evidence changes |
-| Interoperability gaps | Drafted | [GAPS.md](../docs/GAPS.md) separates observed findings from upstream issues, none filed yet |
-| Remaining integration plan | Prepared | [Four-person plan](../docs/NEXT_STEPS_4_PERSON_PLAN.md) prioritizes local Inji integration, CI and independently reproduced findings |
+| Interoperability gaps | Drafted | [GAPS.md](../docs/GAPS.md) separates observed findings from [submitted reports](UPSTREAM_REPORT_STATUS.md), without claiming maintainer confirmation |
+| Remaining integration plan | Prepared | [Four-person plan](../docs/archive/NEXT_STEPS_4_PERSON_PLAN.md) prioritizes local Inji integration, CI and independently reproduced findings |
 
 ## Release gates to verify before claiming completion
 
@@ -48,7 +55,7 @@ Latest Person 2 checkpoint: **445 tests passed, five optional DB skips; 18 brows
 3. **A6:** `pnpm demo:docker` builds the playground, BFF, PostgreSQL and separate mocks for six synthetic presets. [Hosted CI](https://github.com/oki-dokii/mosip/actions/runs/40167968420) passed typecheck, tests, browser/axe and Compose smoke. The [25 October local Docker rehearsal](evidence/2026-10-25-local-demo.md) printed `DEMO PASS`. `pnpm demo:inji` checks the separate official Certify/reference-holder/Verify path. `pnpm demo:web-jsonld` now covers the actual local Web wallet and exact-card presentation with the [documented synthetic authorization/DID adapters](../deploy/INJI_WEB_LOCAL.md). Independent-machine rehearsal remains open.
 4. **A3/A5:** Inspect the final browser capture and exported report for missing boundaries and any secret leakage. Passive HAR import is synthetic-only and cannot see server-to-server or native-wallet exchanges.
 5. **Go/no-go:** [WALLET_VALIDATION.md](../docs/WALLET_VALIDATION.md) lists a provisional 2026-10-24 21:00 IST A1 cutoff, 48 hours before the working freeze. Confirm the actual competition deadline; do not present this planning date as official.
-6. **Release quality:** Three Chromium checks passed locally and in hosted CI with keyboard/axe assertions. The secret audit is in hosted CI. Independent-machine installation, contributor license confirmation and a complete third-party notice audit remain. [Annotated UI screens](UI_WIREFRAMES.md) are prepared. Splitting `collab.ts` is post-integration maintenance, not an acceptance gate.
+6. **Release quality:** Eighteen Chromium checks passed locally; final-commit hosted CI is tracked separately above. The secret audit is in hosted CI. Independent-machine installation, contributor license confirmation and a complete third-party notice audit remain. [Annotated UI screens](UI_WIREFRAMES.md) are prepared. Splitting `collab.ts` is post-integration maintenance, not an acceptance gate.
 
 ## Final handoff outside Git
 

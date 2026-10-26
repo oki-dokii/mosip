@@ -1,6 +1,6 @@
 # Historical handoffs
 
-These documents preserve dated implementation and coordination history. They are not the current work queue. Thin pointers at their original paths keep historical evidence links working.
+These documents preserve dated implementation and coordination history. They are not the current work queue. Historical handoffs live only here; current Markdown links point directly to their archived locations.
 
 - [Current assignment](../FINAL_FOUR_PERSON_EXECUTION_PLAN.md)
 - [Current capture contract](../PERSON1_LOCAL_CAPTURE_HANDOFF.md)

@@ -29,8 +29,8 @@ wallet run. For the real local wallet journey, use the
 This is a **test playground**, not a production identity provider or wallet. It uses synthetic identities. Its automated wallet is the project's **Reference Wallet**. A Reference Wallet success does not prove that Inji Web or Inji Wallet mobile stored and presented the credential. The [evidence guide](docs/SCENARIOS_AND_EVIDENCE.md) and [submission checklist](submission/READINESS.md) make that distinction explicit.
 
 The web app includes an evidence-linked gap explorer. Every live claim is tied to a dated run, deployment profile and its observed limits.
-For a single-developer finish, use the [ordered remaining-work handoff](docs/SINGLE_OWNER_HANDOFF.md).
-The [editable pitch deck](submission/pitch/Interoperability_Playground_Pitch.pptx) summarizes the problem, prototype and recorded evidence for review. A [2:07 silent demo draft](submission/pitch/VIDEO_README.md) is ready for voiceover and final review.
+For a single-developer finish, use the [ordered remaining-work handoff](docs/archive/SINGLE_OWNER_HANDOFF.md).
+The [editable pitch deck](submission/pitch/archive/Interoperability_Playground_Pitch.pptx) summarizes the problem, prototype and recorded evidence for review. A [2:07 silent demo draft](submission/pitch/VIDEO_README.md) is ready for voiceover and final review.
 
 For the implemented official local-Certify mobile setup, use `pnpm mobile:inji` and follow [the mobile runbook](deploy/MOBILE_INJI.md). Its official-Certify → Reference Wallet → Collab Verify control passed; it does not establish phone acceptance.
 
@@ -333,7 +333,7 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 | Technical and UI design | [TRD](docs/TRD.md), [UI/UX](docs/UIUX.md), [backend](docs/BACKEND.md), [database](docs/DATABASE.md) |
 | Code paths and design choices | [Flow map](docs/flow.md), [decision log](docs/decisions.md) |
 | Phase evidence | [Phase 0–1](docs/PHASE0_1.md), [Phase 2](docs/PHASE2.md), [Phase 3](docs/PHASE3.md) |
-| Independent remaining work | [Four-person plan](docs/NEXT_STEPS_4_PERSON_PLAN.md) |
+| Independent remaining work | [Four-person plan](docs/archive/NEXT_STEPS_4_PERSON_PLAN.md) |
 | Container setup and shutdown | [Deployment guide](docs/DEPLOYMENT.md) |
 | Scenario provenance | [Scenarios and evidence](docs/SCENARIOS_AND_EVIDENCE.md) |
 | Observed interoperability findings | [Gap register](docs/GAPS.md) |
@@ -349,4 +349,4 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 | A6: packaging | Playground core + mocks pass `pnpm demo:docker`; official Certify/Verify reference-holder control passes `pnpm demo:inji`; connected local JSON-LD wallet flow passes `pnpm demo:web-jsonld` with the documented synthetic authorization/DID adapters. | Independent-machine rehearsal and offline context packaging remain open. The local browser harness is separate from a managed BFF run. |
 | Capture and browser QA | Live assisted-wallet observation without rewriting signed messages. | Three synthetic browser/axe checks pass; they cannot prove the real wallet's browser/native boundaries. |
 
-Ownership and next steps are in the [single-owner handoff](docs/SINGLE_OWNER_HANDOFF.md). Reports should state the exact implementation, profile and observed boundaries; the A1 and A2 records do not establish every format or a complete local Inji deployment.
+Ownership and next steps are in the [single-owner handoff](docs/archive/SINGLE_OWNER_HANDOFF.md). Reports should state the exact implementation, profile and observed boundaries; the A1 and A2 records do not establish every format or a complete local Inji deployment.

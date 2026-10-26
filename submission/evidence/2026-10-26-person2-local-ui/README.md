@@ -62,3 +62,7 @@ from the corrected complete run and preserves its real run ID.
 ## UI and delivery validation
 
 [Final automated checks](validation.json), [media hashes and validation](media-validation.json), [dark/Hindi navigation header](dark-hindi-header.png), and [actual browser zoom metrics](zoom-metrics.json). The zoom metric check found no document overflow at 200% and 400%; its headless zoom screenshots were blank, so manual visual zoom acceptance remains open. The header screenshot was visually reviewed.
+
+## Managed-run wallet screenshot
+
+[Wallet after reload](wallet-stored-after-reload.png) was recovered from the synthetic helper output saved at 2026-10-26 05:54:17 UTC, matching this run’s issuance checkpoint; presentation followed at 05:54:29 UTC. It was visually reviewed before publication. The image shows synthetic card titles only; exact-card correlation comes from the helper assertions and run evidence, not visual identification of similar titles.

@@ -93,7 +93,8 @@
       "runIds": [],
       "matrixCells": [],
       "matrixDecision": "Fresh Verify v0.18.2 sample DB omitted response-code columns: direct-post HTTP 500. The same synthetic Certify/holder/Verify path reached valid after adding the three columns present in its tagged DDL. Local packaging observation only; no other deployment is inferred.",
-      "upstreamIssue": null
+      "upstreamIssue": "https://github.com/inji/inji-verify/issues/2442",
+      "upstreamReportDate": "2026-10-26"
     },
     {
       "id": "G-06",
@@ -113,8 +114,10 @@
         "txn_0b402ad7-3eff-4c44-833e-ffe9ebe61f93"
       ],
       "matrixCells": [],
-      "matrixDecision": "Pinned local Verify 0.18.2 accepted wrong-nonce, wrong-audience and exact-replay SD-JWT presentations into fresh challenges; it rejected a broken issuer signature. Synthetic reference-holder profile only. Collab and newer releases are untested; upstream issue not filed.",
-      "upstreamIssue": null
+      "matrixDecision": "Pinned local reference-holder observation; private report submitted 2026-10-26, maintainer triage pending. No claim about Collab or newer releases.",
+      "upstreamIssue": null,
+      "privateReportStatus": "submitted_private_triage_pending",
+      "privateReportDate": "2026-10-26"
     },
     {
       "id": "G-07",
@@ -130,8 +133,10 @@
         "txn_386369e2-32f5-4fe6-830c-28466e0c5495"
       ],
       "matrixCells": [],
-      "matrixDecision": "Pinned local Verify 0.18.2 returned valid when the submitted descriptor path $[99] pointed outside the one-element VP array. A wrong-state control received HTTP 404. Mapping semantics need a second-credential test before a broader upstream claim.",
-      "upstreamIssue": null
+      "matrixDecision": "Pinned local reference-holder observation; private report submitted 2026-10-26, maintainer triage pending. No claim about Collab or newer releases.",
+      "upstreamIssue": null,
+      "privateReportStatus": "submitted_private_triage_pending",
+      "privateReportDate": "2026-10-26"
     },
     {
       "id": "G-08",
@@ -158,7 +163,8 @@
       "runIds": [],
       "matrixCells": [],
       "matrixDecision": "Pinned Certify alpha.1 rejected the tested Mimoto Ed25519 JWT proof; Certify 0.14.0 accepted the matching-key JSON-LD flow. Keep exact versions and proof profile visible.",
-      "upstreamIssue": null
+      "upstreamIssue": "https://github.com/inji/inji-certify/issues/769#issuecomment-6409787027",
+      "upstreamReportDate": "2026-10-26"
     },
     {
       "id": "G-10",
@@ -172,7 +178,8 @@
       "runIds": [],
       "matrixCells": [],
       "matrixDecision": "The observed Certify DID assertionMethod needed a verification-method reference correction. The passing local chain uses a declared adapter, not a stock DID interoperability claim.",
-      "upstreamIssue": null
+      "upstreamIssue": "https://github.com/inji/inji-certify/issues/713#issuecomment-6409789998",
+      "upstreamReportDate": "2026-10-26"
     }
   ],
   "localProtocolEvidence": {

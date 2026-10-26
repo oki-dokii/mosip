@@ -4,7 +4,7 @@
 
 Updated 2026-10-26. This assigns the improvement list supplied by the team. It excludes the deck, video, judge guide, submission logistics, and final publication audit. It does not turn proposed features or another team's results into evidence for this project.
 
-**Current checkpoint:** [Remaining technical work](../REMAINING_TECHNICAL_WORK.md) reconciles completed work and remaining dependencies after the Person 4 merge. The detailed lanes below retain the original assignments.
+**Current checkpoint:** [Remaining technical work](REMAINING_TECHNICAL_WORK.md) reconciles completed work and remaining dependencies after the Person 4 merge. The detailed lanes below retain the original assignments.
 
 **Assignment update:** [Final four-person execution plan](../FINAL_FOUR_PERSON_EXECUTION_PLAN.md) is the current complete assignment, including engineering and delivery.
 

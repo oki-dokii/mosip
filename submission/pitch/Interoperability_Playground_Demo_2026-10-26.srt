@@ -150,54 +150,59 @@ This lets another team assess exactly what each result
 supports.
 
 32
-00:03:00,000 --> 00:03:05,003
+00:03:00,000 --> 00:03:05,137
 The findings register records reproducible setup and
 protocol differences with their versions
 
 33
-00:03:05,003 --> 00:03:10,006
-and evidence. Examples include initialization
-configuration, version specific proof binding, and a
+00:03:05,137 --> 00:03:10,273
+and evidence. We filed the local initialization
+packaging issue and added compatibility
 
 34
-00:03:10,006 --> 00:03:15,009
-declared D I D adapter for the local J S O N
+00:03:10,273 --> 00:03:15,410
+and D I D evidence to existing upstream issues. The two
+sensitive
 
 35
-00:03:15,009 --> 00:03:20,012
-L D path. Upstream issues and private reports remain
-pending their owners'
+00:03:15,410 --> 00:03:20,546
+local verification findings were submitted through the
+private reporting channel on October
 
 36
-00:03:20,012 --> 00:03:24,599
-submission. We do not claim that maintainers have
-confirmed these findings.
+00:03:20,546 --> 00:03:25,683
+twenty sixth. Maintainer triage is pending. We do not
+claim confirmed defects
 
 37
+00:03:25,683 --> 00:03:26,967
+in newer releases.
+
+38
 00:03:30,000 --> 00:03:35,652
 The result is a working playground, a repeatable mock
 demonstration, a recorded
 
-38
+39
 00:03:35,652 --> 00:03:41,304
 same wallet local flow, and evidence that reviewers can
 inspect. Automated browser
 
-39
+40
 00:03:41,304 --> 00:03:46,955
 and accessibility checks passed. Synthetic
 authorization, D I D adaptation, and public
 
-40
+41
 00:03:46,955 --> 00:03:52,607
 network contexts are still declared limits. Physical
 device and human screen reader
 
-41
+42
 00:03:52,607 --> 00:03:58,259
 review remain separate checks. This video uses offline
 synthetic narration and recorded
 
-42
+43
 00:03:58,259 --> 00:03:59,672
 synthetic test data.

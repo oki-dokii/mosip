@@ -1,6 +1,6 @@
 # Local JSON-LD compatibility findings
 
-Observed during the 25–26 October 2026 local integration. These are version-specific observations, not confirmed upstream issues. No issue was filed. The [connected runbook](INJI_WEB_LOCAL.md) documents the working fixture and its limits.
+Observed during the 25–26 October 2026 local integration. These are version-specific observations, not confirmed upstream issues. [Upstream follow-ups](../submission/UPSTREAM_REPORT_STATUS.md) were submitted on 26 October; no maintainer confirmation is claimed. The [connected runbook](INJI_WEB_LOCAL.md) documents the working fixture and its limits.
 
 | Observation | Reproduction and deciding evidence | Resolution in this fixture |
 | --- | --- | --- |

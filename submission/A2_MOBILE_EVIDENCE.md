@@ -22,7 +22,7 @@ The issuer is the digest-pinned local official Certify runtime described in [the
 
 ## Earlier Collab attempt (retained history)
 
-Evidence bundle: [reviewed screenshots, public offer and manifest](evidence/person3-a2-2026-10-23/README.md). Setup owner handoff: [Person 4 prerequisites before the next phone attempt](../docs/PERSON4_A2_PREREQUISITES.md).
+Evidence bundle: [reviewed screenshots, public offer and manifest](evidence/person3-a2-2026-10-23/README.md). Setup owner handoff: [Person 4 prerequisites before the next phone attempt](../docs/archive/PERSON4_A2_PREREQUISITES.md).
 
 ## Real Android attempt — 23 October 2026
 

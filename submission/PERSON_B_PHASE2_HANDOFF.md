@@ -63,7 +63,7 @@ The manual flow completed matching, consent, sharing and visible Verify acceptan
 
 ## Person 1 capture handoff integration — 23 October 2026
 
-Merged `origin/main` through `55f77ff` into the Person 2 branch, preserving manual hosted Valid evidence from `1537c55`. Person 1's authoritative [capture handoff](../docs/PERSON2_LIVE_CAPTURE_HANDOFF.md) provides the frozen examples, importer attribution and remaining bridge requirements. The form-state fix is included; no capture internals were changed by Person 2.
+Merged `origin/main` through `55f77ff` into the Person 2 branch, preserving manual hosted Valid evidence from `1537c55`. Person 1's authoritative [capture handoff](../docs/archive/PERSON2_LIVE_CAPTURE_HANDOFF.md) provides the frozen examples, importer attribution and remaining bridge requirements. The form-state fix is included; no capture internals were changed by Person 2.
 
 Driver-specific synthetic integration tests now pass both JSON and form-encoded presentation entries through the real importer, persist its assigned exchanges, and consume them with the assisted driver. They require separate storage confirmation, reject unrelated request state, and check that persisted records contain neither the synthetic state nor credential canary. Presentation completion leaves the verifier result pending and the run outcome unset. This is a same-process synthetic consumer check, not a live browser bridge or hosted acceptance run.
 

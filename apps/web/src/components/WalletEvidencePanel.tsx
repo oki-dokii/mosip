@@ -26,7 +26,7 @@ export function WalletEvidencePanel({ onOpenManagedRun, archivedRunIds = [] }: {
     <p className="mt-2 text-sm text-slate-600">Recorded journeys apply to the named credential and deployment. Linked managed reports provide separate run evidence; manual observations do not change other run results.</p>
     {error ? <p role="alert" className="mt-4">Real-wallet evidence is unavailable. No compatibility conclusion can be drawn.</p> : !items ? <p role="status">Loading real-wallet evidence…</p> : <>
       <div className="my-4 flex flex-wrap items-center gap-3 text-sm">
-        <label>Wallet evidence <select className="rounded border border-slate-300 p-2" value={wallet} onChange={event => setWallet(event.target.value)}><option value="">All real wallets</option><option value="inji_web">Inji Web</option><option value="inji_mobile">Inji Wallet Android</option></select></label>
+        <label>Wallet evidence <select className="rounded border border-slate-300 bg-white p-2 text-ink" value={wallet} onChange={event => setWallet(event.target.value)}><option value="">All real wallets</option><option value="inji_web">Inji Web</option><option value="inji_mobile">Inji Wallet Android</option></select></label>
         {(["json", "md", "csv"] as const).map(format => <a key={format} className="font-semibold text-issuer underline" href={`/api/v1/wallet-evidence/report?format=${format}`}>Evidence report · {format === "md" ? "Markdown" : format.toUpperCase()}</a>)}
       </div>
       {items.length === 0 && <p>No recorded real-wallet observations are available.</p>}

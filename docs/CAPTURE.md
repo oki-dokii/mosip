@@ -1,6 +1,6 @@
 # Passive browser protocol capture
 
-The capture path accepts a filtered, synthetic browser HAR after a run finishes, or while a managed assisted run is active. It reads evidence without changing issuer URLs, request URIs, signed objects, audiences, redirects or request bodies. A canonical-URL proxy on a controlled local stack is also a valid design option when all service metadata and signed values use that origin from the beginning; see [the proxy ADR](CAPTURE_PROXY_ADR.md). HAR remains the implemented browser path for Collab. The [Person 2 live-capture handoff](PERSON2_LIVE_CAPTURE_HANDOFF.md) records the current correlation limit.
+The capture path accepts a filtered, synthetic browser HAR after a run finishes, or while a managed assisted run is active. It reads evidence without changing issuer URLs, request URIs, signed objects, audiences, redirects or request bodies. A canonical-URL proxy on a controlled local stack is also a valid design option when all service metadata and signed values use that origin from the beginning; see [the proxy ADR](CAPTURE_PROXY_ADR.md). HAR remains the implemented browser path for Collab. The [Person 2 live-capture handoff](archive/PERSON2_LIVE_CAPTURE_HANDOFF.md) records the current correlation limit.
 
 `POST /api/v1/runs/:id/capture/har` accepts JSON `{ "runId": "<same id>", "har": { "log": { "entries": [...] } } }`. Export browser Network traffic as HAR and use synthetic identities only. **Run the local filter before upload**: the importer rejects a whole import containing any structurally valid off-allowlist origin, whereas the filter removes and counts unrelated background calls. Ordinary runs must already be finished; a managed active assisted run may import while its session is active. The request limit is 2 MiB and 100 entries; each body is capped at 128 KiB. A run-id mismatch, malformed top-level HAR, or a structurally valid entry from an unapproved origin rejects the import. Malformed individual entries are skipped with counted reasons. Re-importing identical entries skips them.
 
@@ -39,7 +39,7 @@ On 22 October 2026, the HAR suite passed locally with PostgreSQL (`11 tests pass
 
 ## Public summaries and tagging v2
 
-`Exchange.request.publicView` and `Exchange.response.publicView` are optional JSON members inside the existing request/response envelopes. No shared `Exchange` type or database column changes are required. Each view has `schemaVersion: 1`, `authenticity: "not_verified"`, bounded `items` of `{kind, summary}`, and `withheldNames`, `truncatedItems`, and `unsupportedKinds` counters. The inspector needs a dedicated renderer; [Person 2 handoff](PERSON2_PUBLIC_VIEW_HANDOFF.md) defines its acceptance test.
+`Exchange.request.publicView` and `Exchange.response.publicView` are optional JSON members inside the existing request/response envelopes. No shared `Exchange` type or database column changes are required. Each view has `schemaVersion: 1`, `authenticity: "not_verified"`, bounded `items` of `{kind, summary}`, and `withheldNames`, `truncatedItems`, and `unsupportedKinds` counters. The inspector needs a dedicated renderer; [Person 2 handoff](archive/PERSON2_PUBLIC_VIEW_HANDOFF.md) defines its acceptance test.
 
 Supported kinds are credential offers, Presentation Exchange definitions, DCQL, request-object headers/selected claims, proof-JWT headers, SD-JWT claim/disclosure names, JSON-LD VC types/issuer method or allowed origin, claimed verification results, and a presentation-presence marker. Names come from a small fixed vocabulary of protocol claims and demo schemas; unknown names and predicate values are withheld with a count. CBOR/mDoc content is counted as unsupported rather than decoded. Issuer URLs keep only an allowlisted origin, and DIDs keep only the method. No resolver, network fetch or cryptographic verification is performed.
 
@@ -74,7 +74,7 @@ Capture ingress requires JSON and limits attempts to 10 per minute per transport
 
 ## Person 1 regression and evidence tools — 22 October
 
-The requested independent items 1–10 are implemented. Item 11 is handed to Person 3 in [PERSON3_PRESENTATION_PROBES_HANDOFF.md](PERSON3_PRESENTATION_PROBES_HANDOFF.md); the mock verifier and protocol contracts are unchanged by this work.
+The requested independent items 1–10 are implemented. Item 11 is handed to Person 3 in [PERSON3_PRESENTATION_PROBES_HANDOFF.md](archive/PERSON3_PRESENTATION_PROBES_HANDOFF.md); the mock verifier and protocol contracts are unchanged by this work.
 
 | Request | Implementation and proof |
 | --- | --- |
@@ -123,7 +123,7 @@ Issue output defaults to a **private review draft**, with no automatic filing. I
 
 The driver redactor now masks independent-key canaries for PINs, passwords, API keys, tokens, assertions, transaction/session IDs and refresh variants; their mixed-case forms are covered. It records dropped array/object counts, preserves shared non-cyclic objects, and distinguishes a parsed JWT from a dotted domain. URL/form values remain masked unless they match a **fixed** public enum allowlist for `response_type`, `grant_type`, `scope` or a known synthetic `client_id`. The HAR importer uses the same allowlist. No arbitrary client ID is exposed. Tests exercise each class.
 
-The public decoder still has a deliberately small vocabulary. Its withheld/truncated/unsupported counters and per-step coverage expose omissions; they do not add mDoc CBOR parsing or confirm new MOSIP credential types. The web UI renderer is assigned to Person 2 in [PERSON2_PUBLIC_VIEW_HANDOFF.md](PERSON2_PUBLIC_VIEW_HANDOFF.md).
+The public decoder still has a deliberately small vocabulary. Its withheld/truncated/unsupported counters and per-step coverage expose omissions; they do not add mDoc CBOR parsing or confirm new MOSIP credential types. The web UI renderer is assigned to Person 2 in [PERSON2_PUBLIC_VIEW_HANDOFF.md](archive/PERSON2_PUBLIC_VIEW_HANDOFF.md).
 
 ## Canonical local server-hop capture (26 October)
 

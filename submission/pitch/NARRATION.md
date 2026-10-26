@@ -1,6 +1,6 @@
 # Demo narration — 26 October 2026
 
-Offline synthetic narration using the installed Samantha voice. Eight 30-second chapters; the local wallet segment uses recorded evidence stills.
+Offline synthetic narration using Samantha. Eight 30-second chapters; real-wallet segments use recorded evidence stills from the UI-managed run.
 
 ## 0:00 — The problem
 
@@ -28,7 +28,7 @@ The matrix and portable reports keep different kinds of evidence separate. Hoste
 
 ## 3:00 — Findings and upstream work
 
-The findings register records reproducible setup and protocol differences with their versions and evidence. Examples include initialization configuration, version specific proof binding, and a declared D I D adapter for the local J S O N L D path. Upstream issues and private reports remain pending their owners' submission. We do not claim that maintainers have confirmed these findings.
+The findings register records reproducible setup and protocol differences with their versions and evidence. We filed the local initialization packaging issue and added compatibility and D I D evidence to existing upstream issues. The two sensitive local verification findings were submitted through the private reporting channel on October twenty sixth. Maintainer triage is pending. We do not claim confirmed defects in newer releases.
 
 ## 3:30 — What the prototype proves
 
