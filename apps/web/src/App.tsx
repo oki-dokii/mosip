@@ -1,3 +1,4 @@
+import { ReadingPreferences, useReadingPreferences } from "./components/ReadingPreferences";
 import { WalletEvidencePanel } from "./components/WalletEvidencePanel";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Exchange, ImplementationMetadata, RunConfig, RunStep, RunSummary, ScenarioDefinition } from "@playground/shared";
@@ -39,6 +40,7 @@ const tamperOptions: Array<{ value: RunConfig["tamper"]; label: string }> = [
 ];
 
 export default function App() {
+  const { t, locale } = useReadingPreferences();
   const [metadata, setMetadata] = useState<ImplementationMetadata | null>(null);
   const [scenarios, setScenarios] = useState<ScenarioDefinition[]>([]);
   const [driverMode, setDriverMode] = useState<"fixture" | "collab" | null>(null);
@@ -201,10 +203,10 @@ export default function App() {
     <div className="min-h-screen bg-canvas text-ink">
       <a className="skip-link" href="#playground-main">Skip to main content</a>
       <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-[1500px] items-center gap-4 px-5 py-4 lg:px-8">
+        <div className="mx-auto flex max-w-[1500px] flex-wrap items-center gap-4 px-5 py-4 lg:px-8">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-ink text-white shadow-lg"><FlaskConical size={22} /></span>
           <div><h1 className="text-lg font-bold tracking-tight">Inji Interoperability Playground</h1><p className="text-xs text-slate-500">Issue, present, verify — and inspect every boundary.</p></div>
-          <span className="ml-auto hidden rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 sm:block">{run?.recordKind === "archived_evidence" ? "Archived real-wallet evidence · 25 Oct" : run?.config.wallet === "inji_web_assisted" && run.serviceVersions && !run.serviceVersions.wallet.startsWith("fixture/") ? "Live assisted wallet · test data" : driverMode === "fixture" ? "Fixture simulation · test data" : "Live Collab · test data"}</span>
+          <ReadingPreferences /><span className="hidden rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 sm:block">{run?.recordKind === "archived_evidence" ? "Archived real-wallet evidence · 25 Oct" : run?.config.wallet === "inji_web_assisted" && run.serviceVersions && !run.serviceVersions.wallet.startsWith("fixture/") ? "Live assisted wallet · test data" : driverMode === "fixture" ? "Fixture simulation · test data" : "Live Collab · test data"}</span>
         </div>
       </header>
 
@@ -216,12 +218,12 @@ export default function App() {
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-500"><ShieldCheck size={16} className="text-ok" />Secrets are masked before recording</div>
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-3">
-              <label htmlFor="scenario-preset" className="text-sm font-semibold text-slate-700">Scenario</label>
+              <label lang={locale} htmlFor="scenario-preset" className="text-sm font-semibold text-slate-700">{t("scenario")}</label>
               <select id="scenario-preset" value={config.scenarioId ?? ""} onChange={(event) => {
                 const scenario = scenarios.find((item) => item.id === event.target.value);
                 setConfig(scenario ? scenario.config : { ...config, scenarioId: null });
               }} className="min-w-0 max-w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-ink">
-                <option value="">Custom configuration</option>
+                <option lang={locale} value="">{t("custom")}</option>
                 {scenarios.map((scenario) => <option key={scenario.id} value={scenario.id} disabled={!scenario.available}>{scenario.name}{scenario.available ? "" : " · unavailable"}</option>)}
               </select>
               {selectedScenario && <span className="text-xs text-slate-500">{selectedScenario.description}</span>}
@@ -229,26 +231,26 @@ export default function App() {
             </div>
           </div>
           <div className="grid gap-7 p-6 md:grid-cols-3 lg:p-8">
-            <RoleSelector role="issuer" label="1 · Issuer" options={metadata.issuers} value={config.issuer} onChange={(issuer) => setConfig({ ...config, issuer: issuer as RunConfig["issuer"], scenarioId: null })} />
-            <RoleSelector role="wallet" label="2 · Wallet" options={metadata.wallets.map((wallet) => ({ ...wallet,
+            <RoleSelector role="issuer" label={<span lang={locale}>{t("issuer")}</span>} options={metadata.issuers} value={config.issuer} onChange={(issuer) => setConfig({ ...config, issuer: issuer as RunConfig["issuer"], scenarioId: null })} />
+            <RoleSelector role="wallet" label={<span lang={locale}>{t("wallet")}</span>} options={metadata.wallets.map((wallet) => ({ ...wallet,
               name: wallet.id === "reference_wallet" ? "Reference Wallet" : "Inji Web (Assisted)",
               description: wallet.id === "reference_wallet" ? "Automated, code-level driver" : config.format === "ldp_vc" ? "JSON-LD presentation · fixture rehearsal available" : "SD-JWT Web presentation unavailable · select JSON-LD",
               disabled: wallet.id === "inji_web_assisted" && config.format !== "ldp_vc",
             }))} value={config.wallet} onChange={(wallet) => setConfig({ ...config, wallet: wallet as RunConfig["wallet"], scenarioId: null })} />
-            <RoleSelector role="verifier" label="3 · Verifier" options={metadata.verifiers} value={config.verifier} onChange={(verifier) => setConfig({ ...config, verifier: verifier as RunConfig["verifier"], scenarioId: null })} />
+            <RoleSelector role="verifier" label={<span lang={locale}>{t("verifier")}</span>} options={metadata.verifiers} value={config.verifier} onChange={(verifier) => setConfig({ ...config, verifier: verifier as RunConfig["verifier"], scenarioId: null })} />
           </div>
           <div className="flex flex-col gap-4 border-t border-slate-200 bg-slate-50 px-6 py-5 sm:flex-row sm:items-center lg:px-8">
             <div className="flex flex-wrap gap-2">
               {metadata.formats.map((item) => <button key={item.id} aria-pressed={config.format === item.id} onClick={() => setConfig({ ...config, format: item.id, scenarioId: null })} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${config.format === item.id ? "border-ink bg-ink text-white" : "border-slate-300 bg-white text-slate-600 hover:border-slate-500"}`}>{item.name}</button>)}
             </div>
             <label className="flex items-center gap-2 text-sm font-semibold text-slate-600">
-              Fault
+              <span lang={locale}>{t("fault")}</span>
               <select value={config.tamper ?? ""} onChange={(event) => setConfig({ ...config, tamper: (event.target.value || null) as RunConfig["tamper"], scenarioId: null })} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-ink">
                 {tamperOptions.map((item) => <option key={item.value ?? "none"} value={item.value ?? ""}>{item.label}</option>)}
               </select>
             </label>
             {unsupportedReason && <p role="status" className="text-xs font-semibold text-amber-800">{unsupportedReason}</p>}
-            <div className="sm:ml-auto"><button disabled={busy || !driverMode || Boolean(unsupportedReason)} onClick={() => void startRun()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-issuer px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60 sm:w-auto"><Play size={17} fill="currentColor" />{busy ? "Starting…" : config.wallet === "inji_web_assisted" ? "Start assisted fixture run" : "Run flow"}</button></div>
+            <div className="sm:ml-auto"><button lang={locale} disabled={busy || !driverMode || Boolean(unsupportedReason)} onClick={() => void startRun()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-issuer px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60 sm:w-auto"><Play size={17} fill="currentColor" />{busy ? t("starting") : config.wallet === "inji_web_assisted" ? t("fixture") : t("run")}</button></div>
           </div>
         </section>
 

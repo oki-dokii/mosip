@@ -1,0 +1,25 @@
+import { test, expect } from '@playwright/test';
+import { createRequire } from 'node:module';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { a, b, canary, fixtures } from './fixtures/recordedRuns';
+const require=createRequire(import.meta.url);
+test('dark/light and Hindi navigation preserve evidence, persist on reload and meet automated accessibility checks',async({page,browser})=>{
+ await fixtures(page);await page.goto(`/?run=${a}&compareA=${a}&compareB=${b}`);
+ await expect(page.getByRole('region',{name:'Run comparison',exact:true})).toContainText('Comparison ready.');
+ await page.getByRole('combobox',{name:'Appearance',exact:true}).selectOption('dark');
+ await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+ await page.getByRole('combobox',{name:'Navigation language',exact:true}).selectOption('hi');
+ await expect(page.getByRole('button',{name:'प्रक्रिया चलाएँ',exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'रन का इतिहास',exact:true})).toHaveAttribute('lang','hi');
+ await expect(page.locator('body')).not.toContainText(canary);
+ await page.reload();await expect(page.getByRole('button',{name:'प्रक्रिया चलाएँ',exact:true})).toBeVisible();await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+ await page.addScriptTag({path:require.resolve('axe-core/axe.min.js')});
+ const violations=await page.evaluate(async()=>{const result=await (window as any).axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','best-practice']}});return result.violations.map((v:any)=>({rule:v.id,targets:v.nodes.map((n:any)=>n.target)}));});
+ expect(violations).toEqual([]);
+ const directory=process.env.PERSON2_SYNTHETIC_EVIDENCE_DIR??'/tmp/person2-preferences';await mkdir(directory,{recursive:true});
+ await page.screenshot({path:join(directory,'dark-hindi-navigation.png')});
+ await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+ await page.getByRole('combobox',{name:'दृश्य शैली',exact:true}).selectOption('light');await expect(page.locator('html')).toHaveAttribute('data-theme','light');
+ await writeFile(join(directory,'preferences-check.json'),JSON.stringify({source:'synthetic_playground_ui',browserVersion:browser.version(),themePersistence:true,navigationLanguagePersistence:true,hindiNavigationOnly:true,evidenceLanguage:'English',mobileViewport:390,pageOverflow:false,darkAxeViolations:violations,scope:'automated browser check; no physical-device or human screen-reader result'},null,2)+'\n');
+});

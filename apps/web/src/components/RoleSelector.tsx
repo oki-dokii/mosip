@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { RunConfig } from "@playground/shared";
 import { BadgeCheck, Building2, ShieldCheck, WalletCards } from "lucide-react";
 
@@ -12,7 +13,7 @@ const roleStyle = {
 
 export function RoleSelector({ role, label, options, value, onChange }: {
   role: Role;
-  label: string;
+  label: ReactNode;
   options: Option[];
   value: string;
   onChange: (value: string) => void;

@@ -1,3 +1,4 @@
+import { useReadingPreferences } from "./ReadingPreferences";
 import { SupportedMatrix } from "./SupportedMatrix";
 import { useMemo } from "react";
 import type { RunSummary } from "@playground/shared";
@@ -22,6 +23,7 @@ function Outcome({ run }: { run: RunSummary }) {
 }
 
 export function RunArchive({ history, matrix, active, onActiveChange, onSelectRun, location, onLocationChange, shareHref }: Props) {
+  const { t, locale } = useReadingPreferences();
   const { format, status, issuer, wallet, verifier, issuerVersion, verifierVersion } = location.filters;
   const setFilter = (key: keyof Filters, value: string) => onLocationChange({ filters: { ...location.filters, [key]: value } });
   const setFormat = (value: string) => setFilter("format", value);
@@ -45,8 +47,8 @@ export function RunArchive({ history, matrix, active, onActiveChange, onSelectRu
   return (
     <section aria-label="Run archive" tabIndex={-1} className="mt-7 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-card">
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-6 py-4 lg:px-8">
-        <button aria-pressed={active === "history"} onClick={() => onActiveChange("history")} className={`rounded-lg px-3 py-2 text-sm font-bold ${active === "history" ? "bg-ink text-white" : "text-slate-500"}`}>Run history</button>
-        <button aria-pressed={active === "matrix"} onClick={() => onActiveChange("matrix")} className={`rounded-lg px-3 py-2 text-sm font-bold ${active === "matrix" ? "bg-ink text-white" : "text-slate-500"}`}>Latest matrix</button>
+        <button lang={locale} aria-pressed={active === "history"} onClick={() => onActiveChange("history")} className={`rounded-lg px-3 py-2 text-sm font-bold ${active === "history" ? "bg-ink text-white" : "text-slate-500"}`}>{t("history")}</button>
+        <button lang={locale} aria-pressed={active === "matrix"} onClick={() => onActiveChange("matrix")} className={`rounded-lg px-3 py-2 text-sm font-bold ${active === "matrix" ? "bg-ink text-white" : "text-slate-500"}`}>{t("matrix")}</button>
         {active === "matrix" && <div className="ml-auto flex gap-2"><a href="/api/v1/matrix/export?format=csv" className="flex items-center gap-1 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-bold text-slate-600"><Download size={13} />CSV</a><a href="/api/v1/matrix/export?format=md" className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-bold text-slate-600">Markdown</a></div>}
       </div>
       <div className="flex flex-wrap gap-2 border-b border-slate-100 px-6 py-3 lg:px-8">
