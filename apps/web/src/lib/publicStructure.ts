@@ -1,7 +1,9 @@
-import { object, publicView } from "./captureEvidence";
+import { count, object, publicView } from "./captureEvidence";
 
 // Vocabulary published by capture/public-view.ts. Unknown names are never displayed.
 const names = new Set("VerifiableCredential VerifiablePresentation FarmerCredential MockVerifiableCredential FarmerCredential_VCDM2.0 MockVerifiableCredential_SD_JWT MockVerifiableCredential_LDP_VC given_name family_name name birthdate age_over_18 email address credentialSubject type issuer iss aud iat exp nbf vct cnf _sd _sd_alg sub nonce jti credential id nationality".split(" "));
+const subjectNames = new Set("id type given_name family_name name birthdate age_over_18 email address nationality fullName farmerID streetAddress addressLocality postalCode addressCountry".split(" "));
+const subjectPath = (value: unknown): value is string => typeof value === "string" && value.length <= 256 && /^\$\.credentialSubject(?:\[\*\])?(?:\.[A-Za-z_][A-Za-z0-9_]*(?:\[\*\])?){1,5}$/.test(value) && value.replace(/^\$\.credentialSubject(?:\[\*\])?\./, "").split(".").every(part => subjectNames.has(part.replace(/\[\*\]$/, "")));
 const formats = new Set(["vc+sd-jwt", "dc+sd-jwt", "ldp_vc", "jwt_vc_json", "mso_mdoc"]);
 const proofs = new Set(["Ed25519Signature2020", "Ed25519Signature2018", "DataIntegrityProof", "JsonWebSignature2020"]);
 const algorithms = new Set(["EdDSA", "ES256", "ES384", "RS256", "PS256", "none"]);
@@ -24,7 +26,23 @@ export function publicStructure(value: unknown) {
     if (kind === "verifiable_credential") {
       add("Credential types", select(s.types, names));
       add("Proof types", select(s.proofTypes, proofs));
-      add("Subject structure", ["Claim names are unavailable in this JSON-LD projection; claim values are never displayed."]);
+      const subject = object(s.subject);
+      if (!subject || !Array.isArray(subject.names) || !Array.isArray(subject.paths) || count(subject.withheldNames) === null || count(subject.truncatedItems) === null) {
+        add("Subject structure", ["Claim names are unavailable in this JSON-LD projection; claim values are never displayed."]);
+      } else {
+        const projectedNames = select(subject.names.slice(0, 32), subjectNames);
+        const projectedPaths = subject.paths.slice(0, 32).filter(subjectPath);
+        add("Subject claim names", [...new Set(projectedNames)]);
+        add("Subject claim paths", [...new Set(projectedPaths)]);
+        add("Subject withheld names", [String(subject.withheldNames)]);
+        add("Subject truncated items", [String(subject.truncatedItems)]);
+        if (!projectedNames.length && !projectedPaths.length) add("Subject structure", ["No allowlisted subject names available; this does not prove the credential has no claims."]);
+        add("Subject privacy", ["Names and paths only; claim values are never displayed."]);
+      }
+    }
+    if (kind === "verification_result") {
+      add("Reported verifier status", select(s.status, new Set(["valid", "invalid", "expired", "error", "pending", "VP_SUBMITTED", "SUCCESS", "FAILED"])));
+      for (const key of ["allChecksSuccessful", "credentialChecksSuccessful", "credentialProofValid", "holderProofValid"]) if (typeof s[key] === "boolean") add(key, [s[key] ? "true" : "false"]);
     }
     if (kind === "credential_offer") add("Configurations", select(s.configurations, names));
     if (kind === "dcql" && Array.isArray(s.credentials)) {

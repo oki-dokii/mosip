@@ -30,3 +30,17 @@ export function coverage(value: unknown): Coverage[] | null {
   }
   return rows;
 }
+
+export interface ServerHop { ruleId: string; state: "observed" | "not_observed"; exchangeIds: string[]; actorFrom: "mimoto"; actorTo: "certify" | "verify" }
+const serverRules: Record<string, ServerHop["actorTo"]> = { "certify-token": "certify", "certify-credential": "certify", "verify-request-fetch": "verify", "verify-submit": "verify" };
+export function serverCoverage(value: unknown): ServerHop[] | null {
+  if (!Array.isArray(value) || value.length > 4) return null;
+  const rows: ServerHop[] = [];
+  for (const raw of value) {
+    const row = object(raw);
+    if (!row || typeof row.ruleId !== "string" || !Object.hasOwn(serverRules, row.ruleId) || row.actorFrom !== "mimoto" || row.actorTo !== serverRules[row.ruleId] || !["observed", "not_observed"].includes(String(row.state)) || !Array.isArray(row.exchangeIds) || row.exchangeIds.length > 100 || !row.exchangeIds.every(id => typeof id === "string" && /^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(id))) return null;
+    if ((row.state === "observed") !== (row.exchangeIds.length > 0) || rows.some(item => item.ruleId === row.ruleId)) return null;
+    rows.push({ ruleId: row.ruleId, state: row.state as ServerHop["state"], actorFrom: "mimoto", actorTo: serverRules[row.ruleId]!, exchangeIds: row.exchangeIds as string[] });
+  }
+  return rows;
+}

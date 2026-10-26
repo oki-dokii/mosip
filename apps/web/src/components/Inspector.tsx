@@ -19,6 +19,7 @@ export function Inspector({ exchange }: { exchange: Exchange | null }) {
           <span>{exchange.actorFrom}</span><ArrowRight size={13} /><span>{exchange.actorTo}</span>
           <span className="ml-auto rounded-full bg-green-400/15 px-2.5 py-1 text-green-300">{exchange.status} · {exchange.durationMs} ms</span>
         </div>
+        <p className="mt-2 text-xs text-slate-300">HTTP status describes transport only. Read the independent verifier result for the credential verdict.</p>
         <div className="mt-2 break-all font-mono text-xs"><strong className="mr-2 text-cyan-300">{exchange.method}</strong>{exchange.url}</div>
       </header>
       <div className="grid gap-px bg-white/10 md:grid-cols-2">

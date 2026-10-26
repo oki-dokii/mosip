@@ -76,3 +76,15 @@ it("does not overwrite imported coverage with an older delayed initial read", as
   expect(screen.getByText("ISSUE_CREDENTIAL: captured")).toBeTruthy();
   expect(screen.queryByText("Old snapshot")).toBeNull();
 });
+it("keeps canonical server observations separate from missing browser traffic", async () => {
+  vi.mocked(api.captureCoverage).mockResolvedValueOnce({ coverage: [{ stepKey: "PRESENT_SUBMIT", state: "missing", count: 0, reason: "No browser traffic", projection: totals }], serverHops: [
+    { ruleId: "verify-submit", state: "observed", actorFrom: "mimoto", actorTo: "verify", exchangeIds: ["7c40f6a3-7a7e-43b7-806c-67d7bfeec00e"] },
+    { ruleId: "verify-request-fetch", state: "not_observed", actorFrom: "mimoto", actorTo: "verify", exchangeIds: [] },
+  ] });
+  render(<CaptureCoverage runId="run" onImported={vi.fn()} />);
+  expect(await screen.findByText("verify-submit: observed")).toBeTruthy();
+  expect(screen.getByText("PRESENT_SUBMIT: missing")).toBeTruthy();
+  expect(screen.getByText("verify-request-fetch: not_observed")).toBeTruthy();
+  expect(screen.getByText("7c40f6a3-7a7e-43b7-806c-67d7bfeec00e")).toBeTruthy();
+  expect(screen.getByText(/An observed HTTP exchange does not establish/)).toBeTruthy();
+});

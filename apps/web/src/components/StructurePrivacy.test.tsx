@@ -23,3 +23,23 @@ it("explains unavailable JSON-LD names and rejects malformed or unrecognized pro
   expect(publicStructure({ credential: "raw.token.value" })).toBeNull();
   expect(publicStructure(projection([{ kind: "unknown", summary: {} }]))).toBeNull();
 });
+it("renders canonical JSON-LD subject names and wildcard paths without reading bodies or values", () => {
+  const value = projection([{ kind: "verifiable_credential", summary: { types: ["FarmerCredential"], subject: { names: ["fullName", "farmerID", "streetAddress"], paths: ["$.credentialSubject.fullName", "$.credentialSubject.address[*].streetAddress"], withheldNames: 2, truncatedItems: 3, fullName: "CANARY_PRIVATE_VALUE" } } }]);
+  render(<Inspector exchange={{ id: "e", runId: "r", stepId: "s", seq: 1, actorFrom: "mimoto", actorTo: "certify", method: "POST", url: "https://issuer.example/credential", status: 200, durationMs: 1, request: null, response: value, redactions: [] } as Exchange} />);
+  expect(screen.getByText("fullName, farmerID, streetAddress")).toBeTruthy();
+  expect(screen.getByText("$.credentialSubject.fullName, $.credentialSubject.address[*].streetAddress")).toBeTruthy();
+  expect(screen.getByText("Subject withheld names")).toBeTruthy();
+  expect(screen.getByText("Subject truncated items")).toBeTruthy();
+  expect(document.body.textContent).not.toMatch(/private-value|CANARY/);
+  expect(screen.getByText(/HTTP status describes transport only/)).toBeTruthy();
+});
+it("withholds lookalikes, unknown segments and injected values even in expanded structure", () => {
+  const result = publicStructure(projection([{ kind: "verifiable_credential", summary: { subject: { names: ["name", "nаme", "CANARY_NAME"], paths: ["$.credentialSubject.name", "$.credentialSubject.CANARY_PATH.email", "$.credentialSubject.address[0].name", "$.credentialSubject.name<script>"], withheldNames: 5, truncatedItems: 1 } } }]));
+  expect(JSON.stringify(result)).toContain("$.credentialSubject.name");
+  expect(JSON.stringify(result)).not.toMatch(/CANARY|nаme|script|\[0\]/);
+});
+it("distinguishes absent, empty and malformed JSON-LD projections", () => {
+  const subject = { names: [], paths: [], withheldNames: 0, truncatedItems: 0 };
+  expect(JSON.stringify(publicStructure(projection([{ kind: "verifiable_credential", summary: { subject } }])))).toContain("does not prove the credential has no claims");
+  expect(JSON.stringify(publicStructure(projection([{ kind: "verifiable_credential", summary: { subject: { ...subject, withheldNames: -1 } } }])))).toContain("Claim names are unavailable");
+});

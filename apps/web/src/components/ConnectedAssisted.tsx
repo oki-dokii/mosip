@@ -1,3 +1,4 @@
+import { NativeWalletOptions } from "./NativeWalletOptions";
 import { useEffect, useState } from "react";
 import type { RunConfig, RunSummary, RunStep } from "@playground/shared";
 import { api } from "../lib/api";
@@ -53,6 +54,7 @@ export function ConnectedAssisted({ config, onRun, resumeId }: { config: RunConf
     {active && state?.deadlineAt && <p role="timer" aria-label="Time remaining">Time remaining: {Math.max(0, Math.ceil((state.deadlineAt - Date.now()) / 1000))} seconds</p>}
     {active && <>
       <nav aria-label="Connected wallet actions">{Object.entries(state?.actions ?? {}).map(([label, value]) => { const href = actionUrl(value); return href ? <a key={label} href={href} rel="noopener noreferrer" target={href.startsWith("https:") ? "_blank" : undefined} className="mr-3 underline">{label}</a> : null; })}</nav>
+      {!fixture && <NativeWalletOptions presentationUrl={state?.actions.presentationUrl} />}
       {step?.stepKey === "ISSUE_CREDENTIAL" && fixture && <button onClick={() => void observe("issuance")}>Inject fixture issuance</button>}
       {step?.stepKey === "STORE" && <button onClick={() => void observe("storage")}>{fixture ? "Inject fixture storage confirmation" : "Confirm credential visible in persistent wallet"}</button>}
       {step?.stepKey === "PRESENT_SUBMIT" && fixture && <button onClick={() => void observe("presentation")}>Inject fixture presentation</button>}

@@ -37,7 +37,8 @@
     "capture:local": "node scripts/start-local-capture.mjs",
     "check:web-managed": "node scripts/check-managed-local-web.mjs",
     "capture:local:attach": "node scripts/attach-local-capture.mjs",
-    "store:maintain": "pnpm --filter @playground/bff exec tsx src/maintenance-cli.ts"
+    "store:maintain": "pnpm --filter @playground/bff exec tsx src/maintenance-cli.ts",
+    "check:web-managed-ui": "node scripts/check-managed-local-ui.mjs"
   },
   "engines": {
     "node": ">=20"
