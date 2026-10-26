@@ -23,7 +23,7 @@ Repeat the local managed acceptance using `pnpm check:web-managed-ui` and the ex
 | Physical-phone layout and manual enlarged text | Person 2 / phone operator | Actual device/browser, zoom/text size, selector/inspector/history results; browser emulation alone is insufficient |
 | Native wallet deep-link acceptance | Person 2 + integrator | Matching request profile, actual provider/device result and independent verifier outcome |
 | DC API end-to-end adapter | Integrator + Person 2 | Matching signed/unsigned request generation, response protocol adapter, provider test and negative controls; current direct-post adapter does not establish this |
-| Final media review | Team | Listen through all four minutes, review CC and slide readability; add final team name |
+| Final media review | Team | Listen through all four minutes, review CC and slide readability; team name and roster added to the deck |
 | Cloud links and final submission | Integrator | Reviewer-access links and confirmed deadline supplied by user |
 
 The [browser capability record](evidence/2026-10-26-person2-local-ui/native-browser-check.json) reports API support in the tested Chromium, not a completed native credential flow. See the [W3C Digital Credentials API draft](https://www.w3.org/TR/2026/WD-digital-credentials-20261015/) and [Chrome implementation announcement](https://developer.chrome.com/blog/digital-credentials-api-shipped).

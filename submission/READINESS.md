@@ -21,7 +21,7 @@ Latest Person 2 checkpoint: **445 tests passed, five optional DB skips; 18 brows
 |---|---|---|---|
 | Complete source code | Present | [GitHub repository](https://github.com/oki-dokii/mosip), currently on `main`; verify judges can access the final URL | Yes, final access check |
 | Working prototype/demo | Working; final human rehearsal open | [25 October local six-case Compose demo](evidence/2026-10-25-local-demo.md) passed and exposes the labelled, read-only managed A1 archive; hosted browser and Compose CI also passed. Rehearse on another machine | Yes, independent-machine rehearsal and final team review of A1 |
-| Pitch slide deck | Draft ready for team review | [Updated eight-slide deck and PDF](pitch/DECK_README.md) cite recorded evidence; final team name and rehearsal remain | Yes |
+| Pitch slide deck | Draft ready for team review | [Updated eight-slide deck and PDF](pitch/DECK_README.md) cite recorded evidence; team details confirmed; rehearsal remains | Yes |
 | 2–5 minute video demo | Narrated/captioned four-minute draft ready | [Video and transcript](pitch/VIDEO_README.md): synthetic narration, fresh mock controls and recorded local evidence; human listening/review and cloud sharing remain | Yes |
 | Installation instructions | Prepared, needs independent-machine rehearsal | [README.md](../README.md) and [DEPLOYMENT.md](../docs/DEPLOYMENT.md) cover startup. A [fresh clone on this Mac](CLEAN_CHECKOUT_REHEARSAL.md) passed install, test, build and audit; hosted clean-checkout Docker smoke passed. Another human/host should follow the guide | Yes |
 | API documentation | Updated | [API_REFERENCE.md](API_REFERENCE.md) includes assisted routes, capture coverage and supported matrix cells | Yes, final review |
@@ -58,7 +58,7 @@ Latest Person 2 checkpoint: **445 tests passed, five optional DB skips; 18 brows
 
 | Final email field / linked artifact | Current state |
 |---|---|
-| Team name and member list | Supply from the team; not recorded here |
+| Team name and member list | **Bhole Chature** — Soham Banerjee (Lead), Pulkit Pandey, Dayal Gupta, Thrissha Arcot, Harsh Kumar; [team record](TEAM.md) |
 | Problem statement | Interoperability Playground for Verifiable Credentials |
 | Source repository URL | [oki-dokii/mosip](https://github.com/oki-dokii/mosip); verify public reviewer access at submission time |
 | Working prototype/demo URL or reproducible install | README and Docker mock demo documented; final demo URL/rehearsal not recorded |

@@ -16,8 +16,8 @@
   "files": [
     {
       "path": "submission/pitch/Interoperability_Playground_Pitch_2026-10-26.pptx",
-      "sha256": "a351372962752f9450bbe8af3936854a8ba451c6e37cf52278cc2b87eb8931ab",
-      "bytes": 884320
+      "sha256": "5b6d8611353e8809d12b6fc902fdd3bd8e73870b1cb44cdcd51b71d20b3e7d25",
+      "bytes": 884877
     },
     {
       "path": "submission/pitch/Interoperability_Playground_Demo_2026-10-26.srt",
@@ -26,8 +26,8 @@
     },
     {
       "path": "submission/pitch/Interoperability_Playground_Pitch_2026-10-26.pdf",
-      "sha256": "2a4e69a9865a7c8e3efb98f327320efa812b25c09f79f18d61ceb3b92ca583d8",
-      "bytes": 739762
+      "sha256": "687fdfe08abc1290ceb610cd94b9da5bea134ae6f833b057f2626e32abdcb809",
+      "bytes": 755482
     },
     {
       "path": "submission/pitch/Interoperability_Playground_Demo_2026-10-26.vtt",
@@ -39,5 +39,19 @@
       "sha256": "bb159bd6d54c7860938cb4c5d3dcd136281f0dad1a54ff2ca05c8b984b0d0107",
       "bytes": 5772018
     }
-  ]
+  ],
+  "teamUpdate": {
+    "team": "Bhole Chature",
+    "members": [
+      "Soham Banerjee (Lead)",
+      "Pulkit Pandey",
+      "Dayal Gupta",
+      "Thrissha Arcot",
+      "Harsh Kumar"
+    ],
+    "coverReviewed": true,
+    "pdfCoverReviewed": true,
+    "presentationFinalizer": "passed",
+    "videoUnchanged": true
+  }
 }

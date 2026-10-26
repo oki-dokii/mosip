@@ -10,4 +10,4 @@
 | 7 | Clean local managed run `f5f56b45-3160-49b3-96ff-e1238c412fb1`; exact component versions, adapters and unverified generic tier disclosed. The wallet screenshot is from the earlier direct local harness, not a screenshot of this run |
 | 8 | G-05/G-09/G-10 findings; G-06/G-07 private reports and upstream submissions remain pending |
 
-All eight rendered slides were reviewed and the presentation finalizer passed integrity, geometry and font checks. The team name is awaiting the user's final value. Human pitch rehearsal and reviewer-access cloud links remain open. See [Person 2 completion](../PERSON2_COMPLETION.md) for the newer UI-driven run.
+All eight rendered slides were reviewed and the presentation finalizer passed integrity, geometry and font checks. Team **Bhole Chature** and all five members are on the cover: Soham Banerjee (Lead), Pulkit Pandey, Dayal Gupta, Thrissha Arcot and Harsh Kumar. Human pitch rehearsal and reviewer-access cloud links remain open. See [Person 2 completion](../PERSON2_COMPLETION.md) for the newer UI-driven run.
