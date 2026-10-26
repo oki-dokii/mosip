@@ -1,0 +1,30 @@
+{
+  "ordinaryTests": {
+    "passed": 423,
+    "optionalDatabaseSkipped": 4
+  },
+  "postgresqlBoundarySuite": {
+    "passed": 16,
+    "skipped": 0,
+    "scope": "includes raw rows, API/report and emitted Socket.IO payloads; overlapping tests are not added to ordinary total"
+  },
+  "browserSuite": {
+    "passed": 17,
+    "scope": "synthetic app UI, keyboard/axe, native zoom and mobile contrast; separate from real-wallet run"
+  },
+  "typecheck": "passed",
+  "build": "passed",
+  "secretAudit": "passed",
+  "forwarding": "synthetic integration asserts original request/response bodies unchanged",
+  "genericEvidenceTier": "unverified; not promoted by this work",
+  "liveExportPrivateValueAudit": {
+    "result": "passed",
+    "checked": [
+      "capture transport token",
+      "database connection URL",
+      "actual wallet and credential identifiers",
+      "synthetic passcode"
+    ],
+    "sensitiveValuesRecorded": false
+  }
+}

@@ -1,12 +1,14 @@
 # Submission readiness — 2026-10-26 working checkpoint
 
-This folder is the submission handoff. Refresh statuses and links before sending the final submission. The A1 capture and journey code now have [one integration owner](../docs/SINGLE_OWNER_HANDOFF.md); older person-specific handoffs are historical.
+This folder is the submission handoff. Refresh statuses and links before sending the final submission. The [26 October managed local acceptance](evidence/2026-10-26-managed-local-jsonld/README.md) adds a BFF run with captured server hops, reload confirmation and independent Verify Valid. Team review and the separately assigned delivery tasks remain.
+
+The A1 capture and journey code now have [one integration owner](../docs/SINGLE_OWNER_HANDOFF.md); older person-specific handoffs are historical.
 
 ## Judge priorities
 
 | Criterion | Weight | What we can show now | Main gap |
 |---|---:|---|---|
-| Functionality completion | 40% | Fixture/reference flows, capture, reports, mock matrix, hosted Web and Android successes; connected local JSON-LD wallet flow returns Valid with both proofs true ([scope](../deploy/INJI_WEB_LOCAL.md)) | A1 final review, independent-machine rehearsal and managed BFF integration of the local browser harness remain open |
+| Functionality completion | 40% | Fixture/reference flows, capture, reports, mock matrix, hosted Web and Android successes; connected local JSON-LD wallet flow returns Valid with both proofs true ([scope](../deploy/INJI_WEB_LOCAL.md)) | A1 final review and independent-machine rehearsal remain open; the managed local BFF/capture chain now has a clean-source pass |
 | Deliverable quality | 40% | Typed monorepo, historical 339-test ordinary checkpoint plus three separately passing PostgreSQL checks, three hosted Chromium checks, redaction, API and architecture notes; current BFF suite passed 199 tests with three opt-in DB skips on 24 October | Full-repo retest at final commit and independent-machine setup remain |
 | UX/design | 10% | Working React playground, assisted journey, keyboard/axe browser checks and annotated synthetic screens | Review final build against screenshots and capture final screens |
 | Presentation | 10% | Narrative and demo outline in this folder | Actual slide deck and 2–5 minute video are still required |

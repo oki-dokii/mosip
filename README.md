@@ -1,6 +1,5 @@
 # Inji Interoperability Playground
 
-
 Current team execution: [four-person plan](docs/FINAL_FOUR_PERSON_EXECUTION_PLAN.md). Local server capture and the subject-name inspector contract: [Person 1 handoff](docs/PERSON1_LOCAL_CAPTURE_HANDOFF.md).
 
 [![Playground CI](https://github.com/oki-dokii/mosip/actions/workflows/ci.yml/badge.svg)](https://github.com/oki-dokii/mosip/actions/workflows/ci.yml)
@@ -73,7 +72,7 @@ The question for every run is **which exact combination was tested, what happene
 | Standalone mock issuer | Reference Wallet | Standalone mock verifier | SD-JWT | Cross-service mock path recorded. |
 | Official local Inji Certify | Actual Inji Wallet Android | Collab Inji Verify | SD-JWT | **Observed A2 pass:** stored card, user-confirmed reopen persistence, same-wallet share and correlated valid proof result; [evidence/limits](submission/evidence/person3-a2-mobile-2026-10-23/README.md). |
 | Inji Certify | Inji Web (assisted) | Inji Verify | JSON-LD | **Managed A1 technical chain recorded:** same-run Mimoto transport, reload-backed storage confirmation, correlated presentation and independent Verify `valid`; [evidence and limits](submission/evidence/person2-managed-a1-2026-10-25/README.md). Final team review pending. |
-| Official local Certify 0.14.0 | Official local Inji Web 0.17.0 / Mimoto 0.22.0 | Official local Verify 0.18.2 | JSON-LD | **Same-wallet local pass:** exact newly issued card survives reload, consent/share succeeds, Verify returns Valid with both proofs true. Synthetic authorization and explicit DID metadata adapter; [evidence and boundaries](submission/evidence/2026-10-26-local-web-jsonld/README.md). |
+| Official local Certify 0.14.0 | Official local Inji Web 0.17.0 / Mimoto 0.22.0 | Official local Verify 0.18.2 | JSON-LD | **Managed local pass:** one BFF run links captured server hops, exact-card reload, same-wallet presentation and independent Verify Valid with both proofs true. Synthetic authorization and explicit DID adapter; [evidence and boundaries](submission/evidence/2026-10-26-managed-local-jsonld/README.md). |
 
 The detailed recorded outcomes and limitations are in [Phase 3](docs/PHASE3.md). These are prior results, not a fresh live run performed by reading this README. A new mobile app is **not required**; real-wallet validation should use an existing, pinned Inji Wallet build.
 

@@ -5,7 +5,7 @@ commits. It excludes presentation, video and submission administration. Earlier
 person plans contain historical tasks; use this checkpoint to avoid rebuilding
 completed features.
 
-**Latest assignment:** [Final four-person execution plan](FINAL_FOUR_PERSON_EXECUTION_PLAN.md). Person 1 has now executed a managed local JSON-LD pass; [capture/subject contract](PERSON1_LOCAL_CAPTURE_HANDOFF.md). Rows 1–2 below describe the earlier dependency and now need consumer/team review rather than a capture rebuild.
+**Latest assignment:** [Final four-person execution plan](FINAL_FOUR_PERSON_EXECUTION_PLAN.md). Person 1 has now executed a [clean-source managed local JSON-LD pass](../submission/evidence/2026-10-26-managed-local-jsonld/README.md); [capture/subject contract](PERSON1_LOCAL_CAPTURE_HANDOFF.md). Rows 1–2 below describe the earlier dependency and now need consumer/team review rather than a capture rebuild.
 
 ## Completed baseline
 

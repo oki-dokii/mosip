@@ -11,7 +11,7 @@ because the team intends to implement it.
 - Official local Certify 0.14.0 → Inji Web 0.17.0 / Mimoto 0.22.0 → Verify 0.18.2
   JSON-LD direct-wallet flow passed exact-card reload and both verifier proof checks.
 - Person 1 has also executed the **playground-managed local JSON-LD flow** with a
-  BFF run ID, captured server hops and independent verifier result. Final evidence
+  BFF run ID, captured server hops and independent verifier result. [Clean-source evidence](../submission/evidence/2026-10-26-managed-local-jsonld/README.md)
   and the [capture/subject-name handoff](PERSON1_LOCAL_CAPTURE_HANDOFF.md) are the
   integration checkpoint; Person 2 should consume them rather than rebuild capture.
 - Hosted managed A1 and hybrid Android A2 have separate dated evidence and limits.

@@ -3,6 +3,8 @@
 26 October 2026. This handoff implements the pending server-hop and subject-name
 contracts. Existing hosted browser bridge behavior remains separate.
 
+**Implemented and tested:** `f959edc145b82da04695353a51e9c3cf4e32a9b0`. Fresh managed run `f5f56b45-3160-49b3-96ff-e1238c412fb1` passed from a clean source tree; [sanitized exchange IDs, coverage, provenance and validation](../submission/evidence/2026-10-26-managed-local-jsonld/README.md).
+
 ## What is ready
 
 The local forwarder now records the actual Mimoto → Certify token/credential and

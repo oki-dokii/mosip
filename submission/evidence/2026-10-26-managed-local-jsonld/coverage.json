@@ -1,0 +1,150 @@
+{
+  "coverage": [
+    {
+      "stepKey": "INIT",
+      "state": "not_observable",
+      "count": 0,
+      "projection": {
+        "withheldNames": 0,
+        "truncatedItems": 0,
+        "unsupportedKinds": 0
+      },
+      "reason": "Browser HAR cannot establish internal run operations or wallet-local storage."
+    },
+    {
+      "stepKey": "ISSUE_OFFER",
+      "state": "missing",
+      "count": 0,
+      "projection": {
+        "withheldNames": 0,
+        "truncatedItems": 0,
+        "unsupportedKinds": 0
+      },
+      "reason": "No matching browser HTTP exchange observed; this may be server-side, out of window, or absent. This is not a failed-step verdict."
+    },
+    {
+      "stepKey": "ISSUE_TOKEN",
+      "state": "missing",
+      "count": 0,
+      "projection": {
+        "withheldNames": 0,
+        "truncatedItems": 0,
+        "unsupportedKinds": 0
+      },
+      "reason": "No matching browser HTTP exchange observed; this may be server-side, out of window, or absent. This is not a failed-step verdict."
+    },
+    {
+      "stepKey": "ISSUE_CREDENTIAL",
+      "state": "missing",
+      "count": 0,
+      "projection": {
+        "withheldNames": 0,
+        "truncatedItems": 0,
+        "unsupportedKinds": 0
+      },
+      "reason": "No matching browser HTTP exchange observed; this may be server-side, out of window, or absent. This is not a failed-step verdict."
+    },
+    {
+      "stepKey": "STORE",
+      "state": "not_observable",
+      "count": 0,
+      "projection": {
+        "withheldNames": 0,
+        "truncatedItems": 0,
+        "unsupportedKinds": 0
+      },
+      "reason": "Browser HAR cannot establish internal run operations or wallet-local storage."
+    },
+    {
+      "stepKey": "PRESENT_REQUEST",
+      "state": "missing",
+      "count": 0,
+      "projection": {
+        "withheldNames": 0,
+        "truncatedItems": 0,
+        "unsupportedKinds": 0
+      },
+      "reason": "No matching browser HTTP exchange observed; this may be server-side, out of window, or absent. This is not a failed-step verdict."
+    },
+    {
+      "stepKey": "PRESENT_SUBMIT",
+      "state": "missing",
+      "count": 0,
+      "projection": {
+        "withheldNames": 0,
+        "truncatedItems": 0,
+        "unsupportedKinds": 0
+      },
+      "reason": "No matching browser HTTP exchange observed; this may be server-side, out of window, or absent. This is not a failed-step verdict."
+    },
+    {
+      "stepKey": "PRESENT_STATUS",
+      "state": "missing",
+      "count": 0,
+      "projection": {
+        "withheldNames": 0,
+        "truncatedItems": 0,
+        "unsupportedKinds": 0
+      },
+      "reason": "No matching browser HTTP exchange observed; this may be server-side, out of window, or absent. This is not a failed-step verdict."
+    },
+    {
+      "stepKey": "PRESENT_RESULT",
+      "state": "missing",
+      "count": 0,
+      "projection": {
+        "withheldNames": 0,
+        "truncatedItems": 0,
+        "unsupportedKinds": 0
+      },
+      "reason": "No matching browser HTTP exchange observed; this may be server-side, out of window, or absent. This is not a failed-step verdict."
+    },
+    {
+      "stepKey": "REPORT",
+      "state": "not_observable",
+      "count": 0,
+      "projection": {
+        "withheldNames": 0,
+        "truncatedItems": 0,
+        "unsupportedKinds": 0
+      },
+      "reason": "Browser HAR cannot establish internal run operations or wallet-local storage."
+    }
+  ],
+  "serverHops": [
+    {
+      "ruleId": "certify-token",
+      "state": "observed",
+      "exchangeIds": [
+        "2bcc7e2a-5a7f-4a5c-9bfc-22aca5d06037"
+      ],
+      "actorFrom": "mimoto",
+      "actorTo": "certify"
+    },
+    {
+      "ruleId": "certify-credential",
+      "state": "observed",
+      "exchangeIds": [
+        "f8955c1a-ef25-46a0-8f09-8553e5a5cd99"
+      ],
+      "actorFrom": "mimoto",
+      "actorTo": "certify"
+    },
+    {
+      "ruleId": "verify-request-fetch",
+      "state": "not_observed",
+      "exchangeIds": [],
+      "actorFrom": "mimoto",
+      "actorTo": "verify"
+    },
+    {
+      "ruleId": "verify-submit",
+      "state": "observed",
+      "exchangeIds": [
+        "7c40f6a3-7a7e-43b7-806c-67d7bfeec00e"
+      ],
+      "actorFrom": "mimoto",
+      "actorTo": "verify"
+    }
+  ]
+}
