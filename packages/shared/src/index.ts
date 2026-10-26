@@ -48,7 +48,7 @@ export interface RunSummary {
   createdAt: string;
   startedAt: string | null;
   finishedAt: string | null;
-  protocolProfile?: "fixture-v1" | "mock-sdjwt-flat-v1" | "legacy-mock-v1" | "collab-dcql";
+  protocolProfile?: "fixture-v1" | "mock-sdjwt-flat-v1" | "legacy-mock-v1" | "collab-dcql" | "local-jsonld-pex-0.18.2";
   issuerRepresentation?: "did:jwk" | "x509" | "unreported";
   evaluation?: ProtocolEvaluation;
 }

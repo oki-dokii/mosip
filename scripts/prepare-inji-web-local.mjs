@@ -90,6 +90,7 @@ async function keystore() {
 async function main() {
   assert(runtime !== repoRoot && !runtime.startsWith(repoRoot + sep), 'RUNTIME_IN_REPO_FORBIDDEN');
   await mkdir(runtime, { recursive: true, mode: 0o700 });
+  await mkdir(join(runtime, "capture"), { recursive: true, mode: 0o700 });
   const actualRuntime = await realpath(runtime);
   assert(actualRuntime !== repoRoot && !actualRuntime.startsWith(repoRoot + sep), 'RUNTIME_IN_REPO_FORBIDDEN');
   await chmod(runtime, 0o700);

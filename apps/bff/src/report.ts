@@ -1,3 +1,4 @@
+import { serverCoverage } from "./capture/local-server.js";
 import { relatedWalletEvidence, renderWalletEvidenceMarkdown, type WalletEvidence } from "./walletEvidence.js";
 import type { RunRecord } from "./store.js";
 import { evidenceLabels, evidenceTier, type EvidenceTier } from "@playground/shared";
@@ -9,11 +10,21 @@ export interface RunReport {
   exchanges: RunRecord["exchanges"];
   relatedWalletEvidence: readonly WalletEvidence[];
   evidence: { tier: EvidenceTier; label: string };
+  deploymentEvidence?: {
+    deployment: "local_synthetic"; profile: "local-jsonld-pex-0.18.2";
+    provenance: "configured_profile_with_observed_exchanges";
+    serverHops: ReturnType<typeof serverCoverage>; boundaries: string[];
+  };
 }
 
 export function buildReport(record: RunRecord, manual: readonly WalletEvidence[] = []): RunReport {
   const tier = evidenceTier(record.run);
-  return { relatedWalletEvidence: relatedWalletEvidence(record.run, manual), run: { ...record.run, ...protocolMetadata(record.steps) }, steps: record.steps, exchanges: record.exchanges, evidence: { tier, label: evidenceLabels[tier] } };
+  return { relatedWalletEvidence: relatedWalletEvidence(record.run, manual), run: { ...record.run, ...protocolMetadata(record.steps) }, steps: record.steps, exchanges: record.exchanges, evidence: { tier, label: evidenceLabels[tier] },
+    ...(protocolMetadata(record.steps).protocolProfile === "local-jsonld-pex-0.18.2" ? { deploymentEvidence: {
+      deployment: "local_synthetic" as const, profile: "local-jsonld-pex-0.18.2" as const,
+      provenance: "configured_profile_with_observed_exchanges" as const, serverHops: serverCoverage(record),
+      boundaries: ["Synthetic IAR authorization fixture", "Declared issuer DID assertionMethod adapter", "Public JSON-LD contexts require network", "Storage confirmation is backed by the separate exact-card browser check", "Generic evidence tier remains unverified until team review; this is not conformance certification"],
+    } } : {}) };
 }
 
 function fencedJson(value: unknown) {
@@ -38,6 +49,7 @@ export function renderMarkdown(report: RunReport) {
       `- Observed rejection: \`${run.evaluation.observed.code ?? "unknown"}\` at \`${run.evaluation.observed.step ?? "unknown"}\``,
     ] : []),
     `- Evidence: **${evidence.label}**`,
+    ...(report.deploymentEvidence ? ["- Deployment: **local synthetic profile with observed server hops**", ...report.deploymentEvidence.boundaries.map(boundary => `- Boundary: ${boundary}`)] : []),
     `- Issuer: \`${run.config.issuer}\``,
     `- Wallet: \`${run.config.wallet}\``,
     `- Verifier: \`${run.config.verifier}\``,

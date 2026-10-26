@@ -17,7 +17,7 @@ io.of("/runs").on("connection", (socket) => {
   socket.on("join", (runId: string) => socket.join(`run:${runId}`));
 });
 
-httpServer.listen(port, () => {
+httpServer.listen(port, process.env.ASSISTED_LOCAL_PROFILE === "jsonld-0.14" ? "127.0.0.1" : "0.0.0.0", () => {
   console.log(`Playground BFF listening on http://localhost:${port} (${repository.storage} storage)`);
 });
 

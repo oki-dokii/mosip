@@ -1,5 +1,8 @@
 # Inji Interoperability Playground
 
+
+Current team execution: [four-person plan](docs/FINAL_FOUR_PERSON_EXECUTION_PLAN.md). Local server capture and the subject-name inspector contract: [Person 1 handoff](docs/PERSON1_LOCAL_CAPTURE_HANDOFF.md).
+
 [![Playground CI](https://github.com/oki-dokii/mosip/actions/workflows/ci.yml/badge.svg)](https://github.com/oki-dokii/mosip/actions/workflows/ci.yml)
 
 **Find where a verifiable credential journey succeeds or fails.** Choose an issuer, wallet, verifier, and credential format; run an issue → hold → present → verify journey; then inspect its step timeline, sanitized protocol exchanges, sequence view, and downloadable result report.
@@ -58,7 +61,7 @@ The question for every run is **which exact combination was tested, what happene
 | Negative cases | Replay expired, bad-signature, wrong-type, missing-disclosure, or replayed-nonce faults where supported. | Controlled mock SD-JWT faults require exact rejection reasons; genuine replay and holder faults are covered separately by the Person 3 harness. |
 | History and exports | Filter runs; download JSON/Markdown reports and JSON/CSV/Markdown matrix exports. | Matrix results are separated by evidence tier. |
 | Independent roles | Standalone mock issuer and verifier can be selected for supported SD-JWT tests. | Mock cryptographic checks do not establish production trust. |
-| Passive capture | Import bounded, allowlisted synthetic browser HAR traffic after a normal run or during a managed assisted run. | Gaps remain for server-to-server and native-wallet traffic. |
+| Capture | Bounded synthetic browser HAR, hosted metadata bridge, and opt-in canonical local server-hop forwarding. | Browser and Mimoto server hops have separate actors/coverage; native traffic and unrecorded hops remain unobserved. |
 
 ### Tested combinations
 

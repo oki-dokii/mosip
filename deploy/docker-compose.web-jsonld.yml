@@ -29,6 +29,8 @@ services:
       LOCAL_CERTIFY_VERSION: '0.14.0'
     volumes:
       - ../scripts/local-web-issuer-bridge.mjs:/app/local-web-issuer-bridge.mjs:ro
+      - ../scripts/local-server-capture.mjs:/app/local-server-capture.mjs:ro
+      - ${MIMOTO_RUNTIME_DIR:?}/capture:/app/capture:ro
       - ${MIMOTO_RUNTIME_DIR:?}/localhost.key:/app/tls/localhost.key:ro
       - ${MIMOTO_RUNTIME_DIR:?}/localhost.crt:/app/tls/localhost.crt:ro
     depends_on:

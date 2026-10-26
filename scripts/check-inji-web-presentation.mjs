@@ -14,8 +14,19 @@ const wallet = 'http://127.0.0.1:18093';
 const verifier = 'http://127.0.0.1:18081/v1/verify';
 let stage = 'create_request';
 const routes = [];
+const protocolErrorHints = [];
 
 async function createRequest() {
+  if (process.env.LOCAL_ASSISTED_RUN_ID) {
+    const bff = process.env.LOCAL_ASSISTED_BFF_URL ?? 'http://127.0.0.1:4500';
+    if (!/^http:\/\/127\.0\.0\.1:[0-9]{2,5}$/.test(bff) || !/^[a-f0-9-]{36}$/.test(process.env.LOCAL_ASSISTED_RUN_ID)) throw new Error('LOCAL_ASSISTED_POLICY');
+    const status = await fetch(bff + '/api/v1/assisted/runs/' + process.env.LOCAL_ASSISTED_RUN_ID).then(r => r.json());
+    const launch = new URL(status.actions?.presentationUrl);
+    if (launch.origin !== wallet || launch.pathname !== '/user/authorize') throw new Error('LOCAL_ASSISTED_ACTION_INVALID');
+    const signedRequest = launch.searchParams.get('request');
+    if (!signedRequest) throw new Error('LOCAL_ASSISTED_REQUEST_MISSING');
+    return { signedRequest, requestClaims: decodeJwt(signedRequest), managed: true };
+  }
   const response = await fetch(verifier + '/vp-request', {
     method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
@@ -66,8 +77,14 @@ async function main() {
   try {
     const page = await browser.newPage();
     let walletMatchesIssuance = false;
-    page.on('response', response => {
+    page.on('response', async response => {
       const url = new URL(response.url());
+      if (url.origin === wallet && response.status() >= 400 && /\/presentations$/.test(url.pathname)) {
+        try {
+          const text = await response.text();
+          protocolErrorHints.push(Object.fromEntries(['expired', 'invalid', 'algorithm', 'http', 'uri', 'nonce', 'client', 'definition', 'pattern', 'signature', 'did', 'credential', 'missing', 'required', 'blank', 'audience'].map(term => [term, text.toLowerCase().includes(term)])));
+        } catch { /* no response body is exported */ }
+      }
       if (url.origin === wallet && url.pathname.startsWith('/v1/mimoto/'))
         routes.push({ method: response.request().method(),
           path: url.pathname.replace(/\/wallets\/[^/]+/g, '/wallets/{id}')
@@ -125,6 +142,17 @@ async function main() {
     let verifierStatus = null;
     let verifierDetails = null;
     for (let attempt = 0; attempt < 10; attempt++) {
+      if (request.managed) {
+        const status = await fetch((process.env.LOCAL_ASSISTED_BFF_URL ?? 'http://127.0.0.1:4500') + '/api/v1/assisted/runs/' + process.env.LOCAL_ASSISTED_RUN_ID).then(r => r.json());
+        const summary = status.steps?.find(step => step.stepKey === 'PRESENT_RESULT')?.summary;
+        if (summary?.outcome === 'valid' || summary?.outcome === 'invalid') {
+          verdict = summary.outcome === 'valid'; verifierStatus = 200;
+          verifierDetails = { credentialProofValid: summary.credentialProofValid, holderProofValid: summary.holderProofValid,
+            resultSource: summary.resultSource }; break;
+        }
+        if (['errored', 'failed', 'cancelled'].includes(status.run?.status)) throw new Error('LOCAL_ASSISTED_RUN_FAILED');
+        await new Promise(resolve => setTimeout(resolve, 1000)); continue;
+      }
       const response = await fetch(verifier + '/v2/vp-results/' + encodeURIComponent(request.transactionId), {
         method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ includeClaims: false, skipStatusChecks: true }),
@@ -170,7 +198,7 @@ async function main() {
 
 main().catch(error => {
   console.error(JSON.stringify({ result: 'LOCAL_PRESENTATION_FAILED', stage,
-    errorType: error?.name ?? 'unknown',
+    errorType: error?.name ?? 'unknown', protocolErrorHints,
     routeStatuses: routes.filter(route => /presentations|trusted-verifiers/.test(route.path)).slice(-12),
     code: /^[A-Z0-9_]+$/.test(error.message) ? error.message : 'LOCAL_PRESENTATION_CHECK_FAILED' }));
   process.exitCode = 1;

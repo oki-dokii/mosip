@@ -124,3 +124,12 @@ Issue output defaults to a **private review draft**, with no automatic filing. I
 The driver redactor now masks independent-key canaries for PINs, passwords, API keys, tokens, assertions, transaction/session IDs and refresh variants; their mixed-case forms are covered. It records dropped array/object counts, preserves shared non-cyclic objects, and distinguishes a parsed JWT from a dotted domain. URL/form values remain masked unless they match a **fixed** public enum allowlist for `response_type`, `grant_type`, `scope` or a known synthetic `client_id`. The HAR importer uses the same allowlist. No arbitrary client ID is exposed. Tests exercise each class.
 
 The public decoder still has a deliberately small vocabulary. Its withheld/truncated/unsupported counters and per-step coverage expose omissions; they do not add mDoc CBOR parsing or confirm new MOSIP credential types. The web UI renderer is assigned to Person 2 in [PERSON2_PUBLIC_VIEW_HANDOFF.md](PERSON2_PUBLIC_VIEW_HANDOFF.md).
+
+## Canonical local server-hop capture (26 October)
+
+The forwarding prototype is now integrated for the pinned synthetic JSON-LD local
+profile. See [the implemented contract and commands](PERSON1_LOCAL_CAPTURE_HANDOFF.md).
+Its `local_server_proxy` source/`mimoto` actor is separate from browser HAR and the
+hosted live bridge. An exclusive run lease, backend-only HMAC correlation and a
+strict name/path projection precede persistence; reports retain explicit deployment
+limits. Do not read older prototype-only statements as the current implementation.

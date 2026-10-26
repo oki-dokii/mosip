@@ -1,3 +1,4 @@
+import { capturedFetch } from "./local-server-capture.mjs";
 // Synthetic, local-only IAR fixture for Inji Web 0.17/Mimoto 0.22.
 // Certify signs the actual token; the fixture bypasses IAR's VP authorization.
 // No token, code, key, identity value or VC is logged.
@@ -61,7 +62,7 @@ async function insertSyntheticSession(code, challenge) {
   } finally { await db.end().catch(() => {}); }
 }
 async function upstream(path, options = {}) {
-  const response = await fetch(certify + path, { ...options, redirect: 'error', signal: AbortSignal.timeout(15_000) });
+  const response = await capturedFetch(certify + path, { ...options, redirect: 'error', signal: AbortSignal.timeout(15_000) }, 'certify');
   const bytes = Buffer.from(await response.arrayBuffer());
   if (bytes.length > 2_097_152) throw new Error('UPSTREAM_TOO_LARGE');
   return { status: response.status, body: JSON.parse(bytes.toString('utf8')) };
@@ -128,6 +129,7 @@ async function authHandler(request, response) {
     send(response, 404, { error: 'not_found' });
   } catch (error) {
     // No upstream body or stack trace crosses this synthetic boundary.
+    if (/^LOCAL_CAPTURE_[A-Z_]+$/.test(error?.message ?? '')) console.error(JSON.stringify({ checkpoint: 'LOCAL_CAPTURE_FAILURE', code: error.message }));
     send(response, error.message === 'BODY_TOO_LARGE' ? 413 : 502, { error: 'local_bridge_failure' });
   }
 }
@@ -138,6 +140,8 @@ async function proxy(request, response, upstreamBase, service) {
       ? /^(?:\/\.well-known\/openid-credential-issuer|\/v1\/certify\/(?:\.well-known\/[A-Za-z0-9._-]+|credential-offer-data\/[A-Za-z0-9_-]{1,200}|oauth\/token|nonce|issuance\/credential))$/
       : /^\/v1\/verify\/(?:v2\/vp-request(?:\/[A-Za-z0-9_-]+)?|vp-submission\/direct-post|v2\/vp-results\/[A-Za-z0-9_-]+|vp-request(?:\/[A-Za-z0-9_-]+)?|actuator\/health)$/;
     if (!allowed.test(url.pathname) || url.search) return send(response, 404, { error: 'not_found' });
+    const expectedMethod = /(?:\/oauth\/token|\/nonce|\/issuance\/credential|\/direct-post|\/vp-results\/[A-Za-z0-9_-]+|\/vp-request)$/.test(url.pathname) ? 'POST' : 'GET';
+    if (request.method !== expectedMethod) return send(response, 405, { error: 'method_not_allowed' });
     const path = url.pathname === '/.well-known/openid-credential-issuer'
       ? '/v1/certify/.well-known/openid-credential-issuer' : url.pathname;
     let bytes = ['POST', 'PUT'].includes(request.method) ? await body(request, 2_097_152) : undefined;
@@ -164,11 +168,11 @@ async function proxy(request, response, upstreamBase, service) {
       if (!legacyCertify) bytes = Buffer.from(JSON.stringify({ credential_configuration_id: configurationId,
         proofs: { jwt: [legacy.proof.jwt] } }));
     }
-    const upstreamResponse = await fetch(upstreamBase + path, { method: request.method, redirect: 'error',
+    const upstreamResponse = await capturedFetch(upstreamBase + path, { method: request.method, redirect: 'error',
       headers: { ...(request.headers['content-type'] ? { 'content-type': request.headers['content-type'] } : {}),
         ...(request.headers.authorization ? { authorization: request.headers.authorization } : {}),
         ...(request.headers.accept ? { accept: request.headers.accept } : {}) },
-      body: bytes, signal: AbortSignal.timeout(20_000) });
+      body: bytes, signal: AbortSignal.timeout(20_000) }, service);
     const result = Buffer.from(await upstreamResponse.arrayBuffer());
     if (result.length > 2_097_152) throw new Error('UPSTREAM_TOO_LARGE');
     let output = result;
@@ -228,7 +232,8 @@ async function proxy(request, response, upstreamBase, service) {
     response.writeHead(upstreamResponse.status, { 'content-type': upstreamResponse.headers.get('content-type') ?? 'application/json',
       'cache-control': 'no-store' });
     response.end(output);
-  } catch {
+  } catch (error) {
+    if (/^LOCAL_CAPTURE_[A-Z_]+$/.test(error?.message ?? '')) console.error(JSON.stringify({ checkpoint: 'LOCAL_CAPTURE_FAILURE', code: error.message }));
     send(response, 502, { error: 'local_bridge_failure' });
   }
 }

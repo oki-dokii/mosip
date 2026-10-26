@@ -32,7 +32,11 @@
     "spike:wallet": "node spikes/collab-reference-wallet.mjs",
     "start:local-full": "bash scripts/start-local-full.sh",
     "stop:local-full": "bash scripts/start-local-full.sh down",
-    "smoke:local-full": "node scripts/smoke-local-full.mjs"
+    "smoke:local-full": "node scripts/smoke-local-full.mjs",
+    "capture:local:prepare": "node scripts/prepare-local-capture.mjs",
+    "capture:local": "node scripts/start-local-capture.mjs",
+    "check:web-managed": "node scripts/check-managed-local-web.mjs",
+    "capture:local:attach": "node scripts/attach-local-capture.mjs"
   },
   "engines": {
     "node": ">=20"

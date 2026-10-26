@@ -41,3 +41,14 @@ describe("run artifacts", () => {
     expect(result.markers).toEqual([{ exchangeId: "exchange-1", stepId: "step-1", line: 4 }]);
   });
 });
+
+it("labels local profile boundaries without promoting the generic evidence tier", () => {
+  const local = structuredClone(record);
+  local.run.config.wallet = "inji_web_assisted";
+  local.steps[0]!.summary = { protocolProfile: "local-jsonld-pex-0.18.2" };
+  const result = buildReport(local);
+  expect(result.run.protocolProfile).toBe("local-jsonld-pex-0.18.2");
+  expect(result.deploymentEvidence).toMatchObject({ deployment: "local_synthetic", provenance: "configured_profile_with_observed_exchanges" });
+  expect(result.evidence.tier).toBe("unverified");
+  expect(renderMarkdown(result)).toContain("Declared issuer DID assertionMethod adapter");
+});

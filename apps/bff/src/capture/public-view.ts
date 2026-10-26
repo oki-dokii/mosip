@@ -6,6 +6,34 @@ const NAMES = new Set([
   "credentialSubject", "type", "issuer", "iss", "aud", "iat", "exp", "nbf", "vct", "cnf",
   "_sd", "_sd_alg", "sub", "nonce", "jti", "credential", "id", "nationality",
 ]);
+// Public vocabulary only. A claim's value is never included, even if it is itself a known name.
+export const SUBJECT_NAMES = ["id", "type", "given_name", "family_name", "name", "birthdate", "age_over_18", "email", "address", "nationality", "fullName", "farmerID", "streetAddress", "addressLocality", "postalCode", "addressCountry"] as const;
+const subjectNames = new Set<string>(SUBJECT_NAMES);
+export function projectSubject(value: unknown) {
+  const result = { names: [] as string[], paths: [] as string[], withheldNames: 0, truncatedItems: 0 };
+  let remaining = 128;
+  function walk(raw: unknown, path: string, depth: number) {
+    if (depth > 4 || remaining-- <= 0) { result.truncatedItems++; return; }
+    if (Array.isArray(raw)) {
+      if (raw.length > 8) result.truncatedItems += raw.length - 8;
+      for (const item of raw.slice(0, 8)) walk(item, path + "[*]", depth + 1);
+      return;
+    }
+    if (!raw || typeof raw !== "object") return;
+    const entries = Object.entries(raw);
+    if (entries.length > 32) result.truncatedItems += entries.length - 32;
+    for (const [name, child] of entries.slice(0, 32)) {
+      if (!subjectNames.has(name)) { result.withheldNames++; continue; }
+      if (result.paths.length >= 32) { result.truncatedItems++; continue; }
+      const next = path + "." + name;
+      if (!result.names.includes(name)) result.names.push(name);
+      if (!result.paths.includes(next)) result.paths.push(next);
+      if (child && typeof child === "object") walk(child, next, depth + 1);
+    }
+  }
+  walk(value, "$.credentialSubject", 0);
+  return result;
+}
 const FORMATS = new Set(["vc+sd-jwt", "dc+sd-jwt", "ldp_vc", "jwt_vc_json", "mso_mdoc"]);
 const ALGORITHMS = new Set(["EdDSA", "ES256", "ES384", "RS256", "PS256", "none"]);
 const TYPES = new Set(["JWT", "oauth-authz-req+jwt", "openid4vci-proof+jwt", "kb+jwt", "vc+sd-jwt", "dc+sd-jwt"]);
@@ -105,9 +133,9 @@ export function decodePublicProtocol(value: unknown, origins: ReadonlyMap<string
     const query = object(v.dcql_query ?? v.dcqlQuery);
     if (query) add("dcql", dcql(query, counts));
     if (Array.isArray(v.type) && v.type.includes("VerifiableCredential")) {
-      add("verifiable_credential", { types: names(v.type, counts), issuer: endpoint(typeof v.issuer === "string" ? v.issuer : object(v.issuer)?.id, origins), proofTypes: [object(v.proof)?.type].filter((p) => allowed(PROOFS, p)) });
+      add("verifiable_credential", { types: names(v.type, counts), issuer: endpoint(typeof v.issuer === "string" ? v.issuer : object(v.issuer)?.id, origins), proofTypes: [object(v.proof)?.type].filter((p) => allowed(PROOFS, p)), subject: projectSubject(v.credentialSubject) });
     }
-    if (object(v.credentialSubject)) for (const name of Object.keys(v.credentialSubject as Obj)) if (!NAMES.has(name)) counts.withheldNames++;
+    if (v.credentialSubject) { const subject = projectSubject(v.credentialSubject); counts.withheldNames += subject.withheldNames; counts.truncatedItems += subject.truncatedItems; }
     if (v.format === "mso_mdoc") counts.unsupportedKinds++;
     const checks = Object.fromEntries(["allChecksSuccessful", "credentialChecksSuccessful", "credentialProofValid", "holderProofValid"].filter((k) => typeof v[k] === "boolean").map((k) => [k, v[k]]));
     if (Object.keys(checks).length || allowed(OUTCOMES, v.status) || allowed(ERRORS, v.error)) {
@@ -147,4 +175,33 @@ export function publicViewForHarPart(part: Record<string, unknown>, origins: Rea
   if (mime === "application/x-www-form-urlencoded") return decodePublicProtocol(Object.fromEntries(new URLSearchParams(text)), origins);
   const parsed = boundedJson(text);
   return decodePublicProtocol(parsed ?? text, origins);
+}
+
+// Narrow server-hop projection: no endpoint identifiers, JWT headers or arbitrary names.
+export function serverHopPublicView(value: unknown) {
+  const full = decodePublicProtocol(value, new Map());
+  return { ...full, items: full.items.filter(item => ["verifiable_credential", "presentation", "verification_result"].includes(item.kind)).map(item => {
+    if (item.kind === "verifiable_credential") return { kind: item.kind, summary: { types: item.summary.types, proofTypes: item.summary.proofTypes, subject: item.summary.subject } };
+    if (item.kind === "presentation") return { kind: item.kind, summary: { tokenPresent: true } };
+    return { kind: item.kind, summary: Object.fromEntries(Object.entries(item.summary).filter(([key]) => ["allChecksSuccessful", "credentialChecksSuccessful", "credentialProofValid", "holderProofValid"].includes(key))) };
+  }) };
+}
+export function validServerHopView(value: unknown): boolean {
+  const v = object(value);
+  const exact = (o: Obj, keys: string[]) => Object.keys(o).every(key => keys.includes(key));
+  const count = (n: unknown) => Number.isSafeInteger(n) && Number(n) >= 0 && Number(n) <= 10_000_000;
+  const list = (v: unknown, predicate: (s: unknown) => boolean, max = 32) => Array.isArray(v) && v.length <= max && v.every(predicate);
+  if (!v || !exact(v, ["schemaVersion", "authenticity", "items", "withheldNames", "truncatedItems", "unsupportedKinds"]) || v.schemaVersion !== 1 || v.authenticity !== "not_verified" || ![v.withheldNames, v.truncatedItems, v.unsupportedKinds].every(count)) return false;
+  return list(v.items, raw => {
+    const item = object(raw), summary = object(item?.summary);
+    if (!item || !summary || !exact(item, ["kind", "summary"])) return false;
+    if (item.kind === "presentation") return exact(summary, ["tokenPresent"]) && summary.tokenPresent === true;
+    if (item.kind === "verification_result") return exact(summary, ["allChecksSuccessful", "credentialChecksSuccessful", "credentialProofValid", "holderProofValid"]) && Object.values(summary).every(v => typeof v === "boolean");
+    if (item.kind !== "verifiable_credential" || !exact(summary, ["types", "proofTypes", "subject"])) return false;
+    const subject = object(summary.subject);
+    return list(summary.types, v => allowed(NAMES, v)) && list(summary.proofTypes, v => allowed(PROOFS, v)) && !!subject && exact(subject, ["names", "paths", "withheldNames", "truncatedItems"]) && count(subject.withheldNames) && count(subject.truncatedItems) && list(subject.names, v => typeof v === "string" && subjectNames.has(v)) && list(subject.paths, v => {
+      if (typeof v !== "string" || v.length > 256 || !v.startsWith("$.credentialSubject")) return false;
+      return /^(?:\[\*\])?(?:\.[A-Za-z_][A-Za-z0-9_]*(?:\[\*\])?){1,5}$/.test(v.slice(19)) && v.slice(19).replace(/\[\*\]/g, "").split(".").slice(1).every(name => subjectNames.has(name));
+    });
+  }, 16);
 }

@@ -136,3 +136,14 @@ The preparation script retrieves four configuration/schema files from the [tagge
 - The hosted managed [A1 evidence](../submission/evidence/person2-managed-a1-2026-10-25/README.md) is an independent real-wallet JSON-LD result. It does not upgrade this local profile to an issuance/presentation pass.
 
 On the development Mac, after this profile and the existing official Certify/Verify control were running together, the four new containers used about 550 MiB resident memory and the disk had about 6.9 GiB available. This is a local observation, not an independent-machine installation check.
+
+## Playground-managed local capture
+
+The direct browser command above remains separate. The new
+[Person 1 local capture handoff](../docs/PERSON1_LOCAL_CAPTURE_HANDOFF.md) provides
+`capture:local:prepare`, `capture:local`, `capture:local:attach` and `check:web-managed`
+for a fresh BFF run with captured canonical Mimoto server hops. It uses the same
+pinned JSON-LD profile and explicit adapters, saves redacted exchanges, confirms the
+exact issued card after reload, and obtains an independent Verify result. Browser
+capture remains a separate coverage surface; a by-value request is not a Mimoto
+request-URI fetch. This does not change the historical direct or hosted evidence.

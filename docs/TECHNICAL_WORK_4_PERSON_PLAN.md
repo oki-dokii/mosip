@@ -4,6 +4,8 @@ Updated 2026-10-26. This assigns the improvement list supplied by the team. It e
 
 **Current checkpoint:** [Remaining technical work](REMAINING_TECHNICAL_WORK.md) reconciles completed work and remaining dependencies after the Person 4 merge. The detailed lanes below retain the original assignments.
 
+**Assignment update:** [Final four-person execution plan](FINAL_FOUR_PERSON_EXECUTION_PLAN.md) is the current complete assignment, including engineering and delivery.
+
 ## Starting point
 
 - The local official Certify → reference holder → Verify SD-JWT path works. On 26 October, the connected local JSON-LD profile also passed exact-card issuance, reload, same-wallet presentation and Verify Valid with both proofs true. It uses official Certify 0.14.0, a synthetic authorization fixture and an explicit DID adapter; [runbook and boundaries](../deploy/INJI_WEB_LOCAL.md). The direct browser harness has no BFF run ID.

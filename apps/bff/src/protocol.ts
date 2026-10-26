@@ -35,7 +35,7 @@ export function protocolMetadata(steps: RunStep[]): Pick<RunSummary, "evaluation
   for (const step of [...steps].sort((a, b) => a.seq - b.seq)) {
     const summary = step.summary;
     if (!summary) continue;
-    if (["fixture-v1", "mock-sdjwt-flat-v1", "legacy-mock-v1", "collab-dcql"].includes(String(summary.protocolProfile))) result.protocolProfile = summary.protocolProfile as NonNullable<RunSummary["protocolProfile"]>;
+    if (["fixture-v1", "mock-sdjwt-flat-v1", "legacy-mock-v1", "collab-dcql", "local-jsonld-pex-0.18.2"].includes(String(summary.protocolProfile))) result.protocolProfile = summary.protocolProfile as NonNullable<RunSummary["protocolProfile"]>;
     if (["did:jwk", "x509", "unreported"].includes(String(summary.issuerRepresentation))) result.issuerRepresentation = summary.issuerRepresentation as NonNullable<RunSummary["issuerRepresentation"]>;
     const evaluation = summary.protocolEvaluation as ProtocolEvaluation | undefined;
     if (evaluation?.schemaVersion === 1 && ["correct_acceptance", "correct_rejection", "unexpected_rejection", "wrongly_accepted", "wrong_step", "wrong_reason", "inconclusive"].includes(evaluation.verdict)) result.evaluation = evaluation;
