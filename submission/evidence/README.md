@@ -41,3 +41,7 @@ This pair proves the tested mock issuer / Reference Wallet / Inji Verify behavio
 [Manual mobile bundle](person3-a2-mobile-2026-10-23/README.md) records official local Certify issuance into actual Inji Wallet, user-confirmed persistence after reopening, native consent/share screens and the correlated valid Inji Verify result with both proof flags true. This is distinct from [the automated setup control](2026-10-23-person4-mobile-control.json) and [the earlier blocked Collab attempt](person3-a2-2026-10-23/README.md). The bundle documents APK/deployment attestation and native-observation limits.
 
 - [26 October playground-managed local JSON-LD acceptance](2026-10-26-managed-local-jsonld/README.md): clean-source BFF run with canonical server-hop capture, exact-card reload, independent Verify Valid, coverage and image provenance.
+
+## 26 October Person 2 completion
+
+[UI-managed local acceptance, media validation and browser limits](2026-10-26-person2-local-ui/README.md). [Final handoff](../PERSON2_COMPLETION.md).

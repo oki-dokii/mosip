@@ -29,7 +29,7 @@
 
 ## Still dependent on people or later integration
 
-- Person 2's final inspector/acceptance review and finished deck/video; Person 3's
+- Person 2's [technical inspector/acceptance review and media drafts](../submission/PERSON2_COMPLETION.md) are now complete; human screen-reader, phone and final media review remain. Person 3's
   new protocol/private-report results; Person 4's clean/independent-machine and
   exact-final-commit CI proof. Integrate each focused handoff when it exists.
 - User will provide the confirmed deadline and team name later. No internal freeze

@@ -1,14 +1,18 @@
-# Silent demo video draft
+# Four-minute narrated demo — 26 October 2026
 
-[Playground walkthrough](Playground_Demo_Silent_Draft.mp4) is a **2 minute 7 second, silent draft** recorded from the local Compose demo on 25 October 2026. It uses synthetic mock-run data and the committed, sanitized A1 archive. No real wallet login, credential, VP token, cookies or raw HAR were recorded.
+[Play the demo](Interoperability_Playground_Demo_2026-10-26.mp4). Offline **synthetic narration**, English embedded closed captions (enable CC), plus [SRT](Interoperability_Playground_Demo_2026-10-26.srt), [VTT](Interoperability_Playground_Demo_2026-10-26.vtt) and [transcript](NARRATION.md).
 
-| Approximate time | What appears | Suggested narration |
-|---|---|---|
-| 0:00–0:18 | Select independent mock issuer and verifier with the Reference Wallet | “The role selector lets us test a known, local SD-JWT control.” |
-| 0:18–0:51 | Fresh `valid` run, named steps and sanitized inspector | “The verifier accepted this exact mock combination. The timeline shows where each request and response was observed.” |
-| 0:51–1:18 | Read-only managed Inji Web A1 record and presentation exchange | “This is a dated historical Inji Web JSON-LD run, not a new live attempt. The browser observed Mimoto transport; the BFF correlated the presentation with its Verify request and obtained `valid`.” |
-| 1:18–1:37 | Separate Web and Android wallet evidence | “The Android SD-JWT result used a different hybrid deployment. Each card states its limits.” |
-| 1:37–1:48 | Latest-result matrix | “The matrix keeps fixture, mock and archived wallet evidence distinct.” |
-| 1:48–2:07 | Evidence-backed gap explorer | “We show observed interoperability gaps and what would be needed to establish an upstream defect.” |
+| Time | Content and source |
+| --- | --- |
+| 0:00–0:30 | Problem, updated deck slide 2 |
+| 0:30–1:00 | Fresh mock positive control; [record](../evidence/2026-10-26-person2-local-ui/demo-mock-recording.json) |
+| 1:00–1:30 | Fresh mock bad-signature rejection; same record |
+| 1:30–2:00 | Recorded local wallet card after reload; evidence still, not uninterrupted live issuance footage |
+| 2:00–2:30 | [UI-managed local run](../evidence/2026-10-26-person2-local-ui/README.md), sanitized inspector still |
+| 2:30–3:00 | Recorded compatibility matrix |
+| 3:00–3:30 | Findings and pending upstream reports, updated deck slide 8 |
+| 3:30–4:00 | Local result and limits, updated deck slide 7 |
 
-The team should add a human voiceover, verify names and claims against the final commit, and upload the finished video with reviewer access. This draft has no audio and does not replace a fresh human rehearsal. The [pitch deck](Interoperability_Playground_Pitch.pptx) and [local demo record](../evidence/2026-10-25-local-demo.md) provide the matching narrative and technical proof.
+The mock segments are fresh screen recordings; the real-wallet segments show recorded evidence. No raw credentials, HAR, cookies or authentication values are included. The two-minute [silent draft](Playground_Demo_Silent_Draft.mp4) is historical.
+
+Full media decode and audio-level checks passed; 16 sampled frames and the source visuals were reviewed. This is not a claim of a human listening through the entire video. Before publishing, a teammate should listen through, enable captions, check readability and upload with reviewer access. No cloud upload has been performed.

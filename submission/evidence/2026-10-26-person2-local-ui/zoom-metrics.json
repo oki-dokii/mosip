@@ -1,0 +1,19 @@
+{
+  "source": "automated_actual_chromium_tab_zoom_metrics",
+  "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+  "checks": [
+    {
+      "factor": 2,
+      "viewportWidth": 720,
+      "pageWidth": 720
+    },
+    {
+      "factor": 3.9999999999999996,
+      "viewportWidth": 360,
+      "pageWidth": 360
+    }
+  ],
+  "screenReader": "not_tested",
+  "physicalPhone": "not_tested",
+  "visualReview": "Header reviewed; zoom screenshots were blank in the headless capture, so no visual zoom acceptance is claimed. Manual enlarged-text review remains open."
+}

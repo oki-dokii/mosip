@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-26",
+  "review": "agent rendered-slide and 16 sampled video frames review; full codec decode; no full human listening claim",
+  "video": {
+    "durationSeconds": 240.021,
+    "meanVolumeDb": -19.6,
+    "maxVolumeDb": -3.7,
+    "embeddedEnglishCaptions": true,
+    "narration": "offline synthetic Samantha"
+  },
+  "deck": {
+    "slides": 8,
+    "finalizer": "passed",
+    "pdf": "raster slide backup"
+  },
+  "files": [
+    {
+      "path": "submission/pitch/Interoperability_Playground_Pitch_2026-10-26.pptx",
+      "sha256": "a351372962752f9450bbe8af3936854a8ba451c6e37cf52278cc2b87eb8931ab",
+      "bytes": 884320
+    },
+    {
+      "path": "submission/pitch/Interoperability_Playground_Demo_2026-10-26.srt",
+      "sha256": "5f98a546639de91255c0c137b38b3dfe69d9765d939e80a3c8963d13af8fa2bb",
+      "bytes": 4528
+    },
+    {
+      "path": "submission/pitch/Interoperability_Playground_Pitch_2026-10-26.pdf",
+      "sha256": "2a4e69a9865a7c8e3efb98f327320efa812b25c09f79f18d61ceb3b92ca583d8",
+      "bytes": 739762
+    },
+    {
+      "path": "submission/pitch/Interoperability_Playground_Demo_2026-10-26.vtt",
+      "sha256": "c900542e794c090ab678f72ac0095be2d27195b0ee3267a20436c1ba51904b2f",
+      "bytes": 4419
+    },
+    {
+      "path": "submission/pitch/Interoperability_Playground_Demo_2026-10-26.mp4",
+      "sha256": "bb159bd6d54c7860938cb4c5d3dcd136281f0dad1a54ff2ca05c8b984b0d0107",
+      "bytes": 5772018
+    }
+  ]
+}

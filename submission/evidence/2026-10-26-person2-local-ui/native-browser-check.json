@@ -1,0 +1,14 @@
+{
+  "observedAt": "2026-10-26T05:59:07.095Z",
+  "browserVersion": "141.0.7390.37",
+  "secureContext": true,
+  "apiPresent": true,
+  "protocols": [
+    "openid4vp-v1-signed",
+    "openid4vp-v1-unsigned"
+  ],
+  "credentialRequested": false,
+  "walletProviderTested": false,
+  "currentProfile": "direct_post; no DC API verifier adapter",
+  "result": "capability observation only; end-to-end DC API not established"
+}

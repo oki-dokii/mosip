@@ -4,6 +4,8 @@ This folder is the submission handoff. Refresh statuses and links before sending
 
 The A1 capture and journey code now have [one integration owner](../docs/SINGLE_OWNER_HANDOFF.md); older person-specific handoffs are historical.
 
+Latest Person 2 checkpoint: **445 tests passed, five optional DB skips; 18 browser checks; typecheck/build passed**. [Completion and remaining human/native checks](PERSON2_COMPLETION.md) and [UI-managed local acceptance](evidence/2026-10-26-person2-local-ui/README.md) supersede older test counts below; historical records remain dated.
+
 ## Judge priorities
 
 | Criterion | Weight | What we can show now | Main gap |
@@ -11,7 +13,7 @@ The A1 capture and journey code now have [one integration owner](../docs/SINGLE_
 | Functionality completion | 40% | Fixture/reference flows, capture, reports, mock matrix, hosted Web and Android successes; connected local JSON-LD wallet flow returns Valid with both proofs true ([scope](../deploy/INJI_WEB_LOCAL.md)) | A1 final review and independent-machine rehearsal remain open; the managed local BFF/capture chain now has a clean-source pass |
 | Deliverable quality | 40% | Typed monorepo, historical 339-test ordinary checkpoint plus three separately passing PostgreSQL checks, three hosted Chromium checks, redaction, API and architecture notes; current BFF suite passed 199 tests with three opt-in DB skips on 24 October | Full-repo retest at final commit and independent-machine setup remain |
 | UX/design | 10% | Working React playground, assisted journey, keyboard/axe browser checks and annotated synthetic screens | Review final build against screenshots and capture final screens |
-| Presentation | 10% | Narrative and demo outline in this folder | Actual slide deck and 2–5 minute video are still required |
+| Presentation | 10% | Narrative and demo outline in this folder | Eight-slide deck, PDF and narrated four-minute video exist; human media review and sharing remain |
 
 ## Mandatory submission items
 
@@ -19,8 +21,8 @@ The A1 capture and journey code now have [one integration owner](../docs/SINGLE_
 |---|---|---|---|
 | Complete source code | Present | [GitHub repository](https://github.com/oki-dokii/mosip), currently on `main`; verify judges can access the final URL | Yes, final access check |
 | Working prototype/demo | Working; final human rehearsal open | [25 October local six-case Compose demo](evidence/2026-10-25-local-demo.md) passed and exposes the labelled, read-only managed A1 archive; hosted browser and Compose CI also passed. Rehearse on another machine | Yes, independent-machine rehearsal and final team review of A1 |
-| Pitch slide deck | Draft ready for team review | [Editable six-slide deck](pitch/Interoperability_Playground_Pitch.pptx) covers the required story and cites recorded evidence in speaker notes; confirm team name and export a PDF backup if needed | Yes |
-| 2–5 minute video demo | Silent draft ready | [2:07 synthetic-only walkthrough](pitch/VIDEO_README.md) covers a fresh mock run, archived A1, matrix and gaps; add human narration and verify final playback | Yes, voiceover and review |
+| Pitch slide deck | Draft ready for team review | [Updated eight-slide deck and PDF](pitch/DECK_README.md) cite recorded evidence; final team name and rehearsal remain | Yes |
+| 2–5 minute video demo | Narrated/captioned four-minute draft ready | [Video and transcript](pitch/VIDEO_README.md): synthetic narration, fresh mock controls and recorded local evidence; human listening/review and cloud sharing remain | Yes |
 | Installation instructions | Prepared, needs independent-machine rehearsal | [README.md](../README.md) and [DEPLOYMENT.md](../docs/DEPLOYMENT.md) cover startup. A [fresh clone on this Mac](CLEAN_CHECKOUT_REHEARSAL.md) passed install, test, build and audit; hosted clean-checkout Docker smoke passed. Another human/host should follow the guide | Yes |
 | API documentation | Updated | [API_REFERENCE.md](API_REFERENCE.md) includes assisted routes, capture coverage and supported matrix cells | Yes, final review |
 | Git version history | Present | The merged `main` history preserves commits under four contributor identities; do not squash or rewrite it | Yes, final access check |
@@ -50,7 +52,7 @@ The A1 capture and journey code now have [one integration owner](../docs/SINGLE_
 
 ## Final handoff outside Git
 
-- Put the [draft deck](pitch/Interoperability_Playground_Pitch.pptx), [silent video draft](pitch/VIDEO_README.md) after adding voiceover, any design images, and safe test-case exports in cloud storage with reviewer access. **No final narrated video or cloud URL is present in this repository yet.** Keep credentials, private keys, OTPs, real HAR files, and student IDs out of the public repository and demo recording.
+- Put the [updated deck and PDF](pitch/DECK_README.md), [narrated video](pitch/VIDEO_README.md) after human playback review, any design images, and safe test-case exports in cloud storage with reviewer access. **The narrated/captioned draft is in the repository; reviewer-access cloud URLs remain pending.** Keep credentials, private keys, OTPs, real HAR files, and student IDs out of the public repository and demo recording.
 - Confirm repository and cloud links in a private/incognito browser.
 - The team sends the final email to `decode@mosip.io` with team name, problem statement, and URLs. This folder is preparation; it does not send or submit anything.
 
@@ -60,7 +62,7 @@ The A1 capture and journey code now have [one integration owner](../docs/SINGLE_
 | Problem statement | Interoperability Playground for Verifiable Credentials |
 | Source repository URL | [oki-dokii/mosip](https://github.com/oki-dokii/mosip); verify public reviewer access at submission time |
 | Working prototype/demo URL or reproducible install | README and Docker mock demo documented; final demo URL/rehearsal not recorded |
-| Deck PDF and video URL | Editable deck and silent video draft committed; PDF backup, final narration and cloud URL pending |
+| Deck PDF and video URL | Editable deck, PDF and narrated/captioned video prepared; final human review and cloud URL pending |
 | Optional mockups, test exports, architecture images | Repository sources exist; link selected exports from the cloud folder if required |
 | Individual college IDs | Each student submits privately through the required channel; never add them to this public package |
 | Official deadline and final email sent | Unconfirmed; team must verify and retain the sent email |

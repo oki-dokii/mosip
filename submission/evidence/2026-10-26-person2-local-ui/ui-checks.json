@@ -1,0 +1,25 @@
+{
+  "sourceCommit": "122e6bd8d0020e828b1450150f1cdd274be255cd",
+  "sourceTreeClean": true,
+  "observedAt": "2026-10-26T05:54:30.542Z",
+  "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+  "source": "actual_local_wallet_ui_started_synthetic_journey",
+  "uiStart": true,
+  "uiStorageConfirmation": true,
+  "runSelectedAfterUiReload": true,
+  "subjectNamesRendered": true,
+  "browserAndServerCoverageSeparate": true,
+  "exactCardReloaded": true,
+  "sameWallet": true,
+  "selectedCredentialMatchesIssuance": true,
+  "verifierValid": true,
+  "credentialProofValid": true,
+  "holderProofValid": true,
+  "evidenceTierUnchanged": true,
+  "limits": [
+    "Automated UI check, not human screen-reader review",
+    "Wallet issuance and consent driven by existing browser helpers",
+    "No browser HAR attached; browser hops stay missing",
+    "DID/auth adapters and public-context network dependency remain"
+  ]
+}

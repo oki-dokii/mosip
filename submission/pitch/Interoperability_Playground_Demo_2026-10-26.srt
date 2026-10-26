@@ -1,0 +1,203 @@
+1
+00:00:00,000 --> 00:00:05,451
+A credential can be issued correctly and still fail when
+another wallet
+
+2
+00:00:05,451 --> 00:00:10,901
+presents it. The mismatch may involve the format, a
+proof, the request
+
+3
+00:00:10,901 --> 00:00:16,352
+profile, or verifier policy. Our interoperability
+playground helps MOSIP integrators and quality
+
+4
+00:00:16,352 --> 00:00:21,803
+teams locate the observed boundary, compare
+combinations, and keep a reproducible, sanitized
+
+5
+00:00:21,803 --> 00:00:24,074
+record of what actually happened.
+
+6
+00:00:30,000 --> 00:00:35,326
+We begin with a fresh controlled run using separate mock
+issuer and
+
+7
+00:00:35,326 --> 00:00:40,653
+verifier services and the reference wallet. The timeline
+follows issuance, storage, presentation,
+
+8
+00:00:40,653 --> 00:00:45,979
+and verification. A valid outcome means this exact
+combination accepted the credential.
+
+9
+00:00:45,979 --> 00:00:51,305
+It is mock interoperability evidence, clearly labelled,
+rather than a claim about
+
+10
+00:00:51,305 --> 00:00:53,081
+an official Inji wallet.
+
+11
+00:01:00,000 --> 00:01:04,770
+Next we corrupt the signature while keeping the
+controlled path the same.
+
+12
+00:01:04,770 --> 00:01:09,540
+The verifier must reject it. The playground reports
+invalid, and the test
+
+13
+00:01:09,540 --> 00:01:14,311
+passes because the expected rejection matched the actual
+result. This distinction matters:
+
+14
+00:01:14,311 --> 00:01:19,081
+a passing negative test is evidence that a control
+worked. It is
+
+15
+00:01:19,081 --> 00:01:22,261
+not an accepted attack or an interoperability success.
+
+16
+00:01:30,000 --> 00:01:34,638
+The pinned local deployment also completed a real Web
+wallet journey. Certify
+
+17
+00:01:34,638 --> 00:01:39,276
+version zero point fourteen issued JSON L D through Inji
+Web zero
+
+18
+00:01:39,276 --> 00:01:43,914
+point seventeen and Mimoto zero point twenty two. The
+exact newly issued
+
+19
+00:01:43,914 --> 00:01:48,552
+card survived reload. That same wallet presented the
+card to local Verify
+
+20
+00:01:48,552 --> 00:01:53,190
+zero point eighteen point two, which returned valid with
+both proof checks
+
+21
+00:01:53,190 --> 00:01:53,577
+true.
+
+22
+00:02:00,000 --> 00:02:05,735
+This is the inspector from the fresh playground UI
+managed run. It
+
+23
+00:02:05,735 --> 00:02:11,469
+shows allowlisted subject names and paths, withholding
+and truncation counts, and captured
+
+24
+00:02:11,469 --> 00:02:17,204
+server hops. Claim values, tokens, cookies, and private
+keys stay out of
+
+25
+00:02:17,204 --> 00:02:22,938
+the display. HTTP success only describes transport. The
+independent verifier result establishes
+
+26
+00:02:22,938 --> 00:02:28,673
+the observed verdict, and missing browser traffic
+remains an explicit observation gap.
+
+27
+00:02:30,000 --> 00:02:35,346
+The matrix and portable reports keep different kinds of
+evidence separate. Hosted
+
+28
+00:02:35,346 --> 00:02:40,693
+Web observations, the local managed run, Android hybrid
+results, and synthetic controls
+
+29
+00:02:40,693 --> 00:02:46,039
+have different deployments and limits. A manual
+observation does not become a
+
+30
+00:02:46,039 --> 00:02:51,386
+fabricated database run. Component versions stay
+unreported when they were not established.
+
+31
+00:02:51,386 --> 00:02:55,841
+This lets another team assess exactly what each result
+supports.
+
+32
+00:03:00,000 --> 00:03:05,003
+The findings register records reproducible setup and
+protocol differences with their versions
+
+33
+00:03:05,003 --> 00:03:10,006
+and evidence. Examples include initialization
+configuration, version specific proof binding, and a
+
+34
+00:03:10,006 --> 00:03:15,009
+declared D I D adapter for the local J S O N
+
+35
+00:03:15,009 --> 00:03:20,012
+L D path. Upstream issues and private reports remain
+pending their owners'
+
+36
+00:03:20,012 --> 00:03:24,599
+submission. We do not claim that maintainers have
+confirmed these findings.
+
+37
+00:03:30,000 --> 00:03:35,652
+The result is a working playground, a repeatable mock
+demonstration, a recorded
+
+38
+00:03:35,652 --> 00:03:41,304
+same wallet local flow, and evidence that reviewers can
+inspect. Automated browser
+
+39
+00:03:41,304 --> 00:03:46,955
+and accessibility checks passed. Synthetic
+authorization, D I D adaptation, and public
+
+40
+00:03:46,955 --> 00:03:52,607
+network contexts are still declared limits. Physical
+device and human screen reader
+
+41
+00:03:52,607 --> 00:03:58,259
+review remain separate checks. This video uses offline
+synthetic narration and recorded
+
+42
+00:03:58,259 --> 00:03:59,672
+synthetic test data.

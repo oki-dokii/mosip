@@ -1,0 +1,26 @@
+{
+  "observedAt": "2026-10-26T05:59:04.954Z",
+  "timing": "after UI-managed run; not an independently attested binary snapshot during the run",
+  "components": [
+    {
+      "container": "mosip-mobile-a2-mobile-certify-1",
+      "configuredImage": "injistack/inji-certify-with-plugins:0.14.0@sha256:f6686f55f5202815ff691a11bbaa7d1ce5bab4e5b8feaeeda0e33d6bba6bd00b",
+      "imageId": "sha256:f6686f55f5202815ff691a11bbaa7d1ce5bab4e5b8feaeeda0e33d6bba6bd00b"
+    },
+    {
+      "container": "mosip-web-local-inji-web-1",
+      "configuredImage": "injistack/inji-web:0.17.0@sha256:62ca25a6c2f5c3d61edfed1e43e52885f1bcf1229b3a3ffb89c117245f839719",
+      "imageId": "sha256:62ca25a6c2f5c3d61edfed1e43e52885f1bcf1229b3a3ffb89c117245f839719"
+    },
+    {
+      "container": "mosip-web-local-mimoto-service-1",
+      "configuredImage": "injistack/mimoto:0.22.0@sha256:89fc81eeb8c911c8a9944e4071d8f3e8f287d3de697c4461f2b3a2e8ce29858e",
+      "imageId": "sha256:89fc81eeb8c911c8a9944e4071d8f3e8f287d3de697c4461f2b3a2e8ce29858e"
+    },
+    {
+      "container": "mosip-local-inji-verify-service-1",
+      "configuredImage": "injistack/inji-verify-service:0.18.2@sha256:2ed468e7e1f1ce317a41476dd131f4ce8f081b0f055a080c95e99a92cc192bdd",
+      "imageId": "sha256:2ed468e7e1f1ce317a41476dd131f4ce8f081b0f055a080c95e99a92cc192bdd"
+    }
+  ]
+}

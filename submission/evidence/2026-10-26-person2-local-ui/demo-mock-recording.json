@@ -1,0 +1,21 @@
+{
+  "source": "fresh_synthetic_mock_ui_recording",
+  "cases": [
+    {
+      "runId": "7d162bb6-b087-4c01-ac9b-f5f824c8d4f7",
+      "scenario": "baseline",
+      "expected": "valid",
+      "observed": "valid",
+      "status": "passed"
+    },
+    {
+      "runId": "a2c2959e-1fff-45d7-9c5b-1434d735310e",
+      "scenario": "bad_signature",
+      "expected": "invalid",
+      "observed": "invalid",
+      "status": "passed"
+    }
+  ],
+  "negativeStartsAtSeconds": 14.514,
+  "recordedAt": "2026-10-26T05:57:14.047Z"
+}

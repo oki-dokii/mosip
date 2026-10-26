@@ -1,0 +1,631 @@
+{
+  "relatedWalletEvidence": [
+    {
+      "id": "a1-web-land-registry-2026-10-23",
+      "recordKind": "manual_wallet_observation",
+      "wallet": "inji_web",
+      "walletLabel": "Inji Web (real wallet)",
+      "issuer": "inji_certify",
+      "verifier": "inji_verify",
+      "format": "ldp_vc",
+      "credential": "Land Registry Registration Receipt",
+      "observedDate": "2026-10-23",
+      "deployment": "Hosted Collab Inji Web/Mimoto, Land Registry Certify and Verify",
+      "versions": {
+        "issuer": "unreported",
+        "wallet": "unreported",
+        "verifier": "unreported"
+      },
+      "outcome": "valid",
+      "outcomeSource": "verifier_ui",
+      "managedRunId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "managedValidation": "passed",
+      "reviewStatus": "pending_integrator_review",
+      "checkpoints": [
+        {
+          "name": "Issuance",
+          "evidence": "observed",
+          "detail": "Credential appeared in the dedicated signed-in wallet."
+        },
+        {
+          "name": "Persistent storage",
+          "evidence": "observed",
+          "detail": "Registration Receipt remained in Stored Cards after a full page refresh."
+        },
+        {
+          "name": "Presentation",
+          "evidence": "observed",
+          "detail": "The same wallet matched the Land Registry request, obtained consent and reported Credentials Shared."
+        },
+        {
+          "name": "Verifier acceptance",
+          "evidence": "observed",
+          "detail": "Inji Verify displayed Registration Receipt Credential — Valid."
+        }
+      ],
+      "limitations": [
+        "This manual observation is preserved separately from the linked fresh managed run on 25 October.",
+        "Managed run used RegistrationReceiptCredential and collab-dcql; deployed releases remain unreported, and browser capture omits downstream server calls.",
+        "A1 team review remains pending; no general JSON-LD conformance claim or evidence-tier promotion."
+      ],
+      "artifacts": [
+        {
+          "label": "Fresh managed A1 run and capture limits",
+          "url": "https://github.com/oki-dokii/mosip/blob/90c7b36/submission/evidence/person2-managed-a1-2026-10-25/README.md"
+        },
+        {
+          "label": "Managed run report",
+          "url": "https://github.com/oki-dokii/mosip/blob/90c7b36/submission/evidence/person2-managed-a1-2026-10-25/run-report.json"
+        },
+        {
+          "label": "A1 evidence and checklist",
+          "url": "https://github.com/oki-dokii/mosip/blob/1537c55287ccbbf9ed9edd113ce2c46fc05c6681/submission/A1_WEB_EVIDENCE.md"
+        },
+        {
+          "label": "Stored cards after refresh",
+          "url": "https://github.com/oki-dokii/mosip/blob/1537c55287ccbbf9ed9edd113ce2c46fc05c6681/submission/evidence/person2/live-stored-cards-after-refresh.png"
+        },
+        {
+          "label": "Verify Valid screenshot",
+          "url": "https://github.com/oki-dokii/mosip/blob/1537c55287ccbbf9ed9edd113ce2c46fc05c6681/submission/evidence/person2/live-verify-valid.png"
+        },
+        {
+          "label": "Observed hosted route limits",
+          "url": "https://github.com/oki-dokii/mosip/blob/fab1288306bd52c3b7942468f1dc6f45f2e82987/submission/PERSON2_HOSTED_ROUTE_HANDOFF.md"
+        }
+      ]
+    }
+  ],
+  "run": {
+    "id": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+    "parentRunId": null,
+    "config": {
+      "issuer": "inji_certify",
+      "wallet": "inji_web_assisted",
+      "verifier": "inji_verify",
+      "format": "ldp_vc",
+      "flow": "cross_device",
+      "tamper": null,
+      "scenarioId": null
+    },
+    "status": "passed",
+    "expectedOutcome": "valid",
+    "actualOutcome": "valid",
+    "proofType": "Ed25519Signature2020",
+    "algorithm": "EdDSA",
+    "serviceVersions": {
+      "issuer": "0.14.0",
+      "wallet": "0.17.0",
+      "verifier": "0.18.2"
+    },
+    "createdAt": "2026-10-26T05:54:04.625Z",
+    "startedAt": "2026-10-26T05:54:04.661Z",
+    "finishedAt": "2026-10-26T05:54:28.625Z",
+    "protocolProfile": "local-jsonld-pex-0.18.2",
+    "evaluation": {
+      "verdict": "correct_acceptance",
+      "expected": {
+        "step": "PRESENT_RESULT",
+        "outcome": "valid",
+        "boundary": "result"
+      },
+      "observed": {
+        "code": null,
+        "step": "PRESENT_RESULT",
+        "stage": null,
+        "outcome": "valid",
+        "boundary": "result"
+      },
+      "schemaVersion": 1
+    }
+  },
+  "steps": [
+    {
+      "id": "53e6992e-05cd-4b3e-9309-c3990d4ca9af",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "seq": 1,
+      "stepKey": "INIT",
+      "title": "Initialize run",
+      "status": "succeeded",
+      "summary": {
+        "completed": true
+      }
+    },
+    {
+      "id": "d4cbf680-57ac-40c5-ab0e-1e0de2a77b25",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "seq": 2,
+      "stepKey": "ISSUE_OFFER",
+      "title": "Discover issuer and create offer",
+      "status": "succeeded",
+      "summary": {
+        "authorization": "synthetic_iar_fixture",
+        "issuerVersion": "0.14.0",
+        "catalogueConfigured": true
+      }
+    },
+    {
+      "id": "33a315a0-ad9d-4441-8ea9-f0f545d22585",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "seq": 3,
+      "stepKey": "ISSUE_TOKEN",
+      "title": "Authorize wallet and exchange token",
+      "status": "succeeded",
+      "summary": {
+        "awaiting": "issuance",
+        "loginLocation": "Inji Web/Mimoto",
+        "loginObserved": false
+      }
+    },
+    {
+      "id": "bcbc8e8b-abeb-4f78-8c96-f213be5b3e8e",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "seq": 4,
+      "stepKey": "ISSUE_CREDENTIAL",
+      "title": "Issue holder-bound credential",
+      "status": "succeeded",
+      "summary": {
+        "exchangeId": "cfee705b-10c5-4568-908f-f99f8f909346",
+        "issuanceObserved": true,
+        "storageConfirmed": false,
+        "issuanceTransport": "mimoto_to_certify_server",
+        "downstreamCertifyObserved": true
+      }
+    },
+    {
+      "id": "ef4ab027-842b-495d-8755-f02190535e3e",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "seq": 5,
+      "stepKey": "STORE",
+      "title": "Store credential for this run",
+      "status": "succeeded",
+      "summary": {
+        "storageConfirmed": true,
+        "confirmationSource": "wallet_confirmation"
+      }
+    },
+    {
+      "id": "e12da62c-ce08-453e-a035-1307ebf32826",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "seq": 6,
+      "stepKey": "PRESENT_REQUEST",
+      "title": "Create signed presentation request",
+      "status": "succeeded",
+      "summary": {
+        "queryLanguage": "Presentation Exchange",
+        "protocolProfile": "local-jsonld-pex-0.18.2",
+        "signedRequestReceived": true,
+        "requestSignatureVerification": "wallet_responsibility"
+      }
+    },
+    {
+      "id": "e079e4c2-fd83-46a1-83c4-72eb2e9360b1",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "seq": 7,
+      "stepKey": "PRESENT_SUBMIT",
+      "title": "Submit holder-bound presentation",
+      "status": "succeeded",
+      "summary": {
+        "exchangeId": "59190591-a006-4549-913c-aaa9af67cbb2",
+        "presentationObserved": true,
+        "presentationTransport": "mimoto_to_verify_server",
+        "verifierResultPending": true,
+        "downstreamVerifyObserved": true
+      }
+    },
+    {
+      "id": "3e64669d-5093-49db-a12c-662fc2e78bab",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "seq": 8,
+      "stepKey": "PRESENT_STATUS",
+      "title": "Wait for verifier submission status",
+      "status": "succeeded",
+      "summary": {
+        "source": "correlated_server_direct_post",
+        "status": "VP_SUBMITTED",
+        "transportOnly": true
+      }
+    },
+    {
+      "id": "ab500f61-1d24-4322-9517-02614103d5c8",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "seq": 9,
+      "stepKey": "PRESENT_RESULT",
+      "title": "Verify credential and holder proof",
+      "status": "succeeded",
+      "summary": {
+        "outcome": "valid",
+        "resultSource": "independent_verify_poll",
+        "statusChecks": "skipped",
+        "protocolProfile": "local-jsonld-pex-0.18.2",
+        "holderProofValid": true,
+        "allChecksSuccessful": true,
+        "credentialProofValid": true
+      }
+    },
+    {
+      "id": "2d70878a-194a-47e6-a0e1-b72a7db89336",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "seq": 10,
+      "stepKey": "REPORT",
+      "title": "Build run result",
+      "status": "succeeded",
+      "summary": {
+        "protocolEvaluation": {
+          "verdict": "correct_acceptance",
+          "expected": {
+            "step": "PRESENT_RESULT",
+            "outcome": "valid",
+            "boundary": "result"
+          },
+          "observed": {
+            "code": null,
+            "step": "PRESENT_RESULT",
+            "stage": null,
+            "outcome": "valid",
+            "boundary": "result"
+          },
+          "schemaVersion": 1
+        }
+      }
+    }
+  ],
+  "exchanges": [
+    {
+      "id": "65c38f61-280e-4d10-89be-b7830762ca62",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "stepId": "d4cbf680-57ac-40c5-ab0e-1e0de2a77b25",
+      "seq": 1,
+      "actorFrom": "playground",
+      "actorTo": "inji_certify",
+      "method": "GET",
+      "url": "http://127.0.0.1:18090/v1/certify/.well-known/openid-credential-issuer",
+      "status": 200,
+      "durationMs": 0,
+      "request": {
+        "bodyStored": false
+      },
+      "response": {
+        "credentialFormat": "ldp_vc",
+        "metadataAvailable": true
+      },
+      "redactions": []
+    },
+    {
+      "id": "73701b3c-6f8d-4786-b051-747ff69fc68a",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "stepId": "33a315a0-ad9d-4441-8ea9-f0f545d22585",
+      "seq": 2,
+      "actorFrom": "mimoto",
+      "actorTo": "certify",
+      "method": "POST",
+      "url": "http://127.0.0.1:18090/token",
+      "status": 200,
+      "durationMs": 459,
+      "request": {
+        "body": {},
+        "source": "local_server_proxy",
+        "capture": {
+          "via": "local_issuer_bridge",
+          "ruleId": "certify-token",
+          "observedAt": "2026-10-26T05:54:08.833Z",
+          "provenance": "canonical_local_forwarder",
+          "correlation": "exclusive_run_lease",
+          "schemaVersion": 1,
+          "payloadCaptured": false,
+          "downstreamVerifyObserved": false,
+          "downstreamCertifyObserved": true
+        },
+        "publicView": {
+          "items": [],
+          "authenticity": "not_verified",
+          "schemaVersion": 1,
+          "withheldNames": 0,
+          "truncatedItems": 0,
+          "unsupportedKinds": 0
+        }
+      },
+      "response": {
+        "source": "local_server_proxy",
+        "publicView": {
+          "items": [],
+          "authenticity": "not_verified",
+          "schemaVersion": 1,
+          "withheldNames": 0,
+          "truncatedItems": 0,
+          "unsupportedKinds": 0
+        }
+      },
+      "redactions": [
+        "$.request.headers",
+        "$.request.body",
+        "$.response.headers",
+        "$.response.body",
+        "$.url.path"
+      ]
+    },
+    {
+      "id": "cfee705b-10c5-4568-908f-f99f8f909346",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "stepId": "bcbc8e8b-abeb-4f78-8c96-f213be5b3e8e",
+      "seq": 3,
+      "actorFrom": "mimoto",
+      "actorTo": "certify",
+      "method": "POST",
+      "url": "http://127.0.0.1:18090/credential",
+      "status": 200,
+      "durationMs": 3572,
+      "request": {
+        "body": {},
+        "source": "local_server_proxy",
+        "capture": {
+          "via": "local_issuer_bridge",
+          "ruleId": "certify-credential",
+          "observedAt": "2026-10-26T05:54:09.398Z",
+          "provenance": "canonical_local_forwarder",
+          "correlation": "exclusive_run_lease",
+          "schemaVersion": 1,
+          "payloadCaptured": false,
+          "downstreamVerifyObserved": false,
+          "downstreamCertifyObserved": true
+        },
+        "publicView": {
+          "items": [
+            {
+              "kind": "verifiable_credential",
+              "summary": {
+                "types": [
+                  "FarmerCredential",
+                  "VerifiableCredential"
+                ],
+                "subject": {
+                  "names": [],
+                  "paths": [],
+                  "withheldNames": 0,
+                  "truncatedItems": 0
+                },
+                "proofTypes": []
+              }
+            }
+          ],
+          "authenticity": "not_verified",
+          "schemaVersion": 1,
+          "withheldNames": 0,
+          "truncatedItems": 0,
+          "unsupportedKinds": 0
+        }
+      },
+      "response": {
+        "source": "local_server_proxy",
+        "publicView": {
+          "items": [
+            {
+              "kind": "verifiable_credential",
+              "summary": {
+                "types": [
+                  "VerifiableCredential",
+                  "FarmerCredential"
+                ],
+                "subject": {
+                  "names": [
+                    "farmerID",
+                    "fullName",
+                    "id"
+                  ],
+                  "paths": [
+                    "$.credentialSubject.farmerID",
+                    "$.credentialSubject.fullName",
+                    "$.credentialSubject.id"
+                  ],
+                  "withheldNames": 0,
+                  "truncatedItems": 0
+                },
+                "proofTypes": [
+                  "Ed25519Signature2020"
+                ]
+              }
+            }
+          ],
+          "authenticity": "not_verified",
+          "schemaVersion": 1,
+          "withheldNames": 0,
+          "truncatedItems": 0,
+          "unsupportedKinds": 0
+        }
+      },
+      "redactions": [
+        "$.request.headers",
+        "$.request.body",
+        "$.response.headers",
+        "$.response.body",
+        "$.url.path"
+      ]
+    },
+    {
+      "id": "b80bd981-e1dc-47e8-89db-b8aec425f670",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "stepId": "e12da62c-ce08-453e-a035-1307ebf32826",
+      "seq": 4,
+      "actorFrom": "playground",
+      "actorTo": "inji_verify",
+      "method": "POST",
+      "url": "http://127.0.0.1:18081/v1/verify/vp-request",
+      "status": 201,
+      "durationMs": 169,
+      "request": {
+        "bodyStored": false,
+        "protocolProfile": "local-jsonld-pex-0.18.2"
+      },
+      "response": {
+        "bodyStored": false,
+        "requestUriIssued": true
+      },
+      "redactions": []
+    },
+    {
+      "id": "f7f7cffe-41bd-4001-ac59-9e1c421a7026",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "stepId": "e12da62c-ce08-453e-a035-1307ebf32826",
+      "seq": 5,
+      "actorFrom": "playground",
+      "actorTo": "inji_verify",
+      "method": "GET",
+      "url": "http://127.0.0.1:18081/v1/verify/vp-request/[REDACTED]",
+      "status": 200,
+      "durationMs": 48,
+      "request": {
+        "bodyStored": false,
+        "protocolProfile": "local-jsonld-pex-0.18.2"
+      },
+      "response": {
+        "bodyStored": false,
+        "signedRequestReceived": true
+      },
+      "redactions": [
+        "$.url.path"
+      ]
+    },
+    {
+      "id": "59190591-a006-4549-913c-aaa9af67cbb2",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "stepId": "e079e4c2-fd83-46a1-83c4-72eb2e9360b1",
+      "seq": 6,
+      "actorFrom": "mimoto",
+      "actorTo": "verify",
+      "method": "POST",
+      "url": "https://local.test/direct-post/{id}",
+      "status": 200,
+      "durationMs": 120,
+      "request": {
+        "body": {
+          "state": "[REDACTED hmac:db48ceec5e140537]"
+        },
+        "source": "local_server_proxy",
+        "capture": {
+          "via": "local_issuer_bridge",
+          "ruleId": "verify-submit",
+          "observedAt": "2026-10-26T05:54:22.708Z",
+          "provenance": "canonical_local_forwarder",
+          "correlation": "exclusive_run_lease",
+          "schemaVersion": 1,
+          "payloadCaptured": false,
+          "downstreamVerifyObserved": true,
+          "downstreamCertifyObserved": false
+        },
+        "publicView": {
+          "items": [
+            {
+              "kind": "presentation",
+              "summary": {
+                "tokenPresent": true
+              }
+            }
+          ],
+          "authenticity": "not_verified",
+          "schemaVersion": 1,
+          "withheldNames": 0,
+          "truncatedItems": 0,
+          "unsupportedKinds": 0
+        }
+      },
+      "response": {
+        "source": "local_server_proxy",
+        "publicView": {
+          "items": [],
+          "authenticity": "not_verified",
+          "schemaVersion": 1,
+          "withheldNames": 0,
+          "truncatedItems": 0,
+          "unsupportedKinds": 0
+        }
+      },
+      "redactions": [
+        "$.request.headers",
+        "$.request.body",
+        "$.response.headers",
+        "$.response.body",
+        "$.url.path"
+      ]
+    },
+    {
+      "id": "7df78263-50b1-47bc-818e-0b838ac9499e",
+      "runId": "8fc582b8-9548-4b86-b6b9-7ed67e7ca171",
+      "stepId": "ab500f61-1d24-4322-9517-02614103d5c8",
+      "seq": 7,
+      "actorFrom": "playground",
+      "actorTo": "inji_verify",
+      "method": "POST",
+      "url": "http://127.0.0.1:18081/v1/verify/v2/vp-results/[REDACTED]",
+      "status": 200,
+      "durationMs": 5670,
+      "request": {
+        "bodyStored": false,
+        "protocolProfile": "local-jsonld-pex-0.18.2"
+      },
+      "response": {
+        "outcome": "valid",
+        "resultSource": "independent_verify_poll",
+        "statusChecks": "skipped",
+        "protocolProfile": "local-jsonld-pex-0.18.2",
+        "holderProofValid": true,
+        "allChecksSuccessful": true,
+        "credentialProofValid": true
+      },
+      "redactions": [
+        "$.url.path"
+      ]
+    }
+  ],
+  "evidence": {
+    "tier": "unverified",
+    "label": "Wallet evidence unverified"
+  },
+  "deploymentEvidence": {
+    "deployment": "local_synthetic",
+    "profile": "local-jsonld-pex-0.18.2",
+    "provenance": "configured_profile_with_observed_exchanges",
+    "serverHops": [
+      {
+        "ruleId": "certify-token",
+        "state": "observed",
+        "exchangeIds": [
+          "73701b3c-6f8d-4786-b051-747ff69fc68a"
+        ],
+        "actorFrom": "mimoto",
+        "actorTo": "certify"
+      },
+      {
+        "ruleId": "certify-credential",
+        "state": "observed",
+        "exchangeIds": [
+          "cfee705b-10c5-4568-908f-f99f8f909346"
+        ],
+        "actorFrom": "mimoto",
+        "actorTo": "certify"
+      },
+      {
+        "ruleId": "verify-request-fetch",
+        "state": "not_observed",
+        "exchangeIds": [],
+        "actorFrom": "mimoto",
+        "actorTo": "verify"
+      },
+      {
+        "ruleId": "verify-submit",
+        "state": "observed",
+        "exchangeIds": [
+          "59190591-a006-4549-913c-aaa9af67cbb2"
+        ],
+        "actorFrom": "mimoto",
+        "actorTo": "verify"
+      }
+    ],
+    "boundaries": [
+      "Synthetic IAR authorization fixture",
+      "Declared issuer DID assertionMethod adapter",
+      "Public JSON-LD contexts require network",
+      "Storage confirmation is backed by the separate exact-card browser check",
+      "Generic evidence tier remains unverified until team review; this is not conformance certification"
+    ]
+  }
+}
