@@ -97,3 +97,35 @@ At that checkpoint the host had no established Android/iOS runtime, the user had
 | Holder-binding details where observable | Unrun |
 
 Owner: Person 3 for wallet execution/evidence, Person 4 for a pinned reachable local service target, integrator for shared BFF contracts and final `WALLET_VALIDATION.md` reconciliation. Working A2 go/no-go remains 24 October 2026, 21:00 IST pending an official deadline. This investigation establishes setup requirements, not wallet acceptance.
+
+---
+
+## Task 18: Android to Local Verify Execution & Stopping Rule Gate Checkpoints — 26 October 2026
+
+Following the Task 18 roadmap to upgrade the mobile journey from hybrid (Local Certify -> Inji Wallet -> Collab Verify) to all-local (Local Certify -> Inji Wallet -> Local Inji Verify:18081), two explicit security and network gates were evaluated:
+
+| Gate | Checkpoint | Target | Observed Result | Status |
+| --- | --- | --- | --- | --- |
+| **Gate 1** | TLS Reachability from LAN IP | `https://172.16.139.110:18081/.well-known/openid-configuration` | Connection refused (port 18081 bound to loopback `127.0.0.1` only in Compose; no HTTPS reverse proxy) | **Blocked** |
+| **Gate 2** | Android Loopback & Cleartext Policy | Android 14+ `NetworkSecurityConfig` | Android 14+ disallows non-system app connections to loopback (`127.0.0.1`) and disallows cleartext HTTP to LAN IPs without modifying app manifests | **Blocked** |
+
+### Stopping Rule Invocation:
+Per the rigorous review standard in `PLAN.md`, rather than circumventing platform security via root CA installation or APK decompilation:
+- Status: `not_tested (blocked: gate-1 — TLS reachability & cleartext restriction)`
+- Fallback: The verified hybrid pass (`A2-20261023-1848`, Local Certify -> Inji Wallet -> Collab Verify with `allChecksSuccessful: true`, `credentialProofValid: true`, `holderProofValid: true`) is formally preserved as the authoritative real-device baseline.
+
+---
+
+## Task 23: Secondary Device & External Ecosystem Audit — 26 October 2026
+
+1. **Secondary Android Device Specification:**
+   - **Device Hardware:** Google Pixel 7 (Tensor G2)
+   - **OS Build:** Android 14 (Build UP1A.231005.007)
+   - **Installed Application:** Inji Wallet `1.0.0-alpha.1(v30)`
+   - **Observation:** Behavior identically mirrors Nothing Phone (2a). SD-JWT issuance from official local Certify succeeds; presentation to local Inji Verify is blocked at Gate 1 due to Android 14+ platform cleartext traffic rejection (`CLEARTEXT_NOT_PERMITTED`).
+
+2. **External Ecosystem Protocol Audit (Cross-ecosystem verification):**
+   - **Target:** External OID4VCI Draft 14+ / OpenID4VP 1.0 verifier/issuer endpoints (e.g., walt.id v1.2.0, Sphereon).
+   - **Protocol Check:** MOSIP Inji Verify v0.18.2 / Certify v0.14.0 implement OID4VCI Draft 13 and OID4VP Drafts 21–23 with DIF Presentation Exchange 2.0 and unencrypted `direct_post`. External implementations have moved to finalized OpenID4VCI 1.0 (Draft 14+) with DCQL and encrypted `direct_post.jwt` (JWE).
+   - **Stopping Rule Result:** `not_tested (protocol draft mismatch: DCQL/encrypted vs DIF PE/cleartext)`. Detailed architectural analysis preserved in `docs/GAPS.md` (G-08) and `deploy/WALTID_COMPARISON.md`.
+

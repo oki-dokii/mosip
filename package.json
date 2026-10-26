@@ -19,6 +19,7 @@
     "demo:docker": "bash scripts/demo-docker.sh",
     "e2e:smoke": "node e2e/smoke.mjs",
     "audit:secrets": "node scripts/audit-secrets.mjs",
+    "audit:licenses": "node scripts/check-licenses.mjs",
     "capture:filter": "pnpm --filter @playground/bff exec tsx src/capture/filter.ts",
     "capture:bridge": "pnpm --filter @playground/bff exec tsx src/capture/live-bridge-cli.ts",
     "capture:routes": "pnpm --filter @playground/bff exec tsx src/capture/live-bridge-cli.ts --routes",

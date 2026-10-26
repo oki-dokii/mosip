@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "profile": "jsonld-ldp-v1",
+  "specificationReferences": [
+    "https://www.w3.org/TR/vc-data-model-2.0/",
+    "https://w3c-ccg.github.io/ld-cryptosuite-registry/#ed25519signature2020",
+    "https://w3id.org/security/suites/ed25519-2020/v1"
+  ],
+  "cases": [
+    {
+      "id": "j1.control.valid",
+      "fault": "none",
+      "expected": {
+        "outcome": "valid",
+        "code": "correct_acceptance"
+      }
+    },
+    {
+      "id": "j1.signature.corrupted",
+      "fault": "bad_proof_value",
+      "expected": {
+        "outcome": "invalid",
+        "code": "PROOF_VALUE_INVALID"
+      }
+    },
+    {
+      "id": "j1.credential.expired",
+      "fault": "expired",
+      "expected": {
+        "outcome": "invalid",
+        "code": "CREDENTIAL_EXPIRED"
+      }
+    },
+    {
+      "id": "j1.credential.wrong_type",
+      "fault": "wrong_type",
+      "expected": {
+        "outcome": "invalid",
+        "code": "CREDENTIAL_TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "j1.document.altered_claim",
+      "fault": "altered_claim",
+      "expected": {
+        "outcome": "invalid",
+        "code": "SIGNATURE_CORRUPTED"
+      }
+    },
+    {
+      "id": "j1.key.untrusted_method",
+      "fault": "forged_verification_method",
+      "expected": {
+        "outcome": "invalid",
+        "code": "UNTRUSTED_KEY"
+      }
+    }
+  ]
+}
