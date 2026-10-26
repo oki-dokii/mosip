@@ -11,7 +11,9 @@
 
 ## Validation
 
-`pnpm typecheck`, `pnpm test`, and `pnpm build` passed. The test command passed **445 tests** (46 Node script tests plus 399 workspace tests); five opt-in database tests were skipped. The Chromium suite passed **18 checks**, including keyboard/axe, theme persistence and 390px mobile overflow. Automated accessibility is not human assistive-technology acceptance.
+The [merged release check](evidence/2026-10-26-release-validation.json) supersedes the earlier 445-test checkpoint; the immutable UI-run bundle retains its original dated check.
+
+`pnpm typecheck`, `pnpm test`, and `pnpm build` passed. The test command passed **446 tests** (47 Node script tests plus 399 workspace tests); five opt-in database tests were skipped. The Chromium suite passed **18 checks**, including keyboard/axe, theme persistence and 390px mobile overflow. Automated accessibility is not human assistive-technology acceptance.
 
 Repeat the local managed acceptance using `pnpm check:web-managed-ui` and the exact environment/startup commands in the evidence README. The test requires the prepared local wallet stack and capture backend; it is not a fixture-only test.
 

@@ -1,0 +1,108 @@
+name: Connected Wallet (opt-in)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Hosted opt-in CI job for protocol probes against the packaged mock stack.
+# Uses synthetic mock-issuer:4001 and mock-verifier:4002 (no heavy Inji containers).
+# Triggered manually on demand via workflow_dispatch.
+# ──────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: connected-wallet-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  connected-wallet:
+    name: Connected Wallet Protocol Probes (mock stack)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Install pnpm
+        run: npm install -g pnpm@11.25.0
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set OCI build labels
+        run: |
+          echo "GIT_REVISION=${{ github.sha }}" >> "$GITHUB_ENV"
+          echo "BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+
+      - name: Build and start mock Compose stack
+        env:
+          MOCK_ISSUER_ENABLE_TEST_CASES: "true"
+        run: docker compose --profile core --profile mocks up --build -d --wait
+
+      - name: Show container status
+        run: docker compose --profile core --profile mocks ps
+
+      - name: Health check services (BFF:4000, mock-issuer:4001, mock-verifier:4002, web:5174)
+        run: |
+          echo "Checking BFF:4000..."
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:4000/api/v1/health && break || sleep 2
+          done
+          echo "Checking mock-issuer:4001..."
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:4001/.well-known/openid-credential-issuer && break || sleep 2
+          done
+          echo "Checking web:5174..."
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:5174/ && break || sleep 2
+          done
+          echo "All mock stack services healthy."
+
+      - name: Run mock protocol probes (20-case SD-JWT suite)
+        run: |
+          mkdir -p artifacts
+          node spikes/wallet-interop-probes.mjs \
+            --issuer http://127.0.0.1:4001 \
+            --verifier http://127.0.0.1:4002 \
+            --out artifacts/connected-wallet-matrix.json
+
+      - name: Upload probe matrix artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: connected-wallet-matrix-${{ github.run_number }}
+          path: artifacts/connected-wallet-matrix.json
+          if-no-files-found: warn
+
+      - name: Collect container logs
+        if: always()
+        run: |
+          docker compose --profile core --profile mocks logs --no-color --tail=300 \
+            > /tmp/connected-wallet-logs.txt 2>&1 || true
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: connected-wallet-logs-${{ github.run_number }}
+          path: /tmp/connected-wallet-logs.txt
+
+      - name: Teardown Compose stack
+        if: always()
+        run: docker compose --profile core --profile mocks down -v

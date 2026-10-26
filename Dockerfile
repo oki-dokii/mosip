@@ -9,8 +9,8 @@
 # All runtime stages run as the non-root user "node" (uid 1000).
 # Base images are pinned to explicit versions; update them deliberately.
 # Node 22 LTS (bookworm-slim) is required: pnpm 11.25.0 depends on node:sqlite introduced in Node 22.13+.
-ARG NODE_IMAGE=node:22.14.0-bookworm-slim
-ARG NGINX_IMAGE=nginx:1.27.5-alpine
+ARG NODE_IMAGE=node:22.14.0-bookworm-slim@sha256:1c18d9ab3af4585870b92e4dbc5cac5a0dc77dd13df1a5905cea89fc720eb05b
+ARG NGINX_IMAGE=nginx:1.27.5-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
 
 # ─── stage 1: dependency install ────────────────────────────────────────────
 FROM ${NODE_IMAGE} AS deps

@@ -14,8 +14,12 @@ test('dark/light and Hindi navigation preserve evidence, persist on reload and m
  await expect(page.getByRole('button',{name:'रन का इतिहास',exact:true})).toHaveAttribute('lang','hi');
  await expect(page.locator('body')).not.toContainText(canary);
  await page.reload();await expect(page.getByRole('button',{name:'प्रक्रिया चलाएँ',exact:true})).toBeVisible();await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
- await expect(page.getByRole('combobox',{name:'Wallet evidence',exact:true})).toHaveCSS('background-color','rgb(23, 32, 51)');
- await expect(page.getByRole('combobox',{name:'Wallet evidence',exact:true})).toHaveCSS('color','rgb(226, 232, 240)');
+ const walletFilter=page.getByRole('combobox',{name:'Wallet evidence',exact:true});
+ const appearance=page.getByRole('combobox',{name:'दृश्य शैली',exact:true});
+ const palette=(element:Element)=>{const style=getComputedStyle(element);return {color:style.color,background:style.backgroundColor};};
+ // Native select defaults differ between macOS and Linux; both controls must use the app palette.
+ await expect(walletFilter).toBeVisible();
+ expect(await walletFilter.evaluate(palette)).toEqual(await appearance.evaluate(palette));
  await page.addScriptTag({path:require.resolve('axe-core/axe.min.js')});
  const violations=await page.evaluate(async()=>{const result=await (window as any).axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','best-practice']}});return result.violations.map((v:any)=>({rule:v.id,targets:v.nodes.map((n:any)=>n.target)}));});
  expect(violations).toEqual([]);
@@ -23,5 +27,6 @@ test('dark/light and Hindi navigation preserve evidence, persist on reload and m
  await page.screenshot({path:join(directory,'dark-hindi-navigation.png')});
  await page.setViewportSize({width:390,height:844});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
  await page.getByRole('combobox',{name:'दृश्य शैली',exact:true}).selectOption('light');await expect(page.locator('html')).toHaveAttribute('data-theme','light');
+ expect(await walletFilter.evaluate(palette)).toEqual(await appearance.evaluate(palette));
  await writeFile(join(directory,'preferences-check.json'),JSON.stringify({source:'synthetic_playground_ui',browserVersion:browser.version(),themePersistence:true,navigationLanguagePersistence:true,hindiNavigationOnly:true,evidenceLanguage:'English',mobileViewport:390,pageOverflow:false,darkAxeViolations:violations,scope:'automated browser check; no physical-device or human screen-reader result'},null,2)+'\n');
 });

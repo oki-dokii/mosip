@@ -16,8 +16,8 @@
   "files": [
     {
       "path": "submission/pitch/Interoperability_Playground_Pitch_2026-10-26.pptx",
-      "sha256": "2611a0f32567ba886f90a1e66388d5f6c2b12211f93c090e31f228259536083e",
-      "bytes": 885110
+      "sha256": "9bba8778e983af215589cb9b50f9dc9708359ef1b182e90fc91effc0b0edad6a",
+      "bytes": 885160
     },
     {
       "path": "submission/pitch/Interoperability_Playground_Demo_2026-10-26.srt",
@@ -26,8 +26,8 @@
     },
     {
       "path": "submission/pitch/Interoperability_Playground_Pitch_2026-10-26.pdf",
-      "sha256": "c4f4054860cd7e80e565358263ab9544edda34bee2c5adc9ca809143b71d5d29",
-      "bytes": 758108
+      "sha256": "45f23adf21954557199c16a871a1f924ffe46aea0983faf910e260c38039f349",
+      "bytes": 758078
     },
     {
       "path": "submission/pitch/Interoperability_Playground_Demo_2026-10-26.vtt",
@@ -57,7 +57,7 @@
   "releaseUpdate": {
     "date": "2026-10-26",
     "testCounts": {
-      "passed": 445,
+      "passed": 446,
       "optionalSkipped": 5,
       "browser": 18
     },
@@ -75,6 +75,7 @@
       4,
       5
     ],
-    "videoNarration": "synthetic; reporting-status chapter updated; human listening still pending"
+    "videoNarration": "synthetic; reporting-status chapter updated; human listening still pending",
+    "validationSource": "submission/evidence/2026-10-26-release-validation.json"
   }
 }

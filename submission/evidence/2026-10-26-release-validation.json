@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-26",
+  "sourceParents": [
+    "1b549de",
+    "c4ef5dacc8ebc06e2b71c6e890cf66e8ae6297f9"
+  ],
+  "testedMergedWorkingTree": true,
+  "typecheck": "passed",
+  "build": "passed",
+  "nodeScriptTestsPassed": 47,
+  "workspaceTestsPassed": 399,
+  "totalTestsPassed": 446,
+  "optionalDatabaseTestsSkipped": 5,
+  "browserChecksPassed": 18,
+  "scope": "Local integrated validation; not an independent-machine human rehearsal or hosted CI result. JSON-LD probe is a standalone cryptographic control."
+}

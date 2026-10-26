@@ -32,8 +32,7 @@
 - Person 2's [technical inspector/acceptance review and media drafts](../submission/PERSON2_COMPLETION.md) are now complete; human screen-reader, phone and final media review remain. Person 3's
   new protocol/private-report results; Person 4's clean/independent-machine and
   exact-final-commit CI proof. Integrate each focused handoff when it exists.
-- Team name and five-member roster are confirmed in [TEAM.md](../submission/TEAM.md). User will provide the confirmed deadline later. No internal freeze
-  or official deadline has been invented. Final cloud/ID/email actions remain the
+- Team name and five-member roster are confirmed in [TEAM.md](../submission/TEAM.md). User confirmed the deadline is 2 November 2026; the exact cutoff time and internal freeze remain unset. Final cloud/ID/email actions remain the
   human submission checkpoint and are not sent by this work.
 - Shared operator auth is not per-user authorization. Application origin guards are
   not DNS/IP-pinned network egress controls. Backups need paused writes for snapshot

@@ -30,7 +30,8 @@ services:
   # ── PostgreSQL ─────────────────────────────────────────────────────────────
   postgres:
     profiles: [core]
-    image: postgres:16-alpine
+    # Pin to immutable sha256 digest (verified 2026-10-26)
+    image: postgres:16-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
     environment:
       POSTGRES_DB: playground
       POSTGRES_USER: playground
@@ -144,7 +145,9 @@ services:
       # Compose DNS name – the BFF resolves this inside the Compose network.
       MOCK_ISSUER_PUBLIC_URL: http://mock-issuer:4101
       MOCK_ISSUER_ENABLE_TEST_CASES: ${MOCK_ISSUER_ENABLE_TEST_CASES:-false}
-    # Not published to the host; reachable only on the Compose network.
+    # Publish to host loopback for direct protocol probes and CI jobs
+    ports:
+      - "127.0.0.1:4001:4101"
     expose:
       - "4101"
     networks:
@@ -172,6 +175,9 @@ services:
     environment:
       MOCK_VERIFIER_HOST: 0.0.0.0
       MOCK_VERIFIER_PUBLIC_URL: http://mock-verifier:4102
+    # Publish to host loopback for direct protocol probes and CI jobs
+    ports:
+      - "127.0.0.1:4002:4102"
     expose:
       - "4102"
     networks:

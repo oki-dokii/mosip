@@ -1,6 +1,6 @@
 # Final four-person execution plan
 
-Updated 26 October 2026. This is the current assignment for **all** remaining
+Updated 26 October 2026. **Deadline extended to 2 November 2026**, confirmed by the team lead; exact cutoff time and internal freeze remain unset. Older October freeze dates are superseded. This is the current assignment for **all** remaining
 engineering, quality, demo and submission work. It supersedes older task lists;
 completed work is a baseline, not another assignment. Everyone can start now.
 Dependencies determine execution order; no feature receives an invented pass just

@@ -6,19 +6,19 @@
 | --- | --- |
 | Team | **Bhole Chature**; five confirmed members in [TEAM.md](TEAM.md) |
 | Local acceptance | UI-managed run `8fc582b8-9548-4b86-b6b9-7ed67e7ca171`: exact-card reload, same wallet/card presentation, independent Verify Valid; [evidence](evidence/2026-10-26-person2-local-ui/README.md) |
-| Local automated checks | **445 passed, 5 optional DB skips; 18 browser checks**; typecheck/build/secret audit passed. These counts are the current deck checkpoint |
+| Local automated checks | **446 passed, 5 optional DB skips; 18 browser checks**; typecheck/build/secret audit passed. These counts are the current deck checkpoint |
 | Hosted CI | Pre-cleanup CI exposed a Linux dark-mode selector contrast failure; explicit colors now pass all 18 local browser checks. [Hosted workflow](https://github.com/oki-dokii/mosip/actions/workflows/ci.yml) must be checked against this release commit |
 | Media | Eight-slide deck and PDF with confirmed team; four-minute synthetic-narration video with captions. Human listening/rehearsal and cloud upload remain open |
 | Findings | G-05 filed; G-09/G-10 added to existing issues; G-06/G-07 privately submitted on 26 October, triage pending. [Receipts/status](UPSTREAM_REPORT_STATUS.md) |
 | Human/other-host checks | Screen reader, phone layout and independent-machine rehearsal remain unperformed; [review checklist](FINAL_HUMAN_CHECKS.md) |
-| Submission | [Drive destination](https://drive.google.com/drive/folders/1fy-bgTacPqOQm-p_LHGR27bFzh2xguVG) supplied; signed-out folder view works, upload still needs authenticated write access. Deadline, private IDs and final email remain team actions |
+| Submission | [Drive destination](https://drive.google.com/drive/folders/1fy-bgTacPqOQm-p_LHGR27bFzh2xguVG) supplied; signed-out folder view works, upload still needs authenticated write access. Deadline extended to **2 November 2026**, exact cutoff time unconfirmed; private IDs and final email remain team actions |
 
 ## Judge priorities
 
 | Criterion | Weight | What we can show now | Main gap |
 |---|---:|---|---|
 | Functionality completion | 40% | Fixture/reference flows, capture, reports, mock matrix, hosted Web and Android successes; connected local JSON-LD wallet flow returns Valid with both proofs true ([scope](../deploy/INJI_WEB_LOCAL.md)) | A1 final review and independent-machine rehearsal remain open; the managed local BFF/capture chain now has a clean-source pass |
-| Deliverable quality | 40% | Typed monorepo; 445 tests passed with 5 optional DB skips, 18 local browser checks, redaction and API/architecture documentation | Full-repo retest at final commit and independent-machine setup remain |
+| Deliverable quality | 40% | Typed monorepo; 446 tests passed with 5 optional DB skips, 18 local browser checks, redaction and API/architecture documentation | Full-repo retest at final commit and independent-machine setup remain |
 | UX/design | 10% | Working React playground, assisted journey, keyboard/axe browser checks and annotated synthetic screens | Review final build against screenshots and capture final screens |
 | Presentation | 10% | Narrative and demo outline in this folder | Eight-slide deck, PDF and narrated four-minute video exist; human media review and sharing remain |
 
@@ -54,7 +54,7 @@
 2. **A2: observed functional pass, 23 October.** Official local Certify → actual Android Inji Wallet → Collab Verify, with user-confirmed reopen persistence and correlated valid credential/holder proof result. [Evidence and limits](evidence/person3-a2-mobile-2026-10-23/README.md) distinguish installed-binary/Collab-version uncertainty from the observed chain. Inji Web SD-JWT and A1 JSON-LD remain separate.
 3. **A6:** `pnpm demo:docker` builds the playground, BFF, PostgreSQL and separate mocks for six synthetic presets. [Hosted CI](https://github.com/oki-dokii/mosip/actions/runs/40167968420) passed typecheck, tests, browser/axe and Compose smoke. The [25 October local Docker rehearsal](evidence/2026-10-25-local-demo.md) printed `DEMO PASS`. `pnpm demo:inji` checks the separate official Certify/reference-holder/Verify path. `pnpm demo:web-jsonld` now covers the actual local Web wallet and exact-card presentation with the [documented synthetic authorization/DID adapters](../deploy/INJI_WEB_LOCAL.md). Independent-machine rehearsal remains open.
 4. **A3/A5:** Inspect the final browser capture and exported report for missing boundaries and any secret leakage. Passive HAR import is synthetic-only and cannot see server-to-server or native-wallet exchanges.
-5. **Go/no-go:** [WALLET_VALIDATION.md](../docs/WALLET_VALIDATION.md) lists a provisional 2026-10-24 21:00 IST A1 cutoff, 48 hours before the working freeze. Confirm the actual competition deadline; do not present this planning date as official.
+5. **Deadline:** The team lead confirmed **2 November 2026**. Older October freeze/go-no-go dates are superseded. Exact cutoff time and an internal freeze remain unset; no time has been inferred.
 6. **Release quality:** Eighteen Chromium checks passed locally; final-commit hosted CI is tracked separately above. The secret audit is in hosted CI. Independent-machine installation, contributor license confirmation and a complete third-party notice audit remain. [Annotated UI screens](UI_WIREFRAMES.md) are prepared. Splitting `collab.ts` is post-integration maintenance, not an acceptance gate.
 
 ## Final handoff outside Git
@@ -72,4 +72,8 @@
 | Deck PDF and video URL | Editable deck, PDF and narrated/captioned video prepared; final human review and cloud URL pending |
 | Optional mockups, test exports, architecture images | Repository sources exist; link selected exports from the cloud folder if required |
 | Individual college IDs | Each student submits privately through the required channel; never add them to this public package |
-| Official deadline and final email sent | Unconfirmed; team must verify and retain the sent email |
+| Official deadline and final email sent | 2 November 2026 confirmed by team lead; exact cutoff time unconfirmed. Final email not sent |
+
+## Integration of teammate protocol work
+
+The opt-in connected-wallet workflow runs **mock protocol probes**, not a real Inji Web/device journey. The JSON-LD probe is a standalone cryptographic control and depends on public contexts. Secondary-device claims without logs/screenshots remain awaiting evidence review; the existing hybrid Android result is still the accepted baseline.
