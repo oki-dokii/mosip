@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "71307a949dccf600bda90d89280f88589192cc25",
+  "environment": "same Mac; Docker workspace build; pending audit documentation",
+  "scope": "synthetic mock interoperability and initial production UI load, not a real-wallet acceptance run",
+  "demo": "passed",
+  "cases": [
+    {
+      "scenario": "baseline",
+      "expected": "valid",
+      "observed": "valid",
+      "runId": "86f3a914-d0a9-4cf6-8a56-501436da15fe",
+      "steps": 10,
+      "exchanges": 7,
+      "tier": "mock_interop"
+    },
+    {
+      "scenario": "bad_signature",
+      "expected": "invalid",
+      "observed": "invalid",
+      "runId": "ed3d2aba-327d-4a76-af20-6c0fec797695",
+      "steps": 10,
+      "exchanges": 7,
+      "tier": "mock_interop"
+    },
+    {
+      "scenario": "expired",
+      "expected": "invalid",
+      "observed": "invalid",
+      "runId": "473ffffa-a887-4a7e-95fe-2862bb41c1de",
+      "steps": 10,
+      "exchanges": 7,
+      "tier": "mock_interop"
+    },
+    {
+      "scenario": "wrong_type",
+      "expected": "invalid",
+      "observed": "invalid",
+      "runId": "39fe5dca-7e26-494d-ba4e-7887d7e95c0c",
+      "steps": 10,
+      "exchanges": 7,
+      "tier": "mock_interop"
+    },
+    {
+      "scenario": "missing_disclosure",
+      "expected": "invalid",
+      "observed": "invalid",
+      "runId": "66e8fb46-0254-488b-909b-0896631069cf",
+      "steps": 10,
+      "exchanges": 7,
+      "tier": "mock_interop"
+    },
+    {
+      "scenario": "replay_nonce",
+      "expected": "invalid",
+      "observed": "invalid",
+      "runId": "3ace2d61-2750-4f2d-9a3e-ed86168a8c75",
+      "steps": 10,
+      "exchanges": 7,
+      "tier": "mock_interop"
+    }
+  ],
+  "packagedBrowser": {
+    "result": "passed",
+    "selfHostedScriptCsp": true,
+    "runControlVisible": true,
+    "proxiedApiHealth": true,
+    "cspViolations": 0,
+    "pageErrors": 0
+  }
+}

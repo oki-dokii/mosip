@@ -1,0 +1,233 @@
+{
+  "schemaVersion": 1,
+  "auditedSourceCommit": "71307a949dccf600bda90d89280f88589192cc25",
+  "observedAt": "2026-10-26T05:34:46.938929+00:00",
+  "scope": "fresh local clone at exact source commit; current tracked tree, not all Git history or external cloud assets",
+  "trackedFiles": 460,
+  "rasterImages": [
+    {
+      "path": "spikes/fixtures/inji-web-farmer-success.png",
+      "sha256": "b97c54053e619c80fe72fa9602ef3bd444591551b298c2a091b58b38e37cce67",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/2026-10-25-local-inji-web-home.png",
+      "sha256": "c88c0b6f68d8ef125b3db56ba5436c89210b0c4de2653e329a0af9a299215194",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/2026-10-26-local-web-jsonld/stored-after-reload.png",
+      "sha256": "b3efe1aab71853c9e93a3defe3005c70d0aea94991d30d1d57d776b036323b2b",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/2026-10-26-local-web-jsonld/wallet-share-success.png",
+      "sha256": "62aa51cbddaf3b9ec05e7f3c34216a3f639b1cf0ea6aa37892e6befc7451a783",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person2-managed-a1-2026-10-25/managed-summary.png",
+      "sha256": "4dd8198494632d74e32c223ba3fb4b54638ff48d795b9bc174f809a45c22bdda",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person2-managed-a1-2026-10-25/playground-completed.png",
+      "sha256": "03b906ffbaa9e0ca447e6d927eb8d35c4e6d102bf2648ccd565a5156c995335d",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person2-managed-a1-2026-10-25/playground-reviewed.png",
+      "sha256": "ed0d7748e258400516e9de6d2cad7671f8aecdc8e2ce52844597e9fb2db5e09c",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person2-managed-a1-2026-10-25/stored-after-refresh.png",
+      "sha256": "8dac240b18e305919e4900bacd1073a4e2ca344b2a599da4b0d8bf5ba91a6a96",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": true
+    },
+    {
+      "path": "submission/evidence/person2/assisted-fixture.png",
+      "sha256": "2880a55fd3bf823301ebda14e4a5af293daa9233c507d3b6eba4ecb68a68c4e3",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person2/capture-coverage.png",
+      "sha256": "8df7df30c0e01d35444e6b43c4eff3106a546ad7884923c2e889762f760447cb",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person2/connected-assisted.png",
+      "sha256": "bc51f6bc7d8cc285343967bb5ee56c84200b0f9d21ffe2186245f97f2ac6df58",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person2/live-stored-card.png",
+      "sha256": "0f698d96f8e8a80fad7d7737d53e02f92fd4d6d9c7b8aa51464a09054d5c3555",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person2/live-stored-cards-after-refresh.png",
+      "sha256": "45382f906b3a86ac5da69c3c6d9035e93db37bbcf2e4922bf3017b80e32f9715",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person2/live-verify-valid.png",
+      "sha256": "5bc0672a1bc1694004120dfdeecae071d9e4b095585fbc59a1c8c4920d36f3e1",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person2/public-evidence.png",
+      "sha256": "c7cab5246525c97ccb4f997ac5da55b8a9fadbb702449467bedfe9a8cc247006",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person2/wallet-evidence-catalog.png",
+      "sha256": "aa987496bcc34a520db924f8521ba56766614b0af95f476513a12d33fe66211b",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person3-a2-2026-10-23/01-issuer-catalog-top.jpg",
+      "sha256": "710f1a9469707013ca017e6bf2991568a28131e786cd0707ec8b853dd43973a8",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person3-a2-2026-10-23/02-issuer-catalog-bottom.jpg",
+      "sha256": "59df969ef2ec430a61a92bd2bf04d3df62aa8b07d1f92e4b213eecb71ec3c317",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person3-a2-2026-10-23/03-registry-settings-dialog.jpg",
+      "sha256": "326a74432f7f6f9e8d184098778cde87906154e43752d7a8857d66f32d07dcc8",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person3-a2-2026-10-23/04-sign-in-consent.jpg",
+      "sha256": "0839bb42aa0c4e1f8ebb73a3403fa4d3ed34adb70d52cbb805fabe30e8b82354",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person3-a2-2026-10-23/05-invalid-client.jpg",
+      "sha256": "28fda1bd3038df2922a61fccba78d65162a06512a66e9b174f7a0962f45aaff7",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person3-a2-2026-10-23/authorization-code-offer.png",
+      "sha256": "fcf1313e2ea04b5e239ad8fb6164f21cfeb720581a16b3e5db466e42439c1a1a",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person3-a2-mobile-2026-10-23/01-wallet-downloaded-card.jpg",
+      "sha256": "99797678a0f40e30cff04de8cb55165b4b67f0e6125e176b720c5d9efcbf0378",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person3-a2-mobile-2026-10-23/02-initial-invalid-offer-screen.jpg",
+      "sha256": "1700e7e268322ef9e189577c8baf204b08a4c8bf880f5686cf5d66e57c10ff02",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person3-a2-mobile-2026-10-23/03-wallet-presentation-consent.jpg",
+      "sha256": "5e1b5dfeea15f51bab5e2e47bcd9572bf553dbdc3e97448f1b8fc9598247607c",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    },
+    {
+      "path": "submission/evidence/person3-a2-mobile-2026-10-23/04-wallet-share-success.jpg",
+      "sha256": "d7863a89a0770d0a03b9a23718a840dcd56b2c59f225409a6c327b7d7bf8a7fd",
+      "visualReview": "reviewed; no apparent private/authentication values observed",
+      "publicSyntheticAliasConfirmedByUser": false
+    }
+  ],
+  "qrReview": {
+    "image": "submission/evidence/person3-a2-2026-10-23/authorization-code-offer.png",
+    "decodedLocally": true,
+    "inlineOffer": true,
+    "issuerStatePresent": false,
+    "preauthorizedGrantPresent": false,
+    "offerReference": false,
+    "rawPayloadExported": false
+  },
+  "deck": {
+    "path": "submission/pitch/Interoperability_Playground_Pitch.pptx",
+    "sha256": "8e682949b676b7eb35465f56caef03599db199ea33068b7c22cd0a8e67043b01",
+    "embeddedMedia": [
+      {
+        "entry": "ppt/media/image.jpeg",
+        "sha256": "ed0d7748e258400516e9de6d2cad7671f8aecdc8e2ce52844597e9fb2db5e09c",
+        "matchesReviewedImage": "submission/evidence/person2-managed-a1-2026-10-25/playground-reviewed.png"
+      },
+      {
+        "entry": "ppt/media/image2.jpeg",
+        "sha256": "8dac240b18e305919e4900bacd1073a4e2ca344b2a599da4b0d8bf5ba91a6a96",
+        "matchesReviewedImage": "submission/evidence/person2-managed-a1-2026-10-25/stored-after-refresh.png"
+      },
+      {
+        "entry": "ppt/media/image3.jpeg",
+        "sha256": "d7863a89a0770d0a03b9a23718a840dcd56b2c59f225409a6c327b7d7bf8a7fd",
+        "matchesReviewedImage": "submission/evidence/person3-a2-mobile-2026-10-23/04-wallet-share-success.jpg"
+      }
+    ],
+    "scope": "embedded raster images only; final slide claims/layout remain owner review"
+  },
+  "video": {
+    "path": "submission/pitch/Playground_Demo_Silent_Draft.mp4",
+    "sha256": "3292b51009adead03ce3f0b197362aaad3780187a8115c6e81dec508731855ae",
+    "durationSeconds": 127.48,
+    "audioStreamPresent": false,
+    "sampleSeconds": [
+      0,
+      10,
+      20,
+      30,
+      40,
+      50,
+      60,
+      70,
+      80,
+      90,
+      100,
+      110,
+      120
+    ],
+    "scope": "13 sampled frames visually reviewed; not every-frame audit or full playback",
+    "result": "no apparent private/authentication values in sampled frames"
+  },
+  "checks": {
+    "secretScanner": "passed in fresh clone; patterns and filenames only",
+    "aggregateConsistency": "passed in fresh clone",
+    "reviewedImageBytesMatchFreshClone": true,
+    "reviewedVideoBytesMatchFreshClone": true,
+    "publicSyntheticAlias": "user explicitly confirmed public synthetic alias; original image and deck retained"
+  },
+  "limits": [
+    "No assertion that pattern matching detects every possible secret.",
+    "No full Git-history purge/audit, cloud access review or student-ID submission review.",
+    "No claim of independent-machine rehearsal: fresh clone is on the same Mac.",
+    "Older UI screenshots retain their dated provenance; visual privacy review does not validate their selector/version labels.",
+    "Final deck claims and full narrated-video playback remain Person 2 review."
+  ]
+}
