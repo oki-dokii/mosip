@@ -35,7 +35,7 @@ The A1 capture and journey code now have [one integration owner](../docs/SINGLE_
 | Synthetic test data | Prepared | [TEST_EVIDENCE.md](TEST_EVIDENCE.md) lists committed fixtures and data boundaries |
 | Test cases and results | Updated, final refresh pending | [TEST_EVIDENCE.md](TEST_EVIDENCE.md) separates historical full-suite results, the 25 October BFF/web regressions, manual A1 evidence and [actual A2 acceptance](evidence/person3-a2-mobile-2026-10-23/README.md) |
 | License and credits | Partial | [MPL-2.0](../LICENSE) and [direct dependency credits](../docs/ATTRIBUTIONS.md) added; confirm team agreement and complete transitive/asset notice audit |
-| Fresh live report and matrix | Managed A1 record added; aggregate refresh pending | [Managed A1 report and reviewed matrix](evidence/person2-managed-a1-2026-10-25/README.md) link the correlated Web run; the older [aggregate report](evidence/2026-10-23-aggregate-interop.md) predates A1 and must be regenerated before final submission |
+| Fresh live report and matrix | Current managed Web/local and separate Android records aggregated | [Managed A1 report and reviewed matrix](evidence/person2-managed-a1-2026-10-25/README.md) link the correlated Web run; the current [aggregate report](evidence/2026-10-26-aggregate-interop.md) includes A1, the local managed pass and the separate Android observation; regenerate with the source-checking script when evidence changes |
 | Interoperability gaps | Drafted | [GAPS.md](../docs/GAPS.md) separates observed findings from upstream issues, none filed yet |
 | Remaining integration plan | Prepared | [Four-person plan](../docs/NEXT_STEPS_4_PERSON_PLAN.md) prioritizes local Inji integration, CI and independently reproduced findings |
 

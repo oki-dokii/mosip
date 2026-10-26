@@ -1,0 +1,375 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-10-26",
+  "source": "committed_evidence_projection",
+  "executesNewFlows": false,
+  "records": [
+    {
+      "recordKind": "bff_run",
+      "recordId": "1328bfb9-d9cb-4390-8096-905c7fda2552",
+      "bffRunId": "1328bfb9-d9cb-4390-8096-905c7fda2552",
+      "deployment": "mock_issuer_collab_verify",
+      "participants": {
+        "issuer": "mock_issuer",
+        "wallet": "reference_wallet",
+        "verifier": "inji_verify"
+      },
+      "format": "vc_sd_jwt",
+      "scenario": "none",
+      "protocolProfile": "unreported",
+      "versions": {
+        "issuer": "mock-x509-1",
+        "wallet": "reference-wallet/0.1.0",
+        "verifier": "unreported"
+      },
+      "expected": "valid",
+      "actual": "valid",
+      "evaluation": "not_recorded",
+      "observedAt": "2026-10-21T15:36:10.316Z",
+      "source": "submission/evidence/2026-10-21-mock-x509-valid.json",
+      "corrections": [],
+      "limits": [
+        "Self-signed synthetic X.509 issuer, Reference Wallet; Collab Verify build unreported.",
+        "Historical negatives lack exact reason diagnostics."
+      ]
+    },
+    {
+      "recordKind": "bff_run",
+      "recordId": "06243abe-61bb-4e0e-8e9f-a3f20f0533b6",
+      "bffRunId": "06243abe-61bb-4e0e-8e9f-a3f20f0533b6",
+      "deployment": "mock_issuer_collab_verify",
+      "participants": {
+        "issuer": "mock_issuer",
+        "wallet": "reference_wallet",
+        "verifier": "inji_verify"
+      },
+      "format": "vc_sd_jwt",
+      "scenario": "bad_signature",
+      "protocolProfile": "unreported",
+      "versions": {
+        "issuer": "mock-x509-1",
+        "wallet": "reference-wallet/0.1.0",
+        "verifier": "unreported"
+      },
+      "expected": "invalid",
+      "actual": "invalid",
+      "evaluation": "not_recorded",
+      "observedAt": "2026-10-21T15:36:42.521Z",
+      "source": "submission/evidence/2026-10-21-mock-x509-bad-signature.json",
+      "corrections": [],
+      "limits": [
+        "Self-signed synthetic X.509 issuer, Reference Wallet; Collab Verify build unreported.",
+        "Historical negatives lack exact reason diagnostics."
+      ]
+    },
+    {
+      "recordKind": "bff_run",
+      "recordId": "77a1f577-9b5c-4695-a6b6-4ac895f89fc6",
+      "bffRunId": "77a1f577-9b5c-4695-a6b6-4ac895f89fc6",
+      "deployment": "docker_mock_ci",
+      "participants": {
+        "issuer": "mock_issuer",
+        "wallet": "reference_wallet",
+        "verifier": "mock_verifier"
+      },
+      "format": "vc_sd_jwt",
+      "scenario": "none",
+      "protocolProfile": "mock-sdjwt-flat-v1",
+      "versions": {
+        "issuer": "unreported",
+        "wallet": "reference-wallet/0.1.0",
+        "verifier": "local-mock/1"
+      },
+      "expected": "valid",
+      "actual": "valid",
+      "evaluation": "correct_acceptance",
+      "observedAt": "2026-10-23T04:57:59.414Z",
+      "source": "submission/evidence/2026-10-23-ci-mock-matrix.json",
+      "corrections": [],
+      "limits": [
+        "Synthetic mock issuer/verifier and Reference Wallet; not Inji wallet evidence."
+      ]
+    },
+    {
+      "recordKind": "bff_run",
+      "recordId": "3e59c414-58a4-4687-84b2-6e6fc2541927",
+      "bffRunId": "3e59c414-58a4-4687-84b2-6e6fc2541927",
+      "deployment": "docker_mock_ci",
+      "participants": {
+        "issuer": "mock_issuer",
+        "wallet": "reference_wallet",
+        "verifier": "mock_verifier"
+      },
+      "format": "vc_sd_jwt",
+      "scenario": "bad_signature",
+      "protocolProfile": "mock-sdjwt-flat-v1",
+      "versions": {
+        "issuer": "unreported",
+        "wallet": "reference-wallet/0.1.0",
+        "verifier": "local-mock/1"
+      },
+      "expected": "invalid",
+      "actual": "invalid",
+      "evaluation": "correct_rejection",
+      "observedAt": "2026-10-23T04:58:00.881Z",
+      "source": "submission/evidence/2026-10-23-ci-mock-matrix.json",
+      "corrections": [],
+      "limits": [
+        "Synthetic mock issuer/verifier and Reference Wallet; not Inji wallet evidence."
+      ]
+    },
+    {
+      "recordKind": "bff_run",
+      "recordId": "bc667620-2c93-4096-abdc-54aed02d2dc8",
+      "bffRunId": "bc667620-2c93-4096-abdc-54aed02d2dc8",
+      "deployment": "docker_mock_ci",
+      "participants": {
+        "issuer": "mock_issuer",
+        "wallet": "reference_wallet",
+        "verifier": "mock_verifier"
+      },
+      "format": "vc_sd_jwt",
+      "scenario": "expired",
+      "protocolProfile": "mock-sdjwt-flat-v1",
+      "versions": {
+        "issuer": "unreported",
+        "wallet": "reference-wallet/0.1.0",
+        "verifier": "local-mock/1"
+      },
+      "expected": "invalid",
+      "actual": "invalid",
+      "evaluation": "correct_rejection",
+      "observedAt": "2026-10-23T04:58:02.465Z",
+      "source": "submission/evidence/2026-10-23-ci-mock-matrix.json",
+      "corrections": [],
+      "limits": [
+        "Synthetic mock issuer/verifier and Reference Wallet; not Inji wallet evidence."
+      ]
+    },
+    {
+      "recordKind": "bff_run",
+      "recordId": "f589abb7-3c41-404e-8d27-80ee86dda3fc",
+      "bffRunId": "f589abb7-3c41-404e-8d27-80ee86dda3fc",
+      "deployment": "docker_mock_ci",
+      "participants": {
+        "issuer": "mock_issuer",
+        "wallet": "reference_wallet",
+        "verifier": "mock_verifier"
+      },
+      "format": "vc_sd_jwt",
+      "scenario": "wrong_type",
+      "protocolProfile": "mock-sdjwt-flat-v1",
+      "versions": {
+        "issuer": "unreported",
+        "wallet": "reference-wallet/0.1.0",
+        "verifier": "local-mock/1"
+      },
+      "expected": "invalid",
+      "actual": "invalid",
+      "evaluation": "correct_rejection",
+      "observedAt": "2026-10-23T04:58:03.990Z",
+      "source": "submission/evidence/2026-10-23-ci-mock-matrix.json",
+      "corrections": [],
+      "limits": [
+        "Synthetic mock issuer/verifier and Reference Wallet; not Inji wallet evidence."
+      ]
+    },
+    {
+      "recordKind": "bff_run",
+      "recordId": "7c76f459-eb56-4cea-a095-2e774ca095c1",
+      "bffRunId": "7c76f459-eb56-4cea-a095-2e774ca095c1",
+      "deployment": "docker_mock_ci",
+      "participants": {
+        "issuer": "mock_issuer",
+        "wallet": "reference_wallet",
+        "verifier": "mock_verifier"
+      },
+      "format": "vc_sd_jwt",
+      "scenario": "missing_disclosure",
+      "protocolProfile": "mock-sdjwt-flat-v1",
+      "versions": {
+        "issuer": "unreported",
+        "wallet": "reference-wallet/0.1.0",
+        "verifier": "local-mock/1"
+      },
+      "expected": "invalid",
+      "actual": "invalid",
+      "evaluation": "correct_rejection",
+      "observedAt": "2026-10-23T04:58:05.467Z",
+      "source": "submission/evidence/2026-10-23-ci-mock-matrix.json",
+      "corrections": [],
+      "limits": [
+        "Synthetic mock issuer/verifier and Reference Wallet; not Inji wallet evidence."
+      ]
+    },
+    {
+      "recordKind": "bff_run",
+      "recordId": "00a3e2d0-9807-454a-a0ae-a2f8df6d1d9a",
+      "bffRunId": "00a3e2d0-9807-454a-a0ae-a2f8df6d1d9a",
+      "deployment": "docker_mock_ci",
+      "participants": {
+        "issuer": "mock_issuer",
+        "wallet": "reference_wallet",
+        "verifier": "mock_verifier"
+      },
+      "format": "vc_sd_jwt",
+      "scenario": "replay_nonce",
+      "protocolProfile": "mock-sdjwt-flat-v1",
+      "versions": {
+        "issuer": "unreported",
+        "wallet": "reference-wallet/0.1.0",
+        "verifier": "local-mock/1"
+      },
+      "expected": "invalid",
+      "actual": "invalid",
+      "evaluation": "correct_rejection",
+      "observedAt": "2026-10-23T04:58:06.995Z",
+      "source": "submission/evidence/2026-10-23-ci-mock-matrix.json",
+      "corrections": [],
+      "limits": [
+        "Synthetic mock issuer/verifier and Reference Wallet; not Inji wallet evidence."
+      ]
+    },
+    {
+      "recordKind": "manual_android_observation",
+      "recordId": "A2-20261023-1848",
+      "bffRunId": null,
+      "deployment": "hybrid_local_certify_android_collab_verify",
+      "participants": {
+        "issuer": "inji_certify",
+        "wallet": "inji_mobile",
+        "verifier": "inji_verify"
+      },
+      "format": "vc_sd_jwt",
+      "scenario": "none",
+      "protocolProfile": "manual_hybrid",
+      "versions": {
+        "issuer": "1.0.0-alpha.1",
+        "wallet": "1.0.0-alpha.1 (About screen)",
+        "verifier": "unreported"
+      },
+      "expected": "valid",
+      "actual": "valid",
+      "evaluation": "observed_wallet_chain",
+      "observedAt": "2026-10-23T13:22:10.735Z",
+      "source": "submission/evidence/person3-a2-mobile-2026-10-23/attempt.json",
+      "corrections": [],
+      "limits": [
+        "Reopen persistence is user-confirmed.",
+        "Installed APK/source identity and Collab build not independently attested.",
+        "Hybrid path, not Android→local Verify; no native capture or BFF run ID."
+      ]
+    },
+    {
+      "recordKind": "bff_run",
+      "recordId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "bffRunId": "3dc6895d-ff87-45a2-a10b-46844198d83e",
+      "deployment": "hosted_collab_web",
+      "participants": {
+        "issuer": "inji_certify",
+        "wallet": "inji_web_assisted",
+        "verifier": "inji_verify"
+      },
+      "format": "ldp_vc",
+      "scenario": "none",
+      "protocolProfile": "collab-dcql",
+      "versions": {
+        "issuer": "unreported",
+        "wallet": "unreported",
+        "verifier": "unreported"
+      },
+      "expected": "valid",
+      "actual": "valid",
+      "evaluation": "correct_acceptance",
+      "observedAt": "2026-10-24T21:35:40.396Z",
+      "source": "submission/evidence/person2-managed-a1-2026-10-25/run-report.json",
+      "corrections": [
+        "Historical export incorrectly labelled Inji Web as reference-wallet/0.1.0; corrected only in this projection."
+      ],
+      "limits": [
+        "Browser→Mimoto observations only; downstream server hops not observed.",
+        "Deployed versions unreported; final team review separate."
+      ]
+    },
+    {
+      "recordKind": "direct_wallet_harness",
+      "recordId": "local-web-jsonld-2026-10-26",
+      "bffRunId": null,
+      "deployment": "local_synthetic_web_direct",
+      "participants": {
+        "issuer": "inji_certify",
+        "wallet": "inji_web",
+        "verifier": "inji_verify"
+      },
+      "format": "ldp_vc",
+      "scenario": "none",
+      "protocolProfile": "local-jsonld-pex-0.18.2",
+      "versions": {
+        "issuer": "0.14.0",
+        "wallet": "0.17.0",
+        "verifier": "0.18.2"
+      },
+      "expected": "valid",
+      "actual": "valid",
+      "evaluation": "observed_wallet_chain",
+      "observedAt": "2026-10-25T21:51:25.063Z",
+      "source": "submission/evidence/2026-10-26-local-web-jsonld/presentation.json",
+      "corrections": [],
+      "limits": [
+        "Separate direct harness; no fabricated BFF run ID.",
+        "Synthetic authorization and DID adapter; public context dependency."
+      ]
+    },
+    {
+      "recordKind": "bff_run",
+      "recordId": "f5f56b45-3160-49b3-96ff-e1238c412fb1",
+      "bffRunId": "f5f56b45-3160-49b3-96ff-e1238c412fb1",
+      "deployment": "local_synthetic_web",
+      "participants": {
+        "issuer": "inji_certify",
+        "wallet": "inji_web_assisted",
+        "verifier": "inji_verify"
+      },
+      "format": "ldp_vc",
+      "scenario": "none",
+      "protocolProfile": "local-jsonld-pex-0.18.2",
+      "versions": {
+        "issuer": "0.14.0",
+        "wallet": "0.17.0",
+        "verifier": "0.18.2"
+      },
+      "expected": "valid",
+      "actual": "valid",
+      "evaluation": "correct_acceptance",
+      "observedAt": "2026-10-26T05:07:45.170Z",
+      "source": "submission/evidence/2026-10-26-managed-local-jsonld/run-report.json",
+      "corrections": [],
+      "limits": [
+        "Synthetic IAR authorization fixture and declared DID assertionMethod adapter.",
+        "Canonical server hops observed; browser capture not attached; signed request passed by value.",
+        "Public context network dependency and KERNEL health warning remain.",
+        "Generic report evidence tier remains unverified; this is an observed functional pass, not conformance certification."
+      ]
+    }
+  ],
+  "sources": [
+    "submission/evidence/2026-10-23-ci-mock-matrix.json",
+    "submission/evidence/2026-10-21-mock-x509-valid.json",
+    "submission/evidence/2026-10-21-mock-x509-bad-signature.json",
+    "submission/evidence/person2-managed-a1-2026-10-25/run-report.json",
+    "submission/evidence/2026-10-26-managed-local-jsonld/run-report.json",
+    "submission/evidence/2026-10-26-managed-local-jsonld/provenance.json",
+    "submission/evidence/2026-10-26-managed-local-jsonld/browser-checks.json",
+    "submission/evidence/2026-10-26-local-web-jsonld/issuance.json",
+    "submission/evidence/2026-10-26-local-web-jsonld/presentation.json",
+    "submission/evidence/person3-a2-mobile-2026-10-23/attempt.json",
+    "submission/evidence/person3-a2-mobile-2026-10-23/verifier-result.json"
+  ],
+  "notObserved": [
+    "Android wallet → fully local Verify",
+    "Inji Web SD-JWT presentation",
+    "Executed external ecosystem issuer/verifier",
+    "mDoc/DC API/iOS wallet chain",
+    "Independent-machine full local wallet rehearsal"
+  ]
+}

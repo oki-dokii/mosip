@@ -18,6 +18,7 @@ export interface RunRepository {
   addExchange(exchange: Exchange): Promise<void>;
   addExchanges(exchanges: Exchange[]): Promise<number>;
   clear(): Promise<void>;
+  pruneCompletedBefore?(cutoff: Date, excludedIds?: readonly string[]): Promise<number>;
   disconnect(): Promise<void>;
 }
 
@@ -69,6 +70,11 @@ export class MemoryRunRepository implements RunRepository {
     return fresh.length;
   }
 
+  async pruneCompletedBefore(cutoff: Date, excludedIds: readonly string[] = []) {
+    let deleted = 0;
+    for (const [id, record] of this.runs) if (!excludedIds.includes(id) && record.run.recordKind !== "archived_evidence" && ["passed","failed","errored","cancelled"].includes(record.run.status) && record.run.finishedAt && Date.parse(record.run.finishedAt) < cutoff.getTime()) { this.runs.delete(id); deleted++; }
+    return deleted;
+  }
   async clear() {
     this.runs.clear();
   }
@@ -258,6 +264,9 @@ export class PrismaRunRepository implements RunRepository {
     return result.count;
   }
 
+  async pruneCompletedBefore(cutoff: Date, excludedIds: readonly string[] = []) {
+    return (await this.prisma.run.deleteMany({ where: { id: { notIn: [...excludedIds] }, status: { in: ["passed","failed","errored","cancelled"] }, finishedAt: { lt: cutoff } } })).count;
+  }
   async clear() {
     await this.prisma.run.deleteMany();
   }

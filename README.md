@@ -1,14 +1,34 @@
 # Inji Interoperability Playground
 
-Current team execution: [four-person plan](docs/FINAL_FOUR_PERSON_EXECUTION_PLAN.md). Local server capture and the subject-name inspector contract: [Person 1 handoff](docs/PERSON1_LOCAL_CAPTURE_HANDOFF.md).
 
 [![Playground CI](https://github.com/oki-dokii/mosip/actions/workflows/ci.yml/badge.svg)](https://github.com/oki-dokii/mosip/actions/workflows/ci.yml)
 
 **Find where a verifiable credential journey succeeds or fails.** Choose an issuer, wallet, verifier, and credential format; run an issue → hold → present → verify journey; then inspect its step timeline, sanitized protocol exchanges, sequence view, and downloadable result report.
 
+
+## 30-second judge path
+
+The tour takes about 30 seconds after startup; the first install/container build can take several minutes. With the pinned dependencies and Docker installed:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm demo:docker
+```
+
+Open **http://localhost:5174**. Start a mock run, inspect the timeline/exchanges,
+then open the compatibility matrix and findings. This six-case demo uses synthetic
+mock services; the labelled historical Web archive is a recorded result, not a new
+wallet run. For the real local wallet journey, use the
+[managed capture runbook](docs/PERSON1_LOCAL_CAPTURE_HANDOFF.md).
+
+[Current results and limits](submission/evidence/2026-10-26-aggregate-interop.md) ·
+[Machine-readable compatibility matrix](submission/evidence/2026-10-26-aggregate-matrix.json) ·
+[Current team assignment](docs/FINAL_FOUR_PERSON_EXECUTION_PLAN.md)
+
+
 This is a **test playground**, not a production identity provider or wallet. It uses synthetic identities. Its automated wallet is the project's **Reference Wallet**. A Reference Wallet success does not prove that Inji Web or Inji Wallet mobile stored and presented the credential. The [evidence guide](docs/SCENARIOS_AND_EVIDENCE.md) and [submission checklist](submission/READINESS.md) make that distinction explicit.
 
-The web app includes an evidence-linked gap explorer. The [feature parity roadmap](docs/FEATURE_PARITY_ROADMAP.md) identifies meaningful additions to pursue after the current validated flows, with explicit proof required for every live claim.
+The web app includes an evidence-linked gap explorer. Every live claim is tied to a dated run, deployment profile and its observed limits.
 For a single-developer finish, use the [ordered remaining-work handoff](docs/SINGLE_OWNER_HANDOFF.md).
 The [editable pitch deck](submission/pitch/Interoperability_Playground_Pitch.pptx) summarizes the problem, prototype and recorded evidence for review. A [2:07 silent demo draft](submission/pitch/VIDEO_README.md) is ready for voiceover and final review.
 
@@ -285,7 +305,7 @@ pnpm build
 pnpm audit:secrets
 ```
 
-On the **2026-10-23** `main` checkpoint (`b0f132d`), **339 ordinary automated tests passed** and three opt-in PostgreSQL tests skipped. All three opt-in checks later passed against a disposable local PostgreSQL 16 database, for **342 passing tests with none skipped**. Typecheck, production build, secret audit, three Chromium browser checks and the six-case Docker matrix passed in [CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583). The browser checks cover the assisted fixture, independent mock/capture journey, keyboard navigation and scoped axe accessibility. A [fresh checkout rehearsal](submission/CLEAN_CHECKOUT_REHEARSAL.md) repeated install, tests and build on this Mac; independent-machine setup remains open. These checks do **not** perform a fresh Collab or real Inji-wallet run. The [test evidence](submission/TEST_EVIDENCE.md) and [aggregate report](submission/evidence/2026-10-23-aggregate-interop.md) give the evidence boundaries.
+On the **2026-10-23** `main` checkpoint (`b0f132d`), **339 ordinary automated tests passed** and three opt-in PostgreSQL tests skipped. All three opt-in checks later passed against a disposable local PostgreSQL 16 database, for **342 passing tests with none skipped**. Typecheck, production build, secret audit, three Chromium browser checks and the six-case Docker matrix passed in [CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583). The browser checks cover the assisted fixture, independent mock/capture journey, keyboard navigation and scoped axe accessibility. A [fresh checkout rehearsal](submission/CLEAN_CHECKOUT_REHEARSAL.md) repeated install, tests and build on this Mac; independent-machine setup remains open. These checks do **not** perform a fresh Collab or real Inji-wallet run. The [test evidence](submission/TEST_EVIDENCE.md) and [aggregate report](submission/evidence/2026-10-26-aggregate-interop.md) give the evidence boundaries.
 
 For the browser checks, install Chromium once with `pnpm --filter @playground/web exec playwright install chromium`, then run `pnpm --filter @playground/web test:browser`. The Playwright configuration starts its own local mocks, in-memory BFF and Vite. Override `PLAYGROUND_BROWSER_ISSUER_PORT`, `PLAYGROUND_BROWSER_VERIFIER_PORT`, `PLAYGROUND_BROWSER_BFF_PORT` and `PLAYGROUND_BROWSER_WEB_PORT` if the default ports are occupied. Tests use synthetic data only.
 

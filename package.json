@@ -36,7 +36,8 @@
     "capture:local:prepare": "node scripts/prepare-local-capture.mjs",
     "capture:local": "node scripts/start-local-capture.mjs",
     "check:web-managed": "node scripts/check-managed-local-web.mjs",
-    "capture:local:attach": "node scripts/attach-local-capture.mjs"
+    "capture:local:attach": "node scripts/attach-local-capture.mjs",
+    "store:maintain": "pnpm --filter @playground/bff exec tsx src/maintenance-cli.ts"
   },
   "engines": {
     "node": ">=20"

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-10-25",
+  "updated": "2026-10-26",
   "source": "docs/GAPS.md",
   "owner": "Person 3",
-  "scope": "Completed protocol implementation, Collab investigations and a recorded actual Android A2 functional pass for the official-local-Certify/Collab-Verify hybrid profile; original failures and attestation limits retained.",
+  "scope": "Version-scoped observed findings, current hosted/local Web and hybrid Android evidence; private-report/issue status is not inferred.",
   "findings": [
     {
       "id": "G-01",
@@ -34,19 +34,21 @@
     },
     {
       "id": "G-02",
-      "status": "wallet_capability_or_test_blocker",
+      "status": "observed_wallet_chains_remaining_limits",
       "disclosure": "public_non_security_observation",
       "productVersion": "unreported",
       "evidence": [
         "submission/A1_WEB_EVIDENCE.md",
         "submission/A2_MOBILE_EVIDENCE.md",
-        "submission/evidence/person2-managed-a1-2026-10-25/README.md"
+        "submission/evidence/person2-managed-a1-2026-10-25/README.md",
+        "submission/evidence/2026-10-26-managed-local-jsonld/README.md"
       ],
       "runIds": [
-        "3dc6895d-ff87-45a2-a10b-46844198d83e"
+        "3dc6895d-ff87-45a2-a10b-46844198d83e",
+        "f5f56b45-3160-49b3-96ff-e1238c412fb1"
       ],
       "matrixCells": [],
-      "matrixDecision": "Fresh managed Inji Web JSON-LD run 3dc6895d-ff87-45a2-a10b-46844198d83e completed with correlated issuance/presentation, explicit storage confirmation and independent Verify valid. Final team review and deployed-version attestation remain pending. Android acceptance remains a separate manual observation; Web SD-JWT presentation remains unavailable.",
+      "matrixDecision": "Hosted managed JSON-LD and a separate pinned local managed JSON-LD wallet chain returned valid. Earlier missing-account blockers are historical. SD-JWT Web support, team review and independent deployment attestation remain separate.",
       "upstreamIssue": null
     },
     {
@@ -129,6 +131,47 @@
       ],
       "matrixCells": [],
       "matrixDecision": "Pinned local Verify 0.18.2 returned valid when the submitted descriptor path $[99] pointed outside the one-element VP array. A wrong-state control received HTTP 404. Mapping semantics need a second-credential test before a broader upstream claim.",
+      "upstreamIssue": null
+    },
+    {
+      "id": "G-08",
+      "status": "external_profile_evaluation",
+      "disclosure": "public_non_security_observation",
+      "productVersion": "Study snapshot; no executed peer build",
+      "evidence": [
+        "deploy/WALTID_COMPARISON.md"
+      ],
+      "runIds": [],
+      "matrixCells": [],
+      "matrixDecision": "Version-specific external profile study; no executed cross-vendor flow. This is research, not a universal capability claim or a product defect.",
+      "upstreamIssue": null
+    },
+    {
+      "id": "G-09",
+      "status": "reproduced_version_compatibility_difference",
+      "disclosure": "public_non_security_observation",
+      "productVersion": "Certify 1.0.0-alpha.1 / 0.14.0; Mimoto 0.22.0",
+      "evidence": [
+        "deploy/LOCAL_JSONLD_COMPATIBILITY.md",
+        "submission/evidence/2026-10-26-managed-local-jsonld/README.md"
+      ],
+      "runIds": [],
+      "matrixCells": [],
+      "matrixDecision": "Pinned Certify alpha.1 rejected the tested Mimoto Ed25519 JWT proof; Certify 0.14.0 accepted the matching-key JSON-LD flow. Keep exact versions and proof profile visible.",
+      "upstreamIssue": null
+    },
+    {
+      "id": "G-10",
+      "status": "observed_did_relationship_mismatch",
+      "disclosure": "public_non_security_observation",
+      "productVersion": "Certify 0.14.0 local JSON-LD profile",
+      "evidence": [
+        "deploy/LOCAL_JSONLD_COMPATIBILITY.md",
+        "submission/evidence/2026-10-26-managed-local-jsonld/README.md"
+      ],
+      "runIds": [],
+      "matrixCells": [],
+      "matrixDecision": "The observed Certify DID assertionMethod needed a verification-method reference correction. The passing local chain uses a declared adapter, not a stock DID interoperability claim.",
       "upstreamIssue": null
     }
   ],

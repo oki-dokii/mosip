@@ -478,3 +478,7 @@ Version 0.1 · started 2026-10-17
 - **Trade-off accepted:** Higher complexity and a heavy stack setup; risk that the Inji services are hard to connect (mitigated by Day-1 spikes and the Collab fallback).
 - **Revisit if:** The Day 1–2 spikes show no credential can be obtained from Certify; then reconsider #01.
 - **Affects:** everything.
+
+## 26 October capture implementation checkpoint
+
+The canonical local forwarder and managed JSON-LD acceptance now implement the formerly conditional local capture path. Earlier dates/cutoffs are planning history, not an official competition deadline. [Current contract](PERSON1_LOCAL_CAPTURE_HANDOFF.md), [decision](CAPTURE_PROXY_ADR.md), [evidence](../submission/evidence/2026-10-26-managed-local-jsonld/README.md). Deadline/team name remain pending direct confirmation by the team.

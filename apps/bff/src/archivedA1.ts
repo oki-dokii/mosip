@@ -45,6 +45,10 @@ export function withArchivedA1(delegate: RunRepository, archived = loadArchivedA
     async updateStep(step) { rejectArchive(step.runId); return delegate.updateStep(step); },
     async addExchange(exchange) { rejectArchive(exchange.runId); return delegate.addExchange(exchange); },
     async addExchanges(exchanges) { for (const exchange of exchanges) rejectArchive(exchange.runId); return delegate.addExchanges(exchanges); },
+    async pruneCompletedBefore(cutoff, excludedIds = []) {
+      if (!delegate.pruneCompletedBefore) throw new Error("RETENTION_UNSUPPORTED");
+      return delegate.pruneCompletedBefore(cutoff, [...excludedIds, id]);
+    },
     async clear() { return delegate.clear(); },
     async disconnect() { return delegate.disconnect(); },
   };

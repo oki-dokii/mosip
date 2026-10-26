@@ -7,10 +7,17 @@ const titles: Record<string, string> = {
   "G-04": "Certify credential request returns 401 after a successful token exchange",
   "G-05": "Verify 0.18.2 sample database seed breaks direct-post",
   "G-06": "Verify 0.18.2 accepts mismatched holder challenges in a local probe",
+  "G-08": "External ecosystem evaluation remains unexecuted",
+  "G-09": "Issuer and wallet JWT proof versions differ",
+  "G-10": "Local issuer DID assertion relationship needs an adapter",
   "G-07": "Verify 0.18.2 accepts a descriptor path outside the VP array",
 };
 
 const statusLabels: Record<string, string> = {
+  observed_wallet_chains_remaining_limits: "Observed wallet chains; limits remain",
+  external_profile_evaluation: "Research only",
+  reproduced_version_compatibility_difference: "Reproduced version difference",
+  observed_did_relationship_mismatch: "Observed local metadata mismatch",
   observed_profile_mismatch: "Observed profile mismatch",
   wallet_capability_or_test_blocker: "Capability or test blocker",
   version_discovery_gap: "Reproducibility gap",

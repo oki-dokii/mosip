@@ -1,3 +1,5 @@
+> Historical proposal. The [implemented local contract](PERSON1_LOCAL_CAPTURE_HANDOFF.md) and [current decision](CAPTURE_PROXY_ADR.md) supersede prototype/unobserved statements below; the dated hosted/manual sources remain separate.
+
 # Capture integration contract and owner handoff
 
 Updated 22 October 2026. The original optional `Exchange.decoded` proposal was replaced with additive JSON-envelope fields so Person 2 and the shared schema need no simultaneous edits. The integrator applied the small `app.ts` seam for the import response and ingress guard. No database migration, shared type change, driver change, Compose change or web source edit is required by this capture implementation.

@@ -1,9 +1,9 @@
+import { assertOutboundUrl, readBoundedResponse, safeContextLoader } from "./outbound.js";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
 import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-key-2020";
 import { importJWK, SignJWT, type JWK } from "jose";
-import jsonld from "jsonld";
 import jsigs from "jsonld-signatures";
 import type { RunConfig } from "@playground/shared";
 import type { DriverContext, DriverExchange, DriverResult, DriverSet, IssuerDriver, VerifierDriver, WalletDriver } from "./types.js";
@@ -204,6 +204,8 @@ function mockResult(body: JsonObject, boundary: "result" | "direct_post" = "resu
 
 async function request(context: DriverContext, url: string, options: RequestInit & { allowStatuses?: number[] } = {}): Promise<HttpResult> {
   const { allowStatuses = [], ...fetchOptions } = options;
+  const configured = await loadConfig(context);
+  assertOutboundUrl(url, [configured.authBaseUrl, configured.certifyBaseUrl, configured.verifyBaseUrl, process.env.MOCK_ISSUER_BASE_URL ?? "", process.env.MOCK_VERIFIER_BASE_URL ?? ""]);
   const headers = new Headers(fetchOptions.headers);
   const cookie = context.state.get(STATE.cookie);
   const requestOrigin = new URL(url).origin;
@@ -211,7 +213,7 @@ async function request(context: DriverContext, url: string, options: RequestInit
   const attachCookie = typeof cookie === "string" && !!cookie && cookieOrigin === requestOrigin;
   if (attachCookie) headers.set("cookie", cookie);
   const startedAt = performance.now();
-  const response = await fetch(url, { ...fetchOptions, headers, ...(attachCookie ? { redirect: "manual" as const } : {}), signal: context.signal ? AbortSignal.any([context.signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000) });
+  const response = await fetch(url, { ...fetchOptions, headers, redirect: "manual" as const, signal: context.signal ? AbortSignal.any([context.signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000) });
   const durationMs = Math.round(performance.now() - startedAt);
   const setCookies = response.headers.getSetCookie?.() ?? [];
   const config = context.state.get(STATE.config) as CollabConfig | undefined;
@@ -220,7 +222,8 @@ async function request(context: DriverContext, url: string, options: RequestInit
     context.state.set(STATE.cookie, setCookies.map((item) => item.split(";", 1)[0]).join("; "));
     context.state.set(STATE.cookieOrigin, requestOrigin);
   }
-  const text = await response.text();
+  if (response.status >= 300 && response.status < 400) throw new Error("OUTBOUND_REDIRECT_FORBIDDEN");
+  const text = await readBoundedResponse(response);
   let body: any;
   try { body = text ? JSON.parse(text) : null; } catch { body = text; }
   if (!response.ok && !allowStatuses.includes(response.status)) {
@@ -458,7 +461,7 @@ class CollabWalletDriver implements WalletDriver {
       vpToken = await jsigs.sign({ "@context": ["https://www.w3.org/ns/credentials/v2"], type: ["VerifiablePresentation"], holder: holderId, verifiableCredential: [credential] }, {
         suite: new Ed25519Signature2020({ key: presentationKey, canonizeOptions: { safe: false } }),
         purpose: new AuthenticationProofPurpose({ challenge: presentationNonce(requestClaims.nonce, context.config.tamper), domain: requestClaims.client_id }),
-        documentLoader: jsonld.documentLoaders.node(),
+        documentLoader: safeContextLoader,
       });
     }
     const form = new URLSearchParams({ state: requestClaims.state, vp_token: JSON.stringify({ credential: [vpToken] }) });

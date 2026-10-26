@@ -1,41 +1,48 @@
-# Capture decision: passive HAR and a canonical local proxy
+# Capture decision: passive browser capture and canonical local forwarding
 
-Date: 22 October 2026. Status: HAR implemented; canonical-proxy design accepted conditionally. No forwarding proxy or local Inji integration is implemented by this ADR.
+Decision accepted 22 October; implementation checkpoint 26 October 2026.
+Browser HAR/live metadata capture remains the hosted Collab path. The canonical
+local forwarder is now implemented and has a clean-source managed wallet pass.
+See [the current contract](PERSON1_LOCAL_CAPTURE_HANDOFF.md) and
+[acceptance evidence](../submission/evidence/2026-10-26-managed-local-jsonld/README.md).
+Older prototype-only wording is superseded; it is not the current deployment state.
 
-D-039 remains the browser-capture decision for Collab. It does not rule out a reverse proxy configured as a local stack's public URL from the start. Our earlier wording that proxies necessarily intercept TLS or rewrite signed URLs was too broad.
-
-| Capture point | Useful coverage | Preconditions and limits | Current state |
-| --- | --- | --- | --- |
-| Driver HTTP logging | Reference-role outgoing calls and responses | Does not see wallet/browser/server traffic outside the driver | Implemented |
-| Passive HAR | Recorded browser HTTP calls | Post-hoc; cannot see server-to-server calls, wallet storage, native apps or encrypted content | Implemented with explicit coverage |
-| Canonical-URL reverse proxy | HTTP calls that actually traverse configured public origins, including some server-to-server calls | Every applicable public URL, DID, redirect and audience must agree before issuance; internal service calls may still bypass it | Design only |
-| TLS-intercepting proxy | Traffic from clients that trust its certificate | Operational/trust changes; inappropriate for a shared Collab sandbox | Not selected |
+| Capture surface | Observes | Does not establish |
+|---|---|---|
+| Driver HTTP | BFF request creation and independent verifier result | Wallet storage or unseen wallet/server traffic |
+| Browser HAR/live bridge | Recorded browser→Mimoto/Verify transport | Downstream server hops, native traffic or cryptographic validity |
+| Canonical local forwarder | Actual configured Mimoto→Certify token/credential and Mimoto→Verify direct post | Unrouted traffic, by-value request fetches, wallet encryption or production authorization |
 
 ```mermaid
 sequenceDiagram
-    participant W as Browser or wallet
-    participant P as Canonical local public origin
-    participant H as Capture attribution and sanitizer
-    participant I as Pinned Inji service
+    participant W as Mimoto / synthetic wallet
+    participant P as Canonical local bridge
+    participant B as Local BFF
+    participant I as Pinned Certify / Verify
     participant D as Run repository
-    W->>P: Request using the configured public URL
-    P->>H: Claim-scoped in-memory observation
-    H-->>P: Run attribution or unmatched count
-    P->>I: Forward to fixed configured upstream
-    I-->>P: Response
-    P->>H: Bounded observation before persistence
-    H->>D: Sanitized exchange and public projection only
-    P-->>W: Original response bytes
+    P->>B: Snapshot exclusive active-run lease
+    W->>P: Canonical protocol request
+    P->>I: Fixed-upstream bounded forwarding
+    I-->>P: Protocol response
+    P->>B: Name/path projection + private state scalar
+    B->>B: Validate projection; HMAC state with backend run key
+    B->>D: Persist sanitized exchange before event emission
+    B-->>P: Saved exchange ID
+    P-->>W: Original credential / VP transport response
 ```
 
-The proxy's URL must be the issuer/verifier public URL, not a later replacement for one already signed into a credential or request. Person 4 must configure and record: TLS termination and local DNS; Certify issuer/public endpoint metadata; Mimoto public issuer and callback URLs; Verify client/DID/request/response URLs; authentication client redirect registration; and fixed upstream service addresses. Inbound Host and forwarded-header behavior must follow the pinned service's deployment contract. Do not patch existing JWTs, DIDs, offers, redirects, audiences, cookies or response bodies to force a fit. Re-issue test material after public-URL configuration changes. Do not change public Collab configuration.
+No shared Collab configuration or host TLS trust is modified. Local identifiers,
+DIDs, redirects and audiences are configured before issuance. No `/tap/` rewrite or
+TLS validation bypass is used. The declared synthetic IAR and DID relationship
+adapters remain explicit; byte-preserving capture is not a claim that these
+adapters are stock upstream behavior. Host ports are loopback-bound; the internal
+TLS/DID bridge is reachable only on the configured Docker networks.
 
-A future forwarder must use fixed upstreams from deployment configuration, not request-selected hosts. It needs timeout, streaming/backpressure, body caps, redirect policy, WebSocket policy if required, and health checks. Merely inserting the proxy does not establish complete FR-40 coverage: record each route that bypasses it and all encrypted/native/local boundaries.
+The forwarder uses fixed upstreams, method/path allowlists, body/response caps,
+timeouts, no redirect following and an authenticated control channel. One exclusive
+run lease prevents ambiguous concurrent attribution. Expired/cancelled observations
+fail closed. HMAC keys stay in backend memory. Public capture includes no raw
+headers, credentials, authentication tokens, state or real HAR.
 
-## Attribution prototype and ownership seam
-
-`apps/bff/src/capture/hub.ts` is a unit-tested attribution building block. It is disabled unless enabled explicitly (`CAPTURE_HUB_ENABLED=true`); setting that flag alone starts no listener and adds no capture route. It validates role/origin scope, leases a capture target for at most five minutes, counts unmatched requests without keeping their payloads, and refuses overlapping claims. It requires the right lease and zero in-flight requests before release. It stores neither request data nor credentials.
-
-We deliberately refuse a newest-claim-wins rule: overlapping runs could silently receive each other's traffic. A future deployment must also serialize synthetic journeys, drain connections and allow a quiet interval between claims. A late request that arrives after an old claim ends cannot be reliably attributed by role alone. Where the protocol provides a public request/transaction identifier, use a separate validated correlation map; otherwise count ambiguous traffic as unmatched. A claim is attribution assistance, not cryptographic proof of the run or a complete journey.
-
-Person 1 owns attribution, sanitization and capture tests. Person 4 owns public origins, upstream wiring, certificates and Compose. Person 2 owns any controls and inspector rendering. No proxy is to be enabled until those settings and a synthetic end-to-end test agree. At the existing **24 October 2026, 21:00 IST** A1/A2 cutoff, keep this as a design-only deliverable if the pinned local stack/public-URL configuration is unavailable. Competitor behavior supplied in the review is a design lead, not independently reproduced evidence.
+`capture/hub.ts` remains an older isolated attribution prototype; enabling its flag
+alone does not start the implemented forwarder. Follow the current handoff commands.

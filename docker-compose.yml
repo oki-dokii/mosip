@@ -77,6 +77,10 @@ services:
     environment:
       DATABASE_URL: postgresql://playground:playground@postgres:5432/playground?schema=public
       PORT: 4000
+      # Published host port remains 127.0.0.1 only.
+      PLAYGROUND_BIND_HOST: 0.0.0.0
+      PLAYGROUND_ACCESS_TOKEN: ${PLAYGROUND_ACCESS_TOKEN:-}
+      PLAYGROUND_PUBLIC_MODE: ${PLAYGROUND_PUBLIC_MODE:-false}
       WEB_ORIGIN: http://localhost:${PLAYGROUND_WEB_PORT:-5174}
       # Default: fixture mode (no external mock services required).
       PLAYGROUND_DRIVER_MODE: ${PLAYGROUND_DRIVER_MODE:-fixture}

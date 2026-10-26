@@ -1,3 +1,4 @@
+import { accessGate, assertAccessConfiguration, securityHeaders } from "./security.js";
 import { LocalCaptureLease, prepareServerObservation, serverCoverage } from "./capture/local-server.js";
 import { walletEvidence, renderWalletEvidenceMarkdown, renderWalletEvidenceCsv } from "./walletEvidence.js";
 import { withExchangeLock } from "./exchangeLock.js";
@@ -72,11 +73,15 @@ function startRun(runId: string, getIo: () => Server, repository: RunRepository)
 }
 
 export function buildApp(getIo: () => Server, repository: RunRepository) {
+  assertAccessConfiguration();
   const app = express();
+  app.disable("x-powered-by");
+  app.use(securityHeaders);
   const importingRuns = new Set<string>();
   const localLease = new LocalCaptureLease();
   const assisted = new AssistedRuns(repository, getIo, localLease);
   app.use(cors({ origin: process.env.WEB_ORIGIN ?? "http://localhost:5173" }));
+  app.use(accessGate);
   app.use("/api/v1/runs/:id/capture/har", captureIngress(), express.json({ limit: "2mb" }));
   app.use("/api/v1/assisted/runs/:id/capture/observation", captureIngress(), (request, response, next) => {
     if (!validBridgeToken(request.get("x-capture-bridge-token"))) return response.status(403).json({ code: "CAPTURE_BRIDGE_FORBIDDEN" });

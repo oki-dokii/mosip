@@ -1,3 +1,4 @@
+import { socketAllowed } from "./security.js";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import { buildApp } from "./app.js";
@@ -11,13 +12,13 @@ const repository = process.env.PLAYGROUND_ARCHIVED_A1 === "true" ? withArchivedA
 let io: Server;
 const app = buildApp(() => io, repository);
 const httpServer = createServer(app);
-io = new Server(httpServer, { cors: { origin: webOrigin }, path: "/socket.io" });
+io = new Server(httpServer, { cors: { origin: webOrigin }, path: "/socket.io", allowRequest: (req, done) => done(null, socketAllowed(req)) });
 
 io.of("/runs").on("connection", (socket) => {
   socket.on("join", (runId: string) => socket.join(`run:${runId}`));
 });
 
-httpServer.listen(port, process.env.ASSISTED_LOCAL_PROFILE === "jsonld-0.14" ? "127.0.0.1" : "0.0.0.0", () => {
+httpServer.listen(port, process.env.ASSISTED_LOCAL_PROFILE === "jsonld-0.14" ? "127.0.0.1" : process.env.PLAYGROUND_BIND_HOST ?? "127.0.0.1", () => {
   console.log(`Playground BFF listening on http://localhost:${port} (${repository.storage} storage)`);
 });
 

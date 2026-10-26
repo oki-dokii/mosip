@@ -1,103 +1,106 @@
-import { readFile, writeFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { readFile, writeFile } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
 
-const root = new URL("../", import.meta.url);
-const output = new URL("../submission/evidence/2026-10-23-aggregate-interop.md", import.meta.url);
-const localSource = "submission/evidence/2026-10-23-ci-mock-matrix.json";
-const mobileSource = "submission/evidence/person3-a2-mobile-2026-10-23/attempt.json";
-const liveSources = [
-  "submission/evidence/2026-10-21-mock-x509-valid.json",
-  "submission/evidence/2026-10-21-mock-x509-bad-signature.json",
-];
+export const sources = {
+  mocks: 'submission/evidence/2026-10-23-ci-mock-matrix.json',
+  externalValid: 'submission/evidence/2026-10-21-mock-x509-valid.json',
+  externalInvalid: 'submission/evidence/2026-10-21-mock-x509-bad-signature.json',
+  hosted: 'submission/evidence/person2-managed-a1-2026-10-25/run-report.json',
+  managed: 'submission/evidence/2026-10-26-managed-local-jsonld/run-report.json',
+  managedProvenance: 'submission/evidence/2026-10-26-managed-local-jsonld/provenance.json',
+  managedBrowser: 'submission/evidence/2026-10-26-managed-local-jsonld/browser-checks.json',
+  directIssuance: 'submission/evidence/2026-10-26-local-web-jsonld/issuance.json',
+  directPresentation: 'submission/evidence/2026-10-26-local-web-jsonld/presentation.json',
+  mobile: 'submission/evidence/person3-a2-mobile-2026-10-23/attempt.json',
+  mobileResult: 'submission/evidence/person3-a2-mobile-2026-10-23/verifier-result.json',
+};
+const root = new URL('../', import.meta.url);
+export async function buildAggregate(load = async path => JSON.parse(await readFile(new URL(path, root), 'utf8'))) {
+  const data = Object.fromEntries(await Promise.all(Object.entries(sources).map(async ([key, path]) => [key, await load(path)])));
+  const require = condition => { if (!condition) throw new Error('AGGREGATE_EVIDENCE_INTEGRITY_FAILED'); };
+  require(data.mocks.source === 'synthetic Docker mock matrix' && data.mocks.dirtyWorkingTree === false && data.mocks.items.length === 6 && data.mocks.reports.length === 6);
+  require(data.mocks.items.every(run => run.status === 'passed' && data.mocks.reports.some(report => report.run.id === run.id)));
+  const hosted = data.hosted, managed = data.managed;
+  for (const report of [hosted, managed]) {
+    const steps = report.steps;
+    const issue = steps.find(step => step.stepKey === 'ISSUE_CREDENTIAL');
+    const submit = steps.find(step => step.stepKey === 'PRESENT_SUBMIT');
+    const result = steps.find(step => step.stepKey === 'PRESENT_RESULT');
+    require(report.run.status === 'passed' && report.run.actualOutcome === 'valid' && report.run.config.wallet === 'inji_web_assisted' &&
+      issue?.summary?.issuanceObserved === true && steps.find(step => step.stepKey === 'STORE')?.summary?.storageConfirmed === true &&
+      submit?.summary?.presentationObserved === true && result?.summary?.outcome === 'valid' &&
+      [issue, submit].every(step => report.exchanges.some(exchange => exchange.id === step.summary.exchangeId && exchange.runId === report.run.id && exchange.stepId === step.id)));
+  }
+  require(data.managedProvenance.runId === managed.run.id && data.managedProvenance.sourceTreeClean === true &&
+    managed.run.protocolProfile === 'local-jsonld-pex-0.18.2' && data.managedBrowser.exactCardReloaded === true &&
+    data.managedBrowser.sameWallet === true && data.managedBrowser.selectedCredentialMatchesIssuance === true &&
+    data.managedBrowser.credentialProofValid === true && data.managedBrowser.holderProofValid === true);
+  require(data.directIssuance.storedAfterReload === true && data.directPresentation.verifierValid === true && data.directPresentation.walletMatchesIssuance === true && data.directPresentation.selectedCredentialMatchesIssuance === true);
+  require(data.mobile.status === 'passed' && data.mobile.bffRunId === null && data.mobile.attemptId === data.mobileResult.attemptId &&
+    data.mobileResult.outcome === 'valid' && data.mobileResult.credentialProofValid === true && data.mobileResult.holderProofValid === true);
 
-async function load(path) {
-  return JSON.parse(await readFile(new URL(path, root), "utf8"));
+  const rows = [];
+  const addRun = (report, deployment, source, limits) => {
+    const run = structuredClone(report.run);
+    const corrections = [];
+    if (run.config.wallet === 'inji_web_assisted' && run.serviceVersions?.wallet === 'reference-wallet/0.1.0') {
+      run.serviceVersions.wallet = 'unreported';
+      corrections.push('Historical export incorrectly labelled Inji Web as reference-wallet/0.1.0; corrected only in this projection.');
+    }
+    rows.push({ recordKind: 'bff_run', recordId: run.id, bffRunId: run.id, deployment,
+      participants: { issuer: run.config.issuer, wallet: run.config.wallet, verifier: run.config.verifier },
+      format: run.config.format, scenario: run.config.tamper ?? 'none', protocolProfile: run.protocolProfile ?? 'unreported',
+      versions: run.serviceVersions ?? { issuer: 'unreported', wallet: 'unreported', verifier: 'unreported' },
+      expected: run.expectedOutcome, actual: run.actualOutcome, evaluation: run.evaluation?.verdict ?? 'not_recorded',
+      observedAt: run.finishedAt, source, corrections, limits });
+  };
+  for (const report of data.mocks.reports) addRun(report, 'docker_mock_ci', sources.mocks, ['Synthetic mock issuer/verifier and Reference Wallet; not Inji wallet evidence.']);
+  for (const key of ['externalValid', 'externalInvalid']) {
+    require(data[key].evidence?.tier === 'mock_interop');
+    addRun(data[key], 'mock_issuer_collab_verify', sources[key], ['Self-signed synthetic X.509 issuer, Reference Wallet; Collab Verify build unreported.', 'Historical negatives lack exact reason diagnostics.']);
+  }
+  addRun(hosted, 'hosted_collab_web', sources.hosted, ['Browser→Mimoto observations only; downstream server hops not observed.', 'Deployed versions unreported; final team review separate.']);
+  addRun(managed, 'local_synthetic_web', sources.managed, ['Synthetic IAR authorization fixture and declared DID assertionMethod adapter.', 'Canonical server hops observed; browser capture not attached; signed request passed by value.', 'Public context network dependency and KERNEL health warning remain.', 'Generic report evidence tier remains unverified; this is an observed functional pass, not conformance certification.']);
+  rows.push({ recordKind: 'direct_wallet_harness', recordId: 'local-web-jsonld-2026-10-26', bffRunId: null,
+    deployment: 'local_synthetic_web_direct', participants: { issuer: 'inji_certify', wallet: 'inji_web', verifier: 'inji_verify' },
+    format: 'ldp_vc', scenario: 'none', protocolProfile: 'local-jsonld-pex-0.18.2',
+    versions: { issuer: data.directPresentation.issuerVersion, wallet: data.directPresentation.walletVersion, verifier: data.directPresentation.verifierVersion },
+    expected: 'valid', actual: 'valid', evaluation: 'observed_wallet_chain', observedAt: data.directPresentation.observedAt,
+    source: sources.directPresentation, corrections: [], limits: ['Separate direct harness; no fabricated BFF run ID.', 'Synthetic authorization and DID adapter; public context dependency.'] });
+  rows.push({ recordKind: 'manual_android_observation', recordId: data.mobile.attemptId, bffRunId: null,
+    deployment: 'hybrid_local_certify_android_collab_verify', participants: { issuer: 'inji_certify', wallet: 'inji_mobile', verifier: 'inji_verify' },
+    format: 'vc_sd_jwt', scenario: 'none', protocolProfile: 'manual_hybrid',
+    versions: { issuer: '1.0.0-alpha.1', wallet: `${data.mobile.participants.wallet.aboutVersionObserved} (About screen)`, verifier: 'unreported' },
+    expected: 'valid', actual: 'valid', evaluation: 'observed_wallet_chain', observedAt: data.mobileResult.observedAt,
+    source: sources.mobile, corrections: [], limits: ['Reopen persistence is user-confirmed.', 'Installed APK/source identity and Collab build not independently attested.', 'Hybrid path, not Android→local Verify; no native capture or BFF run ID.'] });
+  rows.sort((a, b) => a.observedAt.localeCompare(b.observedAt) || a.recordId.localeCompare(b.recordId));
+  const matrix = { schemaVersion: 1, updated: '2026-10-26', source: 'committed_evidence_projection', executesNewFlows: false,
+    records: rows, sources: Object.values(sources),
+    notObserved: ['Android wallet → fully local Verify', 'Inji Web SD-JWT presentation', 'Executed external ecosystem issuer/verifier', 'mDoc/DC API/iOS wallet chain', 'Independent-machine full local wallet rehearsal'] };
+  const cell = value => String(value ?? 'unreported').replaceAll('|', '\\|').replaceAll('`', "'").replace(/[<>\r\n]/g, ' ');
+  const link = path => path.slice('submission/evidence/'.length);
+  const lines = ['# Aggregate interoperability evidence — 26 October 2026', '',
+    'Generated from committed source records. This command executes no wallet or network flow. Hosted, local, direct-harness and Android evidence stay separate; direct/manual records have no invented BFF run IDs. Historical source files are preserved.', '',
+    '## Recorded results', '', '| Record / source | Deployment | Participants | Format / fault | Expected / actual | Evaluation | Versions: issuer / wallet / verifier | Observed (UTC) |', '|---|---|---|---|---|---|---|---|',
+    ...rows.map(row => `| [${cell(row.recordId)}](${link(row.source)}) | ${cell(row.deployment)} (${row.recordKind}) | ${cell(Object.values(row.participants).join(' → '))} | ${cell(row.format)} / ${cell(row.scenario)} | ${cell(row.expected)} / ${cell(row.actual)} | ${cell(row.evaluation)} | ${cell(Object.values(row.versions).join(' / '))} | ${cell(row.observedAt)} |`), '',
+    '## Provenance and boundaries', '',
+    ...rows.filter(row => row.recordKind !== 'bff_run' || ['hosted_collab_web', 'local_synthetic_web'].includes(row.deployment)).flatMap(row => [`### ${cell(row.recordId)}`, '', ...[...row.corrections, ...row.limits].map(limit => `- ${limit}`), '']),
+    `The local managed record has source commit \`${cell(data.managedProvenance.sourceCommit)}\`, a clean source tree and running-image digests in [its provenance](${link(sources.managedProvenance)}). Exact-card reload, same-wallet selection and both proof checks are recorded separately in [browser checks](${link(sources.managedBrowser)}).`, '',
+    'The original hosted wallet version was incorrectly reference-wallet/0.1.0. The current aggregate and archived API projection use unreported; the immutable source is not rewritten and local Web 0.17.0 is not substituted for the hosted release.', '',
+    'A passing HTTP transport is not a verifier verdict. A known invalid negative without exact reason diagnostics is not counted as an exact-reason conformance pass. The mock replay_nonce preset is a nonce mutation, not true byte replay.', '',
+    '## Still unobserved in these committed records', '', ...matrix.notObserved.map(item => `- ${item}`), '',
+    'Final team acceptance, independent setup, private gap reporting and current CI are separate release checks. See [readiness](../READINESS.md), [findings](../../docs/GAPS.md) and the [current assignment](../../docs/FINAL_FOUR_PERSON_EXECUTION_PLAN.md).', ''];
+  return { markdown: lines.join('\n'), matrix };
 }
-
-function cell(value) {
-  return String(value ?? "unreported").replaceAll("|", "\\|").replaceAll("`", "'").replace(/[<>]/g, "");
+export async function writeAggregate(check = false) {
+  const result = await buildAggregate();
+  for (const [path, text] of [
+    ['submission/evidence/2026-10-26-aggregate-interop.md', result.markdown],
+    ['submission/evidence/2026-10-26-aggregate-matrix.json', JSON.stringify(result.matrix, null, 2) + '\n'],
+  ]) {
+    const url = new URL(path, root);
+    if (check) { if (await readFile(url, 'utf8') !== text) throw new Error('AGGREGATE_OUTPUT_STALE'); }
+    else await writeFile(url, text);
+  }
 }
-
-function row(run, source) {
-  const failedStep = run.evaluation?.observed?.step ?? (run.actualOutcome === "invalid" ? "unreported" : "—");
-  const code = run.evaluation?.observed?.code ?? (run.actualOutcome === "invalid" ? "unreported" : "—");
-  return `| \`${cell(run.id)}\` | ${cell(run.config.issuer)} → ${cell(run.config.wallet)} → ${cell(run.config.verifier)} | ${cell(run.config.format)} / ${cell(run.config.tamper ?? "none")} | ${cell(run.expectedOutcome)} / ${cell(run.actualOutcome)} | ${cell(run.evaluation?.verdict ?? "not_recorded")} | ${cell(failedStep)} / ${cell(code)} | ${cell(run.finishedAt)} | [record](${source}) |`;
-}
-
-const local = await load(localSource);
-const live = await Promise.all(liveSources.map(load));
-const mobile = await load(mobileSource);
-const mobileResult = await load("submission/evidence/person3-a2-mobile-2026-10-23/verifier-result.json");
-if (mobile.schemaVersion !== 1 || mobile.status !== "passed" || mobile.attemptId !== mobileResult.attemptId || mobile.bffRunId !== null || mobileResult.outcome !== "valid" || mobileResult.credentialProofValid !== true || mobileResult.holderProofValid !== true || !mobile.checkpoints.some(item => item.step === "storage_after_close_and_reopen" && item.status === "user_confirmed")) {
-  throw new Error("Expected manual mobile acceptance evidence is missing or changed");
-}
-if (local.source !== "synthetic Docker mock matrix" || local.dirtyWorkingTree !== false || local.items.length !== 6 || local.reports.length !== 6 || live.some(item => item.evidence?.tier !== "mock_interop")) {
-  throw new Error("Expected committed sanitized run evidence is missing or changed");
-}
-for (const run of local.items) {
-  if (!local.reports.some(report => report.run?.id === run.id) || run.status !== "passed") throw new Error("Local mock matrix and reports disagree");
-}
-
-const localLink = localSource.slice("submission/evidence/".length);
-const liveLinks = liveSources.map(path => path.slice("submission/evidence/".length));
-const lines = [
-  "# Aggregate interoperability evidence — 23 October 2026",
-  "",
-  "Compiled from sanitized full run records and a separate reviewed manual Android acceptance record dated 23 October. This projection does not execute a new wallet or Collab flow. Each source retains its own code/build provenance. Run IDs in the older memory-backed records are identifiers, not live web links. Unknown deployment versions remain `unreported`; manual mobile evidence has no fabricated BFF run ID.",
-  "",
-  "## Observed mock interoperability with public Collab Verify",
-  "",
-  "Two synthetic X.509 mock issuer → Reference Wallet → public Inji Verify SD-JWT runs from 21 October. The verifier deployment version was unreported; the issuer used a self-signed test certificate. These establish the recorded acceptance/rejection only, not production certificate trust or an Inji-wallet pass.",
-  "",
-  "| Run ID | Participants | Format / fault | Expected / actual | Reason evaluation | Failing step / code | Finished (UTC) | Evidence |",
-  "|---|---|---|---|---|---|---|---|",
-  ...live.map((report, index) => row(report.run, liveLinks[index])),
-  "",
-  "Known versions: issuer `mock-x509-1`, wallet `reference-wallet/0.1.0`, verifier `unreported`. Protocol profile and detailed rejection code were not recorded in these historical reports.",
-  "",
-  "## Observed hosted CI mock protocol matrix",
-  "",
-  `Six synthetic Docker mock issuer → Reference Wallet → mock verifier SD-JWT runs from 23 October, recorded in [the source matrix](${localLink}). The source records commit \`${cell(local.sourceCommit)}\`, capture time \`${cell(local.capturedAt)}\`, PostgreSQL storage and \`dirtyWorkingTree: false\`. All six passed with exact expected verdicts in [hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583). This clean CI evidence supersedes the earlier 22 October dirty-tree mock matrix for the submission report.`,
-  "",
-  "| Run ID | Participants | Format / fault | Expected / actual | Reason evaluation | Failing step / code | Finished (UTC) | Evidence |",
-  "|---|---|---|---|---|---|---|---|",
-  ...[...local.items].sort((a, b) => a.finishedAt.localeCompare(b.finishedAt)).map(run => row(run, localLink)),
-  "",
-  "Known versions: wallet `reference-wallet/0.1.0`, verifier `local-mock/1`; mock issuer build label was `unreported`. Profile `mock-sdjwt-flat-v1`, issuer representation `did:jwk`. The `replay_nonce` preset changes the nonce; a true byte replay is a separate local probe, not this matrix cell.",
-  "",
-  "## Observed actual Android wallet acceptance — A2",
-  "",
-  `Manual attempt \`${cell(mobile.attemptId)}\`: official local Inji Certify → actual Inji Wallet on ${cell(mobile.participants.wallet.deviceModel)}, Android ${cell(mobile.participants.wallet.androidVersion)} → public Collab Inji Verify. The wallet displayed version \`${cell(mobile.participants.wallet.aboutVersionObserved)}\`. [Mobile bundle](person3-a2-mobile-2026-10-23/README.md) · [manifest](${mobileSource.slice("submission/evidence/".length)}) · [correlated result](person3-a2-mobile-2026-10-23/verifier-result.json).`,
-  "",
-  `Observed issuance/card-list storage, user-confirmed persistence after closing/reopening, native matching/consent and share success, followed by correlated HTTP ${cell(mobileResult.httpStatus)} / \`${cell(mobileResult.outcome)}\`. Credential proof and holder proof flags are both true. The result was read at \`${cell(mobileResult.observedAt)}\` from the existing manually generated request, separately from the automated Reference Wallet control.`,
-  "",
-  "This is a functional A2 pass for the recorded synthetic hybrid profile. Exact installed APK/signing identity and source build are not independently attested; the downloaded Mac APK copy is fingerprinted separately. Collab Verify release remains unreported. Native raw traffic/internal keys, isolated selective-claim policy and certificate-chain trust are not established. Original failures remain in their dated evidence; A1 is still separate and unpassed.",
-  "",
-  "## Positive-control coverage still untested in committed full run records",
-  "",
-  "| Issuer | Wallet | Verifier | Format | State |",
-  "|---|---|---|---|---|",
-  "| Inji Certify | Reference Wallet | Inji Verify | JSON-LD | `not_tested` in this full-record export; earlier sanitized spike summaries exist |",
-  "| Inji Certify | Reference Wallet | Inji Verify | SD-JWT | `not_tested` in this full-record export; earlier sanitized spike summaries exist |",
-  "| Inji Certify | Reference Wallet | Mock verifier | SD-JWT | `not_tested` in this full-record export |",
-  "| Mock issuer | Reference Wallet | Inji Verify | SD-JWT | observed above, 21 October |",
-  "| Mock issuer | Reference Wallet | Mock verifier | SD-JWT | observed above, 23 October |",
-  "| Inji Certify | Inji Web assisted | Inji Verify | JSON-LD | `not_tested`; A1 blocked on account and authenticated Web/Mimoto deployment |",
-  "| Inji Certify | Inji Wallet mobile | Inji Verify | SD-JWT | manual A2 functional pass above; separate sidecar, no BFF full-run record |",
-  "",
-  "The last row is the separately recorded A2 manual acceptance gate, beyond the current UI selector. `not_tested` is not a failed verifier result. The app's live `/api/v1/matrix/cells` endpoint derives its own current-run grid; the manual sidecar does not invent a run or matrix cell there.",
-  "",
-  "## Remaining acceptance boundaries",
-  "",
-  "- A1 requires an actual logged-in Inji Web wallet to issue, persist, present and receive a correlated `valid` Verify result. The connected fixture and browser tests do not satisfy it. See [A1 evidence](../A1_WEB_EVIDENCE.md).",
-  "- The observed A2 hybrid chain passes as recorded above. Installed-binary attestation and running Collab Verify release remain unverified. See [A2 evidence](../A2_MOBILE_EVIDENCE.md).",
-  "- The dedicated [official Certify mobile route](../../deploy/MOBILE_INJI.md) runs with generated embedded PKCS12 keys and its own supported token service. A fully local Verify/Mimoto/Web stack remains separate from this hybrid mobile pass. See [local Inji status](../../deploy/INJI_LOCAL.md).",
-  "- Capture sees only explicitly recorded, allowlisted browser exchanges; server-to-server and native-wallet boundaries stay unobserved. See [capture limits](../../docs/CAPTURE.md).",
-  "",
-];
-const document = `${lines.join("\n")}\n`;
-if (process.argv.includes("--check")) {
-  if (await readFile(output, "utf8") !== document) throw new Error(`${fileURLToPath(output)} is stale`);
-} else {
-  await writeFile(output, document);
-}
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await writeAggregate(process.argv.includes('--check'));
