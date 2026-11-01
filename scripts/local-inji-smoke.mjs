@@ -135,8 +135,9 @@ async function main() {
   assert((await request(issuerBackend + '/v1/certify/.well-known/openid-credential-issuer')).status === 200, 'CERTIFY_NOT_READY');
   assert((await request(verifier + '/actuator/health')).body?.status === 'UP', 'VERIFY_NOT_READY');
   const { credential, holder } = await issueCredential(issuer);
-  const matrix = process.argv.includes('--matrix');
-  const scenarios = matrix ? ['valid', 'wrong_nonce', 'wrong_audience', 'replayed_presentation', 'bad_issuer_signature', 'wrong_state', 'wrong_descriptor_path'] : ['valid'];
+  const publicMatrix = process.argv.includes('--public-matrix');
+  const matrix = publicMatrix || process.argv.includes('--matrix');
+  const scenarios = publicMatrix ? ['valid', 'bad_issuer_signature', 'wrong_state'] : matrix ? ['valid', 'wrong_nonce', 'wrong_audience', 'replayed_presentation', 'bad_issuer_signature', 'wrong_state', 'wrong_descriptor_path'] : ['valid'];
   const results = [];
   let validVpToken;
   for (const scenario of scenarios) {

@@ -119,7 +119,7 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
     } catch (error) { if (error instanceof CaptureError) return response.status(error.status).json({ code: error.code }); next(error); }
   });
 
-  app.get("/api/v1/assisted/capabilities", (_request, response) => response.json({ liveAvailable: assisted.available(), fixtureAvailable: true }));
+  app.get("/api/v1/assisted/capabilities", (_request, response) => response.json({ liveAvailable: assisted.available(), localJsonLd: process.env.ASSISTED_LOCAL_PROFILE === "jsonld-0.14", fixtureAvailable: true }));
   app.post("/api/v1/assisted/runs", async (request, response, next) => {
     const parsed = z.object({ config: runConfigSchema, mode: z.enum(["fixture", "live"]), timeoutMs: z.number().int().min(100).max(300000).optional() }).safeParse(request.body);
     if (!parsed.success) return response.status(400).json({ code: "VALIDATION_FAILED" });

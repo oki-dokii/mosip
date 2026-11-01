@@ -80,7 +80,11 @@ The machine-readable `submission/gaps.json` now includes G-08/G-09/G-10 and the 
 
 ## External wallet observations, 1 November 2026
 
-G-11: Certify 1.0.0-alpha.1 returned an offer but walt.id Wallet API2 1.2.0 returned HTTP 500 on receipt. G-12: walt.id Wallet API2 1.2.0 stored a credential, and Inji Verify 0.18.2 created a request, but presentation stopped at the wallet with HTTP 500. No independent Verify verdict was observed. Both boundaries repeated with fresh wallets; native controls passed. [Exact commands, versions and both runs](../deploy/waltid/README.md). Neither observation establishes an upstream root cause.
+G-11: Certify 1.0.0-alpha.1 returned an offer but walt.id Wallet API2 1.2.0 returned HTTP 500 on receipt. G-12: walt.id Wallet API2 1.2.0 stored a credential, and Inji Verify 0.18.2 created a request, but presentation stopped at the wallet with HTTP 500. No independent Verify verdict was observed. Both boundaries repeated with fresh wallets; native controls passed. [Exact commands, versions and both runs](../deploy/waltid/README.md). The [paired discovery and content-negotiation checks](../submission/evidence/2026-11-01-waltid/discovery-negotiation.json) narrow the failures:
+
+- The offer names the bare loopback origin as credential_issuer. Discovery there returns 404; the configured /v1/certify metadata endpoint returns 200. Wallet discovery stops before issuance. This identifies a local issuer publication/configuration mismatch.
+
+- Wallet API2 logs record a downstream HTTP 406 retrieving the signed Verify request. For the same request, Accept: application/json gives 406; wildcard and application/oauth-authz-req+jwt give 200. The wallet surfaces this negotiation failure as 500 before presentation. Its exact outgoing Accept header was not captured.
 
 G-13: the walt.id 1.2.0 verifier Swagger SD-JWT PID example selected a credential type different from its bundled issuer metadata. In two paired tests, changing only the requested type to the issuer's actual type turned a failed session into a successful session. This is an example configuration issue, not a verifier defect. [Paired evidence](../submission/evidence/2026-11-01-waltid/example-type-comparison.json); reproduce with the optional example control in the [runbook](../deploy/waltid/README.md).
 

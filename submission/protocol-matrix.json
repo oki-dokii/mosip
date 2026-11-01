@@ -569,6 +569,62 @@
       "spec": "https://openid.net/specs/openid-4-verifiable-presentations-1_0.html",
       "source": "spikes/fixtures/wallet-interop-live-2026-10-22.json",
       "observedAt": "2026-10-22T10:58:36.859Z"
+    },
+    {
+      "id": "collab.jsonld.reference",
+      "environment": "Collab (build unreported)",
+      "format": "JSON-LD",
+      "variable": "reference holder baseline",
+      "control": "collab.jsonld.reference",
+      "controlPassed": true,
+      "expected": "valid",
+      "observed": "valid",
+      "verdict": "correct_acceptance",
+      "spec": "https://www.w3.org/TR/vc-data-model/",
+      "source": "spikes/fixtures/collab-reference-wallet-jsonld-2026-10-20.json",
+      "observedAt": "2026-10-20"
+    },
+    {
+      "id": "collab.jsonld.web",
+      "environment": "Collab (build unreported)",
+      "format": "JSON-LD",
+      "variable": "managed Inji Web baseline",
+      "control": "collab.jsonld.web",
+      "controlPassed": true,
+      "expected": "valid",
+      "observed": "valid",
+      "verdict": "correct_acceptance",
+      "spec": "https://www.w3.org/TR/vc-data-model/",
+      "source": "submission/evidence/person2-managed-a1-2026-10-25/run-report.json",
+      "observedAt": "2026-10-24T21:35:40.396Z"
+    },
+    {
+      "id": "inji.jsonld.web",
+      "environment": "local Certify 0.14 / Web 0.17 / Verify 0.18.2",
+      "format": "JSON-LD",
+      "variable": "managed Inji Web baseline with local adapters",
+      "control": "inji.jsonld.web",
+      "controlPassed": true,
+      "expected": "valid",
+      "observed": "valid",
+      "verdict": "correct_acceptance",
+      "spec": "https://www.w3.org/TR/vc-data-model/",
+      "source": "submission/evidence/2026-10-26-person2-local-ui/ui-checks.json",
+      "observedAt": "2026-10-26T05:54:30.542Z"
+    },
+    {
+      "id": "hybrid.sdjwt.android",
+      "environment": "local Certify / Android / Collab Verify",
+      "format": "SD-JWT",
+      "variable": "physical Android baseline (no BFF run)",
+      "control": "hybrid.sdjwt.android",
+      "controlPassed": true,
+      "expected": "valid",
+      "observed": "valid",
+      "verdict": "correct_acceptance",
+      "spec": "https://www.rfc-editor.org/rfc/rfc9901.html",
+      "source": "submission/evidence/person3-a2-mobile-2026-10-23/verifier-result.json",
+      "observedAt": "2026-10-23T13:22:10.735Z"
     }
   ]
 }

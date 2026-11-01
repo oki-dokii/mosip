@@ -6,7 +6,7 @@
 **Find where a verifiable credential journey succeeds or fails.** Choose an issuer, wallet, verifier, and credential format; run an issue → hold → present → verify journey; then inspect its step timeline, sanitized protocol exchanges, sequence view, and downloadable result report.
 
 
-[Open the hosted read-only demo](https://oki-dokii.github.io/mosip/) · [One-page claims and evidence](submission/CLAIMS_AND_EVIDENCE.md) · [Local wallet labs](docs/LOCAL_WALLET_LABS.md) · [November deck](submission/pitch/Playground-2026-11-01.pdf) · [Captioned video](submission/pitch/Playground-2026-11-01.mp4)
+[Open the hosted read-only demo](https://oki-dokii.github.io/mosip/) · [One-page judge guide](submission/JUDGE_GUIDE.md) · [One-page claims and evidence](submission/CLAIMS_AND_EVIDENCE.md) · [Local wallet labs](docs/LOCAL_WALLET_LABS.md) · [November deck](submission/pitch/Playground-2026-11-01.pdf) · [Captioned video](submission/pitch/Playground-2026-11-01.mp4)
 
 ## 30-second judge path
 
@@ -24,7 +24,7 @@ mock services; the labelled historical Web archive is a recorded result, not a n
 wallet run. For the real local wallet journey, use the
 [managed capture runbook](docs/PERSON1_LOCAL_CAPTURE_HANDOFF.md).
 
-Open **Parties** to browse registered endpoints and their evidence, or **QR and capabilities** to compare raw and PixelPass payloads. [Register an issuer in five minutes](docs/PARTIES.md). [Browse 40 protocol matrix cells](submission/protocol-matrix.json) or [reproduce the four walt.id interoperability cells](deploy/waltid/README.md).
+Open **Parties** to browse registered endpoints and their evidence, or **QR and capabilities** to compare raw and PixelPass payloads. [Register an issuer in five minutes](docs/PARTIES.md). [Browse 44 protocol matrix cells](submission/protocol-matrix.json) or [reproduce the four walt.id interoperability cells](deploy/waltid/README.md).
 
 [Current results and limits](submission/evidence/2026-10-26-aggregate-interop.md) ·
 [Machine-readable compatibility matrix](submission/evidence/2026-10-26-aggregate-matrix.json) ·

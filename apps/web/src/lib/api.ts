@@ -7,7 +7,7 @@ async function json<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  assistedCapabilities: () => json<{ liveAvailable: boolean }>("/api/v1/assisted/capabilities"),
+  assistedCapabilities: () => json<{ liveAvailable: boolean; localJsonLd?: boolean }>("/api/v1/assisted/capabilities"),
   startAssisted: (config: RunConfig, mode: "fixture" | "live") => json<{ runId: string }>("/api/v1/assisted/runs", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ config, mode, ...(mode === "live" ? { timeoutMs: 300_000 } : {}) }) }),
   assistedStatus: (id: string) => json<{ run: RunSummary; steps: RunStep[]; actions: Record<string, string>; deadlineAt: number | null }>(`/api/v1/assisted/runs/${id}`),
   assistedObserve: (id: string, kind: "issuance" | "storage" | "presentation") => json(`/api/v1/assisted/runs/${id}/observations`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ kind }) }),

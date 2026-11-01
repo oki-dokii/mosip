@@ -189,13 +189,14 @@
       "evidence": [
         "submission/evidence/2026-11-01-waltid/first.json",
         "submission/evidence/2026-11-01-waltid/repeat.json",
-        "submission/evidence/2026-11-01-waltid/inji-control.json"
+        "submission/evidence/2026-11-01-waltid/inji-control.json",
+        "submission/evidence/2026-11-01-waltid/discovery-negotiation.json"
       ],
       "runIds": [],
       "matrixCells": [
         "certify-offer-to-walt-wallet"
       ],
-      "matrixDecision": "Certify created the synthetic offer, but walt.id Wallet returned HTTP 500 while receiving it. The native issuance controls passed. This does not establish the underlying cause.",
+      "matrixDecision": "The offer names the bare loopback origin as credential_issuer. Discovery there returns 404; the configured /v1/certify metadata endpoint returns 200. Wallet discovery stops before issuance. This identifies a local issuer publication/configuration mismatch.",
       "upstreamIssue": null,
       "reproduce": "See deploy/waltid/README.md; node deploy/waltid/probe.mjs"
     },
@@ -207,13 +208,14 @@
       "evidence": [
         "submission/evidence/2026-11-01-waltid/first.json",
         "submission/evidence/2026-11-01-waltid/repeat.json",
-        "submission/evidence/2026-11-01-waltid/inji-control.json"
+        "submission/evidence/2026-11-01-waltid/inji-control.json",
+        "submission/evidence/2026-11-01-waltid/discovery-negotiation.json"
       ],
       "runIds": [],
       "matrixCells": [
         "walt-credential-to-inji-verify"
       ],
-      "matrixDecision": "A stored walt.id credential and a fresh Inji presentation request were available. Wallet presentation returned HTTP 500 before an independent Verify verdict. This is not a credential rejection by Verify.",
+      "matrixDecision": "Wallet API2 logs record a downstream HTTP 406 retrieving the signed Verify request. For the same request, Accept: application/json gives 406; wildcard and application/oauth-authz-req+jwt give 200. The wallet surfaces this negotiation failure as 500 before presentation. Its exact outgoing Accept header was not captured.",
       "upstreamIssue": null,
       "reproduce": "See deploy/waltid/README.md; node deploy/waltid/probe.mjs"
     },

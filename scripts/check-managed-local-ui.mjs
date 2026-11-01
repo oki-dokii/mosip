@@ -19,12 +19,8 @@ try {
  browser=await chromium.launch({headless:true});
  const page=await browser.newPage({viewport:{width:1440,height:1100},serviceWorkers:'block'});
  await page.goto(ui,{waitUntil:'domcontentloaded'});
- await page.getByRole('button',{name:'W3C VC JSON-LD',exact:true}).click();
- await page.locator('label').filter({has:page.locator('input[name=issuer][value=inji_certify]')}).click();
- await page.locator('label').filter({has:page.locator('input[name=wallet][value=inji_web_assisted]')}).click();
- await page.locator('label').filter({has:page.locator('input[name=verifier][value=inji_verify]')}).click();
  const started=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/v1/assisted/runs'&&r.request().method()==='POST');
- await page.getByRole('button',{name:'Start live assisted run',exact:true}).click();
+ await page.getByRole('button',{name:'Start local JSON-LD wallet run',exact:true}).click();
  const response=await started;if(!response.ok())throw Error('LOCAL_UI_START_REJECTED');
  ({runId}=await response.json());if(!/^[a-f0-9-]{36}$/.test(runId))throw Error('LOCAL_UI_RUN_ID_INVALID');
  stage='issuance'; await waitStep('ISSUE_CREDENTIAL');

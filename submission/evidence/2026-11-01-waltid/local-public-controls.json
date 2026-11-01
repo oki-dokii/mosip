@@ -1,0 +1,62 @@
+{
+  "observedAt": "2026-11-01T22:06:41.019Z",
+  "issuer": "official_inji_certify",
+  "issuerVersion": "1.0.0-alpha.1",
+  "verifier": "official_inji_verify",
+  "verifierVersion": "0.18.2",
+  "holder": "non_inji_reference",
+  "deployment": "local_services_loopback_only",
+  "issuerFormat": "dc+sd-jwt",
+  "presentationDefinitionFormat": "vc+sd-jwt",
+  "protocol": "OpenID4VP Presentation Exchange",
+  "issuerSignatureChecked": true,
+  "holderBindingChecked": true,
+  "evidenceTier": "local_official_services_reference_holder",
+  "results": [
+    {
+      "scenario": "valid",
+      "nonceMatched": true,
+      "audienceMatched": true,
+      "stateMatched": true,
+      "descriptorPathMatched": true,
+      "transactionId": "txn_24076321-8339-4cda-98cf-d784034412ee",
+      "requestId": "req_89e4912b-fb07-4027-a236-912e9cf0e1f6",
+      "directPostHttpStatus": 200,
+      "verifierHttpStatus": 200,
+      "verifierValid": true,
+      "credentialProofValid": true,
+      "holderProofValid": true,
+      "resultCode": null
+    },
+    {
+      "scenario": "bad_issuer_signature",
+      "nonceMatched": true,
+      "audienceMatched": true,
+      "stateMatched": true,
+      "descriptorPathMatched": true,
+      "transactionId": "txn_ba651cf0-2672-4789-8a2b-776879191ee1",
+      "requestId": "req_bb5b52e8-f647-43ee-9659-86830ed884d5",
+      "directPostHttpStatus": 200,
+      "verifierHttpStatus": 200,
+      "verifierValid": false,
+      "credentialProofValid": false,
+      "holderProofValid": null,
+      "resultCode": "ERR_SIGNATURE_VERIFICATION_FAILED"
+    },
+    {
+      "scenario": "wrong_state",
+      "nonceMatched": true,
+      "audienceMatched": true,
+      "stateMatched": false,
+      "descriptorPathMatched": true,
+      "transactionId": "txn_00123980-88e4-4906-9316-a5d9f4be02e8",
+      "requestId": "req_2e79c32e-d244-4892-ad5d-77b727923f72",
+      "directPostHttpStatus": 404,
+      "verifierHttpStatus": 404,
+      "verifierValid": null,
+      "credentialProofValid": null,
+      "holderProofValid": null,
+      "resultCode": null
+    }
+  ]
+}

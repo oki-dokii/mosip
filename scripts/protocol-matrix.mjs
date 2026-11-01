@@ -30,8 +30,18 @@ for(const c of l.cases) {
 }
 const hosted='spikes/fixtures/wallet-interop-live-2026-10-22.json', h=read(hosted);
 for(const {label,report:{run}} of h.runs) rows.push({id:'collab.'+label,environment:'Collab (build unreported)',format:'SD-JWT',variable:label,control:'collab.x509_control',controlPassed:h.runs.find(x=>x.label==='x509_control')?.report.run.actualOutcome==='valid',expected:run.expectedOutcome,observed:run.actualOutcome,verdict:run.evaluation.verdict,spec:spec(label),source:hosted,observedAt:run.finishedAt});
-if(new Set(rows.map(r=>r.id)).size!==rows.length) throw Error('Duplicate matrix ID');
 const hostedLd='spikes/fixtures/collab-reference-wallet-jsonld-2026-10-20.json';
 const hv=read(hostedLd).verification;
+function baseline(id, environment, format, variable, source, observedAt, passed) {
+ rows.push({id,environment,format,variable,control:id,controlPassed:passed,expected:'valid',observed:passed?'valid':'not established',verdict:passed?'correct_acceptance':'inconclusive',spec:format==='JSON-LD'?vc:sdjwt,source,observedAt});
+}
+baseline('collab.jsonld.reference','Collab (build unreported)','JSON-LD','reference holder baseline',hostedLd,'2026-10-20',hv.allChecksSuccessful===true&&hv.credentialProofValid===true&&hv.holderProofValid===true);
+const hostedWeb='submission/evidence/person2-managed-a1-2026-10-25/run-report.json', hw=read(hostedWeb).run;
+baseline('collab.jsonld.web','Collab (build unreported)','JSON-LD','managed Inji Web baseline',hostedWeb,hw.finishedAt,hw.actualOutcome==='valid'&&hw.status==='passed');
+const localWeb='submission/evidence/2026-10-26-person2-local-ui/ui-checks.json', lw=read(localWeb);
+baseline('inji.jsonld.web','local Certify 0.14 / Web 0.17 / Verify 0.18.2','JSON-LD','managed Inji Web baseline with local adapters',localWeb,lw.observedAt,[lw.exactCardReloaded,lw.selectedCredentialMatchesIssuance,lw.credentialProofValid,lw.holderProofValid,lw.verifierValid].every(x=>x===true));
+const android='submission/evidence/person3-a2-mobile-2026-10-23/verifier-result.json', an=read(android);
+baseline('hybrid.sdjwt.android','local Certify / Android / Collab Verify','SD-JWT','physical Android baseline (no BFF run)',android,an.observedAt,an.outcome==='valid'&&an.credentialProofValid===true&&an.holderProofValid===true);
+if(new Set(rows.map(r=>r.id)).size!==rows.length) throw Error('Duplicate matrix ID');
 writeFileSync(out, JSON.stringify({additionalControls:[{format:'JSON-LD',environment:'Collab (build unreported)',date:'2026-10-20',source:hostedLd,passed:hv.allChecksSuccessful===true&&hv.credentialProofValid===true&&hv.holderProofValid===true}],scope:'Environment-specific cells, not unique faults. Specification links provide context; type, trust, disclosure selection and transport policy depend on the named profile. Local Inji and Collab observations are archived.',rows},null,2)+'\n');
 console.log(rows.length+' evidence-linked cells');

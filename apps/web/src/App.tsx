@@ -125,6 +125,21 @@ export default function App() {
     previousRun.current = runId;
   }, [runId, metadata]);
 
+  const [localReady, setLocalReady] = useState(false);
+  useEffect(() => {
+    if (import.meta.env.VITE_ASSISTED_LOCAL_PROFILE !== "jsonld-0.14") return;
+    void api.assistedCapabilities().then(c => setLocalReady(c.liveAvailable && c.localJsonLd === true)).catch(() => setLocalReady(false));
+  }, []);
+  async function startLocalWallet() {
+    setBusy(true); setStartError(null);
+    const localConfig: RunConfig = { ...initialConfig, wallet: "inji_web_assisted", format: "ldp_vc" };
+    try {
+      const { runId: id } = await api.startAssisted(localConfig, "live");
+      assisted?.journey.dispose(); setAssisted(null); setConfig(localConfig); setRunId(id);
+    } catch { setStartError("Local wallet run could not start. Check the assisted service and capture bridge."); }
+    finally { setBusy(false); }
+  }
+
   async function startRun() {
     setStartError(null);
     if (config.wallet === "inji_web_assisted") {
@@ -211,6 +226,7 @@ export default function App() {
       </header>
 
       <main id="playground-main" tabIndex={-1} className="dot-grid mx-auto max-w-[1500px] px-5 py-8 lg:px-8">
+        {localReady && <button disabled={busy || run?.status === "running" || run?.status === "pending"} onClick={() => void startLocalWallet()} className="mb-4 rounded-lg bg-issuer px-4 py-2 font-semibold text-white">Start local JSON-LD wallet run</button>}
         <details className="mb-4 rounded-xl border bg-white p-4"><summary className="cursor-pointer font-semibold">Your first five minutes</summary>
           <ol className="mt-3 list-decimal space-y-1 pl-6"><li>Choose a mock happy path and start the run.</li><li>Open a timeline step to inspect the actors, HTTP status and redacted exchange.</li><li>Run the bad-signature scenario and compare its verdict with the positive control.</li><li>Open the compatibility matrix to see which configurations have evidence.</li></ol>
         </details>

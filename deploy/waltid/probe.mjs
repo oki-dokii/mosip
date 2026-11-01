@@ -54,7 +54,11 @@ await cell('certify-offer-to-walt-wallet',async()=>{
  if (process.argv.includes('--diagnose')) {
    const ref=new URL(offer.credential_offer_uri).searchParams.get('credential_offer_uri');
    expect('offer reference on local Certify origin',ref && new URL(ref).origin===new URL(C).origin);
-   await http('fetch offer by reference',ref);
+   const resolvedOffer=await http('fetch offer by reference',ref);
+   expect('offer advertises origin-only credential issuer',resolvedOffer?.credential_issuer===new URL(C).origin);
+   const discovery=await fetch(resolvedOffer.credential_issuer+'/.well-known/openid-credential-issuer',{redirect:'error',signal:AbortSignal.timeout(10000)});
+   mark('metadata at offer-advertised issuer',discovery.status);
+   await discovery.body?.cancel();
    await http('read Certify issuer metadata',C+'/.well-known/openid-credential-issuer');
    await http('wallet resolve Certify offer',W+'/wallet/'+wallet+'/credentials/receive/resolve-offer',{offerUrl:offer.credential_offer_uri});
  }
@@ -69,6 +73,10 @@ await cell('walt-credential-to-inji-verify',async()=>{
  const requestUrl='openid4vp://?'+new URLSearchParams({client_id:clientId,request_uri:req.requestUri});
  if (process.argv.includes('--diagnose')) {
    expect('request on local Verify origin',new URL(req.requestUri).origin===new URL(IV).origin);
+   for(const accept of ['application/json','*/*']) {
+     const alternate=await fetch(req.requestUri,{headers:{accept},redirect:'error',signal:AbortSignal.timeout(10000)});
+     mark('request object with Accept '+accept,alternate.status); await alternate.body?.cancel();
+   }
    const signed=await fetch(req.requestUri,{headers:{accept:'application/oauth-authz-req+jwt'},redirect:'error',signal:AbortSignal.timeout(10000)});
    mark('retrieve Inji request object',signed.status);
    expect('compact signed request returned',signed.ok && (await signed.text()).split('.').length===3);

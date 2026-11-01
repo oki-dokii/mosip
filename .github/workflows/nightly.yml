@@ -1,13 +1,7 @@
-name: Nightly mock regression
+name: Nightly compatibility checks
 
-# ──────────────────────────────────────────────────────────────────────────────
-# This is a MOCK-MODE regression check only.
-# It exercises the packaged Compose stack with synthetic mock services.
-# It does NOT start a local Inji stack.
-# It does NOT run Collab (live Inji Certify / Verify / Mimoto) flows.
-# A Collab nightly run requires the public test environment and secrets
-# and is a documented follow-up outside the scope of this task.
-# ──────────────────────────────────────────────────────────────────────────────
+# Fresh mock cases and a public subset of local official-service controls.
+# Historical Collab records are not fresh nightly observations.
 on:
   schedule:
     # 02:00 UTC every day
@@ -118,4 +112,28 @@ jobs:
         with:
           name: protocol-matrix-${{ github.run_number }}
           path: nightly/
+          if-no-files-found: error
+
+  official-local-control:
+    name: Local Certify and Verify (reference holder)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install -g pnpm@11.25.0 && pnpm install --frozen-lockfile
+      - name: Start official services and require a valid control
+        run: pnpm demo:inji
+      - name: Record current local compatibility results
+        run: |
+          mkdir -p reports
+          node scripts/local-inji-smoke.mjs --public-matrix > "reports/$(date -u +%F)-local-inji.json"
+      - name: Preserve observed outcomes even when a negative case unexpectedly passes
+        if: '!cancelled()'
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-inji-compatibility-${{ github.run_id }}
+          path: reports/*.json
           if-no-files-found: error
