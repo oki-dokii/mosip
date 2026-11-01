@@ -6,11 +6,14 @@
 **Find where a verifiable credential journey succeeds or fails.** Choose an issuer, wallet, verifier, and credential format; run an issue → hold → present → verify journey; then inspect its step timeline, sanitized protocol exchanges, sequence view, and downloadable result report.
 
 
+[Open the hosted read-only demo](https://oki-dokii.github.io/mosip/) · [One-page claims and evidence](submission/CLAIMS_AND_EVIDENCE.md) · [Local wallet labs](docs/LOCAL_WALLET_LABS.md) · [November deck](submission/pitch/Playground-2026-11-01.pdf) · [Captioned video](submission/pitch/Playground-2026-11-01.mp4)
+
 ## 30-second judge path
 
 The tour takes about 30 seconds after startup; the first install/container build can take several minutes. With the pinned dependencies and Docker installed:
 
 ```bash
+pnpm run doctor
 pnpm install --frozen-lockfile
 pnpm demo:docker
 ```

@@ -48,7 +48,7 @@ it.each([
       const exchange = result.exchanges[0]!;
       await repository.addExchange(exchange);
       observations = (await repository.get(id))!.exchanges.map(exchange => ({ kind: "exchange", exchange }));
-      for (const event of observations) for (const listener of [...listeners]) listener(event);
+      for (const event of observations) for (const listener of listeners) listener(event);
       return exchange;
     };
     try {
@@ -110,7 +110,7 @@ it("advances the hosted Mimoto path only for the matching verifier request URI",
     const exchange = prepareLiveObservation(collected.observations[0], record, origins);
     await repository.addExchange(exchange);
     observations = (await repository.get(id))!.exchanges.map(value => ({ kind: "exchange", exchange: value }));
-    for (const value of observations) for (const listener of [...listeners]) listener(value);
+    for (const value of observations) for (const listener of listeners) listener(value);
     return exchange;
   };
   try {

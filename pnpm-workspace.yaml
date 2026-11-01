@@ -4,6 +4,7 @@ packages:
 allowBuilds:
   '@prisma/client': true
   '@prisma/engines': true
+  cbor-extract: false
   esbuild: true
   prisma: true
 minimumReleaseAgeExclude:

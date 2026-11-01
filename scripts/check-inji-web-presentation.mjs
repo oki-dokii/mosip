@@ -79,7 +79,7 @@ async function main() {
     let walletMatchesIssuance = false;
     page.on('response', async response => {
       const url = new URL(response.url());
-      if (url.origin === wallet && response.status() >= 400 && /\/presentations$/.test(url.pathname)) {
+      if (url.origin === wallet && response.status() >= 400 && url.pathname.endsWith('/presentations')) {
         try {
           const text = await response.text();
           protocolErrorHints.push(Object.fromEntries(['expired', 'invalid', 'algorithm', 'http', 'uri', 'nonce', 'client', 'definition', 'pattern', 'signature', 'did', 'credential', 'missing', 'required', 'blank', 'audience'].map(term => [term, text.toLowerCase().includes(term)])));

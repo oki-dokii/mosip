@@ -50,7 +50,8 @@ test("mobile comparison: each clipped column can be reached and its computed tex
   await report("mobile-column-contrast", { source: "synthetic_playground_ui", check: "automated_computed_colors_not_manual_screen_reader", viewportWidth: 320, checks, result: "passed", limitation: "CSS color measurement for the current opaque comparison tables; does not replace axe or human visual review." });
 });
 
-test("actual Chromium tab zoom: recorded journey, comparison and filters reflow at 200 and 400 percent", async ({}, testInfo) => {
+test("actual Chromium tab zoom: recorded journey, comparison and filters reflow at 200 and 400 percent", async ({ browserName }, testInfo) => {
+  test.skip(browserName !== "chromium", "Uses Chromium tab zoom");
   // tabs.setZoom changes browser zoom; CSS zoom and page-scale/pinch emulation
   // would not prove this. The extension/profile exist only in a fresh temp dir.
   const temporary = await mkdtemp(join(tmpdir(), "person2-zoom-"));

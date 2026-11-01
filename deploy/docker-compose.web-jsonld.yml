@@ -26,6 +26,7 @@ services:
     user: "0:0"
     environment:
       LOCAL_CERTIFY_DB_PASSWORD: ${MOBILE_DB_PASSWORD:?Run the local Certify setup first}
+      INTERACTIVE_SYNTHETIC_AUTH: ${INTERACTIVE_SYNTHETIC_AUTH:-false}
       LOCAL_CERTIFY_VERSION: '0.14.0'
     volumes:
       - ../scripts/local-web-issuer-bridge.mjs:/app/local-web-issuer-bridge.mjs:ro
@@ -41,7 +42,7 @@ services:
 networks:
   certify-network:
     external: true
-    name: mosip-mobile-a2_default
+    name: ${MOBILE_COMPOSE_PROJECT:-mosip-mobile-a2}_default
   verify-network:
     external: true
     name: mosip-local-inji_default

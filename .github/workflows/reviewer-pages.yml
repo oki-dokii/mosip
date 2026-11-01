@@ -1,0 +1,27 @@
+name: Publish reviewer archive
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [scripts/build-reviewer-demo.mjs, submission/protocol-matrix.json, 'submission/evidence/**', apps/web/src/data/qr.json, .github/workflows/reviewer-pages.yml]
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: reviewer-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.publish.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: node scripts/build-reviewer-demo.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/reviewer
+      - uses: actions/deploy-pages@v4
+        id: publish

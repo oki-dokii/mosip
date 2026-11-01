@@ -63,7 +63,7 @@ async function main() {
       WHERE credential_config_key_id=${sql(configurationId)};
 `;
   await writeFile(join(runtime, 'local-jsonld-seed.sql'), seed, { mode: 0o600 });
-  execFileSync('docker', ['compose', '-p', 'mosip-mobile-a2', '-f', 'deploy/docker-compose.mobile.yml',
+  execFileSync('docker', ['compose', '-p', process.env.MOBILE_COMPOSE_PROJECT ?? 'mosip-mobile-a2', '-f', 'deploy/docker-compose.mobile.yml',
     'exec', '-T', 'mobile-db', 'psql', '-U', 'postgres', '-d', 'inji_certify', '-v', 'ON_ERROR_STOP=1'],
   { input: seed, stdio: ['pipe', 'ignore', 'pipe'], env: {
     ...process.env, MOBILE_RUNTIME_DIR: runtime,

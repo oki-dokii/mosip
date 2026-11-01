@@ -64,7 +64,7 @@ export class LocalWebVerifier implements VerifierDriver {
     return { summary: { signedRequestReceived: true, queryLanguage: "Presentation Exchange", protocolProfile: "local-jsonld-pex-0.18.2", requestSignatureVerification: "wallet_responsibility" },
       exchanges: [entry("/vp-request", "POST", created, { requestUriIssued: true, bodyStored: false }), entry(uri.pathname.slice(10), "GET", signed, { signedRequestReceived: true, bodyStored: false })] };
   }
-  async pollStatus(context: DriverContext): Promise<DriverResult> {
+  async pollStatus(_context: DriverContext): Promise<DriverResult> {
     // Actual submitted server exchange has already been correlated by the wallet driver.
     return { summary: { status: "VP_SUBMITTED", source: "correlated_server_direct_post", transportOnly: true } };
   }

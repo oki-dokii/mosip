@@ -211,6 +211,9 @@ export default function App() {
       </header>
 
       <main id="playground-main" tabIndex={-1} className="dot-grid mx-auto max-w-[1500px] px-5 py-8 lg:px-8">
+        <details className="mb-4 rounded-xl border bg-white p-4"><summary className="cursor-pointer font-semibold">Your first five minutes</summary>
+          <ol className="mt-3 list-decimal space-y-1 pl-6"><li>Choose a mock happy path and start the run.</li><li>Open a timeline step to inspect the actors, HTTP status and redacted exchange.</li><li>Run the bad-signature scenario and compare its verdict with the positive control.</li><li>Open the compatibility matrix to see which configurations have evidence.</li></ol>
+        </details>
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-card">
           <div className="border-b border-slate-200 px-6 py-5 lg:px-8">
             <div className="flex flex-wrap items-end justify-between gap-4">

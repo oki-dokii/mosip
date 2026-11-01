@@ -4,6 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@11.25.0",
   "scripts": {
+    "doctor": "node scripts/doctor.mjs",
     "postinstall": "pnpm --filter @playground/bff db:generate",
     "dev": "pnpm --parallel --filter @playground/bff --filter @playground/web --filter @playground/mock-issuer --filter @playground/mock-verifier dev",
     "dev:x509-mock": "bash scripts/dev-x509-mock.sh",
@@ -39,7 +40,11 @@
     "check:web-managed": "node scripts/check-managed-local-web.mjs",
     "capture:local:attach": "node scripts/attach-local-capture.mjs",
     "store:maintain": "pnpm --filter @playground/bff exec tsx src/maintenance-cli.ts",
-    "check:web-managed-ui": "node scripts/check-managed-local-ui.mjs"
+    "check:web-managed-ui": "node scripts/check-managed-local-ui.mjs",
+    "lint": "oxlint -D correctness apps packages scripts spikes",
+    "coverage:redaction": "pnpm --filter @playground/bff exec vitest run src/redaction.test.ts src/redaction-fuzz.test.ts --coverage --coverage.include=src/redaction.ts",
+    "test:mutations": "node scripts/redaction-mutations.mjs",
+    "docs:api": "node scripts/openapi.mjs"
   },
   "engines": {
     "node": ">=20"
@@ -53,7 +58,9 @@
     "qrcode": "1.5.4"
   },
   "devDependencies": {
+    "@auth0/mdl": "3.0.1",
     "@mosip/pixelpass": "0.6.0",
+    "oxlint": "1.30.0",
     "typescript": "5.9.3"
   }
 }

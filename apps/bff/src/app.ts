@@ -15,6 +15,7 @@ import { createSteps, runDemo } from "./orchestrator.js";
 import { buildReport, renderMarkdown } from "./report.js";
 import { buildSequence } from "./sequence.js";
 import { matrixCells, latestMatrix, renderMatrixCsv, renderMatrixMarkdown } from "./matrix.js";
+import { flowTelemetry } from "./telemetry.js";
 import { filterRuns } from "./history.js";
 import { unsupportedReason } from "./capabilities.js";
 import { snapshotVersions } from "./versions.js";
@@ -209,6 +210,10 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
       next(error);
     }
   });
+  app.get("/api/v1/telemetry", async (_request, response, next) => {
+    try { response.json({ items: flowTelemetry(await repository.list()) }); } catch (error) { next(error); }
+  });
+
   app.get("/api/v1/runs", async (_request, response, next) => {
     try {
       const allowed = ["issuer", "wallet", "verifier", "format", "status", "tamper", "issuerVersion", "verifierVersion"] as const;

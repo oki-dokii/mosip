@@ -1,5 +1,5 @@
 import {
-  createHash,
+  createHash, generateKeyPairSync,
   randomBytes,
   randomUUID,
 } from "node:crypto";
@@ -21,6 +21,7 @@ const POSTMAN_ENV_PATH = process.env.OFFICIAL_POSTMAN_ENV_PATH;
 const CREDENTIAL_CONFIGURATION_ID = process.env.CREDENTIAL_CONFIGURATION_ID ?? "FarmerCredential_VCDM2.0";
 const CREDENTIAL_SCOPE = process.env.CREDENTIAL_SCOPE ?? "mock_identity_vc_ldp";
 const CREDENTIAL_FORMAT = process.env.CREDENTIAL_FORMAT ?? "ldp_vc";
+const IS_MDOC = CREDENTIAL_FORMAT === "mso_mdoc";
 const IS_SD_JWT = CREDENTIAL_FORMAT === "dc+sd-jwt";
 const MOCK_OTP = process.env.MOCK_OTP;
 
@@ -70,10 +71,11 @@ async function createJwt(privateJwk, payload, header = {}) {
 async function request(url, options = {}) {
   const { allowStatuses = [], ...fetchOptions } = options;
   const headers = new Headers(fetchOptions.headers);
-  if (cookie) headers.set("cookie", cookie);
+  const authOrigin = new URL(url).origin === new URL(AUTH).origin;
+  if (authOrigin && cookie) headers.set("cookie", cookie);
   const response = await fetch(url, { ...fetchOptions, headers, signal: AbortSignal.timeout(20_000) });
   const setCookies = response.headers.getSetCookie?.() ?? [];
-  if (setCookies.length) cookie = setCookies.map((item) => item.split(";", 1)[0]).join("; ");
+  if (authOrigin && setCookies.length) cookie = setCookies.map((item) => item.split(";", 1)[0]).join("; ");
   const text = await response.text();
   let body;
   try {
@@ -205,8 +207,9 @@ const nonceResponse = await request(`${CERTIFY}/v1/certify/nonce`, {
 const credentialNonce = nonceResponse.body?.c_nonce ?? cNonce;
 
 const holderKey = await Ed25519VerificationKey2020.generate();
-const holderPublicJwk = holderKey.toJwk({ publicKey: true });
-const holderPrivateJwk = holderKey.toJwk({ publicKey: true, privateKey: true });
+const ecKey = IS_MDOC ? generateKeyPairSync("ec", { namedCurve: "prime256v1" }) : null;
+const holderPublicJwk = ecKey?.publicKey.export({format:"jwk"}) ?? holderKey.toJwk({ publicKey: true });
+const holderPrivateJwk = ecKey?.privateKey.export({format:"jwk"}) ?? holderKey.toJwk({ publicKey: true, privateKey: true });
 // The suite keeps the 32-byte seed plus public key; RFC 8037 JWK uses only the seed.
 holderPrivateJwk.d = Buffer.from(holderPrivateJwk.d, "base64url").subarray(0, 32).toString("base64url");
 async function createCredentialProof(nonce) {
@@ -215,7 +218,7 @@ async function createCredentialProof(nonce) {
     nonce,
     iss: clientId,
   }, {
-    alg: "EdDSA",
+    alg: IS_MDOC ? "ES256" : "EdDSA",
     typ: "openid4vci-proof+jwt",
     jwk: holderPublicJwk,
   });
@@ -242,6 +245,17 @@ const issuedCredential = credential.body?.credential
   ?? credential.body?.credentials?.[0]?.credential
   ?? credential.body?.credentials?.[0];
 
+if (IS_MDOC) {
+  const { inspectMdoc } = await import("./inspect-mdoc.mjs");
+  const summary = await inspectMdoc(issuedCredential);
+  const inji = await fetch(VERIFY+"/v2/vc-verification",{method:"POST", redirect:"error",signal:AbortSignal.timeout(20000),
+    headers:{"content-type":"application/json"},body:JSON.stringify({verifiableCredential:issuedCredential,includeClaims:false,skipStatusChecks:true})});
+  const result = await inji.json().catch(()=>null);
+  console.log(JSON.stringify({observedAt:new Date().toISOString(),format:CREDENTIAL_FORMAT,credentialHttp:credential.status,...summary,
+    injiVerify:{http:inji.status,allChecksSuccessful:typeof result?.allChecksSuccessful==="boolean"?result.allChecksSuccessful:null,
+    schemaAndSignatureValid:result?.credentialResults?.[0]?.schemaAndSignatureCheck?.valid??null}},null,2));
+  process.exitCode = summary.issuerSignatureValid && summary.digestsValid ? 0 : 1;
+} else {
 let verification = null;
 if (issuedCredential) {
   const verifyRequest = await request(`${VERIFY}/v2/vp-request`, {
@@ -389,3 +403,5 @@ console.log(JSON.stringify({
   credentialError: credential.body?.error,
   verification,
 }, null, 2));
+
+}

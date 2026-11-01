@@ -22,7 +22,7 @@ describe("local safe HAR filter", () => {
     expect(JSON.stringify(prepared)).not.toContain("CANARY_");
   });
   it("fails closed on oversized input lists and outputs that would exceed one import", () => {
-    expect(() => filterHar({ log: { entries: new Array(20_001) } }, fixture.runId, origins)).toThrow(/INVALID_HAR/);
+    expect(() => filterHar({ log: { entries: Array.from({ length: 20_001 }) } }, fixture.runId, origins)).toThrow(/INVALID_HAR/);
     const entry = fixture.har.log.entries[1];
     const entries = Array.from({ length: 101 }, (_, i) => ({ ...entry, startedDateTime: new Date(i).toISOString() }));
     expect(() => filterHar({ log: { entries } }, fixture.runId, origins)).toThrow(/SPLIT_REQUIRED/);

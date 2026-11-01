@@ -49,11 +49,16 @@ async function main() {
         response.request().method() === 'POST';
     }, { timeout: 45_000 }).catch(() => null);
     await page.getByText('Playground Synthetic Farmer').last().click();
+    if(process.env.INTERACTIVE_SYNTHETIC_AUTH==='true') {
+      await page.getByLabel('Demo UIN').fill('SYNTHETIC-001');
+      await page.getByLabel('Demo OTP').fill('246810');
+      await page.getByRole('button',{name:'Authorize issuance'}).click();
+    }
     stage = 'issuance';
     const downloaded = await download;
     await page.waitForTimeout(1500);
     const failed = await page.getByText('Download Failed').isVisible().catch(() => false);
-    const walletPosts = routes.filter(route => route.method === 'POST' && /\/wallets\/\{id\}\/credentials$/.test(route.path));
+    const walletPosts = routes.filter(route => route.method === 'POST' && route.path.endsWith('/wallets/{id}/credentials'));
     const walletPostSuccess = walletPosts.some(route => route.status === 200);
     let credentialId = null;
     let walletId = null;

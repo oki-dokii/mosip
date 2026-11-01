@@ -154,7 +154,7 @@ describe("passive HAR capture", () => {
       array: Array.from({ length: 40 }, (_, i) => `CANARY_ARRAY_${i}`),
       wide: Object.fromEntries(Array.from({ length: 70 }, (_, i) => [`private${i}`, "CANARY_WIDE"])) };
     const result = prepareHarImport(wrap(record.run.id, [entry("https://issuer.example/credential?response_type=code&client_id=mock-verifier&state=CANARY_STATE", "application/json", JSON.stringify(body))]), record, origins);
-    const shape = (result.exchanges[0]?.request as { body: Record<string, unknown> }).body;
+    const shape = (result.exchanges[0]!.request as { body: Record<string, unknown> }).body;
     expect(shape["[field:1]"]).toBeTruthy();
     expect(shape["[field:2]"]).toBeTruthy();
     expect(result.exchanges[0]?.url).toContain("response_type=code&client_id=mock-verifier&state=[REDACTED]");

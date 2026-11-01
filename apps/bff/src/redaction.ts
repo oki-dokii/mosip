@@ -76,8 +76,8 @@ export function createRedactor(correlationKey?: Uint8Array) {
       }
       if (typeof item !== "string" || item === "[REDACTED]" || /^\[REDACTED hmac:[a-f0-9]{16}\]$/.test(item)) return item;
       if (Buffer.byteLength(item) > 131_072) return mask(item, itemPath);
-      if (/^[A-Za-z0-9_+\/-]{64,}={0,2}$/.test(item) || /\bBearer\s+[^\s]+/i.test(item) || containsJwt(item) || /-----BEGIN (?:[A-Z ]*PRIVATE KEY)-----/.test(item)) return mask(item, itemPath);
-      if (/^\s*[\[{]/.test(item)) {
+      if (/^[A-Za-z0-9_+/-]{64,}={0,2}$/.test(item) || /\bBearer\s+[^\s]+/i.test(item) || containsJwt(item) || /-----BEGIN (?:[A-Z ]*PRIVATE KEY)-----/.test(item)) return mask(item, itemPath);
+      if (/^\s*[[{]/.test(item)) {
         try { return JSON.stringify(walk(JSON.parse(item), itemPath, depth + 1)); } catch { return mask(item, itemPath); }
       }
       if (/^(?:https?:|openid-credential-offer:)\/\//i.test(item)) {
@@ -89,7 +89,7 @@ export function createRedactor(correlationKey?: Uint8Array) {
           for (const [name, content] of params) {
             const p = `${itemPath}.${name}`;
             const publicName = safeParamName(name);
-            if (/^\s*[\[{]/.test(content) && ["credential_offer", "presentation_definition", "dcql_query"].includes(name)) {
+            if (/^\s*[[{]/.test(content) && ["credential_offer", "presentation_definition", "dcql_query"].includes(name)) {
               try { url.searchParams.append(publicName, JSON.stringify(walk(JSON.parse(content), p, depth + 1))); } catch { url.searchParams.append(publicName, mask(content, p)); }
             } else url.searchParams.append(publicName, publicParameter(name, content) ?? mask(content, p));
           }

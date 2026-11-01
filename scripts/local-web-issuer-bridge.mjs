@@ -69,12 +69,21 @@ async function upstream(path, options = {}) {
 }
 async function authorize(request, response, url) {
   const query = url.searchParams;
-  if (request.method !== 'GET' || query.get('response_type') !== 'code' || query.get('client_id') !== clientId ||
+  if (!['GET', 'POST'].includes(request.method) || query.get('response_type') !== 'code' || query.get('client_id') !== clientId ||
       query.get('redirect_uri') !== redirectUri || query.get('scope') !== 'playground_farmer_ldp' ||
       query.get('code_challenge_method') !== 'S256' || !validChallenge(query.get('code_challenge')) ||
       !/^[A-Za-z0-9._~-]{16,256}$/.test(query.get('state') ?? '')) {
     return send(response, 400, { error: 'invalid_request' });
   }
+  if (process.env.INTERACTIVE_SYNTHETIC_AUTH === 'true') {
+    if (request.method === 'GET') {
+      response.writeHead(200, {'content-type':'text/html;charset=utf-8','cache-control':'no-store','referrer-policy':'no-referrer'});
+      return response.end('<!doctype html><html lang="en"><title>Synthetic issuer sign-in</title><main><h1>Synthetic issuer sign-in</h1><p>Test UIN: SYNTHETIC-001. Test OTP: 246810.</p><form method="post"><label>Demo UIN <input name="uin" required></label><label>Demo OTP <input name="otp" required></label><button>Authorize issuance</button></form></main></html>');
+    }
+    if (request.headers.origin !== authorizationServer || !request.headers['content-type']?.startsWith('application/x-www-form-urlencoded')) return send(response,403,{error:'invalid_request'});
+    const login=new URLSearchParams((await body(request,1024)).toString('utf8'));
+    if(login.get('uin')!=='SYNTHETIC-001'||login.get('otp')!=='246810')return send(response,401,{error:'access_denied'});
+  } else if (request.method !== 'GET') return send(response,405,{error:'invalid_request'});
   const code = 'iar_auth_' + randomBytes(24).toString('base64url');
   await insertSyntheticSession(code, query.get('code_challenge'));
   pending.set(code, { challenge: query.get('code_challenge'), expiresAt: Date.now() + 300_000 });

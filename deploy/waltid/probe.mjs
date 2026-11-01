@@ -51,6 +51,13 @@ await cell('certify-offer-to-walt-wallet',async()=>{
  const now=Math.floor(Date.now()/1000);
  const offer=await http('create Certify offer',C+'/pre-authorized-data',{credential_configuration_id:'MockVerifiableCredential_SD_JWT',claims:{given_name:'Synthetic',family_name:'Example',issuedAt:now,expiresAt:now+86400},expires_in:600});
  expect('Certify offer returned',offer?.credential_offer_uri);
+ if (process.argv.includes('--diagnose')) {
+   const ref=new URL(offer.credential_offer_uri).searchParams.get('credential_offer_uri');
+   expect('offer reference on local Certify origin',ref && new URL(ref).origin===new URL(C).origin);
+   await http('fetch offer by reference',ref);
+   await http('read Certify issuer metadata',C+'/.well-known/openid-credential-issuer');
+   await http('wallet resolve Certify offer',W+'/wallet/'+wallet+'/credentials/receive/resolve-offer',{offerUrl:offer.credential_offer_uri});
+ }
  const before=await http('wallet inventory before',W+'/wallet/'+wallet+'/credentials');
  await http('wallet receive Certify offer',W+'/wallet/'+wallet+'/credentials/receive',{offerUrl:offer.credential_offer_uri,keyId});
  const after=await http('wallet inventory after',W+'/wallet/'+wallet+'/credentials');expect('new card stored',Array.isArray(after)&&after.length===before.length+1);
@@ -60,6 +67,13 @@ await cell('walt-credential-to-inji-verify',async()=>{
  const clientId='did:web:localhost%3A18081:v1:verify';
  const req=await http('create Inji Verify request',IV+'/vp-request',{clientId,nonce:randomBytes(24).toString('base64url'),responseCodeValidationRequired:false,presentationDefinition:{id:randomUUID(),input_descriptors:[{id:'credential',format:{'vc+sd-jwt':{alg:['ES256']}},constraints:{fields:[{path:['$.vct'],filter:{type:'string',const:vct}}]}}]}});
  const requestUrl='openid4vp://?'+new URLSearchParams({client_id:clientId,request_uri:req.requestUri});
+ if (process.argv.includes('--diagnose')) {
+   expect('request on local Verify origin',new URL(req.requestUri).origin===new URL(IV).origin);
+   const signed=await fetch(req.requestUri,{headers:{accept:'application/oauth-authz-req+jwt'},redirect:'error',signal:AbortSignal.timeout(10000)});
+   mark('retrieve Inji request object',signed.status);
+   expect('compact signed request returned',signed.ok && (await signed.text()).split('.').length===3);
+   await http('wallet resolve Inji request',W+'/wallet/'+wallet+'/credentials/present/resolve-request',{requestUrl});
+ }
  await http('wallet present to Inji Verify',W+'/wallet/'+wallet+'/credentials/present',{keyId,requestUrl});
  const verdict=await http('independent Verify verdict',IV+'/v2/vp-results/'+encodeURIComponent(req.transactionId),{includeClaims:false,skipStatusChecks:true});
  expect('Verify accepted credential',verdict?.allChecksSuccessful===true);

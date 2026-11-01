@@ -1,0 +1,497 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Inji Playground BFF",
+    "version": "0.1.0",
+    "description": "Generated route inventory. Request formats and response examples are in the API reference."
+  },
+  "externalDocs": {
+    "url": "https://github.com/oki-dokii/mosip/blob/main/submission/API_REFERENCE.md"
+  },
+  "paths": {
+    "/api/v1/capture/local/session": {
+      "get": {
+        "operationId": "get_api_v1_capture_local_session",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/capture/local/observations": {
+      "post": {
+        "operationId": "post_api_v1_capture_local_observations",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/assisted/capabilities": {
+      "get": {
+        "operationId": "get_api_v1_assisted_capabilities",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/assisted/runs": {
+      "post": {
+        "operationId": "post_api_v1_assisted_runs",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/assisted/runs/{id}": {
+      "get": {
+        "operationId": "get_api_v1_assisted_runs_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/assisted/runs/{id}/cancel": {
+      "post": {
+        "operationId": "post_api_v1_assisted_runs_id_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/assisted/runs/{id}/observations": {
+      "post": {
+        "operationId": "post_api_v1_assisted_runs_id_observations",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/assisted/runs/{id}/capture/observation": {
+      "post": {
+        "operationId": "post_api_v1_assisted_runs_id_capture_observation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/runs/{id}/capture/coverage": {
+      "get": {
+        "operationId": "get_api_v1_runs_id_capture_coverage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "get_api_v1_health",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/meta/implementations": {
+      "get": {
+        "operationId": "get_api_v1_meta_implementations",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios": {
+      "get": {
+        "operationId": "get_api_v1_scenarios",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/wallet-evidence": {
+      "get": {
+        "operationId": "get_api_v1_wallet_evidence",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/wallet-evidence/report": {
+      "get": {
+        "operationId": "get_api_v1_wallet_evidence_report",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/matrix/cells": {
+      "get": {
+        "operationId": "get_api_v1_matrix_cells",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/matrix": {
+      "get": {
+        "operationId": "get_api_v1_matrix",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/matrix/export": {
+      "get": {
+        "operationId": "get_api_v1_matrix_export",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/telemetry": {
+      "get": {
+        "operationId": "get_api_v1_telemetry",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/runs": {
+      "get": {
+        "operationId": "get_api_v1_runs",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_api_v1_runs",
+        "parameters": [],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/runs/{id}/replay": {
+      "post": {
+        "operationId": "post_api_v1_runs_id_replay",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/runs/{id}": {
+      "get": {
+        "operationId": "get_api_v1_runs_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/runs/{id}/steps": {
+      "get": {
+        "operationId": "get_api_v1_runs_id_steps",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/runs/{id}/exchanges": {
+      "get": {
+        "operationId": "get_api_v1_runs_id_exchanges",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/runs/{id}/capture/har": {
+      "post": {
+        "operationId": "post_api_v1_runs_id_capture_har",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/runs/{id}/report": {
+      "get": {
+        "operationId": "get_api_v1_runs_id_report",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    },
+    "/api/v1/runs/{id}/sequence": {
+      "get": {
+        "operationId": "get_api_v1_runs_id_sequence",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "2XX": {
+            "description": "Successful response; see API reference for the payload"
+          },
+          "default": {
+            "description": "Request or upstream error"
+          }
+        }
+      }
+    }
+  }
+}

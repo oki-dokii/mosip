@@ -13,7 +13,7 @@ async function main() {
   const legacyMetadata = `UPDATE certify.credential_config SET status='inactive',
     sd_jwt_claims=(SELECT jsonb_object_agg(key,value - 'mandatory') FROM jsonb_each(sd_jwt_claims))
     WHERE credential_config_key_id='MockVerifiableCredential_SD_JWT';`;
-  execFileSync('docker', ['compose', '-p', 'mosip-mobile-a2', '-f', 'deploy/docker-compose.mobile.yml',
+  execFileSync('docker', ['compose', '-p', process.env.MOBILE_COMPOSE_PROJECT ?? 'mosip-mobile-a2', '-f', 'deploy/docker-compose.mobile.yml',
     'exec', '-T', 'mobile-db', 'psql', '-U', 'postgres', '-d', 'inji_certify', '-v', 'ON_ERROR_STOP=1'],
   { input: legacyMetadata, stdio: ['pipe', 'ignore', 'pipe'], env: {
     ...process.env, MOBILE_RUNTIME_DIR: runtime, MOBILE_DB_PASSWORD: settings.databasePassword,
@@ -30,7 +30,7 @@ async function main() {
   properties += 'mosip.certify.mock.data-provider.csv-registry-uri=/home/mosip/config/synthetic-farmer.csv\n';
   properties += 'mosip.certify.data-provider-plugin.did-url=did:web:local.test\n';
   await writeFile(propertiesPath, properties, { mode: 0o600 });
-  execFileSync('docker', ['compose', '-p', 'mosip-mobile-a2', '-f', 'deploy/docker-compose.mobile.yml',
+  execFileSync('docker', ['compose', '-p', process.env.MOBILE_COMPOSE_PROJECT ?? 'mosip-mobile-a2', '-f', 'deploy/docker-compose.mobile.yml',
     '-f', 'deploy/docker-compose.certify-web-jsonld.yml',
     'up', '-d', '--force-recreate', '--wait', 'mobile-certify'], { stdio: 'ignore', env: {
       ...process.env, MOBILE_RUNTIME_DIR: runtime, MOBILE_DB_PASSWORD: settings.databasePassword,

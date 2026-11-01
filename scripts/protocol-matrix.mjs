@@ -5,8 +5,8 @@ const [sd='submission/evidence/2026-11-01-protocol/sd.json',ld='submission/evide
 const rows = [];
 const jwt='https://www.rfc-editor.org/rfc/rfc7519.html', jws='https://www.rfc-editor.org/rfc/rfc7515.html#section-5.2', sdjwt='https://www.rfc-editor.org/rfc/rfc9901.html', vp='https://openid.net/specs/openid-4-verifiable-presentations-1_0.html', vc='https://www.w3.org/TR/vc-data-model/', suite='https://www.w3.org/TR/vc-data-integrity/';
 function spec(id) {
- if (/^j1/.test(id)) return /credential|control/.test(id) ? vc : suite;
- if (/expired$/.test(id)) return jwt+'#section-4.1.4';
+ if (id.startsWith('j1')) return /credential|control/.test(id) ? vc : suite;
+ if (id.endsWith('expired')) return jwt+'#section-4.1.4';
  if (/not_yet_valid/.test(id)) return jwt+'#section-4.1.5';
  if (/signature/.test(id)) return jws;
  if (/disclosure/.test(id)) return sdjwt+'#section-7.1';

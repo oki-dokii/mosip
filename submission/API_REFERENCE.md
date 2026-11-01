@@ -66,3 +66,7 @@ Metadata is saved in existing step JSON and reconstructed on reads; no migration
 `GET /api/v1/wallet-evidence` returns `{schemaVersion: 1, items}` for curated manual Web and Android observations. `GET /api/v1/wallet-evidence/report?format=json|md|csv` exports their checkpoint provenance, outcome source, versions, artifact links and limits. These observations have `managedRunId: null` and do not create run history or change automated evidence tiers.
 
 Matrix JSON includes a separate `walletEvidence` array; supported cells include `manualEvidenceIds` without overriding managed status. Matrix Markdown includes the catalog; CSV appends explicitly labeled manual rows and adds provenance columns. Run reports can include `relatedWalletEvidence`, marked as context rather than evidence for that run. See [integration behavior](PERSON2_EVIDENCE_INTEGRATION.md).
+
+Download the [generated OpenAPI route inventory](openapi.json). Run `node scripts/openapi.mjs` after changing the Express routes.
+
+`GET /api/v1/telemetry` returns an items array grouped by issuer, wallet, verifier, format, flow, expected verdict and protocol profile. Success rate is passed divided by completed runs (passed, failed or errored). P50 and P95 use nearest rank over valid start/finish durations in milliseconds. Archived, cancelled and unfinished runs are excluded.

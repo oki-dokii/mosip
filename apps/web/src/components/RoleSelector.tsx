@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import type { RunConfig } from "@playground/shared";
 import { BadgeCheck, Building2, ShieldCheck, WalletCards } from "lucide-react";
 
 type Role = "issuer" | "wallet" | "verifier";

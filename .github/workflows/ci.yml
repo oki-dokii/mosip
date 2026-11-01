@@ -57,6 +57,14 @@ jobs:
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
+      - name: Check lint, redaction mutations and API inventory
+        run: |
+          pnpm lint
+          pnpm test:mutations
+          pnpm coverage:redaction
+          pnpm docs:api
+          git diff --exit-code -- submission/openapi.json
+
       - name: Typecheck
         run: pnpm typecheck
 
@@ -74,7 +82,7 @@ jobs:
 
   browser-smoke:
     name: Browser smoke (Chromium / axe)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     needs: verify
 

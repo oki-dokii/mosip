@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-01T12:56:00.502Z",
+  "browser": "141.0.7390.37",
+  "secure": true,
+  "supported": true,
+  "nativeReferenceCreated": true,
+  "requestPrepared": true,
+  "requestInvoked": true,
+  "result": "provider did not return credential",
+  "verifierVerdictObserved": false
+}

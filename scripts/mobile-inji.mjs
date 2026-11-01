@@ -25,7 +25,6 @@ const pause = (ms) => new Promise(r => setTimeout(r, ms));
 const hash = (value) => createHash('sha256').update(value).digest('base64url');
 const fail = (code) => { throw new Error(code); };
 const sql = (s) => "'" + String(s).replaceAll("'", "''") + "'";
-const escape = (s) => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
 
 async function bounded(url, options = {}, limit = 2_097_152) {
   const response = await fetch(url, { ...options, redirect: 'error', signal: AbortSignal.timeout(20_000) });
