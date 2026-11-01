@@ -1,0 +1,16 @@
+{
+  "observedAt": "2026-11-01T13:11:14.917Z",
+  "result": "LOCAL_WEB_JSONLD_ISSUANCE_API_OK",
+  "storedAfterReload": true,
+  "issuedCredentialCorrelated": true,
+  "issuerVersion": "0.14.0",
+  "walletVersion": "0.17.0",
+  "mimotoVersion": "0.22.0",
+  "walletApiStatuses": [
+    {
+      "method": "POST",
+      "path": "/v1/mimoto/wallets/{id}/credentials",
+      "status": 200
+    }
+  ]
+}

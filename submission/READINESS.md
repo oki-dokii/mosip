@@ -1,6 +1,8 @@
-# Submission readiness — 26 October 2026
+# Submission readiness — 1 November 2026
 
-## Final-status checkpoint
+The [public reviewer archive](https://oki-dokii.github.io/mosip/) opens without signing in. The [claims and evidence table](CLAIMS_AND_EVIDENCE.md) links the local wallet, external wallet and mobile driving licence checks. Local validation on 1 November passed 453 tests and 19 Chromium checks, with five optional database tests skipped. The [updated deck](pitch/Playground-2026-11-01.pdf) and [4:33 captioned video](pitch/Playground-2026-11-01.mp4) are ready for team review. Physical Android with local Verify, a provider-backed Digital Credentials API result, human media review and the independent-machine rehearsal remain open.
+
+## 26 October checkpoint
 
 | Area | Current status |
 | --- | --- |

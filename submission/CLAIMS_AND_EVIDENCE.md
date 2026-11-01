@@ -3,6 +3,7 @@
 | What the team demonstrated | Evidence and boundary |
 |---|---|
 | A local Certify credential survived a wallet reload and verified with Inji Verify. | [Managed JSON-LD run](evidence/2026-10-26-person2-local-ui/run-report.json). Inji Web 0.17.0, Mimoto 0.22.0, Certify 0.14.0 and Verify 0.18.2. Synthetic authorization and DID adapters are part of this setup. |
+| The interactive UIN/OTP fixture completed authorization-code issuance and PKCE. The same wallet presented the reloaded card and local Verify accepted both proofs. | [Issuance](evidence/2026-11-01-formats/interactive-issuance.json) and [independent Verify result](evidence/2026-11-01-formats/interactive-presentation.json). Direct browser harness, 1 November. |
 | Local pre-authorized SD-JWT issuance and verification succeeded. | [Inji reference-holder control](evidence/2026-11-01-waltid/inji-control.json). Certify 1.0.0-alpha.1 issued the credential. |
 | The real walt.id wallet passed native issuance and presentation. Two cross-vendor paths stopped at resolution. | [First](evidence/2026-11-01-waltid/resolution-first.json) and [repeat](evidence/2026-11-01-waltid/resolution-repeat.json). The wallet returned 500 while resolving the Certify offer and the Verify request. |
 | Collab issued an ISO mDL. Inji returned an unsuccessful verification result. An independent library verified the issuer signature and six attribute digests. | [Same-document result](evidence/2026-11-01-formats/collab-mdl.json). Library @auth0/mdl 3.0.1. Certificate-chain trust and device authentication were outside this check. |

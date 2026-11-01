@@ -9,6 +9,7 @@ const titles: Record<string, string> = {
   "G-06": "Verify 0.18.2 accepts mismatched holder challenges in a local probe",
   "G-08": "Historical external protocol profile study",
   "G-09": "Issuer and wallet JWT proof versions differ",
+  "G-14": "Collab mDL issuer signature passes independently while Verify reports an unsuccessful check",
   "G-13": "Verifier example type differs from the bundled issuer metadata",
   "G-11": "Certify offer stops at walt.id wallet receipt",
   "G-12": "walt.id presentation stops before Inji Verify returns a verdict",

@@ -1,0 +1,25 @@
+{
+  "observedAt": "2026-11-01T13:11:37.996Z",
+  "result": "LOCAL_WEB_JSONLD_VERIFY_VALID",
+  "issuerVersion": "0.14.0",
+  "walletVersion": "0.17.0",
+  "mimotoVersion": "0.22.0",
+  "verifierVersion": "0.18.2",
+  "submissionStatus": 200,
+  "verifierStatus": 200,
+  "verifierValid": true,
+  "verifierDetails": {
+    "resultKeys": [
+      "transactionId",
+      "allChecksSuccessful",
+      "credentialResults"
+    ],
+    "credentialResults": 1,
+    "credentialProofValid": true,
+    "holderProofValid": true,
+    "holderErrorCode": "none",
+    "credentialErrorCode": "none"
+  },
+  "walletMatchesIssuance": true,
+  "selectedCredentialMatchesIssuance": true
+}

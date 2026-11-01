@@ -233,6 +233,23 @@
       "matrixDecision": "The verifier Swagger SD-JWT PID example type did not match the type advertised by the bundled identity issuer. Two paired sessions failed using the example type and succeeded using the metadata type. The verifier correctly rejected the unmatched type; this is an example configuration gap.",
       "reproduce": "node deploy/waltid/probe.mjs /tmp/check.json --example-control",
       "upstreamIssue": null
+    },
+    {
+      "id": "G-14",
+      "status": "observed_profile_mismatch",
+      "disclosure": "public_non_security_observation",
+      "productVersion": "Collab build unreported; @auth0/mdl 3.0.1",
+      "evidence": [
+        "submission/evidence/2026-11-01-formats/collab-mdl.json",
+        "docs/LOCAL_WALLET_LABS.md"
+      ],
+      "runIds": [],
+      "matrixCells": [
+        "collab.mdl.issuer-signed"
+      ],
+      "matrixDecision": "Collab returned an mDL and Verify reported allChecksSuccessful=false for the issued document. Independent verification passed the issuer signature and six attribute digests. Device authentication and issuer-chain trust require separate checks.",
+      "reproduce": "Follow the Collab mDL row in docs/LOCAL_WALLET_LABS.md.",
+      "upstreamIssue": null
     }
   ],
   "localProtocolEvidence": {

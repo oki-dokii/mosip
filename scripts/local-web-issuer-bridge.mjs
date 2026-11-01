@@ -77,7 +77,7 @@ async function authorize(request, response, url) {
   }
   if (process.env.INTERACTIVE_SYNTHETIC_AUTH === 'true') {
     if (request.method === 'GET') {
-      response.writeHead(200, {'content-type':'text/html;charset=utf-8','cache-control':'no-store','referrer-policy':'no-referrer'});
+      response.writeHead(200, {'content-type':'text/html;charset=utf-8','cache-control':'no-store','referrer-policy':'strict-origin'});
       return response.end('<!doctype html><html lang="en"><title>Synthetic issuer sign-in</title><main><h1>Synthetic issuer sign-in</h1><p>Test UIN: SYNTHETIC-001. Test OTP: 246810.</p><form method="post"><label>Demo UIN <input name="uin" required></label><label>Demo OTP <input name="otp" required></label><button>Authorize issuance</button></form></main></html>');
     }
     if (request.headers.origin !== authorizationServer || !request.headers['content-type']?.startsWith('application/x-www-form-urlencoded')) return send(response,403,{error:'invalid_request'});

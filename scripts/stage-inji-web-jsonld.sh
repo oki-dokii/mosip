@@ -19,7 +19,7 @@ node scripts/prepare-local-did-tls.mjs
 docker compose -p mosip-local-inji -f deploy/docker-compose.verify-local.yml \
   -f deploy/docker-compose.verify-web-jsonld.yml up -d --force-recreate --wait verify-service
 export MOBILE_DB_PASSWORD="$(node --input-type=module -e 'import {readFileSync} from "node:fs"; import {join} from "node:path"; const p=JSON.parse(readFileSync(join(process.env.MOBILE_RUNTIME_DIR, "settings.json"),"utf8")); process.stdout.write(p.databasePassword)')"
-docker compose --env-file "$MIMOTO_RUNTIME_DIR/wallet.env" -p mosip-web-local \
+docker compose --env-file "$MIMOTO_RUNTIME_DIR/wallet.env" -p "${MIMOTO_COMPOSE_PROJECT:-mosip-web-local}" \
   -f deploy/docker-compose.web-local.yml -f deploy/docker-compose.web-jsonld.yml \
   up -d --build --force-recreate --wait mimoto-service local-issuer-bridge inji-web
 
