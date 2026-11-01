@@ -21,6 +21,8 @@ services:
     profiles: [identity]
     network_mode: service:wallet-api2
     depends_on: [wallet-api2]
+    environment:
+      WALT_EXPERIMENT: ${WALT_EXPERIMENT:-off}
     read_only: true
     cap_drop: [ALL]
     volumes:

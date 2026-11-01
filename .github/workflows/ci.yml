@@ -60,6 +60,7 @@ jobs:
       - name: Check lint, redaction mutations and API inventory
         run: |
           pnpm lint
+          node scripts/check-gap-register.mjs
           pnpm test:mutations
           pnpm coverage:redaction
           pnpm docs:api

@@ -1,0 +1,15 @@
+{
+  "source": "Allowlisted diagnostics from the pinned walt.id Wallet API2 1.2.0 container; raw logs excluded",
+  "cells": [
+    {
+      "id": "certify-offer-to-walt-wallet-adapt",
+      "walletStatus": 400,
+      "diagnostic": "credential_signing_alg_values_supported must contain LD suite identifiers for ldp_vc"
+    },
+    {
+      "id": "walt-credential-to-inji-verify-adapt",
+      "walletStatus": 400,
+      "diagnostic": "Authorization Request Object aud must contain 'https://self-issued.me/v2'"
+    }
+  ]
+}

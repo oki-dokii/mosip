@@ -2,6 +2,11 @@
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 export PLAYGROUND_WALT_RELAY="$here/loopback-relay.mjs"
+case "${WALT_EXPERIMENT:-off}" in
+  observe|adapt) export PLAYGROUND_WALT_RELAY="$here/experiment-relay.mjs" ;;
+  off) ;;
+  *) exit 2 ;;
+esac
 rev=ef516ecec4c79fd9fba6f1e8b226b52a4e8cf790
 src=${WALTID_CHECKOUT:-${TMPDIR:-/tmp}/playground-waltid-$rev}
 if [ ! -d "$src/.git" ]; then
