@@ -1,0 +1,152 @@
+{
+  "version": "walt.id 1.2.0",
+  "variable": "DCQL meta.vct_values[0]",
+  "runs": [
+    {
+      "observedAt": "2026-11-01T08:18:42.216Z",
+      "rows": [
+        {
+          "id": "walt-wallet-to-walt-verifier",
+          "checkpoints": [
+            {
+              "label": "walt issuance control",
+              "status": true
+            },
+            {
+              "label": "create DCQL request",
+              "status": 200
+            },
+            {
+              "label": "present credential",
+              "status": 200
+            },
+            {
+              "label": "independent verifier result",
+              "status": 200
+            },
+            {
+              "label": "session status",
+              "status": "SUCCESSFUL"
+            },
+            {
+              "label": "verifier accepted credential",
+              "status": true
+            }
+          ],
+          "result": "passed"
+        },
+        {
+          "id": "walt-swagger-example-vct",
+          "checkpoints": [
+            {
+              "label": "read verifier OpenAPI",
+              "status": 200
+            },
+            {
+              "label": "example type differs from installed issuer metadata",
+              "status": true
+            },
+            {
+              "label": "walt issuance control",
+              "status": true
+            },
+            {
+              "label": "create DCQL request",
+              "status": 200
+            },
+            {
+              "label": "present credential",
+              "status": 200
+            },
+            {
+              "label": "independent verifier result",
+              "status": 200
+            },
+            {
+              "label": "session status",
+              "status": "FAILED"
+            },
+            {
+              "label": "verifier recorded failed session",
+              "status": true
+            }
+          ],
+          "result": "passed"
+        }
+      ]
+    },
+    {
+      "observedAt": "2026-11-01T08:23:52.718Z",
+      "rows": [
+        {
+          "id": "walt-wallet-to-walt-verifier",
+          "checkpoints": [
+            {
+              "label": "walt issuance control",
+              "status": true
+            },
+            {
+              "label": "create DCQL request",
+              "status": 200
+            },
+            {
+              "label": "present credential",
+              "status": 200
+            },
+            {
+              "label": "independent verifier result",
+              "status": 200
+            },
+            {
+              "label": "session status",
+              "status": "SUCCESSFUL"
+            },
+            {
+              "label": "verifier accepted credential",
+              "status": true
+            }
+          ],
+          "result": "passed"
+        },
+        {
+          "id": "walt-swagger-example-vct",
+          "checkpoints": [
+            {
+              "label": "read verifier OpenAPI",
+              "status": 200
+            },
+            {
+              "label": "example type differs from installed issuer metadata",
+              "status": true
+            },
+            {
+              "label": "walt issuance control",
+              "status": true
+            },
+            {
+              "label": "create DCQL request",
+              "status": 200
+            },
+            {
+              "label": "present credential",
+              "status": 200
+            },
+            {
+              "label": "independent verifier result",
+              "status": 200
+            },
+            {
+              "label": "session status",
+              "status": "FAILED"
+            },
+            {
+              "label": "verifier recorded failed session",
+              "status": true
+            }
+          ],
+          "result": "passed"
+        }
+      ]
+    }
+  ]
+}

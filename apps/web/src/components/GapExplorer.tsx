@@ -7,14 +7,18 @@ const titles: Record<string, string> = {
   "G-04": "Certify credential request returns 401 after a successful token exchange",
   "G-05": "Verify 0.18.2 sample database seed breaks direct-post",
   "G-06": "Verify 0.18.2 accepts mismatched holder challenges in a local probe",
-  "G-08": "External ecosystem evaluation remains unexecuted",
+  "G-08": "Historical external protocol profile study",
   "G-09": "Issuer and wallet JWT proof versions differ",
+  "G-13": "Verifier example type differs from the bundled issuer metadata",
+  "G-11": "Certify offer stops at walt.id wallet receipt",
+  "G-12": "walt.id presentation stops before Inji Verify returns a verdict",
   "G-10": "Local issuer DID assertion relationship needs an adapter",
   "G-07": "Verify 0.18.2 accepts a descriptor path outside the VP array",
 };
 
 const statusLabels: Record<string, string> = {
   observed_wallet_chains_remaining_limits: "Observed wallet chains; limits remain",
+  repeated_external_checkpoint: "Reproduced twice locally",
   external_profile_evaluation: "Research only",
   reproduced_version_compatibility_difference: "Reproduced version difference",
   observed_did_relationship_mismatch: "Observed local metadata mismatch",
@@ -58,7 +62,7 @@ export function GapExplorer() {
           </li>
         ))}
       </ul>
-      <p className="mt-4 text-xs text-slate-500">Source: committed synthetic and sanitized evidence, updated {gaps.updated}. No upstream issue has been filed from this register.</p>
+      <p className="mt-4 text-xs text-slate-500">Source: committed synthetic and sanitized evidence, updated {gaps.updated}. See the full register for issue links and private reporting status.</p>
     </section>
   );
 }

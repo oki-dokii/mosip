@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-10-26",
+  "updated": "2026-11-01",
   "source": "docs/GAPS.md",
   "owner": "Person 3",
   "scope": "Version-scoped observed findings, current hosted/local Web and hybrid Android evidence; private-report/issue status is not inferred.",
@@ -148,7 +148,7 @@
       ],
       "runIds": [],
       "matrixCells": [],
-      "matrixDecision": "Version-specific external profile study; no executed cross-vendor flow. This is research, not a universal capability claim or a product defect.",
+      "matrixDecision": "Historical study of the two protocol profiles. See G-11/G-12 for subsequent executions; these do not prove general incompatibility.",
       "upstreamIssue": null
     },
     {
@@ -180,6 +180,59 @@
       "matrixDecision": "The observed Certify DID assertionMethod needed a verification-method reference correction. The passing local chain uses a declared adapter, not a stock DID interoperability claim.",
       "upstreamIssue": "https://github.com/inji/inji-certify/issues/713#issuecomment-6409789998",
       "upstreamReportDate": "2026-10-26"
+    },
+    {
+      "id": "G-11",
+      "status": "repeated_external_checkpoint",
+      "disclosure": "public_non_security_observation",
+      "productVersion": "Certify 1.0.0-alpha.1 / walt.id Wallet API2 1.2.0",
+      "evidence": [
+        "submission/evidence/2026-11-01-waltid/first.json",
+        "submission/evidence/2026-11-01-waltid/repeat.json",
+        "submission/evidence/2026-11-01-waltid/inji-control.json"
+      ],
+      "runIds": [],
+      "matrixCells": [
+        "certify-offer-to-walt-wallet"
+      ],
+      "matrixDecision": "Certify created the synthetic offer, but walt.id Wallet returned HTTP 500 while receiving it. The native issuance controls passed. This does not establish the underlying cause.",
+      "upstreamIssue": null,
+      "reproduce": "See deploy/waltid/README.md; node deploy/waltid/probe.mjs"
+    },
+    {
+      "id": "G-12",
+      "status": "repeated_external_checkpoint",
+      "disclosure": "public_non_security_observation",
+      "productVersion": "walt.id 1.2.0 / Inji Verify 0.18.2",
+      "evidence": [
+        "submission/evidence/2026-11-01-waltid/first.json",
+        "submission/evidence/2026-11-01-waltid/repeat.json",
+        "submission/evidence/2026-11-01-waltid/inji-control.json"
+      ],
+      "runIds": [],
+      "matrixCells": [
+        "walt-credential-to-inji-verify"
+      ],
+      "matrixDecision": "A stored walt.id credential and a fresh Inji presentation request were available. Wallet presentation returned HTTP 500 before an independent Verify verdict. This is not a credential rejection by Verify.",
+      "upstreamIssue": null,
+      "reproduce": "See deploy/waltid/README.md; node deploy/waltid/probe.mjs"
+    },
+    {
+      "id": "G-13",
+      "status": "repeated_external_checkpoint",
+      "disclosure": "public_non_security_observation",
+      "productVersion": "walt.id Issuer2 and Verifier2 1.2.0",
+      "evidence": [
+        "submission/evidence/2026-11-01-waltid/example-type-comparison.json"
+      ],
+      "runIds": [],
+      "matrixCells": [
+        "walt-wallet-to-walt-verifier",
+        "walt-swagger-example-vct"
+      ],
+      "matrixDecision": "The verifier Swagger SD-JWT PID example type did not match the type advertised by the bundled identity issuer. Two paired sessions failed using the example type and succeeded using the metadata type. The verifier correctly rejected the unmatched type; this is an example configuration gap.",
+      "reproduce": "node deploy/waltid/probe.mjs /tmp/check.json --example-control",
+      "upstreamIssue": null
     }
   ],
   "localProtocolEvidence": {

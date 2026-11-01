@@ -93,3 +93,29 @@ jobs:
       - name: Stop and remove containers and volumes (always)
         if: always()
         run: docker compose --profile core --profile mocks down -v
+
+  protocol-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install -g pnpm@11.25.0 && pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: mkdir -p nightly
+      - name: Run isolated SD-JWT protocol controls
+        run: node spikes/wallet-interop-local.mjs --out nightly/sd.json
+      - name: Run JSON-LD controls
+        if: '!cancelled()'
+        run: node spikes/jsonld-interop-probes.mjs --out nightly/ld.json
+      - name: Join fresh protocol records with dated Inji observations
+        if: '!cancelled()'
+        run: node scripts/protocol-matrix.mjs nightly/sd.json nightly/ld.json nightly/matrix.json
+      - uses: actions/upload-artifact@v4
+        if: '!cancelled()'
+        with:
+          name: protocol-matrix-${{ github.run_number }}
+          path: nightly/
+          if-no-files-found: error

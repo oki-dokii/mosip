@@ -54,6 +54,30 @@
         "outcome": "invalid",
         "code": "UNTRUSTED_KEY"
       }
+    },
+    {
+      "id": "j1.serialization.member_order",
+      "fault": "reverse_member_order",
+      "expected": {
+        "outcome": "valid",
+        "code": "correct_acceptance"
+      }
+    },
+    {
+      "id": "j1.proof.absent",
+      "fault": "remove_proof",
+      "expected": {
+        "outcome": "invalid",
+        "code": "PROOF_VALUE_INVALID"
+      }
+    },
+    {
+      "id": "j1.subject.substitution",
+      "fault": "replace_subject_id",
+      "expected": {
+        "outcome": "invalid",
+        "code": "SIGNATURE_CORRUPTED"
+      }
     }
   ]
 }

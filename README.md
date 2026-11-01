@@ -21,6 +21,8 @@ mock services; the labelled historical Web archive is a recorded result, not a n
 wallet run. For the real local wallet journey, use the
 [managed capture runbook](docs/PERSON1_LOCAL_CAPTURE_HANDOFF.md).
 
+Open **Parties** to browse registered endpoints and their evidence, or **QR and capabilities** to compare raw and PixelPass payloads. [Register an issuer in five minutes](docs/PARTIES.md). [Browse 40 protocol matrix cells](submission/protocol-matrix.json) or [reproduce the four walt.id interoperability cells](deploy/waltid/README.md).
+
 [Current results and limits](submission/evidence/2026-10-26-aggregate-interop.md) ·
 [Machine-readable compatibility matrix](submission/evidence/2026-10-26-aggregate-matrix.json) ·
 [Current team assignment](docs/FINAL_FOUR_PERSON_EXECUTION_PLAN.md)

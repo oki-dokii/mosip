@@ -6,13 +6,13 @@ import { GapExplorer } from "./GapExplorer";
 it("presents evidence-backed findings without promoting them to confirmed upstream defects", () => {
   render(<GapExplorer />);
   expect(screen.getByRole("heading", { name: "What the evidence has revealed" })).toBeTruthy();
-  expect(screen.getAllByRole("listitem")).toHaveLength(10);
+  expect(screen.getByText("Certify offer stops at walt.id wallet receipt")).toBeTruthy();
   expect(screen.getByText("Verify 0.18.2 sample database seed breaks direct-post")).toBeTruthy();
   expect(screen.getByText("Verify 0.18.2 accepts mismatched holder challenges in a local probe")).toBeTruthy();
   expect(screen.getByText("Verify 0.18.2 accepts a descriptor path outside the VP array")).toBeTruthy();
   expect(screen.getByText("Issuer and wallet JWT proof versions differ")).toBeTruthy();
   expect(screen.getByText("Local issuer DID assertion relationship needs an adapter")).toBeTruthy();
-  expect(screen.getByText(/No upstream issue has been filed/)).toBeTruthy();
+  expect(screen.getByText(/private reporting status/)).toBeTruthy();
   expect(screen.getByText(/An unreported service version or missing wallet account/)).toBeTruthy();
   const links = screen.getAllByRole("link");
   expect(links.some((link) => link.getAttribute("href")?.endsWith("/GAPS.md"))).toBe(true);

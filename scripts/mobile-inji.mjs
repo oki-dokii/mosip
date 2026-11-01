@@ -40,7 +40,9 @@ async function save(name, value) {
   await writeFile(join(runtime, name), typeof value === 'string' ? value : JSON.stringify(value, null, 2) + '\n', { mode: 0o600 });
   await chmod(join(runtime, name), 0o600);
 }
-function dockerArgs(args) { return ['compose', '-p', 'mosip-mobile-a2', '-f', join(root, 'deploy/docker-compose.mobile.yml'), ...args]; }
+const composeProject = process.env.MOBILE_COMPOSE_PROJECT ?? 'mosip-mobile-a2';
+if (!/^[a-z][a-z0-9-]{0,40}$/.test(composeProject)) throw new Error('INVALID_COMPOSE_PROJECT');
+function dockerArgs(args) { return ['compose', '-p', composeProject, '-f', join(root, 'deploy/docker-compose.mobile.yml'), ...args]; }
 function dockerEnvironment() { return { ...process.env, MOBILE_RUNTIME_DIR: runtime, MOBILE_DB_PASSWORD: settings.databasePassword }; }
 async function runDocker(args, capture = false, input) {
   return new Promise((done, reject) => {
@@ -165,7 +167,7 @@ async function waitReady() {
   for (let i=0; i<120; i++) {
     try { const r=await bounded(backend+'/v1/certify/.well-known/openid-credential-issuer'); if(r.status===200 && r.body?.credential_configurations_supported?.[configId]) return; } catch { /* startup */ }
     if (i % 5 === 4) {
-      const status = execFileSync('docker', ['inspect', '--format', '{{.State.Status}}', 'mosip-mobile-a2-mobile-certify-1'], { encoding:'utf8', stdio:['ignore','pipe','ignore'] }).trim();
+      const status = execFileSync('docker', ['inspect', '--format', '{{.State.Status}}', composeProject + '-mobile-certify-1'], { encoding:'utf8', stdio:['ignore','pipe','ignore'] }).trim();
       if (['exited','dead'].includes(status)) fail('CERTIFY_EXITED_DURING_STARTUP');
     }
     await pause(2000);

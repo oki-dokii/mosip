@@ -1,0 +1,50 @@
+[
+  {
+    "format": "JSON-LD",
+    "claims": 4,
+    "bytes": 417,
+    "packedBytes": 456,
+    "rawVersion": 16,
+    "packedVersion": 13
+  },
+  {
+    "format": "SD-JWT",
+    "claims": 4,
+    "bytes": 816,
+    "packedBytes": 902,
+    "rawVersion": 23,
+    "packedVersion": 19
+  },
+  {
+    "format": "JSON-LD",
+    "claims": 32,
+    "bytes": 1391,
+    "packedBytes": 1301,
+    "rawVersion": 31,
+    "packedVersion": 24
+  },
+  {
+    "format": "SD-JWT",
+    "claims": 32,
+    "bytes": 4845,
+    "packedBytes": 4743,
+    "rawVersion": null,
+    "packedVersion": null
+  },
+  {
+    "format": "JSON-LD",
+    "claims": 96,
+    "bytes": 3631,
+    "packedBytes": 3185,
+    "rawVersion": null,
+    "packedVersion": 39
+  },
+  {
+    "format": "SD-JWT",
+    "claims": 96,
+    "bytes": 14083,
+    "packedBytes": 13397,
+    "rawVersion": null,
+    "packedVersion": null
+  }
+]

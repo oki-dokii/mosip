@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "evidenceTier": "local_mock_protocol",
+  "profile": "jsonld-ldp-v1",
+  "timestamp": "2026-11-01T08:15:30.371Z",
+  "sourceCommit": "eedffeb76e9bfded778564d3ea49a839a9a69126",
+  "dirtyWorkingTree": true,
+  "results": [
+    {
+      "caseId": "j1.control.valid",
+      "fault": "none",
+      "singleVariableMutated": "none",
+      "control": {
+        "caseId": "j1.control.valid",
+        "passed": true
+      },
+      "expected": {
+        "outcome": "valid",
+        "code": "correct_acceptance"
+      },
+      "observed": {
+        "outcome": "valid",
+        "code": null,
+        "error": null
+      },
+      "verdict": "correct_acceptance",
+      "durationMs": 1
+    },
+    {
+      "caseId": "j1.signature.corrupted",
+      "fault": "bad_proof_value",
+      "singleVariableMutated": "proof.proofValue corrupted with non-base58 character post-issuance",
+      "control": {
+        "caseId": "j1.control.valid",
+        "passed": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "code": "PROOF_VALUE_INVALID"
+      },
+      "observed": {
+        "outcome": "invalid",
+        "code": "PROOF_VALUE_INVALID",
+        "error": "Malformed or invalid proof value encoding"
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 2
+    },
+    {
+      "caseId": "j1.credential.expired",
+      "fault": "expired",
+      "singleVariableMutated": "expirationDate set to past date at issuance",
+      "control": {
+        "caseId": "j1.control.valid",
+        "passed": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "code": "CREDENTIAL_EXPIRED"
+      },
+      "observed": {
+        "outcome": "invalid",
+        "code": "CREDENTIAL_EXPIRED",
+        "error": "Credential expired on 2020-01-01T00:00:00Z"
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 4
+    },
+    {
+      "caseId": "j1.credential.wrong_type",
+      "fault": "wrong_type",
+      "singleVariableMutated": "type omitted ProofOfIdentityCredential at issuance",
+      "control": {
+        "caseId": "j1.control.valid",
+        "passed": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "code": "CREDENTIAL_TYPE_MISMATCH"
+      },
+      "observed": {
+        "outcome": "invalid",
+        "code": "CREDENTIAL_TYPE_MISMATCH",
+        "error": "Missing required type ProofOfIdentityCredential"
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 2
+    },
+    {
+      "caseId": "j1.document.altered_claim",
+      "fault": "altered_claim",
+      "singleVariableMutated": "credentialSubject.fullName changed post-issuance",
+      "control": {
+        "caseId": "j1.control.valid",
+        "passed": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "code": "SIGNATURE_CORRUPTED"
+      },
+      "observed": {
+        "outcome": "invalid",
+        "code": "SIGNATURE_CORRUPTED",
+        "error": "Cryptographic signature mismatch"
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 1
+    },
+    {
+      "caseId": "j1.key.untrusted_method",
+      "fault": "forged_verification_method",
+      "singleVariableMutated": "proof.verificationMethod pointed to untrusted key post-issuance",
+      "control": {
+        "caseId": "j1.control.valid",
+        "passed": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "code": "UNTRUSTED_KEY"
+      },
+      "observed": {
+        "outcome": "invalid",
+        "code": "UNTRUSTED_KEY",
+        "error": "Verification method not authorized by issuer"
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 0
+    },
+    {
+      "caseId": "j1.serialization.member_order",
+      "fault": "reverse_member_order",
+      "singleVariableMutated": "reverse top-level JSON member order without changing the RDF dataset",
+      "control": {
+        "caseId": "j1.control.valid",
+        "passed": true
+      },
+      "expected": {
+        "outcome": "valid",
+        "code": "correct_acceptance"
+      },
+      "observed": {
+        "outcome": "valid",
+        "code": null,
+        "error": null
+      },
+      "verdict": "correct_acceptance",
+      "durationMs": 1
+    },
+    {
+      "caseId": "j1.proof.absent",
+      "fault": "remove_proof",
+      "singleVariableMutated": "remove the proof property from a valid credential",
+      "control": {
+        "caseId": "j1.control.valid",
+        "passed": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "code": "PROOF_VALUE_INVALID"
+      },
+      "observed": {
+        "outcome": "invalid",
+        "code": "PROOF_VALUE_INVALID",
+        "error": "Malformed or invalid proof value encoding"
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 0
+    },
+    {
+      "caseId": "j1.subject.substitution",
+      "fault": "replace_subject_id",
+      "singleVariableMutated": "replace only the credential subject identifier after signing",
+      "control": {
+        "caseId": "j1.control.valid",
+        "passed": true
+      },
+      "expected": {
+        "outcome": "invalid",
+        "code": "SIGNATURE_CORRUPTED"
+      },
+      "observed": {
+        "outcome": "invalid",
+        "code": "SIGNATURE_CORRUPTED",
+        "error": "Cryptographic signature mismatch"
+      },
+      "verdict": "correct_rejection",
+      "durationMs": 2
+    }
+  ],
+  "exitCode": 0
+}

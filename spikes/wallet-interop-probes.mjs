@@ -165,16 +165,6 @@ export async function runProbes({ issuer, verifier, catalog, caseTimeoutMs = 20_
   for (const definition of catalog.cases) {
     const deadline = Date.now() + caseTimeoutMs, started = Date.now(); let controlPassed = false, constructionPassed = false, controlRecord = null, construction = {};
     try {
-      // Transport-level faults that don't require issuance
-      if (definition.fault === "invalid_vp_token") {
-        const a = await challenge(verifier, deadline);
-        controlPassed = true; constructionPassed = true;
-        construction = { invalidEnvelopeSent: true };
-        const observation = await submitInvalidToken(verifier, a, deadline);
-        const observed = safeObservation({ ...observation, controlPassed, constructionPassed });
-        results.push({ caseId: definition.id, profile: catalog.profile, applicationStep: null, control: null, construction, expected: definition.expected, observed, verdict: evaluate(definition.expected, observed), durationMs: Date.now() - started });
-        continue;
-      }
       const baseline = await issue(issuer, "valid", deadline), a = await challenge(verifier, deadline);
       const control = await present(baseline, a, "valid");
       const controlResult = safeObservation({ ...await submit(verifier, a, control.token, deadline), controlPassed: true, constructionPassed: control.constructionPassed });
@@ -182,7 +172,11 @@ export async function runProbes({ issuer, verifier, catalog, caseTimeoutMs = 20_
       controlRecord = { caseId: `${definition.id}.control`, observed: controlResult, construction: control.construction, verdict: controlPassed ? "correct_acceptance" : "inconclusive" };
       if (!controlPassed) throw new ProbeError("construction");
       let observation;
-      if (definition.fault === "used_state") {
+      if (definition.fault === "invalid_vp_token") {
+        const b = await challenge(verifier, deadline);
+        constructionPassed = true; construction = { invalidEnvelopeSent: true };
+        observation = await submitInvalidToken(verifier, b, deadline);
+      } else if (definition.fault === "used_state") {
         constructionPassed = control.constructionPassed; construction = { ...control.construction, previouslyAcceptedPresentationReused: true };
         observation = await submit(verifier, a, control.token, deadline);
       } else if (definition.fault === "replay") {

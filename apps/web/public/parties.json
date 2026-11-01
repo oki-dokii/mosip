@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "parties": [
+    {
+      "id": "certify-alpha",
+      "name": "Inji Certify 1.0.0-alpha.1",
+      "role": "issuer",
+      "endpoint": "http://127.0.0.1:18090/v1/certify",
+      "formats": [
+        "dc+sd-jwt"
+      ],
+      "flows": [
+        "pre-authorized issuance"
+      ],
+      "evidenceTier": "reference wallet",
+      "evidence": "submission/evidence/2026-10-25-local-inji-extended-matrix.json"
+    },
+    {
+      "id": "inji-web",
+      "name": "Inji Web 0.17.0 / Mimoto 0.22",
+      "role": "wallet",
+      "endpoint": "http://127.0.0.1:18093",
+      "formats": [
+        "ldp_vc"
+      ],
+      "flows": [
+        "issuance",
+        "presentation"
+      ],
+      "evidenceTier": "real local wallet",
+      "evidence": "submission/evidence/2026-10-26-person2-local-ui/run-report.json"
+    },
+    {
+      "id": "inji-verify",
+      "name": "Inji Verify 0.18.2",
+      "role": "verifier",
+      "endpoint": "http://127.0.0.1:18081/v1/verify",
+      "formats": [
+        "ldp_vc"
+      ],
+      "flows": [
+        "presentation"
+      ],
+      "evidenceTier": "real local wallet",
+      "evidence": "submission/evidence/2026-10-26-person2-local-ui/run-report.json"
+    },
+    {
+      "id": "walt-issuer",
+      "name": "walt.id 1.2.0 issuer",
+      "role": "issuer",
+      "endpoint": "http://127.0.0.1:7005",
+      "formats": [
+        "dc+sd-jwt"
+      ],
+      "flows": [
+        "issuance"
+      ],
+      "evidenceTier": "real local walt.id wallet",
+      "evidence": "submission/evidence/2026-11-01-waltid/repeat.json"
+    },
+    {
+      "id": "walt-wallet",
+      "name": "walt.id 1.2.0 wallet",
+      "role": "wallet",
+      "endpoint": "http://127.0.0.1:7006",
+      "formats": [
+        "dc+sd-jwt"
+      ],
+      "flows": [
+        "issuance",
+        "presentation"
+      ],
+      "evidenceTier": "real local walt.id wallet",
+      "evidence": "submission/evidence/2026-11-01-waltid/repeat.json"
+    },
+    {
+      "id": "walt-verifier",
+      "name": "walt.id 1.2.0 verifier",
+      "role": "verifier",
+      "endpoint": "http://127.0.0.1:7004",
+      "formats": [
+        "dc+sd-jwt"
+      ],
+      "flows": [
+        "presentation"
+      ],
+      "evidenceTier": "real local walt.id wallet",
+      "evidence": "submission/evidence/2026-11-01-waltid/repeat.json"
+    }
+  ]
+}

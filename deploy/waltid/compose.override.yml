@@ -1,0 +1,28 @@
+# Overlay on upstream docker-compose/docker-compose.yaml at the pinned revision.
+services:
+  issuer-api2:
+    platform: linux/amd64
+    image: waltid/issuer-api2:1.2.0@sha256:95dbdb98560af5fbd3511a21e3c928d86550c2990ca40dd81ba7ab99aec81b92
+  verifier-api2:
+    platform: linux/amd64
+    image: waltid/verifier-api2:1.2.0@sha256:2e8581019531c2efa17a2c086b9c76ee7fee4bb5ee68369e2ea1864733039e9a
+  wallet-api2:
+    platform: linux/amd64
+    image: waltid/wallet-api2:1.2.0@sha256:1a3fe551e1e7728be5a954663e64d67fb82fe14c7b6c2090eccec907f0fe0177
+  caddy:
+    ports: !override
+      - "127.0.0.1:7004:7004"
+      - "127.0.0.1:7005:7005"
+      - "127.0.0.1:7006:7006"
+  postgres:
+    ports: !reset []
+  wallet-loopback:
+    image: node:22-alpine
+    profiles: [identity]
+    network_mode: service:wallet-api2
+    depends_on: [wallet-api2]
+    read_only: true
+    cap_drop: [ALL]
+    volumes:
+      - ${PLAYGROUND_WALT_RELAY:?}:/relay.mjs:ro
+    entrypoint: [node, /relay.mjs]

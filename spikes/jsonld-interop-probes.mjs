@@ -4,12 +4,16 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
 import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-key-2020";
 import jsigs from "jsonld-signatures";
-import jsonld from "jsonld";
+import { readFileSync } from "node:fs";
+const staticContexts = new Map(Object.entries({
+  "https://www.w3.org/2018/credentials/v1": "credentials",
+  "https://www.w3.org/ns/did/v1": "did",
+  "https://w3id.org/security/suites/ed25519-2020/v1": "ed25519",
+}).map(([url, name]) => [url, JSON.parse(readFileSync(new URL("./fixtures/jsonld-contexts/"+name+".json", import.meta.url), "utf8"))]));
 
 const { AssertionProofPurpose } = jsigs.purposes;
 
 export function buildDocumentLoader(issuerKey, attackerKey) {
-  const nodeLoader = jsonld.documentLoaders.node();
   return async function customDocumentLoader(url) {
     if (url === "did:example:issuer") {
       return {
@@ -55,7 +59,8 @@ export function buildDocumentLoader(issuerKey, attackerKey) {
         document: attackerKey.export({ publicKey: true })
       };
     }
-    return nodeLoader(url);
+    if (!staticContexts.has(url)) throw new Error("Unregistered test context");
+    return { contextUrl: null, documentUrl: url, document: structuredClone(staticContexts.get(url)) };
   };
 }
 
@@ -198,6 +203,20 @@ export async function runProbes(options = {}) {
         break;
       }
 
+      case "reverse_member_order":
+        candidateVc = Object.fromEntries(Object.entries(signedBaseline).reverse());
+        singleVariableMutated = "reverse top-level JSON member order without changing the RDF dataset";
+        break;
+      case "remove_proof":
+        candidateVc = structuredClone(signedBaseline);
+        delete candidateVc.proof;
+        singleVariableMutated = "remove the proof property from a valid credential";
+        break;
+      case "replace_subject_id":
+        candidateVc = structuredClone(signedBaseline);
+        candidateVc.credentialSubject.id = "did:example:other-holder";
+        singleVariableMutated = "replace only the credential subject identifier after signing";
+        break;
       case "altered_claim": {
         candidateVc = structuredClone(signedBaseline);
         candidateVc.credentialSubject.fullName = "Eve Attacker";

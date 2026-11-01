@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { runProbes } from "./jsonld-interop-probes.mjs";
 
-test("JSON-LD negative protocol suite with positive controls executes all 6 cases", async () => {
+test("JSON-LD negative protocol suite with positive controls executes all nine cases", async () => {
   const results = await runProbes();
 
-  assert.equal(results.length, 6, "Expected exactly 6 JSON-LD test cases");
+  assert.equal(results.length, 9, "Expected exactly nine JSON-LD test cases");
 
   const byId = new Map(results.map((r) => [r.caseId, r]));
 

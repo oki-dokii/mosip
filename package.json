@@ -53,6 +53,7 @@
     "qrcode": "1.5.4"
   },
   "devDependencies": {
+    "@mosip/pixelpass": "0.6.0",
     "typescript": "5.9.3"
   }
 }

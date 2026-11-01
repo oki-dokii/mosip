@@ -78,3 +78,5 @@ Per project guidelines:
 | **Cross-Vendor Status** | **NOT CLAIMED** — Purely theoretical architectural evaluation. |
 | **Feasibility** | Feasible only via **Pre-Authorized Code SD-JWT** with DIF PEX 2.0 fallback and response encryption disabled. |
 | **Driver Work** | **Zero driver changes** made to `apps/bff/` to maintain stability of the core packaging/CI lane. |
+
+November update: this document describes the historical desk study. The [executed external wallet runbook](waltid/README.md) records subsequent results and their limits.

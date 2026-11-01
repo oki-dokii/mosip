@@ -37,3 +37,9 @@ The versioned catalog is `spikes/wallet-interop-cases.json`; its stable IDs, exp
 | `p3.profile.presentation_submission` | Reject a present unsupported parameter on this local profile. A malformed PE mapping is not interpreted as a PE conformance test. |
 
 Primary references: [RFC 7515](https://www.rfc-editor.org/rfc/rfc7515.html#section-5.2), [RFC 7519](https://www.rfc-editor.org/rfc/rfc7519.html#section-4.1.4), [RFC 9901](https://www.rfc-editor.org/rfc/rfc9901.html#section-7.3), [OpenID4VP 1.0](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#section-8.2). These local expectations cannot establish which protocol edition an external deployment implements. The 20-case test catalogue is pinned in `spikes/wallet-interop-cases.json`.
+
+## November executed matrix
+
+[40 environment-specific cells](protocol-matrix.json) record the single changed variable, positive control, expected verdict, observation, specification and dated source. Twenty SD-JWT and nine JSON-LD mock protocol cells execute nightly. The seven local Inji and four Collab cells retain their original observation dates. The Collab JSON-LD positive control is linked separately. An inconclusive diagnostic stays inconclusive.
+
+The three new JSON-LD cases reverse top-level JSON member order (valid), remove the assertion proof (invalid), and replace the signed subject ID (invalid). The offline context snapshots are confined to this synthetic suite. The [four walt.id interoperability cells](../deploy/waltid/README.md) are a separate deployment experiment; they do not inflate the 40.
