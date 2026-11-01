@@ -286,6 +286,9 @@ async function main() {
   state.issuer=localOnly?backend:await obtainTunnel();console.log((localOnly?'Loopback-only issuer: ':'Phone-reachable issuer: ')+state.issuer);
   await configure(state.issuer);state.phase='booting';
   await runDocker(['up','-d','--wait','mobile-db']);
+  // Stream private bootstrap SQL as the DB user; Linux bind mounts retain host UID/mode.
+  const database = await runDocker(['exec','-T','mobile-db','psql','-U','postgres','-d','postgres','-Atc',"SELECT EXISTS(SELECT FROM pg_database WHERE datname='inji_certify')"],true);
+  if (database.trim()==='f') await runDocker(['exec','-T','mobile-db','psql','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1'],false,await readFile(join(runtime,'database-init.sql'),'utf8'));
   // Existing dedicated volumes keep their schema; refresh only our own credential row.
   await runDocker(['exec','-T','mobile-db','psql','-U','postgres','-d','inji_certify','-v','ON_ERROR_STOP=1'],false,await readFile(join(runtime,'credential-seed.sql'),'utf8'));
   await runDocker(['up','-d','--no-deps','--force-recreate','mobile-certify']);
