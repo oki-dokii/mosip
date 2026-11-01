@@ -55,3 +55,5 @@ The official v0.18.2 [sample Compose seed](https://github.com/inji/inji-verify/b
 - The [mobile route](MOBILE_INJI.md) remains separate. It uses a temporary HTTPS tunnel and public Collab Verify because a phone cannot reach Mac loopback addresses.
 
 Official upstream references: [Certify pinned source/config](https://github.com/inji/inji-certify/tree/8fdf71656979a72fa8263766d4dec3cc25127b76/docker-compose/docker-compose-injistack) and [Verify v0.18.2 Compose](https://github.com/inji/inji-verify/tree/v0.18.2/docker-compose).
+
+**Hosted Linux reproduction (2 November IST).** The [nightly workflow dispatched on main](https://github.com/oki-dokii/mosip/actions/runs/41356309226/job/124997062373) started fresh Certify and Verify services and uploaded `local-inji-compatibility-41356309226`. The downloaded UTC-dated report recorded valid → HTTP 200/valid; bad issuer signature → HTTP 200/invalid; wrong state → HTTP 404/no verifier verdict. This is a reference-holder run, not Android or Inji Web.
