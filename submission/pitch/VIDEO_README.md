@@ -1,5 +1,11 @@
 # Demo video for reviewers
 
+[Five-minute demo with full speaking captions](Playground-Five-Minute-Captioned.mp4) · [Caption file](Five-Minute-Demo-Captions.srt) · [Speaking script](Five-Minute-Demo-Script.md)
+
+The complete narration appears in timed sentence groups in a dedicated band below the picture. Duration 05:00. Silent.
+
+## Other editions
+
 [Five-minute screen demo](Playground-Five-Minute-Demo.mp4) · [Timed speaking script](Five-Minute-Demo-Script.md)
 
 This edition leads with live mock runs and an assisted fixture, then opens committed wallet evidence and results in the browser. Duration 05:00. Silent.
