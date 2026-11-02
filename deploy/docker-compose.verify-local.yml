@@ -27,11 +27,11 @@ services:
       DATABASE_SCHEMA: verify
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: local-verify-synthetic
-      INJI_VP_SUBMISSION_BASE_URL: http://127.0.0.1:18081/v1/verify
-      INJI_DID_VERIFY_URI: did:web:localhost%3A18081:v1:verify
-      INJI_DID_VERIFY_PUBLIC_KEY_URI: did:web:localhost%3A18081:v1:verify#key-0
+      INJI_VP_SUBMISSION_BASE_URL: ${INJI_VP_SUBMISSION_BASE_URL:-http://127.0.0.1:18081/v1/verify}
+      INJI_DID_VERIFY_URI: ${INJI_DID_VERIFY_URI:-did:web:localhost%3A18081:v1:verify}
+      INJI_DID_VERIFY_PUBLIC_KEY_URI: ${INJI_DID_VERIFY_PUBLIC_KEY_URI:-did:web:localhost%3A18081:v1:verify#key-0}
       INJI_KEYSTORE_FILE_PASS: mosip
-      INJI_VERIFY_REDIRECT_URI: http://127.0.0.1:18081
+      INJI_VERIFY_REDIRECT_URI: ${INJI_VERIFY_REDIRECT_URI:-http://127.0.0.1:18081}
       INJI_VERIFY_RESPONSE_CODE_EXPIRY_TIME_IN_MINS: '5'
       INJI_VERIFY_CLAIMS_WITH_META_DATA: _sd,_sd_alg,iss,cnf,sub,aud,exp,nbf,iat,cti
       JAVA_TOOL_OPTIONS: -Xms128m -Xmx768m
