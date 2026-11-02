@@ -1,5 +1,11 @@
 # Demo video for reviewers
 
+[Current silent walkthrough](Playground-Silent-Walkthrough.mp4) · [Chapter guide](Silent-Walkthrough-Chapters.md) · [Second-by-second transcript](Silent-Walkthrough-Transcript.md)
+
+The first four minutes introduce the playground. The extended chapters cover the workflow, public register and matrix observations.
+
+## Earlier narrated edition
+
 [November captioned video](Playground-2026-11-01.mp4) and [subtitle file](Playground-2026-11-01.srt). The October recording is followed by a narrated 32-second results update. Human playback review is pending.
 
 
