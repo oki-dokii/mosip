@@ -62,6 +62,7 @@ jobs:
           pnpm lint
           node scripts/check-gap-register.mjs
           pnpm test:mutations
+          pnpm --filter @playground/shared --filter @playground/mock-issuer --filter @playground/mock-verifier build
           pnpm --filter @playground/bff exec vitest run src/drivers --coverage --coverage.include="src/drivers/*.ts" --coverage.exclude="**/*.test.ts" --coverage.reportsDirectory=coverage-drivers
           pnpm coverage:redaction
           pnpm docs:api

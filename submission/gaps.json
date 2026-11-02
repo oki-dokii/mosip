@@ -206,7 +206,10 @@
       ],
       "matrixDecision": "Certify 1.0.0-alpha.1 advertises discovery at a location that returns 404. A wallet-only alias delivered metadata (200); walt.id 1.2.0 then returned 400 because credential_signing_alg_values_supported in an ldp_vc configuration did not contain LD suite identifiers. Even the requested SD-JWT offer was blocked before issuance.",
       "upstreamIssue": null,
-      "reproduce": "See deploy/waltid/README.md; node deploy/waltid/probe.mjs"
+      "reproduce": "See deploy/waltid/README.md; node deploy/waltid/probe.mjs",
+      "specReferences": [
+        "https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-13.html#appendix-A.1.2.2"
+      ]
     },
     {
       "id": "G-12",
