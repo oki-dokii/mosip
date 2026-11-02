@@ -355,3 +355,5 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 | Capture and browser QA | Live assisted-wallet observation without rewriting signed messages. | Three synthetic browser/axe checks pass; they cannot prove the real wallet's browser/native boundaries. |
 
 Ownership and next steps are in the [single-owner handoff](docs/archive/SINGLE_OWNER_HANDOFF.md). Reports should state the exact implementation, profile and observed boundaries; the A1 and A2 records do not establish every format or a complete local Inji deployment.
+
+[Two-version SD-JWT comparison](submission/VERIFY_VERSION_COMPARISON.md) gives the paired verifier verdicts that supplement the 79-observation checkpoint.

@@ -1,5 +1,6 @@
 // Run with the ordinary transparent loopback profile. Output contains checkpoints only.
 import {readFile,writeFile} from 'node:fs/promises';
+import {alphaPresent} from '../../scripts/alpha-presentation.mjs';
 import {issueCredential,present} from '../../scripts/local-inji-smoke.mjs';
 import { generateKeyPairSync } from 'node:crypto';
 import { decodeJwt, decodeProtectedHeader, exportJWK, SignJWT } from 'jose';
@@ -61,6 +62,7 @@ for(const issuer of ['Certify','walt.id']){
         hasExpiry:typeof claims.exp==='number',disclosureCount:parts.filter(Boolean).length};
       const {credentialProofValid,holderProofValid,resultCode,verifierHttpStatus}=r.summary;
       row.verification={credentialProofValid,holderProofValid,resultCode,verifierHttpStatus};
+      row.alphaVerification=(await alphaPresent(issued.credential,issued.holder)).summary;
     }
    }else{
     const create=await fetch('http://127.0.0.1:7004/verification-session/create',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({flow_type:'cross_device',core_flow:{dcql_query:{credentials:[{id:'identity',format:'dc+sd-jwt',meta:{vct_values:[decodeJwt(issued.credential.split('~')[0]).vct]}}]}}})});

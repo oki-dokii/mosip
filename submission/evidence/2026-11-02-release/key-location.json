@@ -1,0 +1,81 @@
+{
+  "observedAt": "2026-11-02T06:00:15.682Z",
+  "stable": "0.18.2 PEX",
+  "alpha": "1.0.0-alpha.1 DCQL, local route adapter",
+  "issuer": "synthetic did:jwk",
+  "holder": "same Ed25519 key, cnf.jwk",
+  "rows": [
+    {
+      "alg": "RS256",
+      "x5c": true,
+      "issuerSignatureChecked": true,
+      "stable": {
+        "http": 200,
+        "valid": true,
+        "signature": true,
+        "code": null
+      },
+      "alpha": {
+        "post": 200,
+        "http": 200,
+        "valid": true,
+        "signature": true,
+        "code": null
+      }
+    },
+    {
+      "alg": "RS256",
+      "x5c": false,
+      "issuerSignatureChecked": true,
+      "stable": {
+        "http": 200,
+        "valid": false,
+        "signature": false,
+        "code": "ERR_SIGNATURE_VERIFICATION_FAILED"
+      },
+      "alpha": {
+        "post": 200,
+        "http": 200,
+        "valid": false,
+        "signature": false,
+        "code": "ERR_SIGNATURE_VERIFICATION_FAILED"
+      }
+    },
+    {
+      "alg": "ES256",
+      "x5c": true,
+      "issuerSignatureChecked": true,
+      "stable": {
+        "http": 200,
+        "valid": true,
+        "signature": true,
+        "code": null
+      },
+      "alpha": {
+        "post": 200,
+        "http": 200,
+        "valid": true,
+        "signature": true,
+        "code": null
+      }
+    },
+    {
+      "alg": "ES256",
+      "x5c": false,
+      "issuerSignatureChecked": true,
+      "stable": {
+        "http": 200,
+        "valid": false,
+        "signature": false,
+        "code": "ERR_SIGNATURE_VERIFICATION_FAILED"
+      },
+      "alpha": {
+        "post": 200,
+        "http": 200,
+        "valid": false,
+        "signature": false,
+        "code": "ERR_SIGNATURE_VERIFICATION_FAILED"
+      }
+    }
+  ]
+}

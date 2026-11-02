@@ -16,3 +16,5 @@
 The eight [SD-JWT role combinations](protocol-matrix.json) include two harness-limited cells: our reference holder sent token requests to its Certify-specific endpoint on the walt.id issuer and received 404. Neither verifier was reached. The [JSON-LD size measurement](evidence/2026-11-02-wallet-profile/jsonld-pairs.json) recorded HTTP 200/valid for a valid credential with 2 MiB of extra padding on Verify 0.18.2. The matrix reports that measurement without a required verdict.
 
 With the discovery alias enabled, the full catalog stopped at wallet HTTP 400 during issuer metadata validation. The SD-JWT-only catalog stopped later at wallet HTTP 500 during authorization-server discovery. The exact exception-to-status mapping is unconfirmed. [Paired adapter runs and protocol analysis](../deploy/waltid/README.md).
+
+[Two-version SD-JWT comparison](VERIFY_VERSION_COMPARISON.md) gives the paired verifier verdicts that supplement the 79-observation checkpoint.
