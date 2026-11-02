@@ -1,4 +1,5 @@
 import type { DriverContext } from "./types.js";
+import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createCollabDrivers } from "./collab.js";
 import { importJWK, jwtVerify } from "jose";
@@ -51,7 +52,7 @@ describe("Collab verifier status polling", () => {
     run.state.set("collab.cookie", "XSRF-TOKEN=synthetic-secret");
     run.state.set("collab.cookieOrigin", "https://auth.example");
     process.env.VERIFY_POLL_INTERVAL_MS = "0";
-    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ credential_configurations_supported: { "FarmerCredential_VCDM2.0": {} } }))
+    const fetchMock = vi.fn().mockResolvedValueOnce(jsonResponse({ credential_configurations_supported: { "FarmerCredential_VCDM2.0": { format: "ldp_vc" } } }))
       .mockResolvedValueOnce(jsonResponse({ status: "VP_SUBMITTED" }));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -201,5 +202,20 @@ describe("local non-Inji issuer", () => {
       expect((await drivers.verifier.pollStatus(mockContext)).summary?.status).toBe("VP_SUBMITTED");
       expect((await drivers.verifier.getResult(mockContext)).summary?.outcome).toBe(tamper ? "invalid" : "valid");
     }
+  });
+});
+
+describe("Certify issuer discovery against recorded Collab configuration pairs", () => {
+  const record = JSON.parse(readFileSync(new URL("../../../../spikes/fixtures/collab-contracts-2026-10-20.json", import.meta.url), "utf8"));
+  const pairs = Object.values(record.certify.credentialConfigurations) as {id: string; format: string}[];
+  it.each(pairs)("checks the advertised format for $id before reporting support", async ({id, format}) => {
+    const run = context();
+    Object.assign(run.state.get("collab.config") as object, { credentialConfigurationId: id, credentialFormat: format });
+    const reply = (advertised: unknown) => jsonResponse({credential_configurations_supported: {[id]: {format: advertised}}});
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(reply(format))
+      .mockResolvedValueOnce(reply(format === "ldp_vc" ? "dc+sd-jwt" : "ldp_vc")).mockResolvedValueOnce(reply(undefined)));
+    const issuer = createCollabDrivers().issuer;
+    await expect(issuer.createOffer(run)).resolves.toMatchObject({summary: {credentialConfigurationId: id, format}});
+    for (let i = 0; i < 2; i++) await expect(issuer.createOffer(run)).rejects.toThrow("ISSUER_METADATA_FORMAT_MISMATCH");
   });
 });

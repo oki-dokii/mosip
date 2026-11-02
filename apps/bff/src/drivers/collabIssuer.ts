@@ -35,6 +35,9 @@ export class CollabIssuerDriver implements IssuerDriver {
     if (!configurations[config.credentialConfigurationId]) {
       throw new Error(`Issuer does not advertise ${config.credentialConfigurationId}`);
     }
+    if (configurations[config.credentialConfigurationId].format !== config.credentialFormat) {
+      throw new Error("ISSUER_METADATA_FORMAT_MISMATCH");
+    }
     return {
       exchanges: [exchange(context.config.wallet, this.id, "GET", url, result, { accept: "application/json" }, {
         credential_issuer: result.body?.credential_issuer,
