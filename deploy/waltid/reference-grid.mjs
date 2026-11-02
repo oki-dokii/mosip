@@ -2,12 +2,22 @@
 import {readFile,writeFile} from 'node:fs/promises';
 import {alphaPresent} from '../../scripts/alpha-presentation.mjs';
 import {issueCredential,present} from '../../scripts/local-inji-smoke.mjs';
-import { generateKeyPairSync } from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import { createPrivateKey, X509Certificate, generateKeyPairSync } from 'node:crypto';
 import { decodeJwt, decodeProtectedHeader, exportJWK, SignJWT } from 'jose';
 const out=process.argv[2], records=[];
 const wildcard=process.argv[3]==='--accept-any';
 const dcFormat=process.argv[3]==='--dc-format';
-const diagnose=process.argv[3]==='--diagnose-credential';
+const withChain=process.argv[3]==='--native-x5c';
+const diagnose=withChain || process.argv[3]==='--diagnose-credential';
+let chain,certificatePem;
+if(withChain){
+ const profile=await (await fetch('http://127.0.0.1:7005/issuer2/profiles/identityCredentialSdJwt',{redirect:'error'})).json();
+ const key=createPrivateKey({key:profile.issuerKey.jwk,format:'jwk'});
+ const pem=execFileSync('openssl',['req','-new','-x509','-key','/dev/stdin','-days','1','-subj','/CN=Local synthetic walt issuer'],{input:key.export({type:'pkcs8',format:'pem'}),stdio:['pipe','pipe','ignore']});
+ certificatePem=pem.toString();
+ chain=new X509Certificate(pem).raw.toString('base64');
+}
 if(process.argv[3] && !wildcard && !dcFormat && !diagnose) throw Error('Unknown grid variant');
 const local='http://127.0.0.1:18090';
 function mapIssuer(url) {
@@ -25,7 +35,7 @@ for(const issuer of ['Certify','walt.id']){
    if(issuer==='Certify'){
     issued=await issueCredential(local);checkpoints.push(['issued and independently checked',true]);
    }else{
-    const create=await fetch('http://127.0.0.1:7005/issuer2/credential-offers',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({authMethod:'PRE_AUTHORIZED',valueMode:'BY_REFERENCE',credentials:[{profileId:'identityCredentialSdJwt'}]})});
+    const create=await fetch('http://127.0.0.1:7005/issuer2/credential-offers',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({authMethod:'PRE_AUTHORIZED',valueMode:'BY_REFERENCE',credentials:[{profileId:'identityCredentialSdJwt',...(withChain?{runtimeOverrides:{x5Chain:[certificatePem]}}:{})}]})});
     checkpoints.push(['offer created',create.status]);if(!create.ok)continue;
     const deep=new URL((await create.json()).credentialOffer);
     const offer=await fetch(mapIssuer(deep.searchParams.get('credential_offer_uri')),{redirect:'error'});
@@ -56,6 +66,7 @@ for(const issuer of ['Certify','walt.id']){
     if(diagnose){
       const [jwt,...parts]=issued.credential.split('~');
       const header=decodeProtectedHeader(jwt), claims=decodeJwt(jwt);
+      if(withChain && issuer==='walt.id')row.requestedChainPresent=header.x5c?.[0]===chain;
       row.credentialProfile={alg:header.alg,typ:header.typ,x5cCount:header.x5c?.length??0,hasKid:!!header.kid,hasJwk:!!header.jwk,
         issuerScheme:String(claims.iss).split(':').slice(0,String(claims.iss).startsWith('did:')?2:1).join(':'),
         holderBinding:claims.cnf?.jwk?'jwk':claims.cnf?.kid?'kid':'other',vct:claims.vct,

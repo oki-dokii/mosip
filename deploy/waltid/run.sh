@@ -3,7 +3,7 @@ set -eu
 here=$(cd "$(dirname "$0")" && pwd)
 export PLAYGROUND_WALT_RELAY="$here/loopback-relay.mjs"
 case "${WALT_EXPERIMENT:-off}" in
-  observe|adapt|sd-only) export PLAYGROUND_WALT_RELAY="$here/experiment-relay.mjs" ;;
+  observe|adapt|sd-only|as-alias) export PLAYGROUND_WALT_RELAY="$here/experiment-relay.mjs" ;;
   off) ;;
   *) exit 2 ;;
 esac

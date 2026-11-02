@@ -1,0 +1,239 @@
+{
+  "format": "SD-JWT",
+  "observedAt": "2026-11-02T06:18:40.062Z",
+  "presentationFormat": "vc+sd-jwt",
+  "requestRetrievalAccept": "application/oauth-authz-req+jwt",
+  "scope": "Reference holder uses the walt.id advertised token endpoint. Shared issuance failures block both verifier choices.",
+  "records": [
+    {
+      "issuer": "Certify",
+      "wallet": "reference",
+      "verifier": "Inji Verify",
+      "checkpoints": [
+        [
+          "issued and independently checked",
+          true
+        ],
+        [
+          "independent verdict",
+          true
+        ]
+      ],
+      "status": "valid",
+      "credentialProfile": {
+        "alg": "RS256",
+        "typ": "dc+sd-jwt",
+        "x5cCount": 2,
+        "hasKid": true,
+        "hasJwk": false,
+        "issuerScheme": "http",
+        "holderBinding": "kid",
+        "vct": "MockVerifiableCredential_SD_JWT",
+        "hasExpiry": true,
+        "disclosureCount": 2
+      },
+      "verification": {
+        "credentialProofValid": true,
+        "holderProofValid": true,
+        "resultCode": null,
+        "verifierHttpStatus": 200
+      },
+      "alphaVerification": {
+        "post": 200,
+        "http": 200,
+        "valid": true,
+        "signature": true,
+        "code": null
+      }
+    },
+    {
+      "issuer": "Certify",
+      "wallet": "reference",
+      "verifier": "walt.id",
+      "checkpoints": [
+        [
+          "issued and independently checked",
+          true
+        ],
+        [
+          "walt verification session",
+          200
+        ],
+        [
+          "signed request retrieval",
+          406
+        ]
+      ],
+      "status": "stopped"
+    },
+    {
+      "issuer": "walt.id",
+      "wallet": "reference",
+      "verifier": "Inji Verify",
+      "checkpoints": [
+        [
+          "offer created",
+          201
+        ],
+        [
+          "offer retrieved",
+          200
+        ],
+        [
+          "advertised token endpoint",
+          200
+        ],
+        [
+          "issuer nonce",
+          200
+        ],
+        [
+          "credential response",
+          200
+        ],
+        [
+          "independent verdict",
+          false
+        ]
+      ],
+      "status": "stopped",
+      "credentialProfile": {
+        "alg": "ES256",
+        "typ": "dc+sd-jwt",
+        "x5cCount": 0,
+        "hasKid": true,
+        "hasJwk": false,
+        "issuerScheme": "did:jwk",
+        "holderBinding": "jwk",
+        "vct": "http://host.docker.internal:7005/openid4vci/identity_credential",
+        "hasExpiry": true,
+        "disclosureCount": 1
+      },
+      "verification": {
+        "credentialProofValid": false,
+        "holderProofValid": null,
+        "resultCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
+        "verifierHttpStatus": 200
+      },
+      "alphaVerification": {
+        "post": 200,
+        "http": 200,
+        "valid": false,
+        "signature": false,
+        "code": "ERR_SIGNATURE_VERIFICATION_FAILED"
+      }
+    },
+    {
+      "issuer": "walt.id",
+      "wallet": "reference",
+      "verifier": "walt.id",
+      "checkpoints": [
+        [
+          "offer created",
+          201
+        ],
+        [
+          "offer retrieved",
+          200
+        ],
+        [
+          "advertised token endpoint",
+          200
+        ],
+        [
+          "issuer nonce",
+          200
+        ],
+        [
+          "credential response",
+          200
+        ],
+        [
+          "walt verification session",
+          200
+        ],
+        [
+          "signed request retrieval",
+          406
+        ]
+      ],
+      "status": "stopped"
+    },
+    {
+      "issuer": "Certify",
+      "wallet": "walt.id",
+      "verifier": "Inji Verify",
+      "status": "stopped",
+      "source": "2026-11-02-walt-adapters/observe.json#certify-offer-to-walt-wallet-observe",
+      "verifierReached": false,
+      "checkpoints": [
+        {
+          "label": "read Certify issuer metadata",
+          "status": 200
+        },
+        {
+          "label": "wallet resolve Certify offer",
+          "status": 500
+        }
+      ],
+      "sharedIssuanceFailure": true
+    },
+    {
+      "issuer": "Certify",
+      "wallet": "walt.id",
+      "verifier": "walt.id",
+      "status": "stopped",
+      "source": "2026-11-02-walt-adapters/observe.json#certify-offer-to-walt-wallet-observe",
+      "verifierReached": false,
+      "checkpoints": [
+        {
+          "label": "read Certify issuer metadata",
+          "status": 200
+        },
+        {
+          "label": "wallet resolve Certify offer",
+          "status": 500
+        }
+      ],
+      "sharedIssuanceFailure": true
+    },
+    {
+      "issuer": "walt.id",
+      "wallet": "walt.id",
+      "verifier": "Inji Verify",
+      "status": "stopped",
+      "source": "2026-11-02-walt-adapters/observe.json#walt-credential-to-inji-verify-observe",
+      "verifierReached": false,
+      "checkpoints": [
+        {
+          "label": "compact signed request returned",
+          "status": true
+        },
+        {
+          "label": "wallet resolve Inji request",
+          "status": 500
+        }
+      ],
+      "sharedIssuanceFailure": false
+    },
+    {
+      "issuer": "walt.id",
+      "wallet": "walt.id",
+      "verifier": "walt.id",
+      "status": "valid",
+      "source": "2026-11-02-walt-adapters/observe.json#walt-wallet-to-walt-verifier-observe",
+      "verifierReached": true,
+      "checkpoints": [
+        {
+          "label": "session status",
+          "status": "SUCCESSFUL"
+        },
+        {
+          "label": "verifier accepted credential",
+          "status": true
+        }
+      ],
+      "sharedIssuanceFailure": false
+    }
+  ]
+}

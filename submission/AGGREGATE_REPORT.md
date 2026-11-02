@@ -43,4 +43,4 @@ The [claims table](CLAIMS_AND_EVIDENCE.md) and [protocol matrix](protocol-matrix
 | [rejection.json](evidence/2026-11-02-release/rejection.json) | 1 |
 | [alpha-routing.json](evidence/2026-11-02-release/alpha-routing.json) | 1 |
 
-The [finding register](../docs/GAPS.md) tracks 14 entries. Two historical reference-holder cells stopped at the configured token endpoint. Both reruns obtained a credential using issuer discovery. Inji Verify returned an invalid verdict; the walt.id verifier run stopped at request retrieval (HTTP 406). The 2 MiB padding request is a size observation without a required verdict.
+The [finding register](../docs/GAPS.md) tracks 15 entries. Two historical reference-holder cells stopped at the configured token endpoint. Both reruns obtained a credential using issuer discovery. Inji Verify returned an invalid verdict; the walt.id verifier run stopped at request retrieval (HTTP 406). The 2 MiB padding request is a size observation without a required verdict.

@@ -123,7 +123,8 @@
       "upstreamIssue": null,
       "privateReportStatus": "submitted_private_triage_pending",
       "privateReportDate": "2026-10-26",
-      "cause": "Underlying cause unknown; private triage pending."
+      "cause": "Underlying cause unknown; private triage pending.",
+      "alphaBoundary": "DCQL follow-up reached a direct-post transport rejection with a passing control. No final verifier verdict for rejected submissions."
     },
     {
       "id": "G-07",
@@ -143,7 +144,8 @@
       "upstreamIssue": null,
       "privateReportStatus": "submitted_private_triage_pending",
       "privateReportDate": "2026-10-26",
-      "cause": "Underlying cause unknown; private triage pending."
+      "cause": "Underlying cause unknown; private triage pending.",
+      "alphaBoundary": "DCQL follow-up reached a direct-post transport rejection with a passing control. No final verifier verdict for rejected submissions."
     },
     {
       "id": "G-08",
@@ -205,7 +207,9 @@
         "submission/evidence/2026-11-02-walt-adapters/adapt.json",
         "submission/evidence/2026-11-02-walt-adapters/wallet-diagnostics.json",
         "submission/evidence/2026-11-02-wallet-profile/control.json",
-        "submission/evidence/2026-11-02-wallet-profile/sd-only.json"
+        "submission/evidence/2026-11-02-wallet-profile/sd-only.json",
+        "submission/evidence/2026-11-02-release/discovery-sd-only.json",
+        "submission/evidence/2026-11-02-release/discovery-as-alias.json"
       ],
       "runIds": [],
       "matrixCells": [
@@ -220,7 +224,8 @@
       "specReferences": [
         "https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-13.html#appendix-A.1.2.2"
       ],
-      "cause": "Advertised discovery location and published JSON-LD signing-suite declaration block successive wallet checkpoints."
+      "cause": "Advertised discovery location and published JSON-LD signing-suite declaration block successive wallet checkpoints.",
+      "discoveryFollowup": "Forwarding the advertised origin discovery path to the served path changed offer resolution from 500 to 200. Receive then returned 400; cause unknown."
     },
     {
       "id": "G-12",
@@ -290,6 +295,23 @@
       "reproduce": "Follow the Collab mDL row in docs/LOCAL_WALLET_LABS.md.",
       "upstreamIssue": null,
       "cause": "Issuer signature and full Verify verdict measure different things; underlying Verify rejection cause unknown."
+    },
+    {
+      "id": "G-15",
+      "productVersion": "walt.id 1.2.0 / Inji Verify 0.18.2 and 1.0.0-alpha.1",
+      "status": "independently_reproduced",
+      "disclosure": "public_non_security_observation",
+      "evidence": [
+        "submission/evidence/2026-11-02-release/native-no-chain-repeat.json",
+        "submission/evidence/2026-11-02-release/native-x5c-pem.json",
+        "submission/evidence/2026-11-02-release/key-location.json"
+      ],
+      "runIds": [],
+      "matrixCells": [
+        "grid.walt-inji.signature-diagnostic"
+      ],
+      "cause": "Matching x5c key material changes the issuer signature check result for the tested did:jwk profiles.",
+      "matrixDecision": "See the paired native and mock cells in submission/VERIFY_VERSION_COMPARISON.md."
     }
   ],
   "localProtocolEvidence": {

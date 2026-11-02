@@ -29,7 +29,7 @@ try{
       const newer=await alphaPresent(credential,holder);
       rows.push({alg,x5c,issuerSignatureChecked:true,stable:{http:old.verifierHttpStatus,valid:old.verifierValid,signature:old.credentialProofValid,code:old.resultCode},alpha:newer.summary});
       if(alg==='RS256' && x5c && newer.summary.valid===true && privateOutput){
-        for(const scenario of ['expired','wrong_audience','replay']){
+        for(const scenario of ['expired','wrong_audience','wrong_nonce','missing_key_binding','wrong_query_id','replay']){
           const control=await alphaPresent(credential,holder);assert.equal(control.summary.valid,true);
           const sample=scenario==='expired'?await mockIssue({...options,variant:'expired',signer:{...options.signer,header:{...header,x5c:[cert.raw.toString('base64')]}}}):credential;
           const changed=await alphaPresent(sample,holder,scenario,scenario==='replay'?control.token:undefined);
