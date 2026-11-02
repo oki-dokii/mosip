@@ -1,6 +1,6 @@
 # Interoperability evidence · 2 November 2026
 
-The [claims table](CLAIMS_AND_EVIDENCE.md) and [protocol matrix](protocol-matrix.json) cover 71 observations. The following 12 historical run records overlap with those observations. They are not an additional pass count.
+The [claims table](CLAIMS_AND_EVIDENCE.md) and [protocol matrix](protocol-matrix.json) cover 73 observations. The following 12 historical run records overlap with those observations. They are not an additional pass count.
 
 | Run or observation | Environment | Recorded outcome |
 |---|---|---|
@@ -36,5 +36,6 @@ The [claims table](CLAIMS_AND_EVIDENCE.md) and [protocol matrix](protocol-matrix
 | [sd-only.json](evidence/2026-11-02-wallet-profile/sd-only.json) | 1 |
 | [public-url.json](evidence/2026-11-02-wallet-profile/public-url.json) | 1 |
 | [collab-refresh.json](evidence/2026-11-02-wallet-profile/collab-refresh.json) | 6 |
+| [grid.json](evidence/2026-11-02-release/grid.json) | 2 |
 
-The [finding register](../docs/GAPS.md) tracks 14 entries. Two reference-holder combinations stopped at the configured token endpoint. The 2 MiB padding request is a size observation without a required verdict.
+The [finding register](../docs/GAPS.md) tracks 14 entries. Two historical reference-holder cells stopped at the configured token endpoint. Both reruns obtained a credential using issuer discovery. Inji Verify returned an invalid verdict; the walt.id verifier run stopped at request retrieval (HTTP 406). The 2 MiB padding request is a size observation without a required verdict.

@@ -76,14 +76,14 @@ export async function issueCredential(issuer, expired = false) {
   return { credential, holder };
 }
 
-export async function present(credential, holder, scenario, replayToken) {
+export async function present(credential, holder, scenario, replayToken, profile = {alg:"RS256", vct:configurationId}) {
   const definitionId = 'playground-local-sdjwt-' + randomUUID();
   const clientId = 'did:web:localhost%3A18081:v1:verify';
   const vpRequest = await request(verifier + '/vp-request', json({
     clientId, nonce: randomBytes(24).toString('base64url'),
     presentationDefinition: {
       id: definitionId,
-      input_descriptors: [{ id: 'credential', format: { 'vc+sd-jwt': { alg: ['RS256'] } }, constraints: { fields: [{ path: ['$.vct'], filter: { type: 'string', const: scenario === 'wrong_type' ? 'OtherCredential' : configurationId } }] } }],
+      input_descriptors: [{ id: 'credential', format: { 'vc+sd-jwt': { alg: [profile.alg] } }, constraints: { fields: [{ path: ['$.vct'], filter: { type: 'string', const: scenario === 'wrong_type' ? 'OtherCredential' : profile.vct } }] } }],
     },
     responseCodeValidationRequired: false,
   }));

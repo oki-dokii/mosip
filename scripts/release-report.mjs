@@ -13,7 +13,7 @@ const report=['# Interoperability evidence · 2 November 2026','',
   ...matrix.records.map(r=>'| ['+r.recordId+']('+link(r.source)+') | '+r.deployment+' | '+r.actual+' |'),'',
   '## Protocol evidence by source','','| Source file | Indexed rows |','|---|---:|',
   ...[...new Set(rows.map(r=>r.source))].map(p=>'| ['+p.split('/').pop()+']('+link(p)+') | '+rows.filter(r=>r.source===p).length+' |'),'',
-  'The [finding register](../docs/GAPS.md) tracks '+gaps.length+' entries. Two reference-holder combinations stopped at the configured token endpoint. The 2 MiB padding request is a size observation without a required verdict.',''].join('\n');
+  'The [finding register](../docs/GAPS.md) tracks '+gaps.length+' entries. Two historical reference-holder cells stopped at the configured token endpoint. Both reruns obtained a credential using issuer discovery. Inji Verify returned an invalid verdict; the walt.id verifier run stopped at request retrieval (HTTP 406). The 2 MiB padding request is a size observation without a required verdict.',''].join('\n');
 writeFileSync(path,report);
 for(const doc of [path,'submission/CLAIMS_AND_EVIDENCE.md','README.md','docs/GAPS.md']){
  const content=readFileSync(doc,'utf8');

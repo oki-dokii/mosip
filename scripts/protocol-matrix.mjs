@@ -53,7 +53,7 @@ console.log(rows.length+' evidence-linked cells');
 if (out === 'submission/protocol-matrix.json') {
  const path='submission/CLAIMS_AND_EVIDENCE.md';
  const counts = Object.fromEntries([...new Set(additions.map(r=>r.group))].map(group=>[group,additions.filter(r=>r.group===group).length]));
- const line = '| '+rows.length+' indexed observations. | [Protocol matrix](protocol-matrix.json) combines '+prior+' earlier cells with '+counts['paired check']+' public paired checks, '+counts['role grid']+' grid combinations, '+counts['adapter experiment']+' adapter comparisons and '+counts['Collab refresh']+' refreshed Collab observations. These categories include shared checkpoints and harness limits. |';
+ const line = '| '+rows.length+' indexed observations. | [Protocol matrix](protocol-matrix.json) combines '+prior+' earlier cells with '+counts['paired check']+' public paired checks, '+counts['role grid']+' grid combinations, '+counts['adapter experiment']+' adapter comparisons and '+counts['Collab refresh']+' refreshed Collab observations and '+counts['issuer discovery rerun']+' issuer-discovery reruns. These categories include shared checkpoints and harness limits. |';
  const old=readFileSync(path,'utf8');
  const pattern=/^\| \d+ (?:protocol cells|indexed observations).*$/m;
  if(!pattern.test(old))throw Error('Missing claims summary');

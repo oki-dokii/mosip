@@ -1,6 +1,8 @@
 // Run with the ordinary transparent loopback profile. Output contains checkpoints only.
 import {readFile,writeFile} from 'node:fs/promises';
 import {issueCredential,present} from '../../scripts/local-inji-smoke.mjs';
+import { generateKeyPairSync } from 'node:crypto';
+import { decodeJwt, decodeProtectedHeader, exportJWK, SignJWT } from 'jose';
 const out=process.argv[2], records=[];
 const local='http://127.0.0.1:18090';
 function mapIssuer(url) {
@@ -25,17 +27,29 @@ for(const issuer of ['Certify','walt.id']){
     checkpoints.push(['offer retrieved',offer.status]);if(!offer.ok)continue;
     const code=(await offer.json()).grants?.['urn:ietf:params:oauth:grant-type:pre-authorized_code']?.['pre-authorized_code'];
     if(!code)continue;
-    // The existing Certify reference-holder profile posts to this path in issueCredential.
-    const token=await fetch('http://127.0.0.1:7005/v1/certify/oauth/token',{method:'POST',redirect:'error',body:new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:pre-authorized_code','pre-authorized_code':code,client_id:'wallet'})});
-    checkpoints.push(['configured reference token endpoint',token.status]);
-    if(token.status===404)row.status='harness-limited';
-    if(token.ok)throw Error('Reference issuer profile needs further implementation');
-    continue;
+    const metadata=await (await fetch(mapIssuer('http://host.docker.internal:7005/.well-known/openid-credential-issuer/openid4vci'))).json();
+    const auth=await (await fetch(mapIssuer('http://host.docker.internal:7005/.well-known/oauth-authorization-server/openid4vci'))).json();
+    const token=await fetch(mapIssuer(auth.token_endpoint),{method:'POST',redirect:'error',body:new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:pre-authorized_code','pre-authorized_code':code,client_id:'wallet'})});
+    checkpoints.push(['advertised token endpoint',token.status]);if(!token.ok)continue;
+    const grant=await token.json();
+    const nonce=await fetch(mapIssuer(metadata.nonce_endpoint),{method:'POST',redirect:'error'});
+    checkpoints.push(['issuer nonce',nonce.status]);if(!nonce.ok)continue;
+    const holder=generateKeyPairSync('ed25519');
+    const key=await exportJWK(holder.publicKey);
+    const proof=await new SignJWT({nonce:(await nonce.json()).c_nonce}).setAudience(metadata.credential_issuer).setIssuedAt()
+      .setProtectedHeader({typ:'openid4vci-proof+jwt',alg:'EdDSA',jwk:key}).sign(holder.privateKey);
+    const identifier=grant.authorization_details?.[0]?.credential_identifiers?.[0];
+    const selector=identifier?{credential_identifier:identifier}:{credential_configuration_id:'identity_credential'};
+    const response=await fetch(mapIssuer(metadata.credential_endpoint),{method:'POST',redirect:'error',headers:{authorization:'Bearer '+grant.access_token,'content-type':'application/json'},body:JSON.stringify({...selector,proofs:{jwt:[proof]}})});
+    checkpoints.push(['credential response',response.status]);if(!response.ok)continue;
+    const credential=(await response.json()).credentials?.[0]?.credential;
+    if(typeof credential!=='string')throw Error('Credential unavailable');
+    issued={credential,holder};
    }
    if(verifier==='Inji Verify'){
-    const r=await present(issued.credential,issued.holder,'valid');checkpoints.push(['independent verdict',r.summary.verifierValid]);if(r.summary.verifierValid===true)row.status='valid';
+    const r=await present(issued.credential,issued.holder,'valid',undefined,{vct:decodeJwt(issued.credential.split('~')[0]).vct,alg:decodeProtectedHeader(issued.credential.split('~')[0]).alg});checkpoints.push(['independent verdict',r.summary.verifierValid]);if(r.summary.verifierValid===true)row.status='valid';
    }else{
-    const create=await fetch('http://127.0.0.1:7004/verification-session/create',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({flow_type:'cross_device',core_flow:{dcql_query:{credentials:[{id:'identity',format:'dc+sd-jwt',meta:{vct_values:['MockVerifiableCredential_SD_JWT']}}]}}})});
+    const create=await fetch('http://127.0.0.1:7004/verification-session/create',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({flow_type:'cross_device',core_flow:{dcql_query:{credentials:[{id:'identity',format:'dc+sd-jwt',meta:{vct_values:[decodeJwt(issued.credential.split('~')[0]).vct]}}]}}})});
     checkpoints.push(['walt verification session',create.status]);
     const bootstrap=new URL((await create.json()).bootstrapAuthorizationRequestUrl);
     const target=new URL(bootstrap.searchParams.get('request_uri'));
@@ -56,4 +70,4 @@ for(const issuer of ['Certify','walt.id'])for(const verifier of ['Inji Verify','
  const cell=baseline.rows[issuer==='Certify'?2:verifier==='Inji Verify'?3:1];
  records.push({issuer,wallet:'walt.id',verifier,status:cell.result==='passed'?'valid':'stopped',source:'2026-11-02-walt-adapters/observe.json#'+cell.id,verifierReached:issuer!=='Certify' && verifier==='walt.id',checkpoints:cell.checkpoints.slice(-2),sharedIssuanceFailure:issuer==='Certify'});
 }
-await writeFile(out,JSON.stringify({format:'SD-JWT',observedAt:new Date().toISOString(),scope:'Reference holder uses its existing Certify token and Presentation Exchange profiles. Shared issuance failures block both verifier choices.',records},null,2)+'\n',{flag:'wx'});
+await writeFile(out,JSON.stringify({format:'SD-JWT',observedAt:new Date().toISOString(),scope:'Reference holder uses the walt.id advertised token endpoint. Shared issuance failures block both verifier choices.',records},null,2)+'\n',{flag:'wx'});

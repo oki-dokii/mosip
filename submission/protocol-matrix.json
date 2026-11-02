@@ -983,6 +983,34 @@
       "expected": null,
       "observed": "credential HTTP 401",
       "verdict": "fresh_pre_authorized_token_rejected"
+    },
+    {
+      "source": "submission/evidence/2026-11-02-release/grid.json",
+      "observedAt": "2026-11-02T05:41:08.852Z",
+      "id": "grid.discovery.Inji Verify",
+      "group": "issuer discovery rerun",
+      "environment": "local walt.id 1.2.0 / Inji Verify 0.18.2",
+      "format": "SD-JWT",
+      "variable": "reference holder follows advertised endpoints → Inji Verify",
+      "control": "Certify → reference → Inji Verify (same run)",
+      "controlPassed": true,
+      "expected": null,
+      "observed": "independent verdict = false",
+      "verdict": "invalid"
+    },
+    {
+      "source": "submission/evidence/2026-11-02-release/grid.json",
+      "observedAt": "2026-11-02T05:41:08.852Z",
+      "id": "grid.discovery.walt.id",
+      "group": "issuer discovery rerun",
+      "environment": "local walt.id 1.2.0 / Inji Verify 0.18.2",
+      "format": "SD-JWT",
+      "variable": "reference holder follows advertised endpoints → walt.id",
+      "control": "Certify → reference → Inji Verify (same run)",
+      "controlPassed": true,
+      "expected": null,
+      "observed": "signed request retrieval = 406",
+      "verdict": "stopped before verifier verdict"
     }
   ]
 }

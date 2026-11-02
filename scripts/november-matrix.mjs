@@ -47,5 +47,15 @@ export function novemberRows() {
   for (const r of hosted.data.preauthorized) rows.push({...hosted.base,id:'nov2.collab.'+r.configurationId,group:'Collab refresh',
     environment:'Collab (build unreported)',format:r.configurationId.endsWith('SD_JWT')?'SD-JWT':'JSON-LD',variable:r.configurationId,
     expected:null,observed:'credential HTTP '+r.checkpoints.credential,verdict:r.conclusion});
+  const source='submission/evidence/2026-11-02-release/grid.json';
+  const rerun=JSON.parse(readFileSync(source,'utf8'));
+  const control=rerun.records.find(r=>r.issuer==='Certify' && r.wallet==='reference' && r.verifier==='Inji Verify');
+  for(const r of rerun.records.filter(r=>r.issuer==='walt.id' && r.wallet==='reference')){
+    const [step,value]=r.checkpoints.at(-1);
+    rows.push({source,observedAt:rerun.observedAt,id:'grid.discovery.'+r.verifier,group:'issuer discovery rerun',
+      environment:'local walt.id 1.2.0 / Inji Verify 0.18.2',format:'SD-JWT',variable:'reference holder follows advertised endpoints → '+r.verifier,
+      control:'Certify → reference → Inji Verify (same run)',controlPassed:control?.status==='valid',expected:null,
+      observed:step+' = '+value,verdict:step==='independent verdict' && value===false?'invalid':'stopped before verifier verdict'});
+  }
   return rows;
 }
