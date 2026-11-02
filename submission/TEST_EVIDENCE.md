@@ -1,5 +1,8 @@
 # Test cases and evidence snapshot
 
+**Release checkpoint, 2 November.** [Tagged CI](https://github.com/oki-dokii/mosip/actions/runs/41399202985) passed. The [aggregate](AGGREGATE_REPORT.md) indexes 79 observations. The [version comparison](VERIFY_VERSION_COMPARISON.md) links supplementary paired results. The counts below belong to their dated runs.
+
+
 Snapshot: 23 October 2026, merged `main` checkpoint `b0f132d`. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) passed frozen install, typecheck, unit/contract tests, production build, secret audit, three Chromium browser checks and a PostgreSQL-backed six-case Docker mock matrix. The same source passed locally and in a fresh same-host clone. None of these commands performed a fresh Collab or real Inji-wallet journey.
 
 24 October follow-up on `main` (`ad06775`): after the evidence catalog, URL redaction, failed-HTTP recording and cookie-origin fix, the **BFF suite alone** passed 199 tests with three opt-in PostgreSQL tests skipped. BFF and Web typechecks and the text secret audit passed. This is not a new whole-monorepo, browser, Docker, PostgreSQL or real-wallet result; the table below remains the dated 23 October full checkpoint.

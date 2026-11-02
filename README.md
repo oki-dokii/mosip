@@ -26,16 +26,9 @@ wallet run. For the real local wallet journey, use the
 
 Open **Parties** to browse registered endpoints and their evidence, or **QR and capabilities** to compare raw and PixelPass payloads. [Register an issuer in five minutes](docs/PARTIES.md). [Aggregate report](submission/AGGREGATE_REPORT.md) · [Browse 79 indexed observations](submission/protocol-matrix.json) or [reproduce the four walt.id interoperability cells](deploy/waltid/README.md).
 
-[Current results and limits](submission/evidence/2026-10-26-aggregate-interop.md) ·
-[Machine-readable compatibility matrix](submission/evidence/2026-10-26-aggregate-matrix.json) ·
-[Current team assignment](docs/FINAL_FOUR_PERSON_EXECUTION_PLAN.md)
+The [submission tag](https://github.com/oki-dokii/mosip/tree/final-2026-11-02) pins the prototype tested in release CI. Current main also includes **Android wallet** at /android and the updated finding cards. The Android page reads dated observations from the BFF. A managed local Android run still requires a driver, a phone operator and trusted HTTPS routes.
 
-
-This is a **test playground**, not a production identity provider or wallet. It uses synthetic identities. Its automated wallet is the project's **Reference Wallet**. A Reference Wallet success does not prove that Inji Web or Inji Wallet mobile stored and presented the credential. The [evidence guide](docs/SCENARIOS_AND_EVIDENCE.md) and [submission checklist](submission/READINESS.md) make that distinction explicit.
-
-The web app includes an evidence-linked gap explorer. Every live claim is tied to a dated run, deployment profile and its observed limits.
-For a single-developer finish, use the [ordered remaining-work handoff](docs/archive/SINGLE_OWNER_HANDOFF.md).
-The [editable pitch deck](submission/pitch/archive/Interoperability_Playground_Pitch.pptx) summarizes the problem, prototype and recorded evidence for review. A [2:07 silent demo draft](submission/pitch/VIDEO_README.md) is ready for voiceover and final review.
+The [gap register](docs/GAPS.md) contains 15 findings. For G-15, the [native walt.id comparison](submission/VERIFY_VERSION_COMPARISON.md) shows how the same issuer’s matching certificate changed the verdict on both Verify releases. For API calls and exports, see the [BFF reference](submission/API_REFERENCE.md).
 
 For the implemented official local-Certify mobile setup, use `pnpm mobile:inji` and follow [the mobile runbook](deploy/MOBILE_INJI.md). Its official-Certify → Reference Wallet → Collab Verify control passed; it does not establish phone acceptance.
 
@@ -215,7 +208,7 @@ For the **one-command container demo** with the web app, BFF, PostgreSQL, and se
 pnpm demo:docker
 ```
 
-Open **http://localhost:5174**. The command builds and health-checks the services, then runs six cross-container synthetic SD-JWT presets (valid control, corrupted signature, signed expiry, signed wrong type, missing required disclosure and nonce mismatch) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](docs/DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) passed the six-case Docker matrix and browser checks; an independent-machine rehearsal remains open.
+Open **http://localhost:5174**. The command builds and health-checks the services, then runs six cross-container synthetic SD-JWT presets (valid control, corrupted signature, signed expiry, signed wrong type, missing required disclosure and nonce mismatch) and prints `DEMO PASS` on success. It does **not** launch local Inji services. [DEPLOYMENT.md](docs/DEPLOYMENT.md) has ports, profiles, shutdown, CI details, and the exact evidence limit. [Hosted CI run 28](https://github.com/oki-dokii/mosip/actions/runs/39902817583) passed the six-case Docker matrix and browser checks; the independent Windows checkout passed installation and build, with Docker unavailable on that host.
 The same command passed on this Mac on 25 October with all six scenarios; [the dated local record](submission/evidence/2026-10-25-local-demo.md) lists their run IDs. Independent-machine installation remains a final review check.
 
 For a separate **official local Inji service control**, run `pnpm demo:inji`. It starts pinned Inji Certify and Inji Verify on loopback, issues a synthetic SD-JWT, and uses a non-Inji reference holder to present it. On 25 October it printed `LOCAL INJI DEMO PASS` with Verify `valid` and true credential/holder proof checks. With the services running, `pnpm probe:inji` runs seven fresh-request cases; the pinned Verify release accepted wrong-nonce, wrong-audience, exact-replay and invalid-descriptor-path presentations, so this probe currently exits nonzero by design. It does not start Mimoto or Inji Web and does not create a playground BFF run. See the [exact setup, versions and limits](deploy/INJI_LOCAL.md) and [sanitized evidence](submission/evidence/2026-10-25-local-inji-extended-matrix.json).
@@ -330,7 +323,7 @@ Project source is provided under [MPL-2.0](LICENSE), consistent with [MOSIP's pu
 
 ## Submission and project documents
 
-The [submission checklist](submission/READINESS.md) maps judging weights and mandatory artifacts to current evidence and open work. It links the [architecture diagram](submission/ARCHITECTURE.md), [test cases/results](submission/TEST_EVIDENCE.md), [fresh synthetic live reports and matrix](submission/evidence/README.md), [API reference](submission/API_REFERENCE.md), and [pitch/video outline](submission/PITCH_AND_DEMO.md). The actual slide deck, 2–5 minute video, private student IDs, cloud links, and final email remain separate tasks; the outline is not a finished deck or recording.
+The [submission checklist](submission/READINESS.md) maps judging weights and mandatory artifacts to current evidence and open work. It links the [architecture diagram](submission/ARCHITECTURE.md), [test cases/results](submission/TEST_EVIDENCE.md), [fresh synthetic live reports and matrix](submission/evidence/README.md), [API reference](submission/API_REFERENCE.md), and [pitch/video outline](submission/PITCH_AND_DEMO.md). The November deck and video are linked above. Reviewer access to Drive files and individual ID submissions still require confirmation.
 
 | Read this for… | Document |
 |---|---|
@@ -351,7 +344,7 @@ The [submission checklist](submission/READINESS.md) maps judging weights and man
 |---|---|---|
 | A1: real-wallet JSON-LD | A fresh managed Inji Web run records the observed Mimoto checkpoints, storage confirmation and matching Verify `valid` result; [final team review is pending](submission/evidence/person2-managed-a1-2026-10-25/README.md). | Browser capture cannot see Mimoto's downstream server calls; deployed releases remain unreported. |
 | A2: real-wallet SD-JWT | Recorded functional pass with actual Android wallet, reopened storage and valid credential/holder proof result. | Hybrid profile only; installed-binary attestation and Collab release remain unverified. |
-| A6: packaging | Playground core + mocks pass `pnpm demo:docker`; official Certify/Verify reference-holder control passes `pnpm demo:inji`; connected local JSON-LD wallet flow passes `pnpm demo:web-jsonld` with the documented synthetic authorization/DID adapters. | Independent-machine rehearsal and offline context packaging remain open. The local browser harness is separate from a managed BFF run. |
+| A6: packaging | Playground core + mocks pass `pnpm demo:docker`; official Certify/Verify reference-holder control passes `pnpm demo:inji`; connected local JSON-LD wallet flow passes `pnpm demo:web-jsonld` with the documented synthetic authorization/DID adapters. | Windows Docker startup and offline context packaging remain open. The local browser harness is separate from a managed BFF run. |
 | Capture and browser QA | Live assisted-wallet observation without rewriting signed messages. | Three synthetic browser/axe checks pass; they cannot prove the real wallet's browser/native boundaries. |
 
 Ownership and next steps are in the [single-owner handoff](docs/archive/SINGLE_OWNER_HANDOFF.md). Reports should state the exact implementation, profile and observed boundaries; the A1 and A2 records do not establish every format or a complete local Inji deployment.

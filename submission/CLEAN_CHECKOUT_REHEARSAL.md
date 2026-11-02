@@ -1,5 +1,8 @@
 # Fresh-checkout rehearsal — 23 October 2026
 
+[Harsh’s Windows rehearsal](https://github.com/oki-dokii/mosip/blob/f7514f2/submission/CLEAN_CHECKOUT_REHEARSAL.md) documents the independent checkout. The release passed install and build there. The repaired test results belong to his branch. Windows Docker startup remains unverified.
+
+
 Source: temporary `git clone --depth 1` of public GitHub `main` at `b0f132d9beb8536cc81bc4d468ef6b970b34a876`, in a new `/tmp` directory on macOS arm64. This reused the host's pnpm cache and Docker installation. It is a **fresh checkout on the same machine**, not a test performed by an independent reviewer or on another host.
 
 | Check | Result |

@@ -1,9 +1,11 @@
-# Four-minute narrated demo — 26 October 2026
+# Demo video for reviewers
 
 [November captioned video](Playground-2026-11-01.mp4) and [subtitle file](Playground-2026-11-01.srt). The October recording is followed by a narrated 32-second results update. Human playback review is pending.
 
 
-[Play the demo](Interoperability_Playground_Demo_2026-10-26.mp4). Offline **synthetic narration**, English embedded closed captions (enable CC), plus [SRT](Interoperability_Playground_Demo_2026-10-26.srt), [VTT](Interoperability_Playground_Demo_2026-10-26.vtt) and [transcript](NARRATION.md).
+## Historical October recording
+
+[Play the October segment](Interoperability_Playground_Demo_2026-10-26.mp4). Offline **synthetic narration**, English embedded closed captions (enable CC), plus [SRT](Interoperability_Playground_Demo_2026-10-26.srt), [VTT](Interoperability_Playground_Demo_2026-10-26.vtt) and [transcript](NARRATION.md).
 
 | Time | Content and source |
 | --- | --- |

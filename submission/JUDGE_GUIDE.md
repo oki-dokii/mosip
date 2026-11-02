@@ -1,5 +1,8 @@
 # Review the playground in five minutes
 
+On current main, open **Android wallet** for the physical-wallet record and the remaining local setup. For a cross-vendor result, compare the [native walt.id credentials with and without the matching certificate](VERIFY_VERSION_COMPARISON.md). The submission tag predates the Android page.
+
+
 **One URL:** [Open the read-only playground evidence](https://oki-dokii.github.io/mosip/). No login or Collab connection is needed. Start with the local wallet result, then inspect an external-wallet failure. Look for the last successful checkpoint and whether a verifier actually returned a verdict.
 
 **One command from the checkout:** `pnpm demo:docker` (Docker running; see the [setup prerequisites](../README.md)). This exercises the packaged mock stack. Expect a valid control, deterministic fault outcomes and a matrix. This command does not perform the human wallet journey.

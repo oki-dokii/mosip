@@ -17,7 +17,7 @@ flowchart LR
 
 ![Assisted fixture screen with wallet actions and explicit simulated evidence](evidence/person2/assisted-fixture.png)
 
-The guided panel exposes wallet and offer actions in keyboard order. Its confirmation and verifier buttons are labeled as simulated fixture steps. A completed fixture does not turn into real-wallet evidence; the separate manual Web success still needs a correlated managed run.
+The guided panel exposes wallet and offer actions in keyboard order. Its confirmation and verifier buttons are labeled as simulated fixture steps. A completed fixture does not turn into real-wallet evidence; the [later managed Web run](evidence/person2-managed-a1-2026-10-25/run-report.json) has separate evidence.
 
 ## 2. Connected backend-assisted journey
 

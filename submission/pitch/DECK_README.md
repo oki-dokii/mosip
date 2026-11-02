@@ -1,7 +1,9 @@
-# Updated pitch — 26 October 2026
+# Pitch deck for reviewers
 
-[November deck](Playground-2026-11-01.pptx) and [PDF](Playground-2026-11-01.pdf) cover the local wallet, external wallet and live mDL results.
+[November deck](Playground-2026-11-01.pptx) and [PDF](Playground-2026-11-01.pdf) contain six slides covering the local wallet, external wallet and mDL results. Slide 6 reports 79 indexed observations.
 
+
+## Historical October materials
 
 [Editable eight-slide PowerPoint](Interoperability_Playground_Pitch_2026-10-26.pptx) and [PDF backup](Interoperability_Playground_Pitch_2026-10-26.pdf). The PDF preserves slide appearance as raster pages; it is not an accessible text PDF. The original six-slide deck remains historical.
 

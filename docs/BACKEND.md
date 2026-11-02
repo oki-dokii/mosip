@@ -1,5 +1,8 @@
 # Backend Design (Playground BFF)
 
+**Design history.** For implemented routes, authentication and error formats, consult the [API reference](../submission/API_REFERENCE.md) and [OpenAPI inventory](../submission/openapi.json).
+
+
 **Stack:** Node 20 · Express 4 · TypeScript (strict) · Zod · Socket.IO · Prisma/PostgreSQL · pino
 **Version:** 0.1 (design phase) · **Date:** 2026-10-17
 **Related:** TRD.md (components), DATABASE.md (tables), flow.md (call paths), decisions.md

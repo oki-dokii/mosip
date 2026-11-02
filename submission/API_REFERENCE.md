@@ -7,12 +7,14 @@ Local base URL: `http://localhost:4000/api/v1`. All routes below are implemented
 | GET | `/health` | — | Playground process/storage/driver-mode summary |
 | GET | `/meta/implementations` | — | Issuer, wallet, verifier, and format choices |
 | GET | `/scenarios` | — | `{ items: ScenarioDefinition[] }`, including availability reason |
-| GET | `/assisted/capabilities` | — | `{ liveAvailable, fixtureAvailable }` for the JSON-LD Inji Web assisted path |
+| GET | `/assisted/capabilities` | — | `{ liveAvailable, localJsonLd, fixtureAvailable }` for the JSON-LD Inji Web assisted path |
 | POST | `/assisted/runs` | `{ "config": RunConfig, "mode": "fixture" \| "live", "timeoutMs"?: 100–300000 }` | `202 { runId }`; `400` invalid body; `422` unsupported or unconfigured live path |
 | GET | `/assisted/runs/:id` | — | `{ run, steps, actions, deadlineAt }`; action links are transient, not stored as exchanges |
 | POST | `/assisted/runs/:id/cancel` | — | `202` with assisted status, or `404` |
 | POST | `/assisted/runs/:id/observations` | `{ "kind": "issuance" \| "storage" \| "presentation" }` | `202 { accepted: true }`; `409` inactive or wrong stage. Issuance/presentation injection is fixture-only; live storage is a human confirmation, not independent proof. |
 | POST | `/assisted/runs/:id/capture/observation` | Local collector only: exact tagged `POST` URL without query/fragment, 2xx status, timestamp and duration. Verify direct-post requires `state`; wallet-scoped Mimoto presentation requires `requestUri` plus `requestUriSource` (`presentation_body`, `presentation_query` or `same_origin_referrer`). Other rules allow neither. Requires `x-capture-bridge-token` and an active live run. No HAR, headers, credentials or response bodies accepted. | `202 { accepted, duplicate, exchangeId, ruleId }`; stable codes-only error on rejection. Correlation scalars are HMAC-tagged inside the BFF before storage. |
+| GET | /capture/local/session | Local bridge token | A lease object or null in the lease field. Cache disabled. |
+| POST | /capture/local/observations | Run ID, lease ID and sanitized server observation | 202 with exchangeId and accepted. An expired lease returns 409. |
 | POST | `/runs` | `RunConfig` JSON | `202 { runId }`; `400` invalid config; `422` unavailable/edited scenario or unsupported combination |
 | GET | `/runs` | Optional issuer, wallet, verifier, format, status, tamper, issuerVersion, verifierVersion query filters | `{ items: RunSummary[] }` |
 | GET | `/runs/:id` | — | `RunSummary` or `404` |
@@ -20,7 +22,7 @@ Local base URL: `http://localhost:4000/api/v1`. All routes below are implemented
 | GET | `/runs/:id/exchanges` | Optional `stepId` query | `{ items: Exchange[] }`, sanitized |
 | POST | `/runs/:id/replay` | `{ "tamper": null | faultKind }` | `202 { runId }`; fresh child run with cleared scenario ID |
 | POST | `/runs/:id/capture/har` | `{ "runId": "same UUID", "har": { "log": { "entries": [...] } } }` | Import counts, skip reasons, per-step coverage and capture gaps; synthetic test traffic only, on a finished normal run or managed active assisted run |
-| GET | `/runs/:id/capture/coverage` | — | `{ coverage }` derived from saved sanitized browser exchanges; unavailable boundaries remain explicit |
+| GET | `/runs/:id/capture/coverage` | — | `{ coverage, serverHops }` derived from saved sanitized browser exchanges; unavailable boundaries remain explicit |
 | GET | `/runs/:id/report?format=json\|md` | — | Downloadable report with evidence tier |
 | GET | `/runs/:id/sequence` | — | Mermaid source and exchange/step markers |
 | GET | `/matrix` | — | Latest run for each role/format/fault/evidence-tier/scenario/profile/issuer-representation combination |
@@ -63,10 +65,12 @@ Metadata is saved in existing step JSON and reconstructed on reads; no migration
 
 ### Recorded real-wallet evidence
 
-`GET /api/v1/wallet-evidence` returns `{schemaVersion: 1, items}` for curated manual Web and Android observations. `GET /api/v1/wallet-evidence/report?format=json|md|csv` exports their checkpoint provenance, outcome source, versions, artifact links and limits. These observations have `managedRunId: null` and do not create run history or change automated evidence tiers.
+`GET /api/v1/wallet-evidence` returns `{schemaVersion: 1, items}` for curated manual Web and Android observations. `GET /api/v1/wallet-evidence/report?format=json|md|csv` exports their checkpoint provenance, outcome source, versions, artifact links and limits. The physical Android observation has a null managedRunId. The hosted Web observation links to a separately executed managed run. On current main, /android reads this catalog and filters for inji_mobile. An empty or unavailable response yields no observed outcome. A managed Android start or QR endpoint is still needed.
 
 Matrix JSON includes a separate `walletEvidence` array; supported cells include `manualEvidenceIds` without overriding managed status. Matrix Markdown includes the catalog; CSV appends explicitly labeled manual rows and adds provenance columns. Run reports can include `relatedWalletEvidence`, marked as context rather than evidence for that run. See [integration behavior](PERSON2_EVIDENCE_INTEGRATION.md).
 
 Download the [generated OpenAPI route inventory](openapi.json). Run `node scripts/openapi.mjs` after changing the Express routes.
 
 `GET /api/v1/telemetry` returns an items array grouped by issuer, wallet, verifier, format, flow, expected verdict and protocol profile. Success rate is passed divided by completed runs (passed, failed or errored). P50 and P95 use nearest rank over valid start/finish durations in milliseconds. Archived, cancelled and unfinished runs are excluded.
+
+Both local proxy routes require the jsonld-0.14 assisted profile and the x-capture-bridge-token header. They accept at most 32 KiB of JSON. See the [local proxy contract](../docs/PERSON1_LOCAL_CAPTURE_HANDOFF.md).

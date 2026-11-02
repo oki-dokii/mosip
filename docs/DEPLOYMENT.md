@@ -326,11 +326,11 @@ On a failed `compose-smoke` run, go to the GitHub Actions run page → Artifacts
 
 ## Clean-machine verification procedure
 
-A reviewer on a **different machine** should follow these exact steps. This placeholder is marked **independent verification: open** until a second person completes and records it.
+[Harsh’s Windows rehearsal](https://github.com/oki-dokii/mosip/blob/f7514f2/submission/CLEAN_CHECKOUT_REHEARSAL.md) covers the source checkout and build. Docker was unavailable there. Use the steps below for a separate Docker rehearsal.
 
 ```bash
 # 1. Clone the branch under test
-git clone --branch person4/packaging-ci https://github.com/oki-dokii/mosip.git playground-verify
+git clone --branch final-2026-11-02 https://github.com/oki-dokii/mosip.git playground-verify
 cd playground-verify
 
 # 2. Confirm no .env, node_modules, or Postman files are present
