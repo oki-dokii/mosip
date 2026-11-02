@@ -74,5 +74,12 @@ export function novemberRows() {
     environment:library.issuer+' / '+library.verifier,format:library.format,variable:'damaged issuer signature',control:'fresh unmodified credential',
     controlPassed:library.accepted,expected:'rejected',observed:library.damagedAccepted?'accepted':'rejected',
     verdict:library.accepted&&!library.damagedAccepted?'matched':'inconclusive',scope:library.scope});
+  const formatSource='submission/evidence/2026-11-02-release/dc-format.json';
+  const formatRun=JSON.parse(readFileSync(formatSource,'utf8'));
+  const verdict=issuer=>formatRun.records.find(r=>r.issuer===issuer && r.wallet==='reference' && r.verifier==='Inji Verify')?.checkpoints.find(([step])=>step==='independent verdict')?.[1];
+  rows.push({id:'grid.walt-inji.dc-format',source:formatSource,observedAt:formatRun.observedAt,group:'presentation format variant',format:'SD-JWT',
+    environment:'local walt.id 1.2.0 / Inji Verify 0.18.2',variable:'PEX descriptor format: '+formatRun.presentationFormat,control:'Certify → reference → Verify with same format',
+    controlPassed:verdict('Certify')===true,expected:null,observed:verdict('walt.id')===true?'valid':verdict('walt.id')===false?'invalid':'no verdict',
+    verdict:verdict('Certify')!==true || typeof verdict('walt.id')!=='boolean'?'inconclusive':'verifier verdict observed'});
   return rows;
 }

@@ -1054,6 +1054,20 @@
       "observed": "rejected",
       "verdict": "matched",
       "scope": "Credential and disclosures only; issuer key pinned from a separate trusted loopback control. No wallet presentation, PKI trust-chain or OpenID4VP verdict."
+    },
+    {
+      "id": "grid.walt-inji.dc-format",
+      "source": "submission/evidence/2026-11-02-release/dc-format.json",
+      "observedAt": "2026-11-02T05:53:37.048Z",
+      "group": "presentation format variant",
+      "format": "SD-JWT",
+      "environment": "local walt.id 1.2.0 / Inji Verify 0.18.2",
+      "variable": "PEX descriptor format: dc+sd-jwt",
+      "control": "Certify → reference → Verify with same format",
+      "controlPassed": true,
+      "expected": null,
+      "observed": "invalid",
+      "verdict": "verifier verdict observed"
     }
   ]
 }

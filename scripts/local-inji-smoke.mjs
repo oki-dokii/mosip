@@ -83,7 +83,7 @@ export async function present(credential, holder, scenario, replayToken, profile
     clientId, nonce: randomBytes(24).toString('base64url'),
     presentationDefinition: {
       id: definitionId,
-      input_descriptors: [{ id: 'credential', format: { 'vc+sd-jwt': { alg: [profile.alg] } }, constraints: { fields: [{ path: ['$.vct'], filter: { type: 'string', const: scenario === 'wrong_type' ? 'OtherCredential' : profile.vct } }] } }],
+      input_descriptors: [{ id: 'credential', format: { [profile.format ?? 'vc+sd-jwt']: { alg: [profile.alg] } }, constraints: { fields: [{ path: ['$.vct'], filter: { type: 'string', const: scenario === 'wrong_type' ? 'OtherCredential' : profile.vct } }] } }],
     },
     responseCodeValidationRequired: false,
   }));
@@ -116,7 +116,7 @@ export async function present(credential, holder, scenario, replayToken, profile
   assert(typeof checkedKb.payload.nonce === 'string' && typeof checkedKb.payload.aud === 'string', 'HOLDER_PROOF_INVALID');
   const submission = {
     id: randomUUID(), definition_id: definitionId,
-    descriptor_map: [{ id: 'credential', format: 'vc+sd-jwt', path: scenario === 'wrong_descriptor_path' ? '$[99]' : '$[0]' }],
+    descriptor_map: [{ id: 'credential', format: profile.format ?? 'vc+sd-jwt', path: scenario === 'wrong_descriptor_path' ? '$[99]' : '$[0]' }],
   };
   const submittedState = scenario === 'wrong_state' ? randomBytes(24).toString('base64url') : claims.state;
   const submitted = await request(claims.response_uri, {

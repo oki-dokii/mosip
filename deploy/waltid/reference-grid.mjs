@@ -5,7 +5,8 @@ import { generateKeyPairSync } from 'node:crypto';
 import { decodeJwt, decodeProtectedHeader, exportJWK, SignJWT } from 'jose';
 const out=process.argv[2], records=[];
 const wildcard=process.argv[3]==='--accept-any';
-if(process.argv[3] && !wildcard) throw Error('Unknown grid variant');
+const dcFormat=process.argv[3]==='--dc-format';
+if(process.argv[3] && !wildcard && !dcFormat) throw Error('Unknown grid variant');
 const local='http://127.0.0.1:18090';
 function mapIssuer(url) {
  const value=new URL(url);
@@ -49,7 +50,7 @@ for(const issuer of ['Certify','walt.id']){
     issued={credential,holder};
    }
    if(verifier==='Inji Verify'){
-    const r=await present(issued.credential,issued.holder,'valid',undefined,{vct:decodeJwt(issued.credential.split('~')[0]).vct,alg:decodeProtectedHeader(issued.credential.split('~')[0]).alg});checkpoints.push(['independent verdict',r.summary.verifierValid]);if(r.summary.verifierValid===true)row.status='valid';
+    const r=await present(issued.credential,issued.holder,'valid',undefined,{format:dcFormat?'dc+sd-jwt':'vc+sd-jwt',vct:decodeJwt(issued.credential.split('~')[0]).vct,alg:decodeProtectedHeader(issued.credential.split('~')[0]).alg});checkpoints.push(['independent verdict',r.summary.verifierValid]);if(r.summary.verifierValid===true)row.status='valid';
    }else{
     const create=await fetch('http://127.0.0.1:7004/verification-session/create',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({flow_type:'cross_device',core_flow:{dcql_query:{credentials:[{id:'identity',format:'dc+sd-jwt',meta:{vct_values:[decodeJwt(issued.credential.split('~')[0]).vct]}}]}}})});
     checkpoints.push(['walt verification session',create.status]);
@@ -78,4 +79,4 @@ for(const issuer of ['Certify','walt.id'])for(const verifier of ['Inji Verify','
  const cell=baseline.rows[issuer==='Certify'?2:verifier==='Inji Verify'?3:1];
  records.push({issuer,wallet:'walt.id',verifier,status:cell.result==='passed'?'valid':'stopped',source:'2026-11-02-walt-adapters/observe.json#'+cell.id,verifierReached:issuer!=='Certify' && verifier==='walt.id',checkpoints:cell.checkpoints.slice(-2),sharedIssuanceFailure:issuer==='Certify'});
 }
-await writeFile(out,JSON.stringify({format:'SD-JWT',observedAt:new Date().toISOString(),requestRetrievalAccept:wildcard?'*/*':'application/oauth-authz-req+jwt',scope:'Reference holder uses the walt.id advertised token endpoint. Shared issuance failures block both verifier choices.',records},null,2)+'\n',{flag:'wx'});
+await writeFile(out,JSON.stringify({format:'SD-JWT',observedAt:new Date().toISOString(),presentationFormat:dcFormat?'dc+sd-jwt':'vc+sd-jwt',requestRetrievalAccept:wildcard?'*/*':'application/oauth-authz-req+jwt',scope:'Reference holder uses the walt.id advertised token endpoint. Shared issuance failures block both verifier choices.',records},null,2)+'\n',{flag:'wx'});
