@@ -10,7 +10,7 @@ const titles: Record<string, string> = {
   "G-08": "Historical external protocol profile study",
   "G-09": "Issuer and wallet JWT proof versions differ",
   "G-14": "Collab mDL issuer signature passes independently while Verify reports an unsuccessful check",
-  "G-13": "Verifier example type differs from the bundled issuer metadata",
+  "G-13": "The verifier example requests a different credential type than the issuer offers",
   "G-11": "Certify offer stops at walt.id wallet receipt",
   "G-12": "walt.id presentation stops before Inji Verify returns a verdict",
   "G-10": "Local issuer DID assertion relationship needs an adapter",
@@ -19,7 +19,7 @@ const titles: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   observed_wallet_chains_remaining_limits: "Observed wallet chains; limits remain",
-  repeated_external_checkpoint: "Reproduced twice locally",
+  repeated_external_checkpoint: "Observed in two local runs",
   external_profile_evaluation: "Research only",
   reproduced_version_compatibility_difference: "Reproduced version difference",
   observed_did_relationship_mismatch: "Observed local metadata mismatch",
@@ -50,11 +50,9 @@ export function GapExplorer() {
       <ul className="mt-5 grid gap-4 md:grid-cols-2">
         {gaps.findings.map((finding) => (
           <li key={finding.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-lg bg-ink px-2 py-1 font-mono text-xs font-bold text-white">{finding.id}</span>
-              <span className="text-xs font-semibold text-amber-800">{statusLabels[finding.status] ?? "Investigative finding"}</span>
-            </div>
-            <h3 className="mt-3 font-bold text-ink">{titles[finding.id] ?? "Interoperability observation"}</h3>
+            <p className="font-mono text-xs font-semibold text-slate-500">Finding {finding.id}</p>
+            <h3 className="mt-1 font-bold text-ink">{titles[finding.id] ?? "Interoperability observation"}</h3>
+            <p className="mt-2 text-xs font-medium text-issuer">{statusLabels[finding.status] ?? "Investigative finding"}</p>
             <p className="mt-2 text-sm leading-6 text-slate-600">{finding.matrixDecision}</p>
             <p className="mt-3 text-xs text-slate-500">Deployment version: {finding.productVersion}</p>
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold">
