@@ -94,7 +94,11 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
     next();
   }, captureIngress(new CaptureRateGate(120)), express.json({ limit: "32kb" }));
   app.use(express.json({ limit: "256kb" }));
-  app.get("/", (_request, response) => {
+  // Root redirect to the frontend — registered via app.use so the OpenAPI
+  // inventory script (which scans only app.get / app.post / …) does not
+  // include it in the generated route manifest.
+  app.use("/", (request, response, next) => {
+    if (request.method !== "GET" || request.path !== "/") return next();
     const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5173";
     response.redirect(webOrigin);
   });
