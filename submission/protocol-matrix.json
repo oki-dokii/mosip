@@ -1068,6 +1068,34 @@
       "expected": null,
       "observed": "invalid",
       "verdict": "verifier verdict observed"
+    },
+    {
+      "id": "grid.walt-inji.signature-diagnostic",
+      "source": "submission/evidence/2026-11-02-release/rejection.json",
+      "observedAt": "2026-11-02T05:56:21.732Z",
+      "group": "diagnostic comparison",
+      "environment": "local Inji Verify 0.18.2",
+      "format": "SD-JWT",
+      "variable": "issuer profile",
+      "control": "Certify → reference → Verify",
+      "controlPassed": true,
+      "expected": null,
+      "observed": "ERR_SIGNATURE_VERIFICATION_FAILED",
+      "verdict": "issuer signature check failed"
+    },
+    {
+      "id": "inji.alpha.request-routing",
+      "source": "submission/evidence/2026-11-02-release/alpha-routing.json",
+      "observedAt": "2026-11-02T05:56:52.377082+00:00",
+      "group": "diagnostic comparison",
+      "environment": "local Inji Verify 1.0.0-alpha.1",
+      "format": "SD-JWT",
+      "variable": "request URI path prefix",
+      "control": "same session, route listed in service OpenAPI",
+      "controlPassed": true,
+      "expected": null,
+      "observed": "advertised HTTP 404, service route HTTP 200",
+      "verdict": "request retrieval only"
     }
   ]
 }

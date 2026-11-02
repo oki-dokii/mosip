@@ -81,5 +81,18 @@ export function novemberRows() {
     environment:'local walt.id 1.2.0 / Inji Verify 0.18.2',variable:'PEX descriptor format: '+formatRun.presentationFormat,control:'Certify → reference → Verify with same format',
     controlPassed:verdict('Certify')===true,expected:null,observed:verdict('walt.id')===true?'valid':verdict('walt.id')===false?'invalid':'no verdict',
     verdict:verdict('Certify')!==true || typeof verdict('walt.id')!=='boolean'?'inconclusive':'verifier verdict observed'});
+  const rejectionSource='submission/evidence/2026-11-02-release/rejection.json';
+  const rejection=JSON.parse(readFileSync(rejectionSource,'utf8'));
+  const verifyRow=issuer=>rejection.records.find(row=>row.issuer===issuer && row.wallet==='reference' && row.verifier==='Inji Verify');
+  rows.push({id:'grid.walt-inji.signature-diagnostic',source:rejectionSource,observedAt:rejection.observedAt,group:'diagnostic comparison',
+    environment:'local Inji Verify 0.18.2',format:'SD-JWT',variable:'issuer profile',control:'Certify → reference → Verify',
+    controlPassed:verifyRow('Certify').status==='valid',expected:null,observed:verifyRow('walt.id').verification.resultCode,verdict:'issuer signature check failed'});
+  const routingSource='submission/evidence/2026-11-02-release/alpha-routing.json';
+  const routing=JSON.parse(readFileSync(routingSource,'utf8'));
+  const [advertised,served]=routing.routes;
+  rows.push({id:'inji.alpha.request-routing',source:routingSource,observedAt:routing.observedAt,group:'diagnostic comparison',
+    environment:'local Inji Verify '+routing.version,format:'SD-JWT',variable:'request URI path prefix',control:'same session, route listed in service OpenAPI',
+    controlPassed:served.http===200 && served.compact,expected:null,observed:'advertised HTTP '+advertised.http+', service route HTTP '+served.http,
+    verdict:'request retrieval only'});
   return rows;
 }

@@ -6,7 +6,8 @@ import { decodeJwt, decodeProtectedHeader, exportJWK, SignJWT } from 'jose';
 const out=process.argv[2], records=[];
 const wildcard=process.argv[3]==='--accept-any';
 const dcFormat=process.argv[3]==='--dc-format';
-if(process.argv[3] && !wildcard && !dcFormat) throw Error('Unknown grid variant');
+const diagnose=process.argv[3]==='--diagnose-credential';
+if(process.argv[3] && !wildcard && !dcFormat && !diagnose) throw Error('Unknown grid variant');
 const local='http://127.0.0.1:18090';
 function mapIssuer(url) {
  const value=new URL(url);
@@ -51,6 +52,16 @@ for(const issuer of ['Certify','walt.id']){
    }
    if(verifier==='Inji Verify'){
     const r=await present(issued.credential,issued.holder,'valid',undefined,{format:dcFormat?'dc+sd-jwt':'vc+sd-jwt',vct:decodeJwt(issued.credential.split('~')[0]).vct,alg:decodeProtectedHeader(issued.credential.split('~')[0]).alg});checkpoints.push(['independent verdict',r.summary.verifierValid]);if(r.summary.verifierValid===true)row.status='valid';
+    if(diagnose){
+      const [jwt,...parts]=issued.credential.split('~');
+      const header=decodeProtectedHeader(jwt), claims=decodeJwt(jwt);
+      row.credentialProfile={alg:header.alg,typ:header.typ,x5cCount:header.x5c?.length??0,hasKid:!!header.kid,hasJwk:!!header.jwk,
+        issuerScheme:String(claims.iss).split(':').slice(0,String(claims.iss).startsWith('did:')?2:1).join(':'),
+        holderBinding:claims.cnf?.jwk?'jwk':claims.cnf?.kid?'kid':'other',vct:claims.vct,
+        hasExpiry:typeof claims.exp==='number',disclosureCount:parts.filter(Boolean).length};
+      const {credentialProofValid,holderProofValid,resultCode,verifierHttpStatus}=r.summary;
+      row.verification={credentialProofValid,holderProofValid,resultCode,verifierHttpStatus};
+    }
    }else{
     const create=await fetch('http://127.0.0.1:7004/verification-session/create',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({flow_type:'cross_device',core_flow:{dcql_query:{credentials:[{id:'identity',format:'dc+sd-jwt',meta:{vct_values:[decodeJwt(issued.credential.split('~')[0]).vct]}}]}}})});
     checkpoints.push(['walt verification session',create.status]);

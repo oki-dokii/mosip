@@ -1,6 +1,6 @@
 # Interoperability evidence · 2 November 2026
 
-The [claims table](CLAIMS_AND_EVIDENCE.md) and [protocol matrix](protocol-matrix.json) cover 77 observations. The following 12 historical run records overlap with those observations. They are not an additional pass count.
+The [claims table](CLAIMS_AND_EVIDENCE.md) and [protocol matrix](protocol-matrix.json) cover 79 observations. The following 12 historical run records overlap with those observations. They are not an additional pass count.
 
 | Run or observation | Environment | Recorded outcome |
 |---|---|---|
@@ -40,5 +40,7 @@ The [claims table](CLAIMS_AND_EVIDENCE.md) and [protocol matrix](protocol-matrix
 | [accept-any-shape.json](evidence/2026-11-02-release/accept-any-shape.json) | 2 |
 | [openwallet.json](evidence/2026-11-02-release/openwallet.json) | 1 |
 | [dc-format.json](evidence/2026-11-02-release/dc-format.json) | 1 |
+| [rejection.json](evidence/2026-11-02-release/rejection.json) | 1 |
+| [alpha-routing.json](evidence/2026-11-02-release/alpha-routing.json) | 1 |
 
 The [finding register](../docs/GAPS.md) tracks 14 entries. Two historical reference-holder cells stopped at the configured token endpoint. Both reruns obtained a credential using issuer discovery. Inji Verify returned an invalid verdict; the walt.id verifier run stopped at request retrieval (HTTP 406). The 2 MiB padding request is a size observation without a required verdict.

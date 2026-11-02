@@ -48,3 +48,17 @@ The [eight-cell SD-JWT grid](../../submission/evidence/2026-11-02-wallet-profile
 **Third implementation, credential layer only.** Run `node deploy/openwallet/check.mjs /tmp/new-openwallet.json` with the local Certify SD-JWT profile. [OpenWallet Foundation SD-JWT JS](https://github.com/openwallet-foundation/sd-jwt-js) processed a fresh credential using a Node RSA verifier callback. The [paired check](../../submission/evidence/2026-11-02-release/openwallet.json) rejected an altered signature. This is not an OpenID4VP service.
 
 **PEX format comparison.** Run the same reference grid with `--dc-format` to name `dc+sd-jwt` instead of `vc+sd-jwt` in the request and submission descriptors. [Verify 0.18.2 returned the same verdicts](../../submission/evidence/2026-11-02-release/dc-format.json): valid for the local Certify control, invalid for walt.id issuance. Changing the identifier alone did not fix the latter; its cause remains unknown.
+
+**Verifier diagnosis, 2 November.** Verify 0.18.2 returned HTTP 200 for both result lookups. The walt.id credential failed the issuer signature check with `ERR_SIGNATURE_VERIFICATION_FAILED`. No holder-proof verdict was returned. The Certify control passed both checks. Both credentials used `typ=dc+sd-jwt`, included a signing-key identifier and an expiry, and were requested using their own declared credential type. [Paired evidence](../../submission/evidence/2026-11-02-release/rejection.json)
+
+| Credential property | Certify control | walt.id |
+|---|---|---|
+| Signature algorithm | RS256 | ES256 |
+| Issuer identifier scheme | HTTP | did:jwk |
+| Certificates in x5c | 2 | 0 |
+| Holder binding | cnf.kid | cnf.jwk |
+| Disclosures | 2 | 1 |
+
+These properties changed together. The error identifies the failed check but does not isolate an unsupported algorithm or key-resolution method.
+
+**Verify alpha routing.** The loopback deployment set `INJI_VP_SUBMISSION_BASE_URL=http://127.0.0.1:18082/v1/verify`, while the service OpenAPI exposed its retrieval route at the root. With the same session ID and Accept header, the advertised prefixed path returned 404. The root route returned a compact request with HTTP 200. This establishes a local deployment path mismatch. Credential verification on alpha remains untested by this probe. [Route comparison](../../submission/evidence/2026-11-02-release/alpha-routing.json)
