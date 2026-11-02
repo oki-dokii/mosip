@@ -1,5 +1,9 @@
 # Demo video for reviewers
 
+[Complete product demonstration](Playground-Complete-Demo.mp4) · [Speaking script with time ranges](Complete-Demo-Script.md)
+
+Use this edition for the full workflow and evidence review. The recordings below are shorter or historical alternatives.
+
 [Watch the live product demo](Playground-Live-Demo.mp4) · [Voice-over script](Live-Demo-Script.md)
 
 Two freshly executed mock runs show a valid control and a rejected signature in the running UI. The wallet sections open the recorded evidence catalog.
