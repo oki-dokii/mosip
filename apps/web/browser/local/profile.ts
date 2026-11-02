@@ -35,7 +35,7 @@ export async function readSyntheticPasscode(path: string, repositoryRoot: string
     const fromRoot = relative(root, actual);
     if (!fromRoot || (!fromRoot.startsWith(".." + (process.platform === "win32" ? "\\" : "/")) && !isAbsolute(fromRoot))) throw new Error();
     const info = await stat(actual);
-    if (!info.isFile() || info.size > 16 || (info.mode & 0o077) !== 0 || (process.getuid && info.uid !== process.getuid())) throw new Error();
+    if (!info.isFile() || info.size > 16 || (process.platform !== "win32" && (info.mode & 0o077) !== 0) || (process.getuid && info.uid !== process.getuid())) throw new Error();
     const pin = (await readFile(resolve(actual), "utf8")).trim();
     if (!/^\d{6}$/.test(pin)) throw new Error();
     return pin;

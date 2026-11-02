@@ -1,5 +1,5 @@
 import { createHash, createPrivateKey, generateKeyPairSync, randomBytes, X509Certificate, type KeyObject } from "node:crypto";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
@@ -91,7 +91,9 @@ describe("isolated SD-JWT verification", () => {
     try {
       const keyPath = join(directory, "key.pem"), certPath = join(directory, "cert.pem");
       const keyArgs = algorithm === "EdDSA" ? ["-newkey", "ed25519"] : algorithm === "ES256" ? ["-newkey", "ec", "-pkeyopt", "ec_paramgen_curve:P-256"] : ["-newkey", "rsa:2048"];
-      execFileSync("openssl", ["req", "-x509", ...keyArgs, "-nodes", "-keyout", keyPath, "-out", certPath, "-days", "1", "-subj", "/CN=issuer.test"], { stdio: "ignore" });
+      const openssl = process.platform === "win32" && existsSync("C:\\Program Files\\Git\\usr\\bin\\openssl.exe") ? "C:\\Program Files\\Git\\usr\\bin\\openssl.exe" : "openssl";
+      const env = { ...process.env, OPENSSL_CONF: existsSync("C:\\Program Files\\Git\\usr\\ssl\\openssl.cnf") ? "C:\\Program Files\\Git\\usr\\ssl\\openssl.cnf" : "" };
+      execFileSync(openssl, ["req", "-x509", ...keyArgs, "-nodes", "-keyout", keyPath, "-out", certPath, "-days", "1", "-subj", "/CN=issuer.test"], { stdio: "ignore", env });
       const certificate = new X509Certificate(readFileSync(certPath));
       const x509Signer = { privateKey: createPrivateKey(readFileSync(keyPath)), header: { alg: algorithm, typ: "vc+sd-jwt", x5c: [certificate.raw.toString("base64")] }, issuerId: "https://issuer.test" };
       const result = await verifyPresentation(await specimen({ x509Signer }), challenge, policy, now);

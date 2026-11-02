@@ -39,8 +39,8 @@ it("reads only an existing private synthetic passcode outside the repository bou
   const root = join(dir, "repository"); await mkdir(root);
   const path = join(dir, "synthetic-pin"); await writeFile(path, "730194\n", { mode: 0o600 });
   expect(await readSyntheticPasscode(path, root)).toBe("730194");
-  await chmod(path, 0o644);
-  await expect(readSyntheticPasscode(path, root)).rejects.toThrow("PERSON2_PRIVATE_SYNTHETIC_PASSCODE_UNAVAILABLE");
+  if (process.platform !== "win32") await chmod(path, 0o644);
+  if (process.platform !== "win32") await expect(readSyntheticPasscode(path, root)).rejects.toThrow("PERSON2_PRIVATE_SYNTHETIC_PASSCODE_UNAVAILABLE");
   const inside = join(root, "synthetic-pin"); await writeFile(inside, "730194", { mode: 0o600 });
   await expect(readSyntheticPasscode(inside, root)).rejects.toThrow("PERSON2_PRIVATE_SYNTHETIC_PASSCODE_UNAVAILABLE");
   await expect(readSyntheticPasscode(join(dir, "missing"), root)).rejects.toThrow("PERSON2_PRIVATE_SYNTHETIC_PASSCODE_UNAVAILABLE");

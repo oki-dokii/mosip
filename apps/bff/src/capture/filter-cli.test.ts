@@ -33,7 +33,7 @@ it("CLI --split creates import-sized owner-only chunks without raw values", asyn
     const content = await readFile(path, "utf8");
     expect(JSON.parse(content).har.log.entries).toHaveLength(count!);
     expect(content).not.toContain("CANARY_");
-    expect((await stat(path)).mode & 0o777).toBe(0o600);
+    if (process.platform !== "win32") expect((await stat(path)).mode & 0o777).toBe(0o600);
   }
 }, 20_000);
 
@@ -64,7 +64,7 @@ it("CLI filters real-shaped asset-heavy HAR, unknown timings and bad entries wit
   const saved = await readFile(output, "utf8");
   expect(saved).not.toContain("CANARY_");
   expect(JSON.parse(saved).har.log.entries[0].time).toBe(-1);
-  expect((await stat(output)).mode & 0o777).toBe(0o600);
+  if (process.platform !== "win32") expect((await stat(output)).mode & 0o777).toBe(0o600);
   const again = await cli(input, output).catch((error: unknown) => error) as { code: number; stderr: string };
   expect(again.code).toBe(1);
   expect(again.stderr).not.toContain("CANARY_");

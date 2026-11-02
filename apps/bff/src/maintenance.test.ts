@@ -27,7 +27,7 @@ it('backups refuse overwrites, symlinks and in-repo outputs and use owner-only m
  const directory=await mkdtemp(join(tmpdir(),'mosip-backup-test-'));const workspace=join(directory,'repo');await mkdir(workspace);
  const repository=new MemoryRunRepository();const saved=record();await repository.create(saved);
  try{
-  const file=join(directory,'backup.json');const result=await backupRuns(repository,file,workspace);expect(result.runs).toBe(1);expect((await stat(file)).mode&0o777).toBe(0o600);
+  const file=join(directory,'backup.json');const result=await backupRuns(repository,file,workspace);expect(result.runs).toBe(1);if (process.platform !== 'win32') expect((await stat(file)).mode&0o777).toBe(0o600);
   expect(JSON.parse(await readFile(file,'utf8')).records[0].run.id).toBe(saved.run.id);
   await expect(backupRuns(repository,file,workspace)).rejects.toThrow();
   await expect(backupRuns(repository,join(workspace,'leak.json'),workspace)).rejects.toThrow('OUTSIDE_REPOSITORY');

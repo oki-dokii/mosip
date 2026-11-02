@@ -99,7 +99,11 @@ export async function writeAggregate(check = false) {
     ['submission/evidence/2026-10-26-aggregate-matrix.json', JSON.stringify(result.matrix, null, 2) + '\n'],
   ]) {
     const url = new URL(path, root);
-    if (check) { if (await readFile(url, 'utf8') !== text) throw new Error('AGGREGATE_OUTPUT_STALE'); }
+    if (check) {
+      const current = (await readFile(url, 'utf8')).replace(/\r\n/g, '\n');
+      const expected = text.replace(/\r\n/g, '\n');
+      if (current !== expected) throw new Error('AGGREGATE_OUTPUT_STALE');
+    }
     else await writeFile(url, text);
   }
 }

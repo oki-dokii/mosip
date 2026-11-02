@@ -4,6 +4,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, statSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { compareEvidence, diffShapes, issueDraft, readCommitted, shapeOf } from "./evidence-tools.mjs";
 import { scanText } from "./audit-secrets.mjs";
 
@@ -96,14 +97,14 @@ test("committed source loader rejects traversal, arbitrary paths and missing fil
 test("CLI generates new owner-only artifacts from committed runs and never overwrites", () => {
   const dir = mkdtempSync(join(tmpdir(), "evidence-cli-"));
   try {
-    const script = new URL("./evidence-tools.mjs", import.meta.url).pathname;
+    const script = fileURLToPath(new URL("./evidence-tools.mjs", import.meta.url));
     const drift = join(dir, "diff.json"), issue = join(dir, "issue.md");
     assert.match(execFileSync(process.execPath, [script, "drift", validPath, invalidPath, drift], { timeout: 5000 }).toString(), /EVIDENCE_EXPORT_SAVED/);
     execFileSync(process.execPath, [script, "issue", invalidPath, issue], { timeout: 5000 });
     const report = JSON.parse(readFileSync(drift, "utf8"));
     assert.equal(report.sources.length, 2);
     assert.deepEqual(scanText(readFileSync(issue, "utf8")), []);
-    assert.equal(statSync(issue).mode & 0o777, 0o600);
+    if (process.platform !== "win32") assert.equal(statSync(issue).mode & 0o777, 0o600);
     const previous = readFileSync(issue, "utf8");
     const result = spawnSync(process.execPath, [script, "issue", invalidPath, issue], { timeout: 5000, encoding: "utf8" });
     assert.equal(result.status, 1);

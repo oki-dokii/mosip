@@ -17,7 +17,7 @@
     "check:web-presentation": "node scripts/check-inji-web-presentation.mjs",
     "check:web-local": "node scripts/check-inji-web-local.mjs",
     "probe:inji": "node scripts/local-inji-smoke.mjs --matrix",
-    "demo:docker": "bash scripts/demo-docker.sh",
+    "demo:docker": "node scripts/demo-docker.mjs",
     "e2e:smoke": "node e2e/smoke.mjs",
     "audit:secrets": "node scripts/audit-secrets.mjs",
     "audit:licenses": "node scripts/check-licenses.mjs",
