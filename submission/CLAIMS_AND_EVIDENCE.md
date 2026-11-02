@@ -1,4 +1,4 @@
-# Claims and evidence · 1 November 2026
+# Claims and evidence · 2 November 2026
 
 | What the team demonstrated | Evidence and boundary |
 |---|---|
@@ -10,5 +10,9 @@
 | A local verifier created a native request link and a Digital Credentials API request. Chromium invoked the credential chooser. | [Browser record](evidence/2026-11-01-formats/browser-wallet.json). A provider-backed presentation and verifier verdict remain open. |
 | The selected Inji Web backend cannot sign SD-JWT presentations through this signing method. | Mimoto v0.22.0 checks for LDP_VC and throws for other formats in [WalletPresentationServiceImpl](https://github.com/mosip/mimoto/blob/91692cde498d023fe141fd239f46779d6fbbe0ff/src/main/java/io/mosip/mimoto/service/impl/WalletPresentationServiceImpl.java#L291-L305). Source-level result. |
 | A physical Android wallet completed a hybrid journey. | [Android record](A2_MOBILE_EVIDENCE.md). The verifier ran on Collab. The all-local Android BFF record awaits a phone operator. |
-| 44 protocol cells have dated observations and positive-control references. | [Protocol matrix](protocol-matrix.json) contains 29 mock cells, eight local Inji cells, six hosted cells and one hybrid Android cell. The four added wallet/holder baselines index existing dated observations, not new executions. |
+| 71 indexed observations. | [Protocol matrix](protocol-matrix.json) combines 44 earlier cells with 9 public paired checks, 8 grid combinations, 4 adapter comparisons and 6 refreshed Collab observations. These categories include shared checkpoints and harness limits. |
 | PixelPass made the 96-claim synthetic JSON-LD sample fit into QR version 39 at ECC M. | [Encoding measurements](../apps/web/src/data/qr.json). Physical scanning was outside the measurement. |
+
+The eight [SD-JWT role combinations](protocol-matrix.json) include two harness-limited cells: our reference holder sent token requests to its Certify-specific endpoint on the walt.id issuer and received 404. Neither verifier was reached. The [JSON-LD size measurement](evidence/2026-11-02-wallet-profile/jsonld-pairs.json) recorded HTTP 200/valid for a valid credential with 2 MiB of extra padding on Verify 0.18.2. The matrix reports that measurement without a required verdict.
+
+With the discovery alias enabled, the full catalog stopped at wallet HTTP 400 during issuer metadata validation. The SD-JWT-only catalog stopped later at wallet HTTP 500 during authorization-server discovery. The exact exception-to-status mapping is unconfirmed. [Paired adapter runs and protocol analysis](../deploy/waltid/README.md).

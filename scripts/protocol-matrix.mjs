@@ -1,5 +1,6 @@
 // Exports only projected observations. Never copy request bodies or credentials.
 import { readFileSync, writeFileSync } from 'node:fs';
+import { novemberRows } from './november-matrix.mjs';
 const read = p => JSON.parse(readFileSync(p, 'utf8'));
 const [sd='submission/evidence/2026-11-01-protocol/sd.json',ld='submission/evidence/2026-11-01-protocol/ld.json',out='submission/protocol-matrix.json'] = process.argv.slice(2);
 const rows = [];
@@ -42,6 +43,19 @@ const localWeb='submission/evidence/2026-10-26-person2-local-ui/ui-checks.json',
 baseline('inji.jsonld.web','local Certify 0.14 / Web 0.17 / Verify 0.18.2','JSON-LD','managed Inji Web baseline with local adapters',localWeb,lw.observedAt,[lw.exactCardReloaded,lw.selectedCredentialMatchesIssuance,lw.credentialProofValid,lw.holderProofValid,lw.verifierValid].every(x=>x===true));
 const android='submission/evidence/person3-a2-mobile-2026-10-23/verifier-result.json', an=read(android);
 baseline('hybrid.sdjwt.android','local Certify / Android / Collab Verify','SD-JWT','physical Android baseline (no BFF run)',android,an.observedAt,an.outcome==='valid'&&an.credentialProofValid===true&&an.holderProofValid===true);
+const prior = rows.length;
+const additions = novemberRows();
+rows.push(...additions);
 if(new Set(rows.map(r=>r.id)).size!==rows.length) throw Error('Duplicate matrix ID');
 writeFileSync(out, JSON.stringify({additionalControls:[{format:'JSON-LD',environment:'Collab (build unreported)',date:'2026-10-20',source:hostedLd,passed:hv.allChecksSuccessful===true&&hv.credentialProofValid===true&&hv.holderProofValid===true}],scope:'Environment-specific cells, not unique faults. Specification links provide context; type, trust, disclosure selection and transport policy depend on the named profile. Local Inji and Collab observations are archived.',rows},null,2)+'\n');
 console.log(rows.length+' evidence-linked cells');
+
+if (out === 'submission/protocol-matrix.json') {
+ const path='submission/CLAIMS_AND_EVIDENCE.md';
+ const counts = Object.fromEntries([...new Set(additions.map(r=>r.group))].map(group=>[group,additions.filter(r=>r.group===group).length]));
+ const line = '| '+rows.length+' indexed observations. | [Protocol matrix](protocol-matrix.json) combines '+prior+' earlier cells with '+counts['paired check']+' public paired checks, '+counts['role grid']+' grid combinations, '+counts['adapter experiment']+' adapter comparisons and '+counts['Collab refresh']+' refreshed Collab observations. These categories include shared checkpoints and harness limits. |';
+ const old=readFileSync(path,'utf8');
+ const pattern=/^\| \d+ (?:protocol cells|indexed observations).*$/m;
+ if(!pattern.test(old))throw Error('Missing claims summary');
+ writeFileSync(path,old.replace(pattern,line));
+}

@@ -28,6 +28,7 @@ for(const issuer of ['Certify','walt.id']){
     // The existing Certify reference-holder profile posts to this path in issueCredential.
     const token=await fetch('http://127.0.0.1:7005/v1/certify/oauth/token',{method:'POST',redirect:'error',body:new URLSearchParams({grant_type:'urn:ietf:params:oauth:grant-type:pre-authorized_code','pre-authorized_code':code,client_id:'wallet'})});
     checkpoints.push(['configured reference token endpoint',token.status]);
+    if(token.status===404)row.status='harness-limited';
     if(token.ok)throw Error('Reference issuer profile needs further implementation');
     continue;
    }

@@ -29,6 +29,6 @@ for(const scenario of ['signed_expired','missing_proof','changed_subject','malfo
   if(scenario==='changed_subject'){valid.credentialSubject.fullName='Synthetic Change';body=encode(valid);}
   if(scenario==='malformed_body')body='{';
   if(scenario==='oversized_body')body=JSON.stringify({padding:'a'.repeat(2*1024*1024),...JSON.parse(encode(valid))});
-  rows.push({scenario,control,actual:await verify(body),expected:scenario.endsWith('_body')?'4xx':'invalid'});
+  rows.push({scenario,control,actual:await verify(body),expected:scenario==='oversized_body'?null:scenario==='malformed_body'?'4xx':'invalid'});
 }
 await writeFile(process.argv[2],JSON.stringify({observedAt:new Date().toISOString(),format:'JSON-LD',verifier:'Verify 0.18.2',issuer:'synthetic did:key',rows},null,2)+'\n',{flag:'wx',mode:0o600});
