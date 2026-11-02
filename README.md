@@ -294,6 +294,9 @@ submission/       Judge-facing readiness, architecture, API, tests, pitch outlin
 
 ## Tests and evidence
 
+[Sample test data and expected results](submission/TEST_DATA.md)
+
+
 Run these checks from the repository root:
 
 ```bash
