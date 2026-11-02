@@ -1,6 +1,10 @@
 # Demo video for reviewers
 
-[Current silent walkthrough](Playground-Silent-Walkthrough.mp4) · [Chapter guide](Silent-Walkthrough-Chapters.md) · [Timestamped voice-over script](Silent-Walkthrough-Transcript.md)
+[Watch the live product demo](Playground-Live-Demo.mp4) · [Voice-over script](Live-Demo-Script.md)
+
+Two freshly executed mock runs show a valid control and a rejected signature in the running UI. The wallet sections open the recorded evidence catalog.
+
+[Extended evidence walkthrough](Playground-Silent-Walkthrough.mp4) · [Chapter guide](Silent-Walkthrough-Chapters.md) · [Timestamped voice-over script](Silent-Walkthrough-Transcript.md)
 
 The first four minutes introduce the playground. The extended chapters cover the workflow, public register and matrix observations.
 
