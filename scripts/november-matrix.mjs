@@ -57,5 +57,22 @@ export function novemberRows() {
       control:'Certify → reference → Inji Verify (same run)',controlPassed:control?.status==='valid',expected:null,
       observed:step+' = '+value,verdict:step==='independent verdict' && value===false?'invalid':'stopped before verifier verdict'});
   }
+  const shapeSource='submission/evidence/2026-11-02-release/accept-any-shape.json';
+  const shape=JSON.parse(readFileSync(shapeSource,'utf8'));
+  for(const r of shape.records.filter(r=>r.wallet==='reference' && r.verifier==='walt.id')){
+    const cp=Object.fromEntries(r.checkpoints);
+    const strict=rerun.records.find(c=>c.wallet===r.wallet && c.issuer===r.issuer && c.verifier===r.verifier);
+    rows.push({id:'grid.accept-any.'+r.issuer,source:shapeSource,observedAt:shape.observedAt,
+      group:'media type variant',environment:'local walt.id 1.2.0 verifier',format:'SD-JWT',variable:r.issuer+' → reference → walt.id; Accept: */*',
+      control:source,controlPassed:Object.fromEntries(strict.checkpoints)['signed request retrieval']===406,
+      expected:null,observed:'HTTP '+cp['signed request retrieval']+'; JSON media type = '+cp['JSON media type']+'; compact signed request = '+cp['compact signed request'],
+      verdict:'stopped before verifier verdict'});
+  }
+  const librarySource='submission/evidence/2026-11-02-release/openwallet.json';
+  const library=JSON.parse(readFileSync(librarySource,'utf8'));
+  rows.push({id:'openwallet.credential.damaged_signature',source:librarySource,observedAt:library.observedAt,group:'credential library',
+    environment:library.issuer+' / '+library.verifier,format:library.format,variable:'damaged issuer signature',control:'fresh unmodified credential',
+    controlPassed:library.accepted,expected:'rejected',observed:library.damagedAccepted?'accepted':'rejected',
+    verdict:library.accepted&&!library.damagedAccepted?'matched':'inconclusive',scope:library.scope});
   return rows;
 }

@@ -1,0 +1,9 @@
+{
+  "observedAt": "2026-11-02T05:48:02.283Z",
+  "issuer": "local Certify 1.0.0-alpha.1",
+  "verifier": "@sd-jwt/core 0.24.1 + Node RSA verifier callback",
+  "format": "SD-JWT",
+  "scope": "Credential and disclosures only; issuer key pinned from a separate trusted loopback control. No wallet presentation, PKI trust-chain or OpenID4VP verdict.",
+  "accepted": true,
+  "damagedAccepted": false
+}

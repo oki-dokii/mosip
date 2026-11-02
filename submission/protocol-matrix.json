@@ -1011,6 +1011,49 @@
       "expected": null,
       "observed": "signed request retrieval = 406",
       "verdict": "stopped before verifier verdict"
+    },
+    {
+      "id": "grid.accept-any.Certify",
+      "source": "submission/evidence/2026-11-02-release/accept-any-shape.json",
+      "observedAt": "2026-11-02T05:47:15.700Z",
+      "group": "media type variant",
+      "environment": "local walt.id 1.2.0 verifier",
+      "format": "SD-JWT",
+      "variable": "Certify → reference → walt.id; Accept: */*",
+      "control": "submission/evidence/2026-11-02-release/grid.json",
+      "controlPassed": true,
+      "expected": null,
+      "observed": "HTTP 200; JSON media type = true; compact signed request = false",
+      "verdict": "stopped before verifier verdict"
+    },
+    {
+      "id": "grid.accept-any.walt.id",
+      "source": "submission/evidence/2026-11-02-release/accept-any-shape.json",
+      "observedAt": "2026-11-02T05:47:15.700Z",
+      "group": "media type variant",
+      "environment": "local walt.id 1.2.0 verifier",
+      "format": "SD-JWT",
+      "variable": "walt.id → reference → walt.id; Accept: */*",
+      "control": "submission/evidence/2026-11-02-release/grid.json",
+      "controlPassed": true,
+      "expected": null,
+      "observed": "HTTP 200; JSON media type = true; compact signed request = false",
+      "verdict": "stopped before verifier verdict"
+    },
+    {
+      "id": "openwallet.credential.damaged_signature",
+      "source": "submission/evidence/2026-11-02-release/openwallet.json",
+      "observedAt": "2026-11-02T05:48:02.283Z",
+      "group": "credential library",
+      "environment": "local Certify 1.0.0-alpha.1 / @sd-jwt/core 0.24.1 + Node RSA verifier callback",
+      "format": "SD-JWT",
+      "variable": "damaged issuer signature",
+      "control": "fresh unmodified credential",
+      "controlPassed": true,
+      "expected": "rejected",
+      "observed": "rejected",
+      "verdict": "matched",
+      "scope": "Credential and disclosures only; issuer key pinned from a separate trusted loopback control. No wallet presentation, PKI trust-chain or OpenID4VP verdict."
     }
   ]
 }

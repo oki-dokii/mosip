@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-11-01",
+  "updated": "2026-11-02",
   "source": "docs/GAPS.md",
   "owner": "Person 3",
   "scope": "Version-scoped observed findings, current hosted/local Web and hybrid Android evidence; private-report/issue status is not inferred.",
@@ -30,7 +30,8 @@
       "existingUpstreamChanges": [
         "https://github.com/inji/vc-verifier/pull/290",
         "https://github.com/inji/vc-verifier/pull/296"
-      ]
+      ],
+      "cause": "Signing-key representation changes the observed outcome; underlying deployed implementation unknown."
     },
     {
       "id": "G-02",
@@ -49,7 +50,8 @@
       ],
       "matrixCells": [],
       "matrixDecision": "Hosted managed JSON-LD and a separate pinned local managed JSON-LD wallet chain returned valid. Earlier missing-account blockers are historical. SD-JWT Web support, team review and independent deployment attestation remain separate.",
-      "upstreamIssue": null
+      "upstreamIssue": null,
+      "cause": "Multiple wallet and deployment boundaries; no single cause established."
     },
     {
       "id": "G-03",
@@ -63,7 +65,8 @@
       "runIds": [],
       "matrixCells": [],
       "matrixDecision": "Version discovery completed: actuator/info returned 403 for both services; Verify API description is reachable but does not attest a deployment release.",
-      "upstreamIssue": null
+      "upstreamIssue": null,
+      "cause": "The probed deployment does not expose an authenticated build identity to this client."
     },
     {
       "id": "G-04",
@@ -79,7 +82,8 @@
       "runIds": [],
       "matrixCells": [],
       "matrixDecision": "Both synthetic configurations reproduce offer/token/nonce HTTP 200 then credential HTTP 401. Deployment version and authorization configuration remain unreported; do not classify a new protocol defect.",
-      "upstreamIssue": null
+      "upstreamIssue": null,
+      "cause": "Cause unknown: credential endpoint declined the request after token and nonce issuance."
     },
     {
       "id": "G-05",
@@ -94,7 +98,8 @@
       "matrixCells": [],
       "matrixDecision": "Fresh Verify v0.18.2 sample DB omitted response-code columns: direct-post HTTP 500. The same synthetic Certify/holder/Verify path reached valid after adding the three columns present in its tagged DDL. Local packaging observation only; no other deployment is inferred.",
       "upstreamIssue": "https://github.com/inji/inji-verify/issues/2442",
-      "upstreamReportDate": "2026-10-26"
+      "upstreamReportDate": "2026-10-26",
+      "cause": "The sample database initialization omits columns used by the release."
     },
     {
       "id": "G-06",
@@ -117,7 +122,8 @@
       "matrixDecision": "Pinned local reference-holder observation; private report submitted 2026-10-26, maintainer triage pending. No claim about Collab or newer releases.",
       "upstreamIssue": null,
       "privateReportStatus": "submitted_private_triage_pending",
-      "privateReportDate": "2026-10-26"
+      "privateReportDate": "2026-10-26",
+      "cause": "Underlying cause unknown; private triage pending."
     },
     {
       "id": "G-07",
@@ -136,7 +142,8 @@
       "matrixDecision": "Pinned local reference-holder observation; private report submitted 2026-10-26, maintainer triage pending. No claim about Collab or newer releases.",
       "upstreamIssue": null,
       "privateReportStatus": "submitted_private_triage_pending",
-      "privateReportDate": "2026-10-26"
+      "privateReportDate": "2026-10-26",
+      "cause": "Underlying cause unknown; private triage pending."
     },
     {
       "id": "G-08",
@@ -149,7 +156,8 @@
       "runIds": [],
       "matrixCells": [],
       "matrixDecision": "Historical study of the two protocol profiles. See G-11/G-12 for subsequent executions; these do not prove general incompatibility.",
-      "upstreamIssue": null
+      "upstreamIssue": null,
+      "cause": "Historical protocol-profile comparison; no defect attributed."
     },
     {
       "id": "G-09",
@@ -164,7 +172,8 @@
       "matrixCells": [],
       "matrixDecision": "Pinned Certify alpha.1 rejected the tested Mimoto Ed25519 JWT proof; Certify 0.14.0 accepted the matching-key JSON-LD flow. Keep exact versions and proof profile visible.",
       "upstreamIssue": "https://github.com/inji/inji-certify/issues/769#issuecomment-6409787027",
-      "upstreamReportDate": "2026-10-26"
+      "upstreamReportDate": "2026-10-26",
+      "cause": "Acceptance changes with the Certify release for the tested proof; exact internal cause unknown."
     },
     {
       "id": "G-10",
@@ -179,7 +188,8 @@
       "matrixCells": [],
       "matrixDecision": "The observed Certify DID assertionMethod needed a verification-method reference correction. The passing local chain uses a declared adapter, not a stock DID interoperability claim.",
       "upstreamIssue": "https://github.com/inji/inji-certify/issues/713#issuecomment-6409789998",
-      "upstreamReportDate": "2026-10-26"
+      "upstreamReportDate": "2026-10-26",
+      "cause": "Published assertionMethod refers to the DID rather than the expected verification method in the tested profile."
     },
     {
       "id": "G-11",
@@ -209,7 +219,8 @@
       "reproduce": "See deploy/waltid/README.md; node deploy/waltid/probe.mjs",
       "specReferences": [
         "https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0-13.html#appendix-A.1.2.2"
-      ]
+      ],
+      "cause": "Advertised discovery location and published JSON-LD signing-suite declaration block successive wallet checkpoints."
     },
     {
       "id": "G-12",
@@ -241,7 +252,8 @@
         "https://openid.net/specs/openid-4-verifiable-presentations-1_0-21.html#section-5.6",
         "https://openid.net/specs/openid-4-verifiable-presentations-1_0-23.html#section-5.9",
         "https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#section-5.8"
-      ]
+      ],
+      "cause": "Request media-type negotiation and then audience validation block successive checkpoints; discovery mode not attested."
     },
     {
       "id": "G-13",
@@ -258,7 +270,8 @@
       ],
       "matrixDecision": "The verifier Swagger SD-JWT PID example type did not match the type advertised by the bundled identity issuer. Two paired sessions failed using the example type and succeeded using the metadata type. The verifier correctly rejected the unmatched type; this is an example configuration gap.",
       "reproduce": "node deploy/waltid/probe.mjs /tmp/check.json --example-control",
-      "upstreamIssue": null
+      "upstreamIssue": null,
+      "cause": "Verifier example requests a different credential type than the bundled issuer advertises."
     },
     {
       "id": "G-14",
@@ -275,7 +288,8 @@
       ],
       "matrixDecision": "Collab returned an mDL and Verify reported allChecksSuccessful=false for the issued document. Independent verification passed the issuer signature and six attribute digests. Device authentication and issuer-chain trust require separate checks.",
       "reproduce": "Follow the Collab mDL row in docs/LOCAL_WALLET_LABS.md.",
-      "upstreamIssue": null
+      "upstreamIssue": null,
+      "cause": "Issuer signature and full Verify verdict measure different things; underlying Verify rejection cause unknown."
     }
   ],
   "localProtocolEvidence": {

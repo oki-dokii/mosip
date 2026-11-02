@@ -43,7 +43,7 @@
     "check:web-managed-ui": "node scripts/check-managed-local-ui.mjs",
     "lint": "oxlint -D correctness apps packages scripts spikes",
     "coverage:redaction": "pnpm --filter @playground/bff exec vitest run src/redaction.test.ts src/redaction-fuzz.test.ts --coverage --coverage.include=src/redaction.ts",
-    "test:mutations": "node scripts/redaction-mutations.mjs && node scripts/outbound-mutations.mjs",
+    "test:mutations": "node scripts/redaction-mutations.mjs && node scripts/outbound-mutations.mjs && node scripts/capture-mutations.mjs",
     "docs:api": "node scripts/openapi.mjs"
   },
   "engines": {
@@ -60,6 +60,7 @@
   "devDependencies": {
     "@auth0/mdl": "3.0.1",
     "@mosip/pixelpass": "0.6.0",
+    "@sd-jwt/core": "0.24.1",
     "oxlint": "1.30.0",
     "typescript": "5.9.3"
   }

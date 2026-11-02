@@ -33,6 +33,9 @@ importers:
       '@mosip/pixelpass':
         specifier: 0.6.0
         version: 0.6.0
+      '@sd-jwt/core':
+        specifier: 0.24.1
+        version: 0.24.1
       oxlint:
         specifier: 1.30.0
         version: 1.30.0
@@ -768,6 +771,9 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
+  '@owf/identity-common@0.6.2':
+    resolution: {integrity: sha512-qTeeMoEujOZzCqh/yW9kKFzDBM5tL9qVTiIgyXrR/XJE1ZohJ0IX8IoEtCinBcrz3sRkcBYTfuaCTNCbH2pY+A==}
+
   '@oxlint/darwin-arm64@1.30.0':
     resolution: {integrity: sha512-vIiTk1FBObXHvaG3WK/SpwCZP06fuHhSrn8mK2hEs2uSFWG63WgvLAHSGhI4U1X29JGf36zhfUzuKirDIVdKBQ==}
     cpu: [arm64]
@@ -1049,6 +1055,9 @@ packages:
     resolution: {integrity: sha512-vrvuasIpm/xf+BpZbzgirku0WnrQZMAc+H2Ai26jzqBxYEmQQE4DdJb7h8erkJMfRRipx0ma2Cty8jJwUm9ocQ==}
     cpu: [x64]
     os: [win32]
+
+  '@sd-jwt/core@0.24.1':
+    resolution: {integrity: sha512-8zeZRlb/Cg5mP/h95yEtk8HIs7RuyIlbbnWwK60NeUG+1934xRDBBs+9EpsWDKP8BeV4hJHJNYcaieEbw28a6w==}
 
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
@@ -3237,6 +3246,8 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.3
 
+  '@owf/identity-common@0.6.2': {}
+
   '@oxlint/darwin-arm64@1.30.0':
     optional: true
 
@@ -3487,6 +3498,10 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.64.10':
     optional: true
+
+  '@sd-jwt/core@0.24.1':
+    dependencies:
+      '@owf/identity-common': 0.6.2
 
   '@socket.io/component-emitter@3.1.2': {}
 

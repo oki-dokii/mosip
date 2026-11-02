@@ -4,6 +4,8 @@ import {issueCredential,present} from '../../scripts/local-inji-smoke.mjs';
 import { generateKeyPairSync } from 'node:crypto';
 import { decodeJwt, decodeProtectedHeader, exportJWK, SignJWT } from 'jose';
 const out=process.argv[2], records=[];
+const wildcard=process.argv[3]==='--accept-any';
+if(process.argv[3] && !wildcard) throw Error('Unknown grid variant');
 const local='http://127.0.0.1:18090';
 function mapIssuer(url) {
  const value=new URL(url);
@@ -55,10 +57,16 @@ for(const issuer of ['Certify','walt.id']){
     const target=new URL(bootstrap.searchParams.get('request_uri'));
     if(target.origin!=='http://host.docker.internal:7004')throw Error('Unexpected verifier origin');
     target.hostname='127.0.0.1';
-    const request=await fetch(target,{headers:{accept:'application/oauth-authz-req+jwt'},redirect:'error'});
+    const request=await fetch(target,{headers:{accept:wildcard?'*/*':'application/oauth-authz-req+jwt'},redirect:'error'});
     checkpoints.push(['signed request retrieval',request.status]);
     if(request.ok){
-     const claims=JSON.parse(Buffer.from((await request.text()).split('.')[1],'base64url'));
+     const body=await request.text();
+     const media=(request.headers.get('content-type')??'').split(';')[0];
+     checkpoints.push(['JSON media type',media==='application/json']);
+     const compact=/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(body.trim());
+     checkpoints.push(['compact signed request',compact]);
+     if(!compact)continue;
+     const claims=decodeJwt(body.trim());
      checkpoints.push(['presentation_definition available to reference holder',Boolean(claims.presentation_definition)],['DCQL present',Boolean(claims.dcql_query)]);
     }
    }
@@ -70,4 +78,4 @@ for(const issuer of ['Certify','walt.id'])for(const verifier of ['Inji Verify','
  const cell=baseline.rows[issuer==='Certify'?2:verifier==='Inji Verify'?3:1];
  records.push({issuer,wallet:'walt.id',verifier,status:cell.result==='passed'?'valid':'stopped',source:'2026-11-02-walt-adapters/observe.json#'+cell.id,verifierReached:issuer!=='Certify' && verifier==='walt.id',checkpoints:cell.checkpoints.slice(-2),sharedIssuanceFailure:issuer==='Certify'});
 }
-await writeFile(out,JSON.stringify({format:'SD-JWT',observedAt:new Date().toISOString(),scope:'Reference holder uses the walt.id advertised token endpoint. Shared issuance failures block both verifier choices.',records},null,2)+'\n',{flag:'wx'});
+await writeFile(out,JSON.stringify({format:'SD-JWT',observedAt:new Date().toISOString(),requestRetrievalAccept:wildcard?'*/*':'application/oauth-authz-req+jwt',scope:'Reference holder uses the walt.id advertised token endpoint. Shared issuance failures block both verifier choices.',records},null,2)+'\n',{flag:'wx'});

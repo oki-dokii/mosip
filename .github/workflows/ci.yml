@@ -60,9 +60,12 @@ jobs:
       - name: Check lint, redaction mutations and API inventory
         run: |
           pnpm lint
+          node scripts/protocol-matrix.mjs
+          node scripts/release-report.mjs
+          git diff --exit-code -- submission/protocol-matrix.json submission/AGGREGATE_REPORT.md submission/CLAIMS_AND_EVIDENCE.md
           node scripts/check-gap-register.mjs
-          pnpm test:mutations
           pnpm --filter @playground/shared --filter @playground/mock-issuer --filter @playground/mock-verifier build
+          pnpm test:mutations
           pnpm --filter @playground/bff exec vitest run src/drivers --coverage --coverage.include="src/drivers/*.ts" --coverage.exclude="**/*.test.ts" --coverage.reportsDirectory=coverage-drivers
           pnpm coverage:redaction
           pnpm docs:api
