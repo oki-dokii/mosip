@@ -46,9 +46,9 @@ export function RunArchive({ history, matrix, active, onActiveChange, onSelectRu
   const selectClass = "rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-xs";
   return (
     <section aria-label="Run archive" tabIndex={-1} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-5 py-3">
-        <button lang={locale} aria-pressed={active === "history"} onClick={() => onActiveChange("history")} className={`rounded-md px-3 py-1.5 text-xs font-bold transition ${active === "history" ? "bg-ink text-white" : "text-slate-700 hover:text-ink"}`}>{t("history")}</button>
-        <button lang={locale} aria-pressed={active === "matrix"} onClick={() => onActiveChange("matrix")} className={`rounded-md px-3 py-1.5 text-xs font-bold transition ${active === "matrix" ? "bg-ink text-white" : "text-slate-700 hover:text-ink"}`}>{t("matrix")}</button>
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white px-5 py-3">
+        <button lang={locale} aria-pressed={active === "history"} onClick={() => onActiveChange("history")} className={`rounded-md px-3 py-1.5 text-xs font-bold ${active === "history" ? "bg-ink text-white" : "text-slate-700 hover:text-ink"}`}>{t("history")}</button>
+        <button lang={locale} aria-pressed={active === "matrix"} onClick={() => onActiveChange("matrix")} className={`rounded-md px-3 py-1.5 text-xs font-bold ${active === "matrix" ? "bg-ink text-white" : "text-slate-700 hover:text-ink"}`}>{t("matrix")}</button>
         {active === "matrix" && <div className="ml-auto flex gap-1.5"><a href="/api/v1/matrix/export?format=csv" className="flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50"><Download size={12} />CSV</a><a href="/api/v1/matrix/export?format=md" className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50">Markdown</a></div>}
       </div>
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 bg-slate-50 px-5 py-2.5">
