@@ -218,31 +218,31 @@ export default function App() {
   return (
     <div className="min-h-screen bg-canvas text-ink antialiased">
       <a className="skip-link" href="#playground-main">Skip to main content</a>
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-[#090d16]/95">
+      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
           <div className="flex items-center gap-3">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/20"><FlaskConical size={18} /></span>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-sm font-bold tracking-tight text-ink dark:text-white sm:text-base">Inji Interoperability Playground</h1>
-                <span className="hidden rounded-full border border-amber-300/40 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300 md:inline-block">
+                <h1 className="text-sm font-bold tracking-tight text-ink sm:text-base">Inji Interoperability Playground</h1>
+                <span className="hidden rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-800 md:inline-block">
                   {run?.recordKind === "archived_evidence" ? "Archived real-wallet evidence · 25 Oct" : run?.config.wallet === "inji_web_assisted" && run.serviceVersions && !run.serviceVersions.wallet.startsWith("fixture/") ? "Live assisted wallet · test data" : driverMode === "fixture" ? "Fixture simulation · test data" : "Live Collab · test data"}
                 </span>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-300">Issue, present, verify — and inspect every boundary.</p>
+              <p className="text-xs text-slate-600">Issue, present, verify — and inspect every boundary.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <nav aria-label="Explore" className="hidden sm:flex items-center gap-1 rounded-lg bg-slate-100/80 p-0.5 dark:bg-white/5">
-              <a className="rounded-md px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-ink dark:text-slate-300 dark:hover:text-white transition" href="/parties">Parties</a>
-              <a className="rounded-md px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-ink dark:text-slate-300 dark:hover:text-white transition" href="/capabilities">QR and capabilities</a>
-              <a className="rounded-md px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-ink dark:text-slate-300 dark:hover:text-white transition" href="/android">Android wallet</a>
+            <nav aria-label="Explore" className="hidden sm:flex items-center gap-3 text-xs underline">
+              <a href="/parties">Parties</a>
+              <a href="/capabilities">QR and capabilities</a>
+              <a href="/android">Android wallet</a>
             </nav>
             <ReadingPreferences />
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent("open-right-sidebar"))}
-              className="flex items-center gap-1.5 rounded-lg border border-slate-300/80 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10 transition"
+              className="flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 transition"
               aria-label="Open navigation steps"
             >
               <Menu size={15} />
@@ -318,12 +318,12 @@ export default function App() {
             }))} value={config.wallet} onChange={(wallet) => setConfig({ ...config, wallet: wallet as RunConfig["wallet"], scenarioId: null })} />
             <RoleSelector role="verifier" label={<span lang={locale}>{t("verifier")}</span>} options={metadata.verifiers} value={config.verifier} onChange={(verifier) => setConfig({ ...config, verifier: verifier as RunConfig["verifier"], scenarioId: null })} />
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50/70 px-5 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-5 py-3">
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex flex-wrap gap-1.5">
-                {metadata.formats.map((item) => <button key={item.id} aria-pressed={config.format === item.id} onClick={() => setConfig({ ...config, format: item.id, scenarioId: null })} className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${config.format === item.id ? "border-ink bg-ink text-white" : "border-slate-300 bg-white text-slate-600 hover:border-slate-400"}`}>{item.name}</button>)}
+                {metadata.formats.map((item) => <button key={item.id} aria-pressed={config.format === item.id} onClick={() => setConfig({ ...config, format: item.id, scenarioId: null })} className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${config.format === item.id ? "border-ink bg-ink text-white" : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"}`}>{item.name}</button>)}
               </div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
                 <span lang={locale}>{t("fault")}</span>
                 <select value={config.tamper ?? ""} onChange={(event) => setConfig({ ...config, tamper: (event.target.value || null) as RunConfig["tamper"], scenarioId: null })} className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-ink shadow-xs">
                   {tamperOptions.map((item) => <option key={item.value ?? "none"} value={item.value ?? ""}>{item.label}</option>)}

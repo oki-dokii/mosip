@@ -37,12 +37,13 @@ label { max-width: 100%; }
 /* Explicit whole-app palette; the inspector retains its own dark evidence canvas. */
 :root[data-theme="dark"] { color-scheme: dark; color: #e2e8f0; background: #0f172a; }
 :root[data-theme="dark"] :is(.bg-canvas, .dot-grid > p) { background-color: #0f172a; }
-:root[data-theme="dark"] :is([class~="bg-white"], [class~="bg-white/90"], [class~="bg-slate-50"], [class~="bg-slate-100"]) { background-color: #172033; }
+:root[data-theme="dark"] :is(header, [class~="bg-white"], [class~="bg-white/90"], [class~="bg-slate-50"], [class~="bg-slate-100"]) { background-color: #172033; }
 :root[data-theme="dark"] :is(.text-ink, .text-slate-500, .text-slate-600, .text-slate-700, .text-slate-800, .text-slate-900) { color: #e2e8f0; }
+:root[data-theme="dark"] a { color: #e2e8f0; }
 :root[data-theme="dark"] .text-slate-400 { color: #bac9df; }
 :root[data-theme="dark"] :is(.border-slate-100, .border-slate-200, .border-slate-300, .border-slate-400) { border-color: #52647e; }
 :root[data-theme="dark"] :is(.bg-blue-50, .bg-blue-100) { background-color: #183354; }
-:root[data-theme="dark"] :is(.text-issuer, .text-blue-700, .text-blue-800, .text-blue-900, .text-cyan-700) { color: #bfdbfe; }
+:root[data-theme="dark"] :is(.text-issuer, .text-blue-700, .text-blue-800, .text-blue-900, .text-cyan-700, a.text-issuer) { color: #bfdbfe; }
 :root[data-theme="dark"] :is(.bg-green-50, .bg-green-100, .bg-emerald-50) { background-color: #15382d; }
 :root[data-theme="dark"] :is(.text-ok, .text-wallet, .text-green-700, .text-green-800, .text-emerald-800) { color: #a7f3d0; }
 :root[data-theme="dark"] :is(.bg-orange-50, .bg-orange-100, .bg-amber-50, .bg-amber-100) { background-color: #40301b; }
