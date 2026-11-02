@@ -1,6 +1,6 @@
 # Demo video for reviewers
 
-[Current silent walkthrough](Playground-Silent-Walkthrough.mp4) · [Chapter guide](Silent-Walkthrough-Chapters.md) · [Second-by-second transcript](Silent-Walkthrough-Transcript.md)
+[Current silent walkthrough](Playground-Silent-Walkthrough.mp4) · [Chapter guide](Silent-Walkthrough-Chapters.md) · [Timestamped voice-over script](Silent-Walkthrough-Transcript.md)
 
 The first four minutes introduce the playground. The extended chapters cover the workflow, public register and matrix observations.
 

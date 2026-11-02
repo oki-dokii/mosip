@@ -1,6 +1,6 @@
 # Extended silent demo
 
-[Play video](Playground-Silent-Walkthrough.mp4) · [Per-second transcript](Silent-Walkthrough-Transcript.md)
+[Play video](Playground-Silent-Walkthrough.mp4) · [Timestamped voice-over script](Silent-Walkthrough-Transcript.md)
 
 00:00–04:00 — Main walkthrough. The following chapters expand the product tour and show the indexed observations.
 
