@@ -1,3 +1,5 @@
+import { WalletEvidencePanel } from "./WalletEvidencePanel";
+
 const release = "https://github.com/oki-dokii/mosip/blob/final-2026-11-02";
 
 export function AndroidWalletGuide() {
@@ -8,11 +10,7 @@ export function AndroidWalletGuide() {
         <h1 className="mt-1 text-3xl font-bold">Android wallet verification</h1>
         <p className="mt-2">Use Inji Wallet on a phone to store and present a synthetic SD-JWT.</p>
       </header>
-      <section className="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="text-lg font-bold">Recorded journey · Collab Verify</h2>
-        <p className="mt-2">On 23 October, local Certify issued the card to a Nothing Phone (2a). It survived reopening the wallet, and Collab Verify returned Valid with both proof checks passing. This manual run has no playground run ID.</p>
-        <a className="mt-3 inline-block font-semibold text-issuer underline" href={release+"/submission/A2_MOBILE_EVIDENCE.md"}>Inspect Android evidence</a>
-      </section>
+      <WalletEvidencePanel mobileOnly />
       <section className="rounded-xl border border-amber-300 bg-white p-5">
         <h2 className="text-lg font-bold">Local Verify · awaiting a managed run</h2>
         <p className="mt-2">The playground currently has no Android driver to create a run ID and local presentation QR. The existing phone console sends presentations to Collab Verify.</p>

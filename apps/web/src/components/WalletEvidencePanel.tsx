@@ -7,7 +7,7 @@ interface WalletEvidence {
   reviewStatus: string; versions: { issuer: string; wallet: string; verifier: string };
   checkpoints: { name: string; evidence: string; detail: string }[]; limitations: string[]; artifacts: { label: string; url: string }[];
 }
-export function WalletEvidencePanel({ onOpenManagedRun, archivedRunIds = [] }: { onOpenManagedRun?: (id: string) => void; archivedRunIds?: string[] }) {
+export function WalletEvidencePanel({ onOpenManagedRun, archivedRunIds = [], mobileOnly = false }: { mobileOnly?: boolean; onOpenManagedRun?: (id: string) => void; archivedRunIds?: string[] }) {
   const [items, setItems] = useState<WalletEvidence[] | null>(null);
   const [error, setError] = useState(false);
   const [wallet, setWallet] = useState("");
@@ -21,18 +21,19 @@ export function WalletEvidencePanel({ onOpenManagedRun, archivedRunIds = [] }: {
     }).catch(() => { if (!abort.signal.aborted) setError(true); });
     return () => abort.abort();
   }, []);
+  const visibleItems = items?.filter(item => mobileOnly ? item.wallet === "inji_mobile" : !wallet || item.wallet === wallet);
   return <section aria-labelledby="wallet-evidence-title" className="mt-7 rounded-3xl border border-slate-200 bg-white p-6 shadow-card lg:p-8">
-    <h2 id="wallet-evidence-title" className="text-xl font-bold">Observed real-wallet compatibility</h2>
+    <h2 id="wallet-evidence-title" className="text-xl font-bold">{mobileOnly ? "Recorded Android journeys" : "Observed real-wallet compatibility"}</h2>
     <p className="mt-2 text-sm text-slate-600">Recorded journeys apply to the named credential and deployment. Linked managed reports provide separate run evidence; manual observations do not change other run results.</p>
     {error ? <p role="alert" className="mt-4">Real-wallet evidence is unavailable. No compatibility conclusion can be drawn.</p> : !items ? <p role="status">Loading real-wallet evidence…</p> : <>
       <div className="my-4 flex flex-wrap items-center gap-3 text-sm">
-        <label>Wallet evidence <select className="rounded border border-slate-300 bg-white p-2 text-slate-700" value={wallet} onChange={event => setWallet(event.target.value)}><option value="">All real wallets</option><option value="inji_web">Inji Web</option><option value="inji_mobile">Inji Wallet Android</option></select></label>
+        {!mobileOnly && <label>Wallet evidence <select className="rounded border border-slate-300 bg-white p-2 text-slate-700" value={wallet} onChange={event => setWallet(event.target.value)}><option value="">All real wallets</option><option value="inji_web">Inji Web</option><option value="inji_mobile">Inji Wallet Android</option></select></label>}
         {(["json", "md", "csv"] as const).map(format => <a key={format} className="font-semibold text-issuer underline" href={`/api/v1/wallet-evidence/report?format=${format}`}>Evidence report · {format === "md" ? "Markdown" : format.toUpperCase()}</a>)}
       </div>
-      {items.length === 0 && <p>No recorded real-wallet observations are available.</p>}
-      <div className="grid gap-4 lg:grid-cols-2">{items.filter(item => !wallet || item.wallet === wallet).map(item => <article id={`wallet-evidence-${item.id}`} key={item.id} className="rounded-xl border border-slate-200 p-4">
+      {visibleItems?.length === 0 && <p>No recorded real-wallet observations are available.</p>}
+      <div className="grid gap-4 lg:grid-cols-2">{visibleItems?.map(item => <article id={`wallet-evidence-${item.id}`} key={item.id} className="rounded-xl border border-slate-200 p-4">
         <h3 className="font-bold">{item.walletLabel} · {item.format === "ldp_vc" ? "JSON-LD" : "SD-JWT"}</h3>
-        <p className="mt-2 font-semibold text-green-800">Observed outcome: Valid · {item.outcomeSource === "verifier_ui" ? "verifier UI" : "correlated verifier response"}</p>
+        <p className="mt-2 font-semibold text-green-800">Observed outcome: {item.outcome === "valid" ? "Valid" : item.outcome ?? "Unreported"} · {item.outcomeSource === "verifier_ui" ? "verifier UI" : "correlated verifier response"}</p>
         <p className="mt-1 text-sm">{item.credential} · observed {item.observedDate}</p>
         <p className="mt-2 text-sm">Manual wallet observation · Managed run: {item.managedRunId ?? "none"} · Managed validation: {item.managedValidation ?? "pending"}</p>
         <p className="text-sm">{item.reviewStatus === "pending_integrator_review" ? "A1 integrator review pending" : "A2 manual acceptance recorded"}</p>
