@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, ChevronRight, FileSearch, GitCompare, History, Layers, Menu, Play, ShieldCheck, SlidersHorizontal, X } from "lucide-react";
+import { ChevronRight, FileSearch, GitCompare, History, Layers, Menu, Play, ShieldCheck, SlidersHorizontal, X } from "lucide-react";
 import type { RunSummary } from "@playground/shared";
 
 interface Props {
   run: RunSummary | null;
-  runId: string | null;
+  runId?: string | null;
 }
 
 interface NavItem {
@@ -13,7 +13,7 @@ interface NavItem {
   stepNumber: string;
   description: string;
   icon: typeof SlidersHorizontal;
-  badge?: string;
+  badge?: string | undefined;
 }
 
 export function RightSidebar({ run, runId }: Props) {
@@ -32,7 +32,7 @@ export function RightSidebar({ run, runId }: Props) {
       id: "live-run",
       stepNumber: "Step 2",
       label: "Live Protocol Run",
-      description: run ? `Run ${run.id.slice(0, 8)} (${run.status})` : "Timeline, coverage & inspector",
+      description: run ? `Run ${run.id.slice(0, 8)} (${run.status})` : runId ? `Run ${runId.slice(0, 8)}` : "Timeline, coverage & inspector",
       icon: Play,
       badge: run ? run.status : undefined,
     },
