@@ -30,17 +30,17 @@ export const useReadingPreferences=()=>useContext(Preferences);
 export function ReadingPreferences() {
   const {theme,locale,setTheme,setLocale,t}=useReadingPreferences();
   return <div role="group" aria-label="Reading preferences" title="Protocol names and evidence text stay in English." className="flex items-center gap-2 text-xs">
-    <label lang={locale} className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+    <label lang={locale} className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
       <span>{t('appearance')}</span>
-      <select value={theme} onChange={e=>setTheme(e.target.value as Theme)} className="rounded-lg border border-slate-300/80 bg-white px-2 py-1 text-xs font-semibold text-slate-700 shadow-xs dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+      <select value={theme} onChange={e=>setTheme(e.target.value as Theme)} className="rounded border border-slate-300 bg-white p-2 text-slate-700">
         <option value="system">{t('system')}</option>
         <option value="light">{t('light')}</option>
         <option value="dark">{t('dark')}</option>
       </select>
     </label>
-    <label lang={locale} className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+    <label lang={locale} className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
       <span>{t('navigation')}</span>
-      <select value={locale} onChange={e=>setLocale(e.target.value as Locale)} className="rounded-lg border border-slate-300/80 bg-white px-2 py-1 text-xs font-semibold text-slate-700 shadow-xs dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+      <select value={locale} onChange={e=>setLocale(e.target.value as Locale)} className="rounded border border-slate-300 bg-white p-2 text-slate-700">
         <option lang="en" value="en">English</option>
         <option lang="hi" value="hi">हिन्दी</option>
       </select>

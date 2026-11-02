@@ -135,144 +135,142 @@ export function RightSidebar({ run, runId }: Props) {
         </span>
       </button>
 
-      {/* Backdrop overlay */}
+      {/* Backdrop overlay & Right Drawer Sidebar */}
       {isOpen && (
-        <div
-          onClick={() => setIsOpen(false)}
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs transition-opacity duration-300"
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Right Drawer Sidebar */}
-      <aside
-        aria-label="Steps and workflow navigation"
-        className={`fixed top-0 right-0 z-50 flex h-full w-84 max-w-[85vw] flex-col border-l border-slate-200 bg-white shadow-2xl transition-transform duration-300 ease-in-out dark:border-white/10 dark:bg-[#111724] ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        {/* Sidebar Header */}
-        <div className="flex items-center justify-between border-b border-slate-200/80 px-5 py-4 dark:border-white/10">
-          <div className="flex items-center gap-2.5">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-blue-500/10 text-issuer dark:bg-blue-400/10 dark:text-blue-400">
-              <Layers size={17} />
-            </span>
-            <div>
-              <h2 className="text-sm font-bold tracking-tight text-ink dark:text-white">Workflow Steps</h2>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">Jump directly to any section</p>
-            </div>
-          </div>
-          <button
-            type="button"
+        <>
+          <div
             onClick={() => setIsOpen(false)}
-            aria-label="Close sidebar"
-            className="grid h-7 w-7 place-items-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-ink dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white"
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs transition-opacity duration-300"
+            aria-hidden="true"
+          />
+          <aside
+            aria-label="Steps and workflow navigation"
+            className="fixed top-0 right-0 z-50 flex h-full w-84 max-w-[85vw] flex-col border-l border-slate-200 bg-white shadow-2xl transition-transform duration-300 ease-in-out dark:border-white/10 dark:bg-[#111724]"
           >
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Current Run Quick Status if available */}
-        {run && (
-          <div className="mx-4 mt-3 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 text-xs dark:border-white/5 dark:bg-white/5">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-bold text-issuer dark:text-blue-400">
-                Run {run.id.slice(0, 8)}
-              </span>
-              <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                  run.status === "passed"
-                    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-                    : run.status === "running" || run.status === "pending"
-                    ? "bg-blue-500/15 text-blue-700 dark:text-blue-400"
-                    : "bg-red-500/15 text-red-700 dark:text-red-400"
-                }`}
-              >
-                {run.status}
-              </span>
-            </div>
-            <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-              {run.config.issuer} → {run.config.wallet} → {run.config.verifier}
-            </p>
-          </div>
-        )}
-
-        {/* Steps List */}
-        <nav aria-label="Page sections" className="flex-1 overflow-y-auto p-4 space-y-1.5">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeSection === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => scrollToSection(item.id)}
-                className={`group flex w-full items-start gap-3 rounded-xl p-3 text-left transition ${
-                  isActive
-                    ? "border border-blue-500/30 bg-blue-50/70 dark:bg-blue-500/10"
-                    : "border border-transparent hover:bg-slate-100/70 dark:hover:bg-white/5"
-                }`}
-              >
-                <span
-                  className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg transition ${
-                    isActive
-                      ? "bg-issuer text-white shadow-xs"
-                      : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 dark:bg-white/5 dark:text-slate-400 dark:group-hover:bg-white/10"
-                  }`}
-                >
-                  <Icon size={14} />
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-white/10">
+              <div className="flex items-center gap-2.5">
+                <span className="grid h-8 w-8 place-items-center rounded-lg bg-blue-500/10 text-issuer dark:bg-blue-400/10 dark:text-blue-400">
+                  <Layers size={17} />
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                      {item.stepNumber}
-                    </span>
-                    {item.badge && (
-                      <span className="rounded-full bg-slate-200/70 px-1.5 py-0.2 text-[10px] font-medium text-slate-600 dark:bg-white/10 dark:text-slate-300">
-                        {item.badge}
-                      </span>
-                    )}
+                <div>
+                  <h2 className="text-sm font-bold tracking-tight text-ink dark:text-white">Workflow Steps</h2>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">Jump directly to any section</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                aria-label="Close sidebar"
+                className="grid h-7 w-7 place-items-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-ink dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Current Run Quick Status if available */}
+            {run && (
+              <div className="mx-4 mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs dark:border-white/5 dark:bg-white/5">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs font-bold text-issuer dark:text-blue-400">
+                    Run {run.id.slice(0, 8)}
                   </span>
                   <span
-                    className={`block text-xs font-bold leading-snug ${
-                      isActive
-                        ? "text-issuer dark:text-blue-400"
-                        : "text-ink dark:text-slate-200"
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                      run.status === "passed"
+                        ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-400"
+                        : run.status === "running" || run.status === "pending"
+                        ? "bg-blue-500/15 text-blue-800 dark:text-blue-400"
+                        : "bg-red-500/15 text-red-800 dark:text-red-400"
                     }`}
                   >
-                    {item.label}
+                    {run.status}
                   </span>
-                  <span className="mt-0.5 block truncate text-[11px] text-slate-500 dark:text-slate-400">
-                    {item.description}
-                  </span>
-                </span>
-                <ChevronRight
-                  size={14}
-                  className={`mt-2 shrink-0 text-slate-400 transition-transform ${
-                    isActive
-                      ? "translate-x-0.5 text-issuer dark:text-blue-400"
-                      : "opacity-0 group-hover:opacity-100"
-                  }`}
-                />
-              </button>
-            );
-          })}
-        </nav>
+                </div>
+                <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+                  {run.config.issuer} → {run.config.wallet} → {run.config.verifier}
+                </p>
+              </div>
+            )}
 
-        {/* Sidebar Footer */}
-        <div className="border-t border-slate-200/80 p-4 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">
-          <button
-            type="button"
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: "smooth" });
-              setIsOpen(false);
-            }}
-            className="w-full rounded-lg border border-slate-300/80 bg-white py-2 text-center font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
-          >
-            ↑ Back to Top
-          </button>
-        </div>
-      </aside>
+            {/* Steps List */}
+            <nav aria-label="Page sections" className="flex-1 overflow-y-auto p-4 space-y-1.5">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => scrollToSection(item.id)}
+                    className={`group flex w-full items-start gap-3 rounded-xl p-3 text-left transition ${
+                      isActive
+                        ? "border border-blue-500/30 bg-blue-50 dark:bg-blue-500/10"
+                        : "border border-transparent hover:bg-slate-100 dark:hover:bg-white/5"
+                    }`}
+                  >
+                    <span
+                      className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg transition ${
+                        isActive
+                          ? "bg-issuer text-white shadow-xs"
+                          : "bg-slate-100 text-slate-700 group-hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300 dark:group-hover:bg-white/10"
+                      }`}
+                    >
+                      <Icon size={14} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                          {item.stepNumber}
+                        </span>
+                        {item.badge && (
+                          <span className="rounded-full bg-slate-200 px-1.5 py-0.2 text-[10px] font-semibold text-slate-700 dark:bg-white/10 dark:text-slate-300">
+                            {item.badge}
+                          </span>
+                        )}
+                      </span>
+                      <span
+                        className={`block text-xs font-bold leading-snug ${
+                          isActive
+                            ? "text-issuer dark:text-blue-400"
+                            : "text-ink dark:text-slate-200"
+                        }`}
+                      >
+                        {item.label}
+                      </span>
+                      <span className="mt-0.5 block truncate text-xs text-slate-600 dark:text-slate-300">
+                        {item.description}
+                      </span>
+                    </span>
+                    <ChevronRight
+                      size={14}
+                      className={`mt-2 shrink-0 text-slate-500 transition-transform ${
+                        isActive
+                          ? "translate-x-0.5 text-issuer dark:text-blue-400"
+                          : "opacity-0 group-hover:opacity-100"
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Sidebar Footer */}
+            <div className="border-t border-slate-200 p-4 text-xs text-slate-600 dark:border-white/10 dark:text-slate-300">
+              <button
+                type="button"
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  setIsOpen(false);
+                }}
+                className="w-full rounded-lg border border-slate-300 bg-white py-2 text-center font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10"
+              >
+                ↑ Back to Top
+              </button>
+            </div>
+          </aside>
+        </>
+      )}
     </>
   );
 }

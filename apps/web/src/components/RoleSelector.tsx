@@ -21,7 +21,7 @@ export function RoleSelector({ role, label, options, value, onChange }: {
   const Icon = style.icon;
   return (
     <fieldset className="min-w-0">
-      <legend className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <legend className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-700">
         <span className={`grid h-6 w-6 place-items-center rounded-md bg-white shadow-sm border border-slate-200/60 ${style.color}`}><Icon size={13} /></span>
         {label}
       </legend>
@@ -32,7 +32,7 @@ export function RoleSelector({ role, label, options, value, onChange }: {
             <span className={`flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 transition hover:shadow-sm ${style.ring} peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-blue-700`}>
               <span className="min-w-0 pr-2">
                 <span className="block text-xs font-bold text-ink">{option.name}</span>
-                <span id={`${role}-${option.id}-description`} className="mt-0.5 block text-[11px] leading-tight text-slate-500 truncate">{option.description ?? (option.kind === "inji" ? "MOSIP Inji" : option.kind)}</span>
+                <span id={`${role}-${option.id}-description`} className="mt-0.5 block text-xs leading-tight text-slate-600 truncate">{option.description ?? (option.kind === "inji" ? "MOSIP Inji" : option.kind)}</span>
               </span>
               {value === option.id && <BadgeCheck aria-hidden="true" className={`${style.color} shrink-0`} size={18} />}
             </span>

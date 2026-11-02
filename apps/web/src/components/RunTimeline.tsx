@@ -19,7 +19,7 @@ export function RunTimeline({ steps, selectedStepId, onSelect }: {
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-xs font-semibold text-ink">{step.title}</span>
-                <span className="block text-[11px] capitalize text-slate-500">{step.status}</span>
+                <span className="block text-xs capitalize text-slate-600">{step.status}</span>
               </span>
             </button>
           </li>

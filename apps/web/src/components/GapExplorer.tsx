@@ -46,22 +46,22 @@ export function GapExplorer() {
         </div>
         <a className="text-xs font-semibold text-issuer hover:underline" href={evidenceUrl("docs/GAPS.md")} target="_blank" rel="noreferrer">Read full gap register</a>
       </div>
-      <p className="mt-2.5 max-w-3xl text-xs text-slate-500">These are observed behaviors and test limits, not confirmed upstream defects. An unreported service version or missing wallet account cannot establish a product regression.</p>
+      <p className="mt-2.5 max-w-3xl text-xs text-slate-600">These are observed behaviors and test limits, not confirmed upstream defects. An unreported service version or missing wallet account cannot establish a product regression.</p>
       <ul className="mt-4 grid gap-3 md:grid-cols-2">
         {gaps.findings.map((finding) => (
           <li key={finding.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="font-mono text-xs font-semibold text-slate-500">Finding {finding.id}</p>
+            <p className="font-mono text-xs font-semibold text-slate-600">Finding {finding.id}</p>
             <h3 className="mt-1 font-bold text-ink">{titles[finding.id] ?? "Interoperability observation"}</h3>
             <p className="mt-2 text-xs font-medium text-issuer">{statusLabels[finding.status] ?? "Investigative finding"}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{finding.matrixDecision}</p>
-            <p className="mt-3 text-xs text-slate-500">Deployment version: {finding.productVersion}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">{finding.matrixDecision}</p>
+            <p className="mt-3 text-xs text-slate-600">Deployment version: {finding.productVersion}</p>
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold">
               {finding.evidence.slice(0, 2).map((path) => <a key={path} className="text-issuer underline" href={evidenceUrl(path)} target="_blank" rel="noreferrer">{path.split("/").at(-1)}</a>)}
             </div>
           </li>
         ))}
       </ul>
-      <p className="mt-4 text-xs text-slate-500">Source: committed synthetic and sanitized evidence, updated {gaps.updated}. See the full register for issue links and private reporting status.</p>
+      <p className="mt-4 text-xs text-slate-600">Source: committed synthetic and sanitized evidence, updated {gaps.updated}. See the full register for issue links and private reporting status.</p>
     </section>
   );
 }

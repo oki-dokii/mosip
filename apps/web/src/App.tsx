@@ -229,7 +229,7 @@ export default function App() {
                   {run?.recordKind === "archived_evidence" ? "Archived real-wallet evidence · 25 Oct" : run?.config.wallet === "inji_web_assisted" && run.serviceVersions && !run.serviceVersions.wallet.startsWith("fixture/") ? "Live assisted wallet · test data" : driverMode === "fixture" ? "Fixture simulation · test data" : "Live Collab · test data"}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">Issue, present, verify — and inspect every boundary.</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300">Issue, present, verify — and inspect every boundary.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -262,7 +262,7 @@ export default function App() {
               </span>
               <span>Your first five minutes</span>
             </div>
-            <span className="rounded-full bg-slate-200/60 px-2 py-0.5 text-[10px] font-medium text-slate-600 group-open:bg-blue-100 group-open:text-issuer dark:bg-white/10 dark:text-slate-400 dark:group-open:bg-blue-900/40 dark:group-open:text-blue-300 transition">
+            <span className="rounded-full bg-slate-200/60 px-2 py-0.5 text-[10px] font-medium text-slate-700 group-open:bg-blue-100 group-open:text-issuer dark:bg-white/10 dark:text-slate-300 dark:group-open:bg-blue-900/40 dark:group-open:text-blue-300 transition">
               Quick start guide
             </span>
           </summary>
@@ -270,19 +270,19 @@ export default function App() {
             <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 list-none pl-0 text-xs">
               <li className="rounded-lg border border-slate-200/70 bg-white/80 p-2.5 dark:border-white/5 dark:bg-white/5">
                 <div className="font-bold text-issuer dark:text-blue-400 mb-0.5">1 · Happy Path</div>
-                <div className="text-slate-600 dark:text-slate-400 leading-snug">Choose a mock happy path and start the run.</div>
+                <div className="text-slate-700 dark:text-slate-300 leading-snug">Choose a mock happy path and start the run.</div>
               </li>
               <li className="rounded-lg border border-slate-200/70 bg-white/80 p-2.5 dark:border-white/5 dark:bg-white/5">
                 <div className="font-bold text-wallet dark:text-emerald-400 mb-0.5">2 · Inspect Flow</div>
-                <div className="text-slate-600 dark:text-slate-400 leading-snug">Open a timeline step to inspect the actors, HTTP status and redacted exchange.</div>
+                <div className="text-slate-700 dark:text-slate-300 leading-snug">Open a timeline step to inspect the actors, HTTP status and redacted exchange.</div>
               </li>
               <li className="rounded-lg border border-slate-200/70 bg-white/80 p-2.5 dark:border-white/5 dark:bg-white/5">
                 <div className="font-bold text-verifier dark:text-amber-400 mb-0.5">3 · Test Faults</div>
-                <div className="text-slate-600 dark:text-slate-400 leading-snug">Run the bad-signature scenario and compare its verdict with the positive control.</div>
+                <div className="text-slate-700 dark:text-slate-300 leading-snug">Run the bad-signature scenario and compare its verdict with the positive control.</div>
               </li>
               <li className="rounded-lg border border-slate-200/70 bg-white/80 p-2.5 dark:border-white/5 dark:bg-white/5">
                 <div className="font-bold text-slate-700 dark:text-slate-300 mb-0.5">4 · Evidence Matrix</div>
-                <div className="text-slate-600 dark:text-slate-400 leading-snug">Open the compatibility matrix to see which configurations have evidence.</div>
+                <div className="text-slate-700 dark:text-slate-300 leading-snug">Open the compatibility matrix to see which configurations have evidence.</div>
               </li>
             </ol>
           </div>
@@ -294,7 +294,7 @@ export default function App() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-issuer">Configure a run</p>
                 <h2 className="mt-0.5 text-lg font-bold tracking-tight">Choose the credential journey</h2>
               </div>
-              <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><ShieldCheck size={15} className="text-ok" />Secrets are masked before recording</div>
+              <div className="flex items-center gap-1.5 text-xs font-medium text-slate-700"><ShieldCheck size={15} className="text-ok" />Secrets are masked before recording</div>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2.5">
               <label lang={locale} htmlFor="scenario-preset" className="text-xs font-semibold text-slate-700">{t("scenario")}</label>
@@ -305,7 +305,7 @@ export default function App() {
                 <option lang={locale} value="">{t("custom")}</option>
                 {scenarios.map((scenario) => <option key={scenario.id} value={scenario.id} disabled={!scenario.available}>{scenario.name}{scenario.available ? "" : " · unavailable"}</option>)}
               </select>
-              {selectedScenario && <span className="text-xs text-slate-500">{selectedScenario.description}</span>}
+              {selectedScenario && <span className="text-xs text-slate-700 dark:text-slate-300">{selectedScenario.description}</span>}
               {scenarioGaps.length > 0 && <p className="basis-full text-xs text-amber-800">Preset setup: {scenarioGaps.join(" ")}</p>}
             </div>
           </div>
@@ -350,11 +350,11 @@ export default function App() {
             {format && <div className="flex flex-wrap gap-1.5"><span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">{format.name}</span><span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-800 border border-green-200">{format.proofType}</span><span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-800 border border-blue-200">{format.algorithm}</span></div>}
           </div>
           {runError && <p role="alert" className="p-4 text-xs text-red-700">Run unavailable. It may be missing or your session may not have access. No previous result is shown.</p>}
-          {runError ? null : !runId ? <div className="grid min-h-48 place-items-center p-6 text-center"><div><ArrowRight className="mx-auto mb-2 text-slate-300" size={28} /><p className="font-semibold text-xs text-slate-600">Start a flow to see the live protocol timeline.</p><p className="mt-0.5 text-xs text-slate-500">Protocol exchanges are sanitized before storage.</p></div></div> : (
+          {runError ? null : !runId ? <div className="grid min-h-48 place-items-center p-6 text-center"><div><ArrowRight className="mx-auto mb-2 text-slate-400" size={28} /><p className="font-semibold text-xs text-slate-700">Start a flow to see the live protocol timeline.</p><p className="mt-0.5 text-xs text-slate-600">Protocol exchanges are sanitized before storage.</p></div></div> : (
             <div className="grid gap-5 p-5 lg:grid-cols-[280px_minmax(0,1fr)]">
               <div>
                 <div className={`mb-3 rounded-lg border px-3 py-2 text-xs font-semibold ${run?.status === "passed" ? "border-green-200 bg-green-50 text-ok" : runFinished ? "border-red-200 bg-red-50 text-fail" : "border-blue-200 bg-blue-50 text-issuer"}`} role="status" aria-atomic="true">{runMessage}</div>
-                {run && <p className="mb-2 text-xs font-semibold text-slate-500">Evidence: {evidenceLabels[evidenceTier(run)]}</p>}
+                {run && <p className="mb-2 text-xs font-semibold text-slate-700">Evidence: {evidenceLabels[evidenceTier(run)]}</p>}
                 {run?.recordKind === "archived_evidence" && <p className="mb-2 rounded-lg border border-blue-200 bg-blue-50 p-2.5 text-xs text-blue-900 leading-relaxed">Committed, sanitized 25 October A1 export. Original run ID and timestamps are preserved; opening this record does not repeat the wallet journey.</p>}
                 {run?.evaluation && <p className="mb-2 text-xs text-slate-600">Validation: {run.evaluation.verdict.replaceAll("_", " ")}{run.evaluation.observed.code ? ` · ${run.evaluation.observed.code}` : ""}</p>}
                 {typeof verifierDetail === "string" && <p className="mb-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">Verifier detail: {verifierDetail}</p>}
