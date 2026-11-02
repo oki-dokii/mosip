@@ -32,7 +32,7 @@ export function CapabilityCatalog({ capacities }: { capacities: boolean }) {
     return () => stop.abort();
   }, []);
   return <main className="mx-auto max-w-6xl space-y-6 p-6">
-    <nav aria-label="Playground pages" className="flex gap-5 underline"><a href="/">Playground</a><a href="/parties">Parties</a><a href="/capabilities">QR and capabilities</a></nav>
+    <nav aria-label="Playground pages" className="flex gap-5 underline"><a href="/">Playground</a><a href="/parties">Parties</a><a href="/capabilities">QR and capabilities</a><a href="/android">Android wallet</a></nav>
     <h1 className="text-3xl font-bold">{capacities ? "QR and capabilities" : "Parties"}</h1>
     {capacities && <section className="space-y-3"><h2 className="text-xl font-bold">What fits in one QR?</h2>
       <p>Six synthetic credential shapes, with all disclosures included for SD-JWT. Each entry gives the smallest QR version the encoder produced at error correction M. PixelPass 0.6.0 was decoded back to the original input. These are encoding measurements; phone scanning and wallet acceptance were not tested.</p>
