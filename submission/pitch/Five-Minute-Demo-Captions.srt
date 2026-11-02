@@ -1,193 +1,194 @@
 1
-00:00:00,000 --> 00:00:02,879
-Here is our interoperability playground.
+00:00:00,000 --> 00:00:08,000
+Here is our interoperability playground. Let’s issue a credential,
+verify it, and then test a broken signature.
 
 2
-00:00:02,879 --> 00:00:10,939
-I choose the standalone mock issuer and verifier, with the reference wallet as
-holder.
+00:00:08,000 --> 00:00:14,000
+I choose the standalone mock issuer and verifier, with the reference
+wallet as holder.
 
 3
-00:00:10,939 --> 00:00:19,000
-Starting the flow creates a new run ID and executes issuance, presentation and
-verification.
+00:00:14,000 --> 00:00:22,000
+Starting the flow creates a run ID and executes issuance,
+presentation and verification.
 
 4
-00:00:19,000 --> 00:00:21,667
-The valid control completes successfully.
+00:00:22,000 --> 00:00:34,000
+The control returned Valid. I play the protocol sequence to follow
+each component’s messages.
 
 5
-00:00:21,667 --> 00:00:29,667
-I play the sequence and open a message to inspect its sanitized request and
-response.
+00:00:34,000 --> 00:00:38,000
+I open an exchange to inspect its sanitized request and response.
 
 6
-00:00:29,667 --> 00:00:35,000
-Each exchange belongs to a named step in this run.
+00:00:38,000 --> 00:00:46,000
+Now I select Bad signature and start another run.
 
 7
-00:00:35,000 --> 00:00:38,138
-Now I change the signature and repeat.
+00:00:46,000 --> 00:00:51,000
+The verifier returned Invalid. The test passed because rejection was
+expected.
 
 8
-00:00:38,138 --> 00:00:39,931
-The verifier returns Invalid.
+00:00:51,000 --> 00:01:01,000
+I select the two run IDs and compare their configuration, steps and
+outcomes.
 
 9
-00:00:39,931 --> 00:00:43,517
-That is the expected outcome for this fault.
+00:01:01,000 --> 00:01:08,000
+The matrix brings results across combinations into one view.
 
 10
-00:00:43,517 --> 00:00:48,000
-Both results come from the services running during this recording.
+00:01:08,000 --> 00:01:15,000
+The real-wallet catalog contains recorded observations with their
+own provenance.
 
 11
-00:00:48,000 --> 00:00:53,885
-I compare the two runs and open the matrix.
-
-12
-00:00:53,885 --> 00:00:57,808
-The comparison preserves configuration and outcomes.
-
-13
-00:00:57,808 --> 00:01:05,000
-Reports and matrix exports provide a reviewable record of each combination.
-
-14
-00:01:05,000 --> 00:01:17,931
-Here are the saved real-wallet observations, the findings explorer, the party
-registry and QR capabilities.
-
-15
-00:01:17,931 --> 00:01:23,103
-The registry describes formats and flows.
-
-16
-00:01:23,103 --> 00:01:30,000
-The capabilities page distinguishes measured support from claims.
-
-17
-00:01:30,000 --> 00:01:39,000
-The Android guide explains the phone journey and its network requirements.
-
-18
-00:01:39,000 --> 00:01:48,000
-For the local mock prototype, run pnpm demo:docker and open localhost:5174.
-
-19
-00:01:48,000 --> 00:01:53,850
-Next is the assisted JSON-LD fixture.
-
-20
-00:01:53,850 --> 00:02:06,525
-I start a connected run, simulate issuance, confirm storage, and submit the
-presentation.
-
-21
-00:02:06,525 --> 00:02:10,425
-The result is Valid.
-
-22
-00:02:10,425 --> 00:02:18,225
-After reloading, the saved run is still available.
-
-23
-00:02:18,225 --> 00:02:27,000
-These controls demonstrate the assisted workflow using fixture data.
-
-24
-00:02:27,000 --> 00:02:32,143
-This is the recorded local Inji Web card after reload.
-
-25
-00:02:32,143 --> 00:02:39,857
-The same wallet received the JSON-LD credential from Certify and presented it to
-local Verify.
-
-26
-00:02:39,857 --> 00:02:45,000
-The setup used synthetic authorization and an explicit DID adapter.
-
-27
-00:02:45,000 --> 00:02:51,207
-The managed local inspector links captured exchanges to the run.
-
-28
-00:02:51,207 --> 00:02:56,793
-It exposes permitted field names while withholding credential values.
-
-29
-00:02:56,793 --> 00:03:03,000
-Browser transport and Mimoto server calls have distinct capture coverage.
-
-30
-00:03:03,000 --> 00:03:10,448
-The hosted Web journey has its own recorded run and valid verification.
-
-31
-00:03:10,448 --> 00:03:16,655
-Its environment and timestamps remain separate from the local journey.
-
-32
-00:03:16,655 --> 00:03:21,000
-Historical records can be opened for review.
-
-33
-00:03:21,000 --> 00:03:27,429
-The physical Android record used local Certify and hosted Verify.
-
-34
-00:03:27,429 --> 00:03:34,500
-The operator stored and reopened the card, then presented it successfully.
-
-35
-00:03:34,500 --> 00:03:39,000
-A managed all-local Android run remains open.
-
-36
-00:03:39,000 --> 00:03:45,471
-This comparison isolates issuer key location across two Verify versions.
-
-37
-00:03:45,471 --> 00:03:53,235
-ES256 and RS256 passed with a matching certificate and failed without one.
-
-38
-00:03:53,235 --> 00:04:01,000
-Supplying the native walt.id signer’s certificate also restored Valid on both
+00:01:15,000 --> 00:01:20,000
+The findings explorer links observed behavior to its evidence and
 versions.
 
+12
+00:01:20,000 --> 00:01:27,000
+The party registry describes supported roles, formats and flows.
+
+13
+00:01:27,000 --> 00:01:33,000
+The capabilities page shows QR payload measurements and support
+boundaries.
+
+14
+00:01:33,000 --> 00:01:40,000
+The Android guide explains the recorded phone journey and network
+requirements.
+
+15
+00:01:40,000 --> 00:01:48,000
+Run pnpm demo:docker and open localhost:5174 to reproduce the mock
+prototype.
+
+16
+00:01:48,000 --> 00:01:57,000
+Now I demonstrate the assisted JSON-LD workflow using fixture data.
+
+17
+00:01:57,000 --> 00:02:03,000
+I start a connected fixture run. The backend tracks each checkpoint.
+
+18
+00:02:03,000 --> 00:02:14,000
+I simulate issuance, then confirm storage as a separate checkpoint.
+
+19
+00:02:14,000 --> 00:02:19,000
+I submit the fixture presentation. The verifier result becomes
+Valid.
+
+20
+00:02:19,000 --> 00:02:27,000
+I reload the saved run URL. The fixture outcome remains available.
+
+21
+00:02:27,000 --> 00:02:33,000
+Here is the recorded local Inji Web card after reload.
+
+22
+00:02:33,000 --> 00:02:40,000
+Certify issued the JSON-LD credential. The same wallet presented it
+to local Verify.
+
+23
+00:02:40,000 --> 00:02:45,000
+This setup used synthetic authorization and an explicit DID adapter.
+
+24
+00:02:45,000 --> 00:02:52,000
+The managed inspector links captured exchanges to the local run.
+
+25
+00:02:52,000 --> 00:02:59,000
+Permitted field names are shown while credential values are
+withheld.
+
+26
+00:02:59,000 --> 00:03:03,000
+Browser traffic and Mimoto server calls have distinct capture
+coverage.
+
+27
+00:03:03,000 --> 00:03:12,000
+The hosted Web journey has its own recorded run and valid
+verification.
+
+28
+00:03:12,000 --> 00:03:21,000
+Its environment and timestamps remain separate from the local
+journey.
+
+29
+00:03:21,000 --> 00:03:27,000
+This physical Android record used local Certify and hosted Verify.
+
+30
+00:03:27,000 --> 00:03:33,000
+The operator stored and reopened the card, then presented it
+successfully.
+
+31
+00:03:33,000 --> 00:03:39,000
+A managed all-local Android run remains open.
+
+32
+00:03:39,000 --> 00:03:45,000
+Here we compare issuer key handling across two Verify versions.
+
+33
+00:03:45,000 --> 00:03:53,000
+ES256 and RS256 passed with a matching certificate and failed
+without one.
+
+34
+00:03:53,000 --> 00:04:01,000
+The native walt.id credential also passed when supplied with its
+signer’s certificate.
+
+35
+00:04:01,000 --> 00:04:08,000
+Our claims table links each result to saved evidence and its limits.
+
+36
+00:04:08,000 --> 00:04:16,000
+It covers authorization code with PKCE, pre-authorized issuance and
+cross-vendor discovery adapters.
+
+37
+00:04:16,000 --> 00:04:22,000
+It also records the mDL integrity checks, browser credential chooser
+and QR measurements.
+
+38
+00:04:22,000 --> 00:04:28,000
+The matrix indexes 79 observations and the register tracks 15
+findings.
+
 39
-00:04:01,000 --> 00:04:16,146
-Our evidence table covers authorization code with PKCE, pre-authorized issuance,
-cross-vendor discovery adapters, mDL signature and digest checks, and the browser
-credential chooser.
+00:04:28,000 --> 00:04:35,000
+The sample-data index gives synthetic inputs, instructions and
+expected outcomes.
 
 40
-00:04:16,146 --> 00:04:23,390
-The matrix indexes 79 observations and the register tracks 15 findings.
+00:04:35,000 --> 00:04:46,000
+The API reference documents the backend. Test reports record the
+checks actually executed.
 
 41
-00:04:23,390 --> 00:04:28,000
-Each claim links its evidence and limits.
+00:04:46,000 --> 00:04:52,000
+The readiness page records completed checks and remaining human
+tasks.
 
 42
-00:04:28,000 --> 00:04:34,923
-The sample-data index gives synthetic inputs, instructions and expected outcomes.
-
-43
-00:04:34,923 --> 00:04:39,077
-The API reference documents the backend.
-
-44
-00:04:39,077 --> 00:04:46,000
-Test evidence and dated reports record the checks actually executed.
-
-45
-00:04:46,000 --> 00:04:50,118
-The readiness page records completed checks and pending human tasks.
-
-46
-00:04:50,118 --> 00:05:00,000
-Reviewers can run the Docker prototype or inspect the public evidence archive, then
-follow a result back to its version, run and sanitized exchanges.
+00:04:52,000 --> 00:05:00,000
+Reviewers can run the Docker prototype or inspect the public
+evidence archive.
