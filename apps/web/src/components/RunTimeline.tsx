@@ -13,13 +13,13 @@ export function RunTimeline({ steps, selectedStepId, onSelect }: {
         const tone = step.status === "succeeded" ? "bg-green-100 text-ok" : step.status === "running" ? "bg-blue-100 text-issuer" : step.status === "failed" ? "bg-red-100 text-bad" : "bg-slate-100 text-slate-600";
         return (
           <li key={step.id}>
-            <button aria-pressed={selectedStepId === step.id} onClick={() => onSelect(step.id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${selectedStepId === step.id ? "bg-slate-100" : "hover:bg-slate-50"}`}>
-              <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${tone}`}>
-                <Icon size={16} className={step.status === "running" ? "animate-spin" : ""} />
+            <button aria-pressed={selectedStepId === step.id} onClick={() => onSelect(step.id)} className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left transition ${selectedStepId === step.id ? "bg-slate-100 shadow-xs" : "hover:bg-slate-50"}`}>
+              <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full ${tone}`}>
+                <Icon size={13} className={step.status === "running" ? "animate-spin" : ""} />
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-ink">{step.title}</span>
-                <span className="block text-xs capitalize text-slate-600">{step.status}</span>
+                <span className="block truncate text-xs font-semibold text-ink">{step.title}</span>
+                <span className="block text-[11px] capitalize text-slate-500">{step.status}</span>
               </span>
             </button>
           </li>

@@ -47,19 +47,19 @@ export function SequenceView({ runId, exchanges, selectedExchangeId, onSelect }:
   }
 
   return (
-    <section className="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
-        <div><p className="text-xs font-bold uppercase tracking-[0.16em] text-verifier">Sequence</p><p className="text-xs text-slate-600">Select a message to inspect its step.</p></div>
-        <div className="flex gap-2"><button onClick={togglePlayback} disabled={!exchanges.length} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-bold text-slate-600 disabled:opacity-40">{playing ? <Pause size={13} /> : <Play size={13} />}{playing ? "Pause" : "Play"}</button><button onClick={() => void copyMermaid()} disabled={!exchanges.length} className="flex items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-bold text-slate-600 disabled:opacity-40"><Copy size={13} />Copy Mermaid</button></div>
+    <section className="mb-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50/60 shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-white px-4 py-2.5">
+        <div><p className="text-xs font-semibold uppercase tracking-wider text-verifier">Sequence</p><p className="text-[11px] text-slate-500">Select a message to inspect its step.</p></div>
+        <div className="flex gap-1.5"><button onClick={togglePlayback} disabled={!exchanges.length} className="flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-600 shadow-xs hover:bg-slate-50 disabled:opacity-40">{playing ? <Pause size={12} /> : <Play size={12} />}{playing ? "Pause" : "Play"}</button><button onClick={() => void copyMermaid()} disabled={!exchanges.length} className="flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-600 shadow-xs hover:bg-slate-50 disabled:opacity-40"><Copy size={12} />Copy Mermaid</button></div>
       </div>
-      <p role="status" className="px-3 text-sm">{message}</p>
-      <div role="region" aria-label="Protocol messages" tabIndex={0} className="max-h-72 space-y-2 overflow-y-auto p-3">
-        {exchanges.length === 0 ? <p className="py-8 text-center text-sm text-slate-600">Messages appear here as the run progresses.</p> : exchanges.slice(0, visibleCount ?? exchanges.length).map((exchange) => (
-          <button key={exchange.id} aria-pressed={selectedExchangeId === exchange.id} onClick={() => { setPlaying(false); setVisibleCount(null); onSelect(exchange); }} className={`grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 rounded-xl border px-3 py-2 text-left transition ${selectedExchangeId === exchange.id ? "border-blue-300 bg-blue-50 shadow-sm" : "border-slate-200 bg-white hover:border-slate-400"}`}>
-            <span className="truncate text-xs font-bold text-slate-700">{exchange.actorFrom}</span>
-            <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-600"><span>{exchange.method}</span><ArrowRight size={13} /><span className={exchange.status < 400 ? "text-ok" : "text-fail"}>{exchange.status}</span></span>
-            <span className="truncate text-right text-xs font-bold text-slate-700">{exchange.actorTo}</span>
-            <span className="col-span-3 truncate font-mono text-[10px] text-slate-600">{exchange.url}</span>
+      {message && <p role="status" className="px-3 pt-2 text-xs text-issuer font-medium">{message}</p>}
+      <div role="region" aria-label="Protocol messages" tabIndex={0} className="max-h-60 space-y-1.5 overflow-y-auto p-2.5">
+        {exchanges.length === 0 ? <p className="py-6 text-center text-xs text-slate-500">Messages appear here as the run progresses.</p> : exchanges.slice(0, visibleCount ?? exchanges.length).map((exchange) => (
+          <button key={exchange.id} aria-pressed={selectedExchangeId === exchange.id} onClick={() => { setPlaying(false); setVisibleCount(null); onSelect(exchange); }} className={`grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 rounded-lg border px-3 py-1.5 text-left transition ${selectedExchangeId === exchange.id ? "border-blue-400 bg-blue-50/80 shadow-xs" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50"}`}>
+            <span className="truncate font-mono text-xs font-bold text-slate-700">{exchange.actorFrom}</span>
+            <span className="flex items-center gap-1 text-xs font-semibold text-slate-600"><span className="rounded bg-slate-100 px-1 py-0.5 text-[10px] font-mono uppercase">{exchange.method}</span><ArrowRight size={11} /><span className={exchange.status < 400 ? "text-ok font-mono" : "text-fail font-mono"}>{exchange.status}</span></span>
+            <span className="truncate text-right font-mono text-xs font-bold text-slate-700">{exchange.actorTo}</span>
+            <span className="col-span-3 truncate font-mono text-xs text-slate-500">{exchange.url}</span>
           </button>
         ))}
       </div>

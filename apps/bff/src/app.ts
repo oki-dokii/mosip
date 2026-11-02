@@ -94,6 +94,10 @@ export function buildApp(getIo: () => Server, repository: RunRepository) {
     next();
   }, captureIngress(new CaptureRateGate(120)), express.json({ limit: "32kb" }));
   app.use(express.json({ limit: "256kb" }));
+  app.get("/", (_request, response) => {
+    const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5173";
+    response.redirect(webOrigin);
+  });
   app.get("/api/v1/capture/local/session", (_request, response) => {
     const lease = localLease.snapshot();
     response.set("Cache-Control", "no-store").json({ lease: lease && assisted.live(lease.runId) ? lease : null });

@@ -3,7 +3,7 @@ import { WalletEvidencePanel } from "./components/WalletEvidencePanel";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Exchange, ImplementationMetadata, RunConfig, RunStep, RunSummary, ScenarioDefinition } from "@playground/shared";
 import { evidenceLabels, evidenceTier } from "@playground/shared/evidence";
-import { Activity, ArrowRight, FlaskConical, Play, ShieldCheck } from "lucide-react";
+import { Activity, ArrowRight, FlaskConical, Menu, Play, ShieldCheck, Sparkles } from "lucide-react";
 import { io } from "socket.io-client";
 import { Inspector } from "./components/Inspector";
 import { RoleSelector } from "./components/RoleSelector";
@@ -15,6 +15,7 @@ import { GapExplorer } from "./components/GapExplorer";
 import { SequenceView } from "./components/SequenceView";
 import { ConnectedAssisted } from "./components/ConnectedAssisted";
 import { CaptureCoverage } from "./components/CaptureCoverage";
+import { RightSidebar } from "./components/RightSidebar";
 import { api } from "./lib/api";
 import { AssistedJourneyPanel } from "./components/AssistedJourneyPanel";
 import { createAssistedFixture } from "./lib/assistedFixture";
@@ -215,33 +216,92 @@ export default function App() {
   if (!metadata) return <main className="grid min-h-screen place-items-center p-6 text-slate-600"><div><h1 className="text-xl font-bold">Inji Interoperability Playground</h1>{startError ? <p role="alert">{startError}</p> : <p role="status"><Activity aria-hidden="true" className="animate-pulse" /> Loading playground…</p>}</div></main>;
 
   return (
-    <div className="min-h-screen bg-canvas text-ink">
+    <div className="min-h-screen bg-canvas text-ink antialiased">
       <a className="skip-link" href="#playground-main">Skip to main content</a>
-      <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-[1500px] flex-wrap items-center gap-4 px-5 py-4 lg:px-8">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-ink text-white shadow-lg"><FlaskConical size={22} /></span>
-          <div><h1 className="text-lg font-bold tracking-tight">Inji Interoperability Playground</h1><p className="text-xs text-slate-500">Issue, present, verify — and inspect every boundary.</p></div>
-          <nav aria-label="Explore" className="flex gap-3 text-sm underline"><a href="/parties">Parties</a><a href="/capabilities">QR and capabilities</a><a href="/android">Android wallet</a></nav><ReadingPreferences /><span className="hidden rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 sm:block">{run?.recordKind === "archived_evidence" ? "Archived real-wallet evidence · 25 Oct" : run?.config.wallet === "inji_web_assisted" && run.serviceVersions && !run.serviceVersions.wallet.startsWith("fixture/") ? "Live assisted wallet · test data" : driverMode === "fixture" ? "Fixture simulation · test data" : "Live Collab · test data"}</span>
+      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-[#090d16]/95">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/20"><FlaskConical size={18} /></span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-sm font-bold tracking-tight text-ink dark:text-white sm:text-base">Inji Interoperability Playground</h1>
+                <span className="hidden rounded-full border border-amber-300/40 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300 md:inline-block">
+                  {run?.recordKind === "archived_evidence" ? "Archived real-wallet evidence · 25 Oct" : run?.config.wallet === "inji_web_assisted" && run.serviceVersions && !run.serviceVersions.wallet.startsWith("fixture/") ? "Live assisted wallet · test data" : driverMode === "fixture" ? "Fixture simulation · test data" : "Live Collab · test data"}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Issue, present, verify — and inspect every boundary.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <nav aria-label="Explore" className="hidden sm:flex items-center gap-1 rounded-lg bg-slate-100/80 p-0.5 dark:bg-white/5">
+              <a className="rounded-md px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-ink dark:text-slate-300 dark:hover:text-white transition" href="/parties">Parties</a>
+              <a className="rounded-md px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-ink dark:text-slate-300 dark:hover:text-white transition" href="/capabilities">QR and capabilities</a>
+              <a className="rounded-md px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-ink dark:text-slate-300 dark:hover:text-white transition" href="/android">Android wallet</a>
+            </nav>
+            <ReadingPreferences />
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("open-right-sidebar"))}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-300/80 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10 transition"
+              aria-label="Open navigation steps"
+            >
+              <Menu size={15} />
+              <span className="hidden sm:inline">Steps</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      <main id="playground-main" tabIndex={-1} className="dot-grid mx-auto max-w-[1500px] px-5 py-8 lg:px-8">
-        {localReady && <button disabled={busy || run?.status === "running" || run?.status === "pending"} onClick={() => void startLocalWallet()} className="mb-4 rounded-lg bg-issuer px-4 py-2 font-semibold text-white">Start local JSON-LD wallet run</button>}
-        <details className="mb-4 rounded-xl border bg-white p-4"><summary className="cursor-pointer font-semibold">Your first five minutes</summary>
-          <ol className="mt-3 list-decimal space-y-1 pl-6"><li>Choose a mock happy path and start the run.</li><li>Open a timeline step to inspect the actors, HTTP status and redacted exchange.</li><li>Run the bad-signature scenario and compare its verdict with the positive control.</li><li>Open the compatibility matrix to see which configurations have evidence.</li></ol>
-        </details>
-        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-card">
-          <div className="border-b border-slate-200 px-6 py-5 lg:px-8">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-issuer">Configure a run</p><h2 className="mt-1 text-2xl font-bold tracking-tight">Choose the credential journey</h2></div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-slate-500"><ShieldCheck size={16} className="text-ok" />Secrets are masked before recording</div>
+      <main id="playground-main" tabIndex={-1} className="dot-grid mx-auto max-w-7xl px-4 py-5 sm:px-6 space-y-4">
+        {localReady && <button disabled={busy || run?.status === "running" || run?.status === "pending"} onClick={() => void startLocalWallet()} className="rounded-lg bg-issuer px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-600 transition">Start local JSON-LD wallet run</button>}
+        <details className="group rounded-xl border border-slate-200/90 bg-gradient-to-r from-blue-50/40 via-white to-slate-50/40 p-3 shadow-xs dark:border-white/10 dark:from-blue-950/20 dark:via-white/5 dark:to-white/5">
+          <summary className="flex cursor-pointer items-center justify-between font-bold text-xs text-slate-700 hover:text-ink dark:text-slate-300 dark:hover:text-white">
+            <div className="flex items-center gap-2">
+              <span className="grid h-5 w-5 place-items-center rounded-md bg-blue-500/10 text-issuer dark:bg-blue-400/15 dark:text-blue-300">
+                <Sparkles size={12} />
+              </span>
+              <span>Your first five minutes</span>
             </div>
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <label lang={locale} htmlFor="scenario-preset" className="text-sm font-semibold text-slate-700">{t("scenario")}</label>
+            <span className="rounded-full bg-slate-200/60 px-2 py-0.5 text-[10px] font-medium text-slate-600 group-open:bg-blue-100 group-open:text-issuer dark:bg-white/10 dark:text-slate-400 dark:group-open:bg-blue-900/40 dark:group-open:text-blue-300 transition">
+              Quick start guide
+            </span>
+          </summary>
+          <div className="mt-2.5 pt-2.5 border-t border-slate-200/60 dark:border-white/5">
+            <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 list-none pl-0 text-xs">
+              <li className="rounded-lg border border-slate-200/70 bg-white/80 p-2.5 dark:border-white/5 dark:bg-white/5">
+                <div className="font-bold text-issuer dark:text-blue-400 mb-0.5">1 · Happy Path</div>
+                <div className="text-slate-600 dark:text-slate-400 leading-snug">Choose a mock happy path and start the run.</div>
+              </li>
+              <li className="rounded-lg border border-slate-200/70 bg-white/80 p-2.5 dark:border-white/5 dark:bg-white/5">
+                <div className="font-bold text-wallet dark:text-emerald-400 mb-0.5">2 · Inspect Flow</div>
+                <div className="text-slate-600 dark:text-slate-400 leading-snug">Open a timeline step to inspect the actors, HTTP status and redacted exchange.</div>
+              </li>
+              <li className="rounded-lg border border-slate-200/70 bg-white/80 p-2.5 dark:border-white/5 dark:bg-white/5">
+                <div className="font-bold text-verifier dark:text-amber-400 mb-0.5">3 · Test Faults</div>
+                <div className="text-slate-600 dark:text-slate-400 leading-snug">Run the bad-signature scenario and compare its verdict with the positive control.</div>
+              </li>
+              <li className="rounded-lg border border-slate-200/70 bg-white/80 p-2.5 dark:border-white/5 dark:bg-white/5">
+                <div className="font-bold text-slate-700 dark:text-slate-300 mb-0.5">4 · Evidence Matrix</div>
+                <div className="text-slate-600 dark:text-slate-400 leading-snug">Open the compatibility matrix to see which configurations have evidence.</div>
+              </li>
+            </ol>
+          </div>
+        </details>
+        <section id="configure-run" className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-5 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-issuer">Configure a run</p>
+                <h2 className="mt-0.5 text-lg font-bold tracking-tight">Choose the credential journey</h2>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><ShieldCheck size={15} className="text-ok" />Secrets are masked before recording</div>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2.5">
+              <label lang={locale} htmlFor="scenario-preset" className="text-xs font-semibold text-slate-700">{t("scenario")}</label>
               <select id="scenario-preset" value={config.scenarioId ?? ""} onChange={(event) => {
                 const scenario = scenarios.find((item) => item.id === event.target.value);
                 setConfig(scenario ? scenario.config : { ...config, scenarioId: null });
-              }} className="min-w-0 max-w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-ink">
+              }} className="min-w-0 max-w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-ink shadow-xs">
                 <option lang={locale} value="">{t("custom")}</option>
                 {scenarios.map((scenario) => <option key={scenario.id} value={scenario.id} disabled={!scenario.available}>{scenario.name}{scenario.available ? "" : " · unavailable"}</option>)}
               </select>
@@ -249,7 +309,7 @@ export default function App() {
               {scenarioGaps.length > 0 && <p className="basis-full text-xs text-amber-800">Preset setup: {scenarioGaps.join(" ")}</p>}
             </div>
           </div>
-          <div className="grid gap-7 p-6 md:grid-cols-3 lg:p-8">
+          <div className="grid gap-4 p-5 md:grid-cols-3">
             <RoleSelector role="issuer" label={<span lang={locale}>{t("issuer")}</span>} options={metadata.issuers} value={config.issuer} onChange={(issuer) => setConfig({ ...config, issuer: issuer as RunConfig["issuer"], scenarioId: null })} />
             <RoleSelector role="wallet" label={<span lang={locale}>{t("wallet")}</span>} options={metadata.wallets.map((wallet) => ({ ...wallet,
               name: wallet.id === "reference_wallet" ? "Reference Wallet" : "Inji Web (Assisted)",
@@ -258,53 +318,69 @@ export default function App() {
             }))} value={config.wallet} onChange={(wallet) => setConfig({ ...config, wallet: wallet as RunConfig["wallet"], scenarioId: null })} />
             <RoleSelector role="verifier" label={<span lang={locale}>{t("verifier")}</span>} options={metadata.verifiers} value={config.verifier} onChange={(verifier) => setConfig({ ...config, verifier: verifier as RunConfig["verifier"], scenarioId: null })} />
           </div>
-          <div className="flex flex-col gap-4 border-t border-slate-200 bg-slate-50 px-6 py-5 sm:flex-row sm:items-center lg:px-8">
-            <div className="flex flex-wrap gap-2">
-              {metadata.formats.map((item) => <button key={item.id} aria-pressed={config.format === item.id} onClick={() => setConfig({ ...config, format: item.id, scenarioId: null })} className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${config.format === item.id ? "border-ink bg-ink text-white" : "border-slate-300 bg-white text-slate-600 hover:border-slate-500"}`}>{item.name}</button>)}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50/70 px-5 py-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap gap-1.5">
+                {metadata.formats.map((item) => <button key={item.id} aria-pressed={config.format === item.id} onClick={() => setConfig({ ...config, format: item.id, scenarioId: null })} className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${config.format === item.id ? "border-ink bg-ink text-white" : "border-slate-300 bg-white text-slate-600 hover:border-slate-400"}`}>{item.name}</button>)}
+              </div>
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+                <span lang={locale}>{t("fault")}</span>
+                <select value={config.tamper ?? ""} onChange={(event) => setConfig({ ...config, tamper: (event.target.value || null) as RunConfig["tamper"], scenarioId: null })} className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-ink shadow-xs">
+                  {tamperOptions.map((item) => <option key={item.value ?? "none"} value={item.value ?? ""}>{item.label}</option>)}
+                </select>
+              </label>
+              {unsupportedReason && <p role="status" className="text-xs font-semibold text-amber-800">{unsupportedReason}</p>}
             </div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-slate-600">
-              <span lang={locale}>{t("fault")}</span>
-              <select value={config.tamper ?? ""} onChange={(event) => setConfig({ ...config, tamper: (event.target.value || null) as RunConfig["tamper"], scenarioId: null })} className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-ink">
-                {tamperOptions.map((item) => <option key={item.value ?? "none"} value={item.value ?? ""}>{item.label}</option>)}
-              </select>
-            </label>
-            {unsupportedReason && <p role="status" className="text-xs font-semibold text-amber-800">{unsupportedReason}</p>}
-            <div className="sm:ml-auto"><button lang={locale} disabled={busy || !driverMode || Boolean(unsupportedReason)} onClick={() => void startRun()} className="flex w-full items-center justify-center gap-2 rounded-xl bg-issuer px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60 sm:w-auto"><Play size={17} fill="currentColor" />{busy ? t("starting") : config.wallet === "inji_web_assisted" ? t("fixture") : t("run")}</button></div>
+            <div>
+              <button lang={locale} disabled={busy || !driverMode || Boolean(unsupportedReason)} onClick={() => void startRun()} className="flex items-center justify-center gap-1.5 rounded-lg bg-issuer px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-blue-600 disabled:cursor-wait disabled:opacity-60"><Play size={14} fill="currentColor" />{busy ? t("starting") : config.wallet === "inji_web_assisted" ? t("fixture") : t("run")}</button>
+            </div>
           </div>
         </section>
 
-        {startError && <p role="alert" className="mt-4 text-red-800">{startError}</p>}
-        {config.wallet === "inji_web_assisted" && <p className="mt-4 text-sm text-amber-900">Live assisted start requires a configured deployment and dedicated account. The backend-assisted journey below supports connected fixtures and configured live runs.</p>}
+        {startError && <p role="alert" className="text-xs text-red-800">{startError}</p>}
+        {config.wallet === "inji_web_assisted" && <p className="text-xs text-amber-900">Live assisted start requires a configured deployment and dedicated account. The backend-assisted journey below supports connected fixtures and configured live runs.</p>}
         {((config.wallet === "inji_web_assisted" && !assistedUnavailable(config)) || run?.config.wallet === "inji_web_assisted") && <ConnectedAssisted key={runId ?? "new"} config={run?.config.wallet === "inji_web_assisted" ? run.config : config} resumeId={run?.config.wallet === "inji_web_assisted" && run.recordKind !== "archived_evidence" ? run.id : null} onRun={setRunId} />}
         {assisted && <AssistedJourneyPanel key={assisted.journey.runId} fixture={assisted} />}
-        <section className="mt-7 rounded-3xl border border-slate-200 bg-white shadow-card">
-          <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 px-6 py-5 lg:px-8">
-            <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-wallet">{run?.recordKind === "archived_evidence" ? "Historical evidence · read only" : "Live run"}</p><h2 ref={runHeading} tabIndex={-1} className="mt-1 text-xl font-bold">{run ? `Run ${run.id.slice(0, 8)}` : runId ? "Loading selected run…" : "Ready when you are"}</h2></div>
-            {format && <div className="ml-auto flex flex-wrap gap-2"><span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold">{format.name}</span><span className="rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-800">{format.proofType}</span><span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800">{format.algorithm}</span></div>}
+        <section id="live-run" className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-wallet">{run?.recordKind === "archived_evidence" ? "Historical evidence · read only" : "Live run"}</p>
+              <h2 ref={runHeading} tabIndex={-1} className="mt-0.5 text-base font-bold">{run ? `Run ${run.id.slice(0, 8)}` : runId ? "Loading selected run…" : "Ready when you are"}</h2>
+            </div>
+            {format && <div className="flex flex-wrap gap-1.5"><span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">{format.name}</span><span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-800 border border-green-200">{format.proofType}</span><span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-800 border border-blue-200">{format.algorithm}</span></div>}
           </div>
-          {runError && <p role="alert">Run unavailable. It may be missing or your session may not have access. No previous result is shown.</p>}
-          {runError ? null : !runId ? <div className="grid min-h-72 place-items-center p-8 text-center"><div><ArrowRight className="mx-auto mb-3 text-slate-300" size={36} /><p className="font-semibold text-slate-600">Start a flow to see the live protocol timeline.</p><p className="mt-1 text-sm text-slate-600">Protocol exchanges are sanitized before storage.</p></div></div> : (
-            <div className="grid gap-6 p-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:p-8">
+          {runError && <p role="alert" className="p-4 text-xs text-red-700">Run unavailable. It may be missing or your session may not have access. No previous result is shown.</p>}
+          {runError ? null : !runId ? <div className="grid min-h-48 place-items-center p-6 text-center"><div><ArrowRight className="mx-auto mb-2 text-slate-300" size={28} /><p className="font-semibold text-xs text-slate-600">Start a flow to see the live protocol timeline.</p><p className="mt-0.5 text-xs text-slate-500">Protocol exchanges are sanitized before storage.</p></div></div> : (
+            <div className="grid gap-5 p-5 lg:grid-cols-[280px_minmax(0,1fr)]">
               <div>
-                <div className={`mb-4 rounded-xl border px-4 py-3 text-sm font-semibold ${run?.status === "passed" ? "border-green-200 bg-green-50 text-ok" : runFinished ? "border-red-200 bg-red-50 text-fail" : "border-blue-200 bg-blue-50 text-issuer"}`} role="status" aria-atomic="true">{runMessage}</div>
-                {run && <p className="mb-4 text-xs font-semibold text-slate-600">Evidence: {evidenceLabels[evidenceTier(run)]}</p>}
-                {run?.recordKind === "archived_evidence" && <p className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-900">Committed, sanitized 25 October A1 export. Original run ID and timestamps are preserved; opening this record does not repeat the wallet journey.</p>}
-                {run?.evaluation && <p className="mb-4 text-xs text-slate-700">Validation: {run.evaluation.verdict.replaceAll("_", " ")}{run.evaluation.observed.code ? ` · ${run.evaluation.observed.code}` : ""}</p>}
-                {typeof verifierDetail === "string" && <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">Verifier detail: {verifierDetail}</p>}
-                {runFinished && run?.config.wallet !== "inji_web_assisted" && run?.status !== "errored" && run?.status !== "cancelled" && <button disabled={busy} onClick={() => void replayRun()} className="mb-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:border-slate-500 disabled:opacity-60">Replay with selected fault</button>}
-                {runFinished && run && <div className="mb-4 grid grid-cols-2 gap-2 text-center text-xs font-bold"><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=md`}>Report · Markdown</a><a className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 hover:border-slate-500" href={`/api/v1/runs/${run.id}/report?format=json`}>Report · JSON</a></div>}
+                <div className={`mb-3 rounded-lg border px-3 py-2 text-xs font-semibold ${run?.status === "passed" ? "border-green-200 bg-green-50 text-ok" : runFinished ? "border-red-200 bg-red-50 text-fail" : "border-blue-200 bg-blue-50 text-issuer"}`} role="status" aria-atomic="true">{runMessage}</div>
+                {run && <p className="mb-2 text-xs font-semibold text-slate-500">Evidence: {evidenceLabels[evidenceTier(run)]}</p>}
+                {run?.recordKind === "archived_evidence" && <p className="mb-2 rounded-lg border border-blue-200 bg-blue-50 p-2.5 text-xs text-blue-900 leading-relaxed">Committed, sanitized 25 October A1 export. Original run ID and timestamps are preserved; opening this record does not repeat the wallet journey.</p>}
+                {run?.evaluation && <p className="mb-2 text-xs text-slate-600">Validation: {run.evaluation.verdict.replaceAll("_", " ")}{run.evaluation.observed.code ? ` · ${run.evaluation.observed.code}` : ""}</p>}
+                {typeof verifierDetail === "string" && <p className="mb-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">Verifier detail: {verifierDetail}</p>}
+                {runFinished && run?.config.wallet !== "inji_web_assisted" && run?.status !== "errored" && run?.status !== "cancelled" && <button disabled={busy} onClick={() => void replayRun()} className="mb-2.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-xs hover:bg-slate-50 disabled:opacity-60">Replay with selected fault</button>}
+                {runFinished && run && <div className="mb-3 grid grid-cols-2 gap-1.5 text-center text-xs font-semibold"><a className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-slate-700 shadow-xs hover:bg-slate-50" href={`/api/v1/runs/${run.id}/report?format=md`}>Report · Markdown</a><a className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-slate-700 shadow-xs hover:bg-slate-50" href={`/api/v1/runs/${run.id}/report?format=json`}>Report · JSON</a></div>}
                 <RunTimeline steps={steps} selectedStepId={selectedStepId} onSelect={selectStep} />
               </div>
-              <div>{run?.recordKind !== "archived_evidence" && <CaptureCoverage key={runId} runId={runId} exchangeCount={exchanges.length} canImport={Boolean(runFinished) || run?.config.wallet === "inji_web_assisted"} onImported={() => void refresh(runId)} />}<SequenceView runId={runId} exchanges={exchanges} selectedExchangeId={selectedExchangeId} onSelect={selectExchange} /><Inspector exchange={selectedExchange} /></div>
+              <div className="min-w-0">{run?.recordKind !== "archived_evidence" && <CaptureCoverage key={runId} runId={runId} exchangeCount={exchanges.length} canImport={Boolean(runFinished) || run?.config.wallet === "inji_web_assisted"} onImported={() => void refresh(runId)} />}<SequenceView runId={runId} exchanges={exchanges} selectedExchangeId={selectedExchangeId} onSelect={selectExchange} /><Inspector exchange={selectedExchange} /></div>
             </div>
           )}
         </section>
-        <WalletEvidencePanel onOpenManagedRun={selectArchivedRun} archivedRunIds={history.filter(item => item.recordKind === "archived_evidence").map(item => item.id)} />
-        {archiveError && <p role="alert">Run archive unavailable. <button onClick={() => void refreshArchive()}>Retry archive</button></p>}
-        <RunArchive history={history} matrix={matrix} active={archiveView} onActiveChange={setArchiveView} onSelectRun={selectArchivedRun} location={location.state} onLocationChange={location.update} shareHref={location.href} />
-        <RunComparison a={location.state.compareA} b={location.state.compareB} />
-        <GapExplorer />
+        <div id="wallet-evidence">
+          <WalletEvidencePanel onOpenManagedRun={selectArchivedRun} archivedRunIds={history.filter(item => item.recordKind === "archived_evidence").map(item => item.id)} />
+        </div>
+        {archiveError && <p role="alert" className="text-xs text-red-700">Run archive unavailable. <button onClick={() => void refreshArchive()} className="underline">Retry archive</button></p>}
+        <div id="run-archive">
+          <RunArchive history={history} matrix={matrix} active={archiveView} onActiveChange={setArchiveView} onSelectRun={selectArchivedRun} location={location.state} onLocationChange={location.update} shareHref={location.href} />
+        </div>
+        <div id="run-comparison">
+          <RunComparison a={location.state.compareA} b={location.state.compareB} />
+        </div>
+        <div id="gap-explorer">
+          <GapExplorer />
+        </div>
       </main>
+      <RightSidebar run={run} runId={runId} />
     </div>
   );
 }

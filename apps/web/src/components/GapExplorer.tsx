@@ -38,16 +38,16 @@ function evidenceUrl(path: string): string {
 
 export function GapExplorer() {
   return (
-    <section aria-labelledby="gap-explorer-heading" className="mt-7 rounded-3xl border border-slate-200 bg-white p-6 shadow-card lg:p-8">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <section aria-labelledby="gap-explorer-heading" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-end justify-between gap-3 pb-3 border-b border-slate-100">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-issuer">Interoperability findings</p>
-          <h2 id="gap-explorer-heading" className="mt-1 text-xl font-bold">What the evidence has revealed</h2>
+          <p className="text-xs font-semibold uppercase tracking-wider text-issuer">Interoperability findings</p>
+          <h2 id="gap-explorer-heading" className="mt-0.5 text-base font-bold tracking-tight">What the evidence has revealed</h2>
         </div>
-        <a className="text-sm font-semibold text-issuer underline" href={evidenceUrl("docs/GAPS.md")} target="_blank" rel="noreferrer">Read full gap register</a>
+        <a className="text-xs font-semibold text-issuer hover:underline" href={evidenceUrl("docs/GAPS.md")} target="_blank" rel="noreferrer">Read full gap register</a>
       </div>
-      <p className="mt-3 max-w-3xl text-sm text-slate-600">These are observed behaviors and test limits, not confirmed upstream defects. An unreported service version or missing wallet account cannot establish a product regression.</p>
-      <ul className="mt-5 grid gap-4 md:grid-cols-2">
+      <p className="mt-2.5 max-w-3xl text-xs text-slate-500">These are observed behaviors and test limits, not confirmed upstream defects. An unreported service version or missing wallet account cannot establish a product regression.</p>
+      <ul className="mt-4 grid gap-3 md:grid-cols-2">
         {gaps.findings.map((finding) => (
           <li key={finding.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <p className="font-mono text-xs font-semibold text-slate-500">Finding {finding.id}</p>

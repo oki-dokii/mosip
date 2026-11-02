@@ -21,20 +21,20 @@ export function RoleSelector({ role, label, options, value, onChange }: {
   const Icon = style.icon;
   return (
     <fieldset className="min-w-0">
-      <legend className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
-        <span className={`grid h-7 w-7 place-items-center rounded-lg bg-white shadow-sm ${style.color}`}><Icon size={15} /></span>
+      <legend className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+        <span className={`grid h-6 w-6 place-items-center rounded-md bg-white shadow-sm border border-slate-200/60 ${style.color}`}><Icon size={13} /></span>
         {label}
       </legend>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {options.map((option) => (
-          <label key={option.id} className={`block ${option.disabled ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}>
+          <label key={option.id} className={`block ${option.disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}>
             <input className="peer sr-only" type="radio" disabled={option.disabled} aria-describedby={`${role}-${option.id}-description`} name={role} value={option.id} checked={value === option.id} onChange={() => onChange(option.id)} />
-            <span className={`flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-sm ${style.ring} peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-blue-700`}>
-              <span>
-                <span className="block text-sm font-semibold text-ink">{option.name}</span>
-                <span id={`${role}-${option.id}-description`} className="mt-0.5 block text-xs text-slate-600">{option.description ?? (option.kind === "inji" ? "MOSIP Inji" : option.kind)}</span>
+            <span className={`flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 transition hover:shadow-sm ${style.ring} peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-blue-700`}>
+              <span className="min-w-0 pr-2">
+                <span className="block text-xs font-bold text-ink">{option.name}</span>
+                <span id={`${role}-${option.id}-description`} className="mt-0.5 block text-[11px] leading-tight text-slate-500 truncate">{option.description ?? (option.kind === "inji" ? "MOSIP Inji" : option.kind)}</span>
               </span>
-              {value === option.id && <BadgeCheck aria-hidden="true" className={style.color} size={20} />}
+              {value === option.id && <BadgeCheck aria-hidden="true" className={`${style.color} shrink-0`} size={18} />}
             </span>
           </label>
         ))}

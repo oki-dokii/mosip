@@ -5,14 +5,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: "#18212f",
-        canvas: "#f4f7f9",
+        ink: "#0f172a",
+        canvas: "#f8fafc",
         issuer: "#2563eb",
-        wallet: "#15803d",
-        verifier: "#c2410c",
-        ok: "#15803d",
-        bad: "#b91c1c",
-        fail: "#b91c1c",
+        wallet: "#059669",
+        verifier: "#d97706",
+        ok: "#059669",
+        bad: "#dc2626",
+        fail: "#dc2626",
       },
       boxShadow: { card: "0 16px 45px rgba(31, 44, 61, 0.08)" },
     },

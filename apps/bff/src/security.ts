@@ -26,7 +26,7 @@ export const securityHeaders: RequestHandler = (_req, res, next) => {
   res.removeHeader('X-Powered-By'); next();
 };
 export const accessGate: RequestHandler = (req, res, next) => {
-  if (req.method === 'GET' && req.path === '/api/v1/health') return next();
+  if (req.method === 'GET' && (req.path === '/api/v1/health' || req.path === '/')) return next();
   const bridgeRoute = req.path.startsWith('/api/v1/capture/local/') || /^\/api\/v1\/assisted\/runs\/[^/]+\/capture\/observation$/.test(req.path);
   if (bridgeRoute && validBridgeToken(req.get('x-capture-bridge-token'))) return next();
   if (!authorized(req.get('authorization'))) {
