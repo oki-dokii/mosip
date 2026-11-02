@@ -62,9 +62,16 @@ jobs:
           pnpm lint
           node scripts/check-gap-register.mjs
           pnpm test:mutations
+          pnpm --filter @playground/bff exec vitest run src/drivers --coverage --coverage.include="src/drivers/*.ts" --coverage.exclude="**/*.test.ts" --coverage.reportsDirectory=coverage-drivers
           pnpm coverage:redaction
           pnpm docs:api
           git diff --exit-code -- submission/openapi.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: driver-coverage
+          path: apps/bff/coverage-drivers
+          if-no-files-found: error
 
       - name: Typecheck
         run: pnpm typecheck

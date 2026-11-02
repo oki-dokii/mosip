@@ -1,6 +1,7 @@
 // Synthetic official Certify -> reference holder -> official local Verify control.
 // Credential, access token, holder key and VP exist only in this process.
 import { createHash, generateKeyPairSync, randomBytes, randomUUID } from 'node:crypto';
+import { pathToFileURL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -32,11 +33,11 @@ async function request(url, options = {}) {
   return { status: response.status, body };
 }
 
-async function issueCredential(issuer) {
+export async function issueCredential(issuer, expired = false) {
   const now = Math.floor(Date.now() / 1000);
   const created = await request(issuerBackend + '/v1/certify/pre-authorized-data', json({
     credential_configuration_id: configurationId,
-    claims: { given_name: 'Ada', family_name: 'Example', issuedAt: now, expiresAt: now + 86400 },
+    claims: { given_name: 'Ada', family_name: 'Example', issuedAt: expired ? now - 86400 : now, expiresAt: expired ? now - 3600 : now + 86400 },
     expires_in: 600,
   }));
   assert(created.status === 200 && typeof created.body?.credential_offer_uri === 'string', 'OFFER_FAILED');
@@ -69,19 +70,20 @@ async function issueCredential(issuer) {
   const header = decodeProtectedHeader(issuerJwt);
   assert(header.alg === 'RS256' && Array.isArray(header.x5c) && header.x5c.length > 0, 'ISSUER_KEY_UNEXPECTED');
   const pem = '-----BEGIN CERTIFICATE-----\n' + header.x5c[0].match(/.{1,64}/g).join('\n') + '\n-----END CERTIFICATE-----';
-  const verified = await jwtVerify(issuerJwt, await importX509(pem, 'RS256'), { algorithms: ['RS256'], issuer });
+  const verified = await jwtVerify(issuerJwt, await importX509(pem, 'RS256'), { algorithms: ['RS256'], issuer, ...(expired ? {currentDate:new Date((now-7200)*1000)} : {}) });
+  if (expired) assert(verified.payload.exp < now, 'EXPIRY_NOT_SIGNED');
   assert(verified.payload.vct === configurationId && verified.payload.cnf?.kid === kid, 'ISSUER_OR_HOLDER_BINDING_INVALID');
   return { credential, holder };
 }
 
-async function present(credential, holder, scenario, replayToken) {
+export async function present(credential, holder, scenario, replayToken) {
   const definitionId = 'playground-local-sdjwt-' + randomUUID();
   const clientId = 'did:web:localhost%3A18081:v1:verify';
   const vpRequest = await request(verifier + '/vp-request', json({
     clientId, nonce: randomBytes(24).toString('base64url'),
     presentationDefinition: {
       id: definitionId,
-      input_descriptors: [{ id: 'credential', format: { 'vc+sd-jwt': { alg: ['RS256'] } }, constraints: { fields: [{ path: ['$.vct'], filter: { type: 'string', const: configurationId } }] } }],
+      input_descriptors: [{ id: 'credential', format: { 'vc+sd-jwt': { alg: ['RS256'] } }, constraints: { fields: [{ path: ['$.vct'], filter: { type: 'string', const: scenario === 'wrong_type' ? 'OtherCredential' : configurationId } }] } }],
     },
     responseCodeValidationRequired: false,
   }));
@@ -92,6 +94,16 @@ async function present(credential, holder, scenario, replayToken) {
   const claims = decodeJwt(signedRequest.body);
   assert(claims.client_id === clientId && claims.response_uri === verifier + '/vp-submission/direct-post', 'REQUEST_BINDING_INVALID');
 
+  if (scenario === 'unreferenced_disclosure' || scenario === 'altered_disclosure') {
+    const segments = credential.split('~');
+    assert(segments[1], 'MISSING_CONTROL_DISCLOSURE');
+    const disclosure = JSON.parse(Buffer.from(segments[1],'base64url'));
+    disclosure[2] = 'SyntheticChanged';
+    const replacement = Buffer.from(JSON.stringify(disclosure)).toString('base64url');
+    if (scenario === 'altered_disclosure') segments[1] = replacement;
+    else segments.splice(1, 0, replacement);
+    credential = segments.join('~');
+  }
   const presentedCredential = scenario === 'bad_issuer_signature' ? damageIssuerSignature(credential) : credential;
   const prefix = presentedCredential.endsWith('~') ? presentedCredential : presentedCredential + '~';
   const presentationNonce = scenario === 'wrong_nonce' ? randomBytes(24).toString('base64url') : claims.nonce;
@@ -164,7 +176,7 @@ async function main() {
   }
 }
 
-main().catch(error => {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(error => {
   // Never serialize upstream response bodies, JWTs, credentials or request URLs.
   const code = /^[A-Z0-9_]+$/.test(error.message) ? error.message : 'LOCAL_INJI_SMOKE_FAILED';
   console.error(code);

@@ -1,0 +1,5 @@
+# Diagnostic overlay on docker-compose.verify-local.yml. Same signer and request endpoint.
+services:
+  verify-service:
+    environment:
+      INJI_VERIFY_REDIRECT_URI: http://localhost:18081

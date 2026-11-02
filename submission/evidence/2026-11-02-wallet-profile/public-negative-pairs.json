@@ -1,0 +1,144 @@
+{
+  "observedAt": "2026-11-01T22:25:05.219Z",
+  "issuer": "Certify 1.0.0-alpha.1",
+  "verifier": "Verify 0.18.2",
+  "format": "dc+sd-jwt",
+  "rows": [
+    {
+      "scenario": "expired",
+      "control": {
+        "scenario": "valid",
+        "nonceMatched": true,
+        "audienceMatched": true,
+        "stateMatched": true,
+        "descriptorPathMatched": true,
+        "transactionId": "txn_75a02f02-4b7f-45d3-955e-199381d49073",
+        "requestId": "req_519c9027-f86d-4f7d-bd3d-25696e591c91",
+        "directPostHttpStatus": 200,
+        "verifierHttpStatus": 200,
+        "verifierValid": true,
+        "credentialProofValid": true,
+        "holderProofValid": true,
+        "resultCode": null
+      },
+      "outcome": {
+        "scenario": "expired",
+        "nonceMatched": true,
+        "audienceMatched": true,
+        "stateMatched": true,
+        "descriptorPathMatched": true,
+        "transactionId": "txn_f546c173-f320-4e85-b2bf-1df9f432e6ea",
+        "requestId": "req_18c729f7-3e2b-4943-9c11-239bba0f149f",
+        "directPostHttpStatus": 200,
+        "verifierHttpStatus": 200,
+        "verifierValid": false,
+        "credentialProofValid": true,
+        "holderProofValid": true,
+        "resultCode": null
+      },
+      "expected": "rejected"
+    },
+    {
+      "scenario": "altered_disclosure",
+      "control": {
+        "scenario": "valid",
+        "nonceMatched": true,
+        "audienceMatched": true,
+        "stateMatched": true,
+        "descriptorPathMatched": true,
+        "transactionId": "txn_7601ff0e-b5c1-4cde-a71b-33a2dcc6cf83",
+        "requestId": "req_d4216a75-e4bd-48e3-9ff9-bf41217615e7",
+        "directPostHttpStatus": 200,
+        "verifierHttpStatus": 200,
+        "verifierValid": true,
+        "credentialProofValid": true,
+        "holderProofValid": true,
+        "resultCode": null
+      },
+      "outcome": {
+        "scenario": "altered_disclosure",
+        "nonceMatched": true,
+        "audienceMatched": true,
+        "stateMatched": true,
+        "descriptorPathMatched": true,
+        "transactionId": "txn_95b65c99-55be-404a-8af1-6ed550342a01",
+        "requestId": "req_57038a40-7e85-4f87-8523-dcc1ec28e569",
+        "directPostHttpStatus": 200,
+        "verifierHttpStatus": 200,
+        "verifierValid": false,
+        "credentialProofValid": false,
+        "holderProofValid": null,
+        "resultCode": "ERR_INVALID_DISCLOSURE"
+      },
+      "expected": "rejected"
+    },
+    {
+      "scenario": "unreferenced_disclosure",
+      "control": {
+        "scenario": "valid",
+        "nonceMatched": true,
+        "audienceMatched": true,
+        "stateMatched": true,
+        "descriptorPathMatched": true,
+        "transactionId": "txn_31fea81b-a76e-4be9-bdb6-14b82f6195da",
+        "requestId": "req_f79e6091-f844-4ba4-9c3e-00fe3f5399ee",
+        "directPostHttpStatus": 200,
+        "verifierHttpStatus": 200,
+        "verifierValid": true,
+        "credentialProofValid": true,
+        "holderProofValid": true,
+        "resultCode": null
+      },
+      "outcome": {
+        "scenario": "unreferenced_disclosure",
+        "nonceMatched": true,
+        "audienceMatched": true,
+        "stateMatched": true,
+        "descriptorPathMatched": true,
+        "transactionId": "txn_8d2fdfd6-c0a5-44ae-9684-0e27feb22021",
+        "requestId": "req_687ff3ee-8d32-49d2-9ec3-e5e89e06917e",
+        "directPostHttpStatus": 200,
+        "verifierHttpStatus": 200,
+        "verifierValid": false,
+        "credentialProofValid": false,
+        "holderProofValid": null,
+        "resultCode": "ERR_INVALID_DISCLOSURE"
+      },
+      "expected": "rejected"
+    },
+    {
+      "scenario": "bad_issuer_signature",
+      "control": {
+        "scenario": "valid",
+        "nonceMatched": true,
+        "audienceMatched": true,
+        "stateMatched": true,
+        "descriptorPathMatched": true,
+        "transactionId": "txn_cab02bed-aedd-428c-a5b3-a0c7db7a49ce",
+        "requestId": "req_7de8f5ab-9bae-4c7c-ad3f-4fb8b6e3bdc8",
+        "directPostHttpStatus": 200,
+        "verifierHttpStatus": 200,
+        "verifierValid": true,
+        "credentialProofValid": true,
+        "holderProofValid": true,
+        "resultCode": null
+      },
+      "outcome": {
+        "scenario": "bad_issuer_signature",
+        "nonceMatched": true,
+        "audienceMatched": true,
+        "stateMatched": true,
+        "descriptorPathMatched": true,
+        "transactionId": "txn_7ea75e8e-6987-4f4a-b46c-daa574513bdf",
+        "requestId": "req_d0bc8bcb-6662-4f35-a899-1a83d39cf8e7",
+        "directPostHttpStatus": 200,
+        "verifierHttpStatus": 200,
+        "verifierValid": false,
+        "credentialProofValid": false,
+        "holderProofValid": null,
+        "resultCode": "ERR_SIGNATURE_VERIFICATION_FAILED"
+      },
+      "expected": "rejected"
+    }
+  ]
+}

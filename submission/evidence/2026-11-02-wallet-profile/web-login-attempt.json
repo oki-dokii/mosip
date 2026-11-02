@@ -1,0 +1,1 @@
+{"observedAt":"2026-11-01T22:31:22.810Z","wallet":"Inji Web 0.17 / Mimoto 0.22","requestFormat":"vc+sd-jwt","stoppedAt":"choose_identity_provider","routes":[{"method":"GET","path":"/v1/mimoto/users/me","status":401},{"method":"GET","path":"/v1/mimoto/oauth2/authorize/google","status":302}],"verdict":null}

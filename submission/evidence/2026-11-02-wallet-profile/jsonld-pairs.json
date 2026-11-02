@@ -1,0 +1,68 @@
+{
+  "observedAt": "2026-11-02T05:29:31.330Z",
+  "format": "JSON-LD",
+  "verifier": "Verify 0.18.2",
+  "issuer": "synthetic did:key",
+  "rows": [
+    {
+      "scenario": "signed_expired",
+      "control": {
+        "http": 200,
+        "valid": true
+      },
+      "actual": {
+        "http": 200,
+        "valid": false
+      },
+      "expected": "invalid"
+    },
+    {
+      "scenario": "missing_proof",
+      "control": {
+        "http": 200,
+        "valid": true
+      },
+      "actual": {
+        "http": 200,
+        "valid": false
+      },
+      "expected": "invalid"
+    },
+    {
+      "scenario": "changed_subject",
+      "control": {
+        "http": 200,
+        "valid": true
+      },
+      "actual": {
+        "http": 200,
+        "valid": false
+      },
+      "expected": "invalid"
+    },
+    {
+      "scenario": "malformed_body",
+      "control": {
+        "http": 200,
+        "valid": true
+      },
+      "actual": {
+        "http": 400,
+        "valid": null
+      },
+      "expected": "4xx"
+    },
+    {
+      "scenario": "oversized_body",
+      "control": {
+        "http": 200,
+        "valid": true
+      },
+      "actual": {
+        "http": 200,
+        "valid": true
+      },
+      "expected": "4xx"
+    }
+  ]
+}

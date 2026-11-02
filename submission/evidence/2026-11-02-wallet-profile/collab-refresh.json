@@ -1,0 +1,85 @@
+{
+  "observedAt": "2026-11-01T22:22:42.102Z",
+  "versions": {
+    "certify": "unreported",
+    "verify": "unreported"
+  },
+  "runs": [
+    {
+      "label": "x509_control",
+      "runId": "ce124d87-3820-4fd1-973c-8c5662923a9e",
+      "status": "passed",
+      "actual": "valid",
+      "evaluation": "correct_acceptance"
+    },
+    {
+      "label": "x509_bad_signature",
+      "runId": "9ba960ec-3685-46dc-8bda-d53aba997e42",
+      "status": "failed",
+      "actual": "invalid",
+      "evaluation": "inconclusive"
+    },
+    {
+      "label": "x509_nonce_mismatch",
+      "runId": "64132e7c-74fb-493b-877b-fa5edaee5796",
+      "status": "failed",
+      "actual": "invalid",
+      "evaluation": "inconclusive"
+    },
+    {
+      "label": "did_jwk_control",
+      "runId": "6bc2d7e3-8604-40f4-8f03-4b5c11f17fa4",
+      "status": "failed",
+      "actual": "invalid",
+      "evaluation": "unexpected_rejection"
+    }
+  ],
+  "preauthorized": [
+    {
+      "configurationId": "MockVerifiableCredential_SD_JWT",
+      "checkpoints": {
+        "metadata": 200,
+        "offerCreation": 200,
+        "offer": 200,
+        "token": 200,
+        "nonce": 200,
+        "credential": 401
+      },
+      "conclusion": "fresh_pre_authorized_token_rejected",
+      "offerUriIsAbsolute": false,
+      "offerOriginMatchesIssuer": true,
+      "offerResolution": "fixed_issuer_credential_offer_data_endpoint",
+      "tokenShape": {
+        "jwtDecoded": true,
+        "issuerConfigured": false,
+        "audienceConfigured": false,
+        "nonceClaimIncluded": false,
+        "clientIdClaimIncluded": false
+      },
+      "credentialReturned": false
+    },
+    {
+      "configurationId": "MockVerifiableCredential_VCDM2.0",
+      "checkpoints": {
+        "metadata": 200,
+        "offerCreation": 200,
+        "offer": 200,
+        "token": 200,
+        "nonce": 200,
+        "credential": 401
+      },
+      "conclusion": "fresh_pre_authorized_token_rejected",
+      "offerUriIsAbsolute": false,
+      "offerOriginMatchesIssuer": true,
+      "offerResolution": "fixed_issuer_credential_offer_data_endpoint",
+      "tokenShape": {
+        "jwtDecoded": true,
+        "issuerConfigured": false,
+        "audienceConfigured": false,
+        "nonceClaimIncluded": false,
+        "clientIdClaimIncluded": false
+      },
+      "credentialReturned": false
+    }
+  ]
+}

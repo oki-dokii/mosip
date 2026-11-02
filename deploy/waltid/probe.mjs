@@ -79,7 +79,12 @@ await cell('walt-credential-to-inji-verify',async()=>{
    }
    const signed=await fetch(req.requestUri,{headers:{accept:'application/oauth-authz-req+jwt'},redirect:'error',signal:AbortSignal.timeout(10000)});
    mark('retrieve Inji request object',signed.status);
-   expect('compact signed request returned',signed.ok && (await signed.text()).split('.').length===3);
+   const parts=(await signed.text()).split('.');
+   expect('compact signed request returned',signed.ok && parts.length===3);
+   const claims=JSON.parse(Buffer.from(parts[1],'base64url'));
+   mark('signed client_id equals configured DID',claims.client_id===clientId);
+   mark('signed aud present',Object.hasOwn(claims,'aud'));
+   mark('signed aud contains static discovery audience',[claims.aud].flat().includes('https://self-issued.me/v2'));
    await http('wallet resolve Inji request',W+'/wallet/'+wallet+'/credentials/present/resolve-request',{requestUrl});
  }
  await http('wallet present to Inji Verify',W+'/wallet/'+wallet+'/credentials/present',{keyId,requestUrl});

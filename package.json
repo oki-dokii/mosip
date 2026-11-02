@@ -43,7 +43,7 @@
     "check:web-managed-ui": "node scripts/check-managed-local-ui.mjs",
     "lint": "oxlint -D correctness apps packages scripts spikes",
     "coverage:redaction": "pnpm --filter @playground/bff exec vitest run src/redaction.test.ts src/redaction-fuzz.test.ts --coverage --coverage.include=src/redaction.ts",
-    "test:mutations": "node scripts/redaction-mutations.mjs",
+    "test:mutations": "node scripts/redaction-mutations.mjs && node scripts/outbound-mutations.mjs",
     "docs:api": "node scripts/openapi.mjs"
   },
   "engines": {

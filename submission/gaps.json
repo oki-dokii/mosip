@@ -193,13 +193,16 @@
         "submission/evidence/2026-11-01-waltid/discovery-negotiation.json",
         "submission/evidence/2026-11-02-walt-adapters/observe.json",
         "submission/evidence/2026-11-02-walt-adapters/adapt.json",
-        "submission/evidence/2026-11-02-walt-adapters/wallet-diagnostics.json"
+        "submission/evidence/2026-11-02-walt-adapters/wallet-diagnostics.json",
+        "submission/evidence/2026-11-02-wallet-profile/control.json",
+        "submission/evidence/2026-11-02-wallet-profile/sd-only.json"
       ],
       "runIds": [],
       "matrixCells": [
         "certify-offer-to-walt-wallet",
         "certify-offer-to-walt-wallet-observe",
-        "certify-offer-to-walt-wallet-adapt"
+        "certify-offer-to-walt-wallet-adapt",
+        "certify-offer-to-walt-wallet-sd-only"
       ],
       "matrixDecision": "Certify 1.0.0-alpha.1 advertises discovery at a location that returns 404. A wallet-only alias delivered metadata (200); walt.id 1.2.0 then returned 400 because credential_signing_alg_values_supported in an ldp_vc configuration did not contain LD suite identifiers. Even the requested SD-JWT offer was blocked before issuance.",
       "upstreamIssue": null,
@@ -217,13 +220,16 @@
         "submission/evidence/2026-11-01-waltid/discovery-negotiation.json",
         "submission/evidence/2026-11-02-walt-adapters/observe.json",
         "submission/evidence/2026-11-02-walt-adapters/adapt.json",
-        "submission/evidence/2026-11-02-walt-adapters/wallet-diagnostics.json"
+        "submission/evidence/2026-11-02-walt-adapters/wallet-diagnostics.json",
+        "submission/evidence/2026-11-02-wallet-profile/control.json",
+        "submission/evidence/2026-11-02-wallet-profile/public-url.json"
       ],
       "runIds": [],
       "matrixCells": [
         "walt-credential-to-inji-verify",
         "walt-credential-to-inji-verify-observe",
-        "walt-credential-to-inji-verify-adapt"
+        "walt-credential-to-inji-verify-adapt",
+        "walt-credential-to-inji-verify-public-url"
       ],
       "matrixDecision": "walt.id 1.2.0 sent Accept: application/json,application/json; Verify 0.18.2 returned 406. Changing only that header to application/oauth-authz-req+jwt delivered the signed request (200). Wallet resolution then returned 400: the request audience must contain https://self-issued.me/v2. No presentation or independent verdict followed.",
       "upstreamIssue": null,

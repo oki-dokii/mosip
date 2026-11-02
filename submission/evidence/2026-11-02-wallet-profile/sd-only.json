@@ -1,0 +1,196 @@
+{
+  "observedAt": "2026-11-01T22:22:52.738Z",
+  "versions": {
+    "walt": "1.2.0",
+    "certify": "1.0.0-alpha.1",
+    "injiVerify": "0.18.2"
+  },
+  "scope": "Local synthetic fixtures. An HTTP failure is an observed checkpoint, not a verifier decision.",
+  "rows": [
+    {
+      "id": "walt-issuer-to-walt-wallet-sd-only",
+      "checkpoints": [
+        {
+          "label": "read issuer metadata",
+          "status": 200
+        },
+        {
+          "label": "SD-JWT type advertised",
+          "status": true
+        },
+        {
+          "label": "create synthetic account",
+          "status": 201
+        },
+        {
+          "label": "authenticate",
+          "status": 200
+        },
+        {
+          "label": "session established",
+          "status": true
+        },
+        {
+          "label": "create wallet",
+          "status": 201
+        },
+        {
+          "label": "wallet created",
+          "status": true
+        },
+        {
+          "label": "generate holder key",
+          "status": 201
+        },
+        {
+          "label": "holder key available",
+          "status": true
+        },
+        {
+          "label": "create SD-JWT offer",
+          "status": 201
+        },
+        {
+          "label": "offer returned",
+          "status": true
+        },
+        {
+          "label": "wallet receive",
+          "status": 200
+        },
+        {
+          "label": "wallet inventory",
+          "status": 200
+        },
+        {
+          "label": "credential stored",
+          "status": true
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "id": "walt-wallet-to-walt-verifier-sd-only",
+      "checkpoints": [
+        {
+          "label": "walt issuance control",
+          "status": true
+        },
+        {
+          "label": "create DCQL request",
+          "status": 200
+        },
+        {
+          "label": "present credential",
+          "status": 200
+        },
+        {
+          "label": "independent verifier result",
+          "status": 200
+        },
+        {
+          "label": "session status",
+          "status": "SUCCESSFUL"
+        },
+        {
+          "label": "verifier accepted credential",
+          "status": true
+        }
+      ],
+      "result": "passed"
+    },
+    {
+      "id": "certify-offer-to-walt-wallet-sd-only",
+      "checkpoints": [
+        {
+          "label": "authenticated wallet available",
+          "status": true
+        },
+        {
+          "label": "create Certify offer",
+          "status": 200
+        },
+        {
+          "label": "Certify offer returned",
+          "status": true
+        },
+        {
+          "label": "offer reference on local Certify origin",
+          "status": true
+        },
+        {
+          "label": "fetch offer by reference",
+          "status": 200
+        },
+        {
+          "label": "offer advertises origin-only credential issuer",
+          "status": true
+        },
+        {
+          "label": "metadata at offer-advertised issuer",
+          "status": 404
+        },
+        {
+          "label": "read Certify issuer metadata",
+          "status": 200
+        },
+        {
+          "label": "wallet resolve Certify offer",
+          "status": 500
+        }
+      ],
+      "result": "not_completed"
+    },
+    {
+      "id": "walt-credential-to-inji-verify-sd-only",
+      "checkpoints": [
+        {
+          "label": "walt credential present",
+          "status": true
+        },
+        {
+          "label": "create Inji Verify request",
+          "status": 201
+        },
+        {
+          "label": "request on local Verify origin",
+          "status": true
+        },
+        {
+          "label": "request object with Accept application/json",
+          "status": 406
+        },
+        {
+          "label": "request object with Accept */*",
+          "status": 200
+        },
+        {
+          "label": "retrieve Inji request object",
+          "status": 200
+        },
+        {
+          "label": "compact signed request returned",
+          "status": true
+        },
+        {
+          "label": "signed client_id equals configured DID",
+          "status": true
+        },
+        {
+          "label": "signed aud present",
+          "status": false
+        },
+        {
+          "label": "signed aud contains static discovery audience",
+          "status": false
+        },
+        {
+          "label": "wallet resolve Inji request",
+          "status": 400
+        }
+      ],
+      "result": "not_completed"
+    }
+  ],
+  "variant": "sd-only"
+}
